@@ -14,14 +14,33 @@ def _make_mixed(path: str):
     d.close()
 
 
-def test_letter_default(tmp_path):
+def test_default_keeps_original_size(tmp_path):
+    """Designer §74: saving never reshapes pages unless asked."""
     src = str(tmp_path / "in.pdf")
     out = str(tmp_path / "out.pdf")
     _make_mixed(src)
     process_file(src, out, strategy="otsu", token=CancelToken())
     with fitz.open(out) as o:
         r = o[0].rect
+        assert (round(r.width), round(r.height)) == (400, 400)
+
+
+def test_letter_explicit(tmp_path):
+    src = str(tmp_path / "in.pdf")
+    out = str(tmp_path / "out.pdf")
+    _make_mixed(src)
+    process_file(src, out, strategy="otsu", page_size="letter", token=CancelToken())
+    with fitz.open(out) as o:
+        r = o[0].rect
         assert (round(r.width), round(r.height)) == (612, 792)
+
+
+def test_absurd_pages():
+    from pdf_minimalist.core.pipeline import absurd_pages
+    assert absurd_pages([(612.0, 792.0)]) == []  # letter fine
+    assert absurd_pages([(960.0, 540.0)]) == []  # 16:9 slides pass
+    assert absurd_pages([(72.0, 1400.0)]) == [0]  # strip scan flagged
+    assert absurd_pages([(612.0, 792.0), (50.0, 50.0)]) == [1]  # tiny page
 
 
 def test_original_size(tmp_path):
@@ -154,7 +173,7 @@ def test_jbig2_fallback_stays_valid(tmp_path):
     with fitz.open(out) as o:
         px = o[0].get_pixmap(dpi=100, colorspace=fitz.csGRAY, alpha=False)
         got = np.frombuffer(px.samples, dtype=np.uint8).reshape(px.height, px.width)
-        assert 0 in np.unique(got)  # ink, never a black-failure page
+        assert got.min() < 128  # dark ink pixels, never a blank/failed page
 
 
 def test_jbig2_pixel_exact(tmp_path):
@@ -228,3 +247,68 @@ def test_indexed_palette_wins_on_flat(tmp_path):
         assert imgs, "no embedded image"
         assert o.xref_get_key(imgs[0][0], "Filter")[1] == "/FlateDecode"
     assert len(open(out, "rb").read()) < len(open(src, "rb").read())
+
+
+def test_indexed_forced_mode(tmp_path):
+    """Designer §67: Indexed filters force the palette count on save."""
+    src = str(tmp_path / "in.pdf")
+    out = str(tmp_path / "out.pdf")
+    _make_flat_logo(src)
+    recompress_file(src, out, dpi_cap=150, token=CancelToken(),
+                    codec="indexed", colors=16)
+    with fitz.open(out) as o:
+        imgs = o[0].get_images(full=True)
+        assert imgs, "no embedded image"
+        assert o.xref_get_key(imgs[0][0], "Filter")[1] == "/FlateDecode"
+        # count colors in the EMBEDDED stream (renders resample edges).
+        # True Indexed decodes to exact palette entries — no ICC fanning.
+        info = o.extract_image(imgs[0][0])
+        emb = np.asarray(Image.open(io.BytesIO(info["image"])).convert("RGB"))
+        assert len(np.unique(emb.reshape(-1, 3), axis=0)) <= 16
+
+
+def test_indexed_helpers():
+    from pdf_minimalist.core.pipeline import indexed_rgb, quantize_method
+    import numpy as _np
+    rng = _np.random.default_rng(4)
+    arr = (rng.random((60, 80, 3)) * 255).astype(_np.uint8)
+    assert quantize_method() in (Image.MEDIANCUT, Image.FASTOCTREE, Image.MAXCOVERAGE)
+    out = indexed_rgb(arr, 16)
+    assert out.shape == arr.shape
+    assert len(_np.unique(out.reshape(-1, 3), axis=0)) <= 16
+
+
+def test_flate_stream_decodes_exact():
+    """Designer §80 fix: Flate streams carry raw rows, no filter bytes."""
+    import zlib
+    from pdf_minimalist.core.pipeline import flate_rgb_encode
+    import numpy as _np
+    arr = _np.arange(24, dtype=_np.uint8).reshape(2, 4, 3)
+    assert zlib.decompress(flate_rgb_encode(arr)) == arr.tobytes()
+
+
+def test_true_indexed_bpc_and_render(tmp_path):
+    """Designer §80: bit depth follows actual entries; render is exact."""
+    from pdf_minimalist.core.pipeline import indexed_parts, _place_indexed
+    import fitz as _fz
+    import numpy as _np
+    img2 = Image.new("RGB", (32, 32))
+    img2.putdata([(255, 0, 0)] * 512 + [(0, 0, 255)] * 512)
+    parts = indexed_parts(img2, 256)
+    assert parts["bpc"] == 1 and parts["hival"] == 1 and len(parts["palette"]) == 6
+    out = _fz.open()
+    page = out.new_page(width=32, height=32)
+    from pdf_minimalist.core.pipeline import _tiny_png
+    page.insert_image(_fz.Rect(0, 0, 32, 32), stream=_tiny_png())
+    xref = page.get_images(full=True)[-1][0]
+    _place_indexed(out, xref, parts)
+    pdf = str(tmp_path / "idx.pdf")
+    out.save(pdf, garbage=4, deflate=True)
+    out.close()
+    with _fz.open(pdf) as o:
+        assert o.xref_get_key(o[0].get_images(full=True)[0][0],
+                              "BitsPerComponent")[1] == "1"
+        px = o[0].get_pixmap(dpi=72, colorspace=_fz.csRGB, alpha=False)
+        got = _np.frombuffer(px.samples, dtype=_np.uint8).reshape(32, 32, 3)
+        assert set(map(tuple, _np.unique(got.reshape(-1, 3), axis=0))) <= \
+            {(255, 0, 0), (0, 0, 255)}

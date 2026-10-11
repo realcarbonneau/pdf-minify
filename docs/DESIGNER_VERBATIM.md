@@ -452,6 +452,84 @@
 ## 59 — finish completely + full suite (verbatim, 2026-10-10)
 > please complete your work, don't stop half compelted.  Also make a full test suite please and run each time please.
 
+## 60 — pane headers (verbatim, 2026-10-10)
+> Above the original and the applied preview, show the relevant information for each, in particular, the filter, dpi, file size, etc.  For the left side, it should show similar to the thumbnails at the bottom for the right side, it should say Original with a new key information, including the file size.
+
+## 61 — size percentages (verbatim, 2026-10-10)
+> Also, in the thumnails and top lines, shows the size percentage, like original 230kb 100%, filter 1, 230kb 10%.
+
+## 62 — always relaunch (verbatim, 2026-10-10)
+> run, always run after a new build, kill the existing one
+
+## 63 — dpi cap wording (verbatim, 2026-10-10)
+> what does <=150dpi mean?  How is that even something that make sense??
+
+## 64 — dpi is always a ceiling (verbatim, 2026-10-10)
+> then you don't need to say max, just the dpi, it's assumed it's a max, write as a ui design ruling, users don't care to see this difference.
+
+## 65 — dead slider + percent rounding (verbatim, 2026-10-10)
+> I just moved the threshold slider and the previous did not update, this is wrong.  Also, your <1% is wrong, round to the nearest, it's either 1% or 0%.
+
+## 66 — palette reduction (verbatim, 2026-10-10)
+> is there a mode that can reduce the color pallette for compression?  And what are the best algorithms for this?
+
+## 67 — forced palette mode + benchmark (verbatim, 2026-10-10)
+> I mean to force a reduction of the pallette based on automatic algorithms and a slider.  Also, benchmark verious tests for the best algorith for smallest size and which pdf image format is best to store these.   Add a few example filters please.  Review the filter examples across the corpus of pdfs docs are a benchmark for the filters to include.
+
+## 68 — file name heads the right panel (verbatim, 2026-10-10)
+> File name should be the firlst list of the right side block.  Original and size stays above the first previous main window
+
+## 69 — right box holds file constants (verbatim, 2026-10-10)
+> number of pages in the right hand box, things that are constant for original and any filter stay in the right hand box, as the main info box
+
+## 70 — Prev/Next purpose (verbatim, 2026-10-10)
+> Also, I have told you many times, the prev/next does nothing.  What is it supposed to do?  Seems useless to me.
+
+## 71 — drop Prev/Next, add zoom buttons (verbatim, 2026-10-10)
+> drop prev/next, we have scroll bars for that.   Add zoom in/out buttons in the right hand side panel.
+
+## 72 — codec must be explicit (verbatim, 2026-10-10)
+> I choose jpeg2000 filters and the codec is not shown on the right side, why the fail??
+
+## 73 — path + page size in File box (verbatim, 2026-10-10)
+> page size never changes, so put that in the top block call file info.   The final name should have it's full path also.
+
+## 74 — page size is advanced-only (verbatim, 2026-10-10)
+> The filter should not generally have a page size, I think this is dangerous, would it not break the page?  It's an advanced option only for specific cases when the page size is absurd from incorrect scanning document problems, no?  What do you suggest?
+
+## 75 — icon buttons (verbatim, 2026-10-10)
+> those are awefull zoom buttons, use proper icons for all of the four buttons please, small with icons please.
+
+## 76 — zoom row (verbatim, 2026-10-10)
+> use the magnifying glass zoom in out and buttons should be small and on same row, not out row and streched.  Follow modern best practices, maybe short word also.
+
+## 77 — full-width strip (verbatim, 2026-10-10)
+> also make the tumbnail stip go full width, right side panel stopping above with it's own scroll bar if overflow.
+
+## 78 — toolbar approval (verbatim, 2026-10-10)
+> yes please
+
+## 79 — one codec label (verbatim, 2026-10-10)
+> why do you have encode and codec on different lines, very incoherent, follow modern best practices please!
+
+## 80 — best flat-palette compression (verbatim, 2026-10-10)
+> and even a flat palette must have a better compression coded than just flate?  Is that the best compression??
+
+## 81 — maximum-compression policy (verbatim, 2026-10-10)
+> Everything in this project must be maximum compression, BW lossles, reduced palette, probably lossless, jpeg full color usually lossy
+
+## 82 — stable details order (verbatim, 2026-10-10)
+> Still, why is codec sometimes the first line and other times the last line!!??? This is bad design!  There will be one codec per filter, all common filter properties must show in the same stable sequence at the start, and custom codec specific options after.
+
+## 83 — one DPI (verbatim, 2026-10-10)
+> why do we have two different dpi values??
+
+## 84 — buttons still not fixed (verbatim, 2026-10-10)
+> your buttons are not fixed
+
+## 85 — zoom %, small Save, Cancel meaning, one DPI (verbatim, 2026-10-10)
+> No, you said buttons combined with the scale percentage, no?  and save as a small button.  What is the X for?  Cancel?  Isn't that an undo?  ANd undo what?  Also, there should only be a single dpi value for the whole filter.  That is all user's care about, never two different dpi values.  DPI is clear and means for all images in the document, why are you making this complicated?
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.

@@ -15,6 +15,11 @@ Ruling §9 — preset filter-strip + view options:
 Ruling §10 — raster defaults on main screen:
 > Generally forcing alll images on the page and page rasterizing to 300dpi, and 8.5x11, but that also would be options on the main screen.
 
+Refined by §74: page size defaults to Original (saving never reshapes pages
+unless asked — forcing Letter would break normal pages). Letter/A4 stay as
+advanced Save options for absurd scan sizes, which the File box flags with a
+warning line (never auto-applied).
+
 ## Concept (camera-filter UX for PDFs)
 - Left/bottom **filter strip**: every preset renders a small live thumbnail of the
   CURRENT page through its pipeline. Click a thumbnail = select preset → main panes update.
@@ -48,13 +53,18 @@ View=Main:V + Filters:V (square / portrait screens) → panes stacked, rail on r
 | 3 | BW · Strong T=210 | BW | 300dpi, simple T=210 | faint pencil / gray bg |
 | 4 | BW · Stained Paper | BW | 300dpi, sauvola w31 k0.25 | yellowed / uneven light |
 | 5 | BW · Fast Draft | BW | 200dpi, otsu, JBIG2 | old hardware, quick pass |
-| 6 | Color · JPEG2000 ★ default color | JPX | 150dpi, rate 24 | smallest photos, slower |
+| 6 | Color · JPEG2000 ★ default color | JPX | 150dpi, rate 192 | smallest photos, slower |
 | 7 | Color · Max Squeeze | JPEG | 150dpi, q45 4:2:0 | smallest slides/photos |
 | 8 | Color · Balanced | JPEG | 200dpi, q60 | readable photos, fewer blocks |
+| 9 | Color · Poster 16 | indexed | 150dpi, 16 colors | flat graphics, tiny |
+| 10 | Color · Indexed 64 | indexed | 150dpi, 64 colors | diagrams and logos |
 
 Few-color images (designer ruling §57: ≤256 distinct colors — logos,
-diagrams, flat screenshots) take a lossless palette-quantized Flate version
-whenever it beats the codec re-encode, in every color preset.
+diagrams, flat screenshots) take a lossless true-Indexed version (designer
+§80: packed 1/2/4/8-bit samples by actual entry count + inline palette +
+best Deflate) whenever it beats the codec re-encode, in every color preset —
+~10x smaller than RGB-Flate on flat graphics, benchmarked in
+`tools/bench_indexed.py`.
 
 Defined in code: `pdf_minimalist/core/presets.py` → `PRESETS` (id, label, mode, params).
 Thumbnails render lazily at ~96px on page change (debounced 150ms, cancellable);
@@ -80,8 +90,12 @@ main preview re-renders at 150dpi on preset click (300dpi at Save).
   mini carries its filter recipe (threshold strategy, DPI, encoder — `§53`)
   and the FULL-document real amount with the exact save bytes — BW sums the
   embedded page payloads, color sums the exact per-image save decisions
-  (doc-wide dedupe included). No estimates anywhere; PDF container/gc
+  (doc-wide dedupe included). No estimates anywhere; every amount carries its
+  % of the original (`23KB (10%)`, original header `100%`). PDF container/gc
   overhead is reported with the exact output size after every save.
+- UI ruling §64: a DPI figure anywhere in the UI is always a ceiling —
+  images are only ever downsampled to it, never upscaled — so it is stated
+  plainly (`150dpi`), with no max/≤ qualifier. Users never see the difference.
 - Navigator dropped (designer ruling §50): the separate OverviewMap navigator
   is gone — the original (left) window is the navigator. The right panel keeps
   preset, strategy, threshold, DPI, page-size, force-raster, page buttons,

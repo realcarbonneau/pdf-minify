@@ -28,7 +28,29 @@ PAGE_SIZES = {
     "a4": (595.28, 841.89),
 }
 DEFAULT_DPI = 300
-DEFAULT_PAGE_SIZE = "letter"
+DEFAULT_PAGE_SIZE = "original"  # §74: never reshape by default; Letter/A4 are
+# advanced-only fixes for absurd scan sizes (flagged, never auto-applied).
+
+
+def absurd_pages(rects) -> list:
+    """0-based indices of pages whose size looks like a broken scan (§74).
+
+    Flags a side under 2in (144pt) or over 24in (1728pt), or an aspect wilder
+    than 1:3 — while ordinary slides (16:9 ≈ 1.78) and photos pass quietly.
+    The app suggests Letter/A4 for these; it never reshapes on its own.
+    """
+    bad = []
+    for i, r in enumerate(rects):
+        w, h = float(r[0]), float(r[1])
+        if w <= 0 or h <= 0:
+            continue
+        if min(w, h) < 144 or max(w, h) > 1728:
+            bad.append(i)
+            continue
+        a = w / h
+        if a < 1 / 3 or a > 3:
+            bad.append(i)
+    return bad
 
 
 def _fitz_locked(fn):
@@ -165,40 +187,175 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int, rate: int = 24) -> bytes:
 
 
 def flate_rgb_encode(arr: np.ndarray) -> bytes:
-    """RGB array -> raw Flate stream bytes (filter byte 0 per row, zlib).
+    """RGB array -> raw Flate stream bytes (designer §80 fix).
 
-    Valid PDF FlateDecode payload, unlike PNG file bytes.
+    Plain concatenated scanlines with Predictor 1 (none): NO PNG filter
+    bytes. An earlier version prepended \\x00 per row without declaring a
+    predictor, shifting every row one byte in strict decoders.
     """
-    h = arr.shape[0]
-    raw = b"".join(b"\x00" + np.ascontiguousarray(arr[y]).tobytes() for y in range(h))
-    return zlib.compress(raw)
+    return zlib.compress(np.ascontiguousarray(arr).tobytes())
 
 
-def indexed_flate_candidate(img: "Image.Image") -> bytes | None:
-    """Few-color image (designer §57) -> lossless Flate RGB bytes, else None.
+def bpc_for(ncolors: int) -> int:
+    """Smallest PDF bit depth holding ncolors entries (designer §80)."""
+    if ncolors <= 2:
+        return 1
+    if ncolors <= 4:
+        return 2
+    if ncolors <= 16:
+        return 4
+    return 8
+
+
+def pack_indices(idx: np.ndarray, bpc: int) -> bytes:
+    """Packed index samples, first sample in the high-order bits."""
+    h, w = idx.shape[:2]
+    if bpc == 8:
+        return np.ascontiguousarray(idx, dtype=np.uint8).tobytes()
+    per = 8 // bpc
+    out = bytearray()
+    for y in range(h):
+        bits = n = 0
+        for x in range(w):
+            bits = (bits << bpc) | int(idx[y, x])
+            n += 1
+            if n == per:
+                out.append(bits)
+                bits = n = 0
+        if n:
+            out.append(bits << (8 - n * bpc))
+    return bytes(out)
+
+
+def zopfli_binary() -> str | None:
+    return shutil.which("zopfli")
+
+
+def deflate_best(data: bytes) -> bytes:
+    """Strongest Deflate both saver and estimator agree on (designer §80).
+
+    zopfli wins ~6% over zlib-9 but costs 60x time, so it applies only below
+    100KB (fast either way); above that zlib-9. Same rule everywhere keeps
+    caption amounts equal to saved bytes.
+    """
+    if len(data) <= 100_000 and zopfli_binary() is not None:
+        fd, tmp = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd, "wb") as f:
+                f.write(data)
+            try:
+                r = subprocess.run(["zopfli", "-c", tmp], capture_output=True,
+                                   timeout=120)
+            except (OSError, subprocess.TimeoutExpired):
+                return zlib.compress(data, 9)
+            if r.returncode == 0 and r.stdout:
+                return bytes(r.stdout)
+        finally:
+            try:
+                os.unlink(tmp)
+            except OSError:
+                pass
+    return zlib.compress(data, 9)
+
+
+def indexed_parts(img: "Image.Image", colors: int) -> dict:
+    """Forced palette reduction to PDF-ready parts (designer §80).
+
+    Automatic algorithm, never dithered; bit depth follows the ACTUAL used
+    entries (16 requested but 10 used → 4bpc). Returns stream/palette/bpc/
+    dims for a true Indexed color space — typically 10x smaller than the
+    RGB-Flate equivalent on flat graphics.
+    """
+    rgb = img.convert("RGB")
+    q = rgb.quantize(colors=max(2, min(256, int(colors))),
+                     method=quantize_method(), dither=Image.NONE)
+    idx = np.asarray(q)
+    used, inv = np.unique(idx, return_inverse=True)
+    n = len(used)
+    bpc = bpc_for(n)
+    pal = q.getpalette()
+    pal_bytes = b"".join(bytes(pal[i * 3:i * 3 + 3]) for i in used)
+    packed = pack_indices(inv.reshape(idx.shape).astype(np.uint8), bpc)
+    return {"stream": deflate_best(packed), "palette": pal_bytes,
+            "bpc": bpc, "hival": n - 1, "w": idx.shape[1], "h": idx.shape[0]}
+
+
+def indexed_flate_candidate(img: "Image.Image") -> dict | None:
+    """Few-color image (designer §57) -> true Indexed parts, else None.
 
     Images with at most 256 distinct colors (logos, diagrams, flat UI shots)
-    quantize to a 256-entry palette with zero visual change; re-expanded to
-    RGB, they deflate to a fraction of a JPEG. Returns None when the image
-    has more than 256 colors.
+    quantize losslessly; the winner is picked by total bytes elsewhere.
     """
     rgb = img.convert("RGB")
     if rgb.getcolors(maxcolors=257) is None:
         return None
-    pal = rgb.quantize(colors=256, method=Image.MEDIANCUT).convert("RGB")
-    return flate_rgb_encode(np.asarray(pal))
+    return indexed_parts(rgb, 256)
+
+
+def quantize_method() -> int:
+    """Best available palette algorithm (designer §67 benchmark).
+
+    FASTOCTREE no-dither beat MEDIANCUT on every corpus image; pngquant wins
+    on tiny flat graphics but times out on photos, so it stays out of the
+    automatic path. Dithering is always OFF: it adds noise that deflates
+    worse — the opposite of the goal.
+    """
+    return Image.FASTOCTREE
+
+
+def indexed_rgb(arr: np.ndarray, colors: int) -> np.ndarray:
+    """RGB array -> palette-reduced RGB array (designer §67).
+
+    Automatic algorithm (`quantize_method`), never dithered.
+    """
+    img = Image.fromarray(np.asarray(arr)).convert("RGB")
+    pal = img.quantize(colors=max(2, min(256, int(colors))),
+                       method=quantize_method(), dither=Image.NONE).convert("RGB")
+    return np.asarray(pal)
+
+
+def indexed_rgb(arr: np.ndarray, colors: int) -> np.ndarray:
+    """RGB array -> palette-reduced RGB array (designer §67: minis/previews).
+
+    Automatic algorithm (`quantize_method`), never dithered.
+    """
+    img = Image.fromarray(np.asarray(arr)).convert("RGB")
+    pal = img.quantize(colors=max(2, min(256, int(colors))),
+                       method=quantize_method(), dither=Image.NONE).convert("RGB")
+    return np.asarray(pal)
+
+
+def _place_indexed(doc: "fitz.Document", xref: int, parts: dict):
+    """Embed true Indexed parts: Flate index stream + inline hex palette."""
+    doc.update_stream(xref, parts["stream"])
+    doc.xref_set_key(xref, "Filter", "/FlateDecode")
+    doc.xref_set_key(xref, "Width", str(parts["w"]))
+    doc.xref_set_key(xref, "Height", str(parts["h"]))
+    doc.xref_set_key(
+        xref, "ColorSpace",
+        f"[/Indexed /DeviceRGB {parts['hival']} <{parts['palette'].hex().upper()}>]")
+    doc.xref_set_key(xref, "BitsPerComponent", str(parts["bpc"]))
+    try:
+        cur = doc.xref_get_key(xref, "DecodeParms")
+        if cur[0] != "null":
+            doc.xref_set_key(xref, "DecodeParms", "null")
+    except Exception:
+        pass
 
 
 def color_stream_plan(image_bytes: bytes, w: int, h: int, bpc: int | None,
                       dpi_cap: int, jpeg_q: int = 45,
-                      codec: str = "jpeg", rate: int = 24):
-    """Decide one embedded image's fate: (replacement bytes, filter, W, H).
+                      codec: str = "jpeg", rate: int = 192, colors: int = 64):
+    """Decide one embedded image's fate (designer §§57/67/80).
 
-    Best tool wins per image (designer §57): the codec re-encode (baseline
-    JPEG, or JPEG2000 when requested) plus, for images with at most 256
-    distinct colors, a lossless palette-quantized Flate version. Returns None
-    to keep the original stream (1-bit, tiny, alpha, undecodable, or nothing
-    smaller). Saver and estimator share it, so captions equal saved bytes.
+    Best tool wins per image: the codec re-encode (baseline JPEG, or JPEG2000
+    when requested), the forced palette reduction when the `indexed` codec is
+    selected (slider-count colors), plus, for images with at most 256 distinct
+    colors, a lossless true-Indexed version. Indexed storage beats RGB-Flate
+    ~10x on flat graphics (benchmarked). Returns None to keep the original
+    stream, else a dict {filter, stream, w, h, indexed} with indexed=None
+    unless true-Indexed won. Saver and estimator share it, so captions equal
+    saved bytes.
     """
     if bpc == 1:
         return None
@@ -214,21 +371,32 @@ def color_stream_plan(image_bytes: bytes, w: int, h: int, bpc: int | None,
     scale = min(1.0, (dpi_cap * 11) / max(w, h))
     if scale < 1.0:
         img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+    iw, ih = img.width, img.height
+    if codec == "indexed":
+        parts = indexed_parts(img, colors)
+        total = len(parts["stream"]) + len(parts["palette"])
+        if total >= len(image_bytes):
+            return None
+        return {"filter": "/FlateDecode", "stream": parts["stream"],
+                "w": iw, "h": ih, "indexed": parts}
     if codec == "jpx":
-        buf = io.BytesIO()
-        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[rate])
-        cands = [(buf.getvalue(), "/JPXDecode")]
+        cands = [(jpx_encode(np.asarray(img), dpi_cap, rate), "/JPXDecode", None)]
     else:
         buf = io.BytesIO()
         img.save(buf, "JPEG", quality=jpeg_q, optimize=True)
-        cands = [(buf.getvalue(), "/DCTDecode")]
-    pal = indexed_flate_candidate(img)
-    if pal is not None:
-        cands.append((pal, "/FlateDecode"))
-    data, filtr = min(cands, key=lambda c: len(c[0]))
-    if len(data) >= len(image_bytes):
+        cands = [(buf.getvalue(), "/DCTDecode", None)]
+    auto = indexed_flate_candidate(img)
+    if auto is not None:
+        cands.append((auto["stream"], "/FlateDecode", auto))
+    best = None
+    for data, filtr, parts in cands:
+        total = len(data) + (len(parts["palette"]) if parts else 0)
+        if total < len(image_bytes) and (best is None or total < best[0]):
+            best = (total, data, filtr, parts)
+    if best is None:
         return None
-    return data, filtr, img.width, img.height
+    _total, data, filtr, parts = best
+    return {"filter": filtr, "stream": data, "w": iw, "h": ih, "indexed": parts}
 
 
 def _tiny_png() -> bytes:
@@ -349,7 +517,7 @@ def gc_copy(in_path: str, out_path: str):
 @_fitz_locked
 def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int = 50,
                     token: CancelToken | None = None, progress=None,
-                    codec: str = "jpeg", rate: int = 24):
+                    codec: str = "jpeg", rate: int = 192, colors: int = 64):
     """Color path: downsample oversized embedded images + re-encode.
 
     Designer §57: best tools win per image. Candidates per stream are the
@@ -383,18 +551,22 @@ def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int
                     continue
                 plan = color_stream_plan(
                     info["image"], info["width"], info["height"],
-                    info.get("bpc"), dpi_cap, jpeg_q, codec, rate)
+                    info.get("bpc"), dpi_cap, jpeg_q, codec, rate, colors)
                 if plan is None:
                     continue
-                data, filtr, nw, nh = plan
-                doc.update_stream(xref, data)
-                doc.xref_set_key(xref, "Filter", filtr)
-                doc.xref_set_key(xref, "Width", str(nw))
-                doc.xref_set_key(xref, "Height", str(nh))
+                if plan["indexed"] is not None:
+                    _place_indexed(doc, xref, plan["indexed"])
+                    continue
+                doc.update_stream(xref, plan["stream"])
+                doc.xref_set_key(xref, "Filter", plan["filter"])
+                doc.xref_set_key(xref, "Width", str(plan["w"]))
+                doc.xref_set_key(xref, "Height", str(plan["h"]))
                 doc.xref_set_key(xref, "ColorSpace", "/DeviceRGB")
                 doc.xref_set_key(xref, "BitsPerComponent", "8")
                 try:
-                    doc.xref_set_key(xref, "DecodeParms", "null")
+                    cur = doc.xref_get_key(xref, "DecodeParms")
+                    if cur[0] != "null":
+                        doc.xref_set_key(xref, "DecodeParms", "null")
                 except Exception:
                     pass
             if progress:

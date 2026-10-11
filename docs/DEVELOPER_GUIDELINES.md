@@ -64,6 +64,10 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
 ## 5. Workflow
 - `./test.sh` (full `./.venv/bin/python -m pytest tests/ -q`) must stay green —
   designer ruling §59: run the FULL suite every time, before every ship.
+- Designer ruling §62: after every new build, kill the running app and
+  relaunch it detached (`pkill -f "[p]df_minimalist examples"`, then
+  `setsid ./run.sh … & disown`), and confirm `window shown` + preview applied
+  in `.tmp/pdf-minimalist.log`. Never leave the designer on a stale build.
 - `python3 tools/check_env.py` then `./.venv/bin/python tools/check_env.py`.
 - Qt smoke: `QT_QPA_PLATFORM=offscreen ./.venv/bin/python -c "...MainWindow..."`.
 - Record per-test metrics (bytes in/out, % saved, secs, preset, viewer check).

@@ -8,10 +8,10 @@ import numpy as np
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QPushButton, QListWidget, QListWidgetItem, QListView, QLabel, QSlider, QComboBox, QProgressBar,
-    QFileDialog, QMessageBox, QSplitter, QCheckBox,
+    QFileDialog, QMessageBox, QSplitter, QCheckBox, QScrollArea, QToolBar,
 )
 from PySide6.QtCore import Qt, QThread, Signal, QSize, QTimer
-from PySide6.QtGui import QImage, QIcon, QPixmap, QPainter, QFont, QPen
+from PySide6.QtGui import QImage, QIcon, QPixmap, QPainter, QFont, QPen, QAction
 
 from ..core.cancel import CancelToken
 from ..core import pdf_io, threshold as T
@@ -61,6 +61,30 @@ def fmt_bytes(n: int) -> str:
     return f"{n}B"
 
 
+def _zoom_icon(plus: bool) -> QIcon:
+    """Crisp magnifier + / − icon drawn in code (designer §84).
+
+    Desktop theme icons proved unreliable (missing or mismatched), so the
+    zoom pair no longer depends on them: a 32px symbolic glyph in the
+    window-text color, shown at 16px. Identical on every desktop.
+    """
+    from PySide6.QtWidgets import QApplication as _QA
+    color = _QA.palette().windowText().color()
+    s = 32
+    pm = QPixmap(s, s)
+    pm.fill(Qt.transparent)
+    pt = QPainter(pm)
+    pt.setRenderHint(QPainter.Antialiasing)
+    pt.setPen(QPen(color, 3, Qt.SolidLine, Qt.RoundCap))
+    pt.drawEllipse(4, 4, 18, 18)
+    pt.drawLine(18, 18, 27, 27)
+    pt.drawLine(8, 13, 18, 13)
+    if plus:
+        pt.drawLine(13, 8, 13, 18)
+    pt.end()
+    return QIcon(pm)
+
+
 def _preset_algo(pid: str) -> str:
     """One-line filter recipe for the strip caption (§53): the image
     algorithm each mini was rendered with — threshold strategy (+T for the
@@ -73,9 +97,11 @@ def _preset_algo(pid: str) -> str:
             else prm["strategy"]
         return f"{base} · {prm['dpi']}dpi · JBIG2"
     if p["mode"] == "color":
-        return f"JPEG q{prm['jpeg_q']} · ≤{prm['dpi_cap']}dpi"
+        return f"JPEG q{prm['jpeg_q']} · {prm['dpi_cap']}dpi"
     if p["mode"] == "jpx":
-        return f"JPEG2000 r{prm.get('rate', 24)} · ≤{prm['dpi_cap']}dpi"
+        return f"JPEG2000 r{prm.get('rate', 192)} · {prm['dpi_cap']}dpi"
+    if p["mode"] == "indexed":
+        return f"Indexed {prm.get('colors', 64)}c · {prm['dpi_cap']}dpi"
     return "as-is"
 
 
@@ -102,6 +128,9 @@ class Worker(QThread):
             elif spec["mode"] == "jpx":
                 recompress_file(in_path, out_path, spec["dpi_cap"], token=token,
                                 progress=cb, codec="jpx", rate=spec["rate"])
+            elif spec["mode"] == "indexed":
+                recompress_file(in_path, out_path, spec["dpi_cap"], token=token,
+                                progress=cb, codec="indexed", colors=spec["colors"])
             else:
                 gc_copy(in_path, out_path)
             if token.cancelled:
@@ -129,6 +158,7 @@ class MainWindow(QMainWindow):
         self.resize(1100, 650)
         self.doc = None
         self.path = None
+        self._orig_bytes: int | None = None  # input file size for % (designer §61)
         self.token = CancelToken()
         self.worker: Worker | None = None
         self._gen = 0  # background filter-job generation (stale jobs abandoned)
@@ -148,7 +178,8 @@ class MainWindow(QMainWindow):
 
         root = QWidget()
         self.setCentralWidget(root)
-        top = QHBoxLayout(root)
+        top = QVBoxLayout(root)
+        row = QHBoxLayout()
 
         mid = QVBoxLayout()
         self.split = QSplitter(Qt.Horizontal)
@@ -160,13 +191,27 @@ class MainWindow(QMainWindow):
         self.after.pageChanged = self._on_page_changed
         self.before.setToolTip("Baseline — original, unmodified")
         self.after.setToolTip("Filter preview — scroll=pan, ctrl+wheel=zoom, drag=pan")
-        self.split.addWidget(self.before)
-        self.split.addWidget(self.after)
+        # §60: per-pane headers ride with the splitter halves.
+        self.beforeHeader = QLabel("Original — no document")
+        self.afterHeader = QLabel("Preview — no document")
+        for hdr in (self.beforeHeader, self.afterHeader):
+            hdr.setWordWrap(True)
+            hdr.setStyleSheet("QLabel { font-weight: bold; padding: 2px 4px; }")
+        leftWrap, rightWrap = QWidget(), QWidget()
+        lv, rv = QVBoxLayout(leftWrap), QVBoxLayout(rightWrap)
+        lv.setContentsMargins(0, 0, 0, 0)
+        rv.setContentsMargins(0, 0, 0, 0)
+        lv.addWidget(self.beforeHeader)
+        lv.addWidget(self.before, 1)
+        rv.addWidget(self.afterHeader)
+        rv.addWidget(self.after, 1)
+        self.split.addWidget(leftWrap)
+        self.split.addWidget(rightWrap)
         self.split.setStretchFactor(0, 1)
         self.split.setStretchFactor(1, 1)
         self.split.setSizes([550, 550])
         mid.addWidget(self.split, 1)
-        self.filters = QListWidget()  # filter strip: live mini per filter
+        self.filters = QListWidget()  # filter strip: full-width, below panes+panel
         self.filters.setViewMode(QListView.IconMode)
         self.filters.setIconSize(QSize(150, 190))
         self.filters.setResizeMode(QListView.Adjust)
@@ -183,10 +228,22 @@ class MainWindow(QMainWindow):
             item.setToolTip(p["blurb"])
             item.setSizeHint(QSize(150, 200))  # icon canvas: box + 3-line caption
             self.filters.addItem(item)
-        mid.addWidget(QLabel("Filters (left stays baseline, right shows filter):"))
-        mid.addWidget(self.filters)
+        # §77: strip spans the full window width; the right panel stops above
+        # it and scrolls internally on overflow.
+        top.addLayout(row, 1)
+        top.addWidget(QLabel("Filters (left stays baseline, right shows filter):"))
+        top.addWidget(self.filters)
 
         right = QVBoxLayout()
+        # §68/§69: the right block opens with the main info box — everything
+        # constant for the original and every filter (name, pages, original
+        # size). The left header (§60) stays as it is.
+        self.file_label = QLabel("No file")
+        self.file_label.setWordWrap(True)
+        self.file_label.setStyleSheet("QLabel { background: palette(base); "
+                                      "border: 1px solid palette(mid); padding: 4px; }")
+        right.addWidget(QLabel("File:"))
+        right.addWidget(self.file_label)
         self.preset = QComboBox()
         for p in presets.PRESETS:
             self.preset.addItem(p["label"], p["id"])
@@ -197,8 +254,11 @@ class MainWindow(QMainWindow):
         self.slider.setRange(0, 255)
         self.slider.setValue(180)
         self.t_label = QLabel("T=180")
-        self.prev_btn = QPushButton("◀ Prev")
-        self.next_btn = QPushButton("Next ▶")
+        self.colors = QSlider(Qt.Horizontal)  # §67: forced palette count
+        self.colors.setRange(2, 256)
+        self.colors.setValue(64)
+        self.colors.setToolTip("Palette colors — only the Indexed filters use it.")
+        self.c_label = QLabel("Colors=64")
         self.dpi = QComboBox()
         for d in presets.RASTER_DPIS:
             self.dpi.addItem(f"{d} dpi", d)
@@ -211,7 +271,21 @@ class MainWindow(QMainWindow):
         self.force_raster.setChecked(True)
         self.force_raster.setToolTip("ON: every page flattened to one image (default). OFF: pages with extractable text pass through untouched.")
         self.save_btn = QPushButton("Save reduced…")
+        self.save_btn.setToolTip("Save reduced PDF (Ctrl+S)")
         self.cancel_btn = QPushButton("Cancel (ESC)")
+        self.cancel_btn.setToolTip("Cancel the running save (ESC) — nothing else to undo")
+        # §75: small icon buttons (freedesktop theme); any missing icon keeps
+        # its text label, so this never renders worse than before.
+        for _btn, _names in (
+                (self.save_btn, ("document-save",)),
+                (self.cancel_btn, ("process-stop", "dialog-cancel"))):
+            for _name in _names:
+                _ic = QIcon.fromTheme(_name)
+                if not _ic.isNull():
+                    _btn.setIcon(_ic)
+                    _btn.setIconSize(QSize(18, 18))
+                    _btn.setText("")
+                    break
         right.addWidget(QLabel("Preset:"))
         right.addWidget(self.preset)
         # §54: filter details readout — the active filter's full recipe.
@@ -225,19 +299,53 @@ class MainWindow(QMainWindow):
         right.addWidget(self.strategy)
         right.addWidget(self.t_label)
         right.addWidget(self.slider)
+        right.addWidget(self.c_label)
+        right.addWidget(self.colors)
         right.addWidget(QLabel("Raster DPI:"))
         right.addWidget(self.dpi)
         right.addWidget(QLabel("Page size:"))
         right.addWidget(self.page_size)
         right.addWidget(self.force_raster)
-        right.addWidget(self.prev_btn)
-        right.addWidget(self.next_btn)
-        right.addWidget(self.save_btn)
-        right.addWidget(self.cancel_btn)
+        # §76/§78/§85: zoom is a joined segmented control — out, live scale
+        # %, in — 16px drawn magnifiers, tooltips, zero-gap group look.
+        zoomBar = QToolBar("Zoom")
+        zoomBar.setIconSize(QSize(16, 16))
+        zoomBar.layout().setSpacing(0)
+        zoomBar.layout().setContentsMargins(0, 0, 0, 0)
+        zoomBar.setStyleSheet("QToolBar { spacing: 0px; }"
+                              "QToolButton { border-radius: 0px; }")
+        self.zoom_out_act = QAction(_zoom_icon(False), "Out", self)
+        self.zoom_out_act.setToolTip("Zoom out (Ctrl+Minus)")
+        self.zoom_out_act.triggered.connect(lambda: self._button_zoom(1 / 1.25))
+        self.zoom_label = QLabel("100%")
+        self.zoom_label.setMinimumWidth(48)
+        self.zoom_label.setAlignment(Qt.AlignCenter)
+        self.zoom_label.setToolTip("Current view scale (both panes stay synced)")
+        self.zoom_in_act = QAction(_zoom_icon(True), "In", self)
+        self.zoom_in_act.setToolTip("Zoom in (Ctrl+Plus)")
+        self.zoom_in_act.triggered.connect(lambda: self._button_zoom(1.25))
+        zoomBar.addAction(self.zoom_out_act)
+        zoomBar.addWidget(self.zoom_label)
+        zoomBar.addAction(self.zoom_in_act)
+        right.addWidget(zoomBar)
+        # §85: Save is small (half row); Cancel means "stop the running
+        # save" — nothing else — so it enables only while saving.
+        saveRow = QHBoxLayout()
+        saveRow.addWidget(self.save_btn)
+        saveRow.addWidget(self.cancel_btn)
+        self.cancel_btn.setEnabled(False)
+        right.addLayout(saveRow)
         right.addStretch(1)
 
-        top.addLayout(mid, 7)
-        top.addLayout(right, 3)
+        panel = QWidget()
+        panel.setLayout(right)
+        panelScroll = QScrollArea()
+        panelScroll.setWidget(panel)
+        panelScroll.setWidgetResizable(True)
+        panelScroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        panelScroll.setMinimumWidth(250)
+        row.addLayout(mid, 7)
+        row.addWidget(panelScroll, 3)
 
         self.page_label = QLabel("No document")
         self.status = QLabel("Drop a PDF here or Open… (File > Open)")
@@ -266,12 +374,11 @@ class MainWindow(QMainWindow):
         self.before.relayouted = self._reframe_timer.start
         self.after.relayouted = self._reframe_timer.start
         self.slider.valueChanged.connect(lambda v: (self.t_label.setText(f"T={v}"), self._refresh_details(), self._preview_timer.start()))
-        self.strategy.currentTextChanged.connect(lambda _: (self._refresh_details(), self._preview_timer.start()))
+        self.colors.valueChanged.connect(lambda v: (self.c_label.setText(f"Colors={v}"), self._refresh_details(), self._preview_timer.start()))
+        self.strategy.currentTextChanged.connect(lambda _: (self._refresh_details(), self._sync_filter_controls(), self._preview_timer.start()))
         self.dpi.currentIndexChanged.connect(lambda _: (self._refresh_details(), self._preview_timer.start()))
-        self.page_size.currentIndexChanged.connect(lambda _: (self._refresh_details(), self._preview_timer.start()))
+        self.page_size.currentIndexChanged.connect(lambda _: (self._refresh_details(), self._refresh_file_box(), self._preview_timer.start()))
         self.force_raster.toggled.connect(lambda _: (self._refresh_details(), self._preview_timer.start()))
-        self.prev_btn.clicked.connect(lambda: self.before.goto_page(self.before.current_page - 1))
-        self.next_btn.clicked.connect(lambda: self.before.goto_page(self.before.current_page + 1))
         self.preset.currentIndexChanged.connect(self._preset_chosen)
         self.filters.currentRowChanged.connect(self._filterstrip_chosen)
 
@@ -308,39 +415,107 @@ class MainWindow(QMainWindow):
         # ESC anywhere cancels
         self.cancel_shortcut = self.cancel_btn  # button doubles as action
         self._refresh_details()
+        self._sync_threshold_enabled()
         if start_pdf:
             self.open_file(start_pdf)
 
     # --- presets + view modes ---
+    def _sync_filter_controls(self):
+        """§§65/67/85: T feeds ONLY Simple; Colors feeds ONLY Indexed. Raster
+        DPI feeds every mode (§85: the single DPI) so it stays enabled.
+
+        Live sliders that change nothing are lies, so each enables only for
+        its mode (this also stops pointless identical-output jobs)."""
+        mode = presets.get(self.preset.itemData(self.preset.currentIndex()))["mode"]
+        t_on = mode == "bw" and self.strategy.currentText() == "simple"
+        self.slider.setEnabled(t_on)
+        self.t_label.setEnabled(t_on)
+        self.t_label.setToolTip("Fixed threshold — only the Simple strategy uses it."
+                                if t_on else "Fixed threshold — only the Simple strategy uses it "
+                                "(Otsu/adaptive/Sauvola are automatic).")
+        c_on = mode == "indexed"
+        self.colors.setEnabled(c_on)
+        self.c_label.setEnabled(c_on)
+        self.dpi.setEnabled(True)
+        self.dpi.setToolTip("The single DPI: every image in the document (§85).")
+
+    def _sync_threshold_enabled(self):
+        self._sync_filter_controls()
+
+    def _refresh_file_box(self):
+        """Main File info box: full path, pages, page size, original size.
+
+        Everything constant for the original and every filter (§§69/73).
+        Page size here is display-only info: saving reshapes nothing unless
+        the designer picks Letter/A4 (§74). Absurd scan sizes get a warning
+        line suggesting Letter — never auto-applied.
+        """
+        if not self.doc or not self.path:
+            text = "No file"
+        else:
+            rects = [(p.rect.width, p.rect.height) for p in self.doc]
+            from ..core.pipeline import absurd_pages
+            bad = absurd_pages(rects)
+            if self._orig_bytes:
+                text = (f"{os.path.abspath(self.path)}\n"
+                        f"{self.doc.page_count} pages · "
+                        f"{presets.PAGE_SIZE_LABELS[self.page_size.currentData()]} · "
+                        f"{fmt_bytes(self._orig_bytes)} (100%)")
+            else:
+                text = os.path.abspath(self.path)
+            if bad:
+                shown = ", ".join(f"p{i + 1} {rects[i][0]:.0f}×{rects[i][1]:.0f}pt"
+                                  for i in bad[:3])
+                if len(bad) > 3:
+                    shown += f" +{len(bad) - 3} more"
+                text += f"\n⚠ odd page size ({shown}) — consider Letter on Save"
+                log.warning("absurd page size on %s: %s", self.path, shown)
+        if self.file_label.text() != text:
+            self.file_label.setText(text)
+
     def _refresh_details(self):
-        """Right-panel readout of the active filter's full recipe (§54)."""
+        """Right-panel readout of the active filter's full recipe (§§54/82).
+
+        Stable sequence in every mode: Codec first (exactly one per filter),
+        then the common properties, then codec-specific options last.
+        """
         pid = self.preset.itemData(self.preset.currentIndex())
         if not pid:
             return
         p = presets.get(pid)
         if p["mode"] == "bw":
             lines = [
+                "Codec: JBIG2",
                 f"Threshold: {self.strategy.currentText()} "
                 f"T={self.slider.value()}",
                 f"Render: {self.dpi.currentData()} dpi · "
-                f"{presets.PAGE_SIZE_LABELS[self.page_size.currentData()]} · "
                 f"{'forced raster' if self.force_raster.isChecked() else 'text pass-through'}",
-                "Encode: JBIG2",
             ]
         elif p["mode"] == "color":
             prm = p["params"]
             lines = [
-                f"Recompress: JPEG q={prm['jpeg_q']} · ≤{prm['dpi_cap']}dpi",
-                "Vectors and text preserved",
+                "Codec: JPEG",
+                f"Quality: q={prm['jpeg_q']} · {prm['dpi_cap']}dpi",
+                "Keeps vectors and text",
             ]
         elif p["mode"] == "jpx":
             prm = p["params"]
             lines = [
-                f"Recompress: JPEG2000 r={prm.get('rate', 24)} · ≤{prm['dpi_cap']}dpi",
-                "Vectors and text preserved",
+                "Codec: JPEG2000",
+                f"Rate: r={prm.get('rate', 192)} · {prm['dpi_cap']}dpi",
+                "Keeps vectors and text",
+            ]
+        elif p["mode"] == "indexed":
+            lines = [
+                "Codec: Flate (palette)",
+                f"Colors: {self.colors.value()} (auto algorithm, no dither)",
+                "Lossless when smallest; keeps vectors and text",
             ]
         else:
-            lines = ["gc + deflate only — pixels unchanged"]
+            lines = [
+                "Codec: none (passthrough)",
+                "gc + deflate only — pixels unchanged",
+            ]
         self.details.setText("\n".join(lines))
 
     def _preset_chosen(self, idx: int):
@@ -352,11 +527,26 @@ class MainWindow(QMainWindow):
         if p["mode"] == "bw":
             self.strategy.setCurrentText(p["params"]["strategy"])
             self.slider.setValue(p["params"]["t"])
+            self.dpi.setCurrentIndex(list(presets.RASTER_DPIS).index(p["params"]["dpi"]))
+        else:
+            # §85: one DPI for the whole filter — the preset seeds the shared
+            # combo, which then rules preview, totals and save alike.
+            cap = p["params"].get("dpi_cap", presets.DEFAULT_DPI)
+            if cap in presets.RASTER_DPIS:
+                self.dpi.setCurrentIndex(list(presets.RASTER_DPIS).index(cap))
+        if p["mode"] == "indexed":
+            self.colors.setValue(p["params"]["colors"])
+        if p["mode"] in ("color", "jpx", "indexed"):
+            cap = p["params"].get("dpi_cap", presets.DEFAULT_DPI)
+            if cap in presets.RASTER_DPIS:
+                self.dpi.setCurrentIndex(list(presets.RASTER_DPIS).index(cap))
         if pid in self._strip_ids:  # passthrough has no mini; left pane is the baseline
             row = self._strip_ids.index(pid)
             if self.filters.currentRow() != row:
                 self.filters.setCurrentRow(row)
         self._refresh_details()
+        self._sync_threshold_enabled()
+        self._update_pane_headers()
         if self._try_apply_cached():
             return
         self._preview_timer.start()
@@ -368,8 +558,10 @@ class MainWindow(QMainWindow):
         if self.preset.currentIndex() != idx:
             self.preset.setCurrentIndex(idx)
         elif self._try_apply_cached():
+            self._update_pane_headers()
             return
         else:
+            self._update_pane_headers()
             self._preview_timer.start()
 
     def set_main_mode(self, mode: str):
@@ -425,9 +617,9 @@ class MainWindow(QMainWindow):
         if e.key() == Qt.Key_Escape:
             self.cancel()
         elif e.key() == Qt.Key_PageDown:
-            self.next_btn.click()
+            self.before.goto_page(self.before.current_page + 1)
         elif e.key() == Qt.Key_PageUp:
-            self.prev_btn.click()
+            self.before.goto_page(self.before.current_page - 1)
         elif e.modifiers() & Qt.ControlModifier and e.key() in (
                 Qt.Key_Plus, Qt.Key_Equal, Qt.Key_Minus, Qt.Key_0):
             # §52: modern standard keyboard zoom — Ctrl+Plus in, Ctrl+Minus
@@ -435,6 +627,13 @@ class MainWindow(QMainWindow):
             self._keyboard_zoom(e.key())
         else:
             super().keyPressEvent(e)
+
+    def _button_zoom(self, factor: float):
+        """Right-panel zoom buttons (§71): same step as Ctrl+Plus/Minus."""
+        if not self.doc:
+            return
+        self.before.set_zoom(self.before._zoom * factor)
+        log.info("zoom button factor=%.2f", factor)
 
     def _keyboard_zoom(self, key):
         """Apply one keyboard-zoom step to the synced panes (§52)."""
@@ -461,6 +660,11 @@ class MainWindow(QMainWindow):
                 self.doc.close()
             self.doc = fitz.open(path)
             self.path = path
+            try:
+                self._orig_bytes = os.path.getsize(path)
+            except OSError:
+                self._orig_bytes = None
+            self._refresh_file_box()
             self._mini_pages.clear()
             self._est_bytes.clear()
             self._est_doc.clear()
@@ -506,6 +710,11 @@ class MainWindow(QMainWindow):
         spec = {"preset_id": pid, "mode": p["mode"], "dpi": self.dpi.currentData()}
         if p["mode"] == "bw":
             spec.update(strategy=self.strategy.currentText(), t=self.slider.value())
+        if p["mode"] in ("color", "jpx", "indexed"):
+            # §85: the combo is the single DPI for the whole filter.
+            spec.update(dpi_cap=self.dpi.currentData())
+        if p["mode"] == "indexed":
+            spec.update(colors=self.colors.value())
         return spec
 
     def _file_key(self):
@@ -521,7 +730,8 @@ class MainWindow(QMainWindow):
     @staticmethod
     def _spec_tuple(spec: dict):
         return (spec.get("preset_id"), spec.get("mode"), spec.get("dpi"),
-                spec.get("strategy"), spec.get("t"))
+                spec.get("strategy"), spec.get("t"), spec.get("colors"),
+                spec.get("dpi_cap"))
 
     def _repaint_all_strip(self):
         for pid in self._strip_ids:
@@ -567,6 +777,19 @@ class MainWindow(QMainWindow):
         self._apply_preview_pages(pages, "cache")
         return True
 
+    @staticmethod
+    def _est_ck(pid: str, spec: dict):
+        """Cache key tail for a color total: (colors, cap).
+
+        The ACTIVE filter follows the UI (single-DPI ruling §85); inactive
+        presets show their own recipe values (matching their minis) until
+        selected — at which point the combo syncs and the keys agree.
+        """
+        if pid == spec.get("preset_id"):
+            return (spec.get("colors"), spec.get("dpi_cap"))
+        prm = presets.get(pid)["params"]
+        return (prm.get("colors"), prm.get("dpi_cap"))
+
     def _dispatch_filters(self):
         """Background work for cache misses only (§§43/44/47/48).
 
@@ -599,7 +822,7 @@ class MainWindow(QMainWindow):
                 if missing:
                     need_mini[pid] = missing
         need_est_pages = {}
-        need_est_doc = []
+        need_est_doc = {}
         for pid in self._strip_ids:
             if presets.get(pid)["mode"] == "bw":
                 counts = self._est_bytes.get((fkey, pid, dpi))
@@ -611,8 +834,12 @@ class MainWindow(QMainWindow):
                         missing = list(range(n))
                     if missing:
                         need_est_pages[pid] = missing
-            elif (fkey, pid) not in self._est_doc:
-                need_est_doc.append(pid)
+            else:
+                # Color totals follow the single DPI (§85): active filter uses
+                # the UI values, inactive presets their own recipe values.
+                ck = self._est_ck(pid, spec)
+                if (fkey, pid) + ck not in self._est_doc:
+                    need_est_doc[pid] = ck
         need_preview = preview_key not in self._preview_cache
         if not need_mini and not need_est_pages and not need_est_doc and not need_preview:
             if self._job is not None:
@@ -627,7 +854,7 @@ class MainWindow(QMainWindow):
             if presets.get(pid)["mode"] == "bw":
                 et = len(need_est_pages.get(pid, ()))
             else:
-                et = 0 if (fkey, pid) in self._est_doc else 1
+                et = 0 if (fkey, pid) + self._est_ck(pid, spec) in self._est_doc else 1
             self._expect[pid] = [0, mt, 0, et]
             if mt == 0 and et == 0:
                 self._filter_prog[pid] = 1.0
@@ -665,7 +892,18 @@ class MainWindow(QMainWindow):
 
     def _on_view_changed(self):
         """Any scroll/pan/zoom/layout change: reframe minis, debounced (§47)."""
+        self._update_zoom_label()
         self._reframe_timer.start()
+
+    def _update_zoom_label(self):
+        """Live scale % in the zoom control (§85). Panes stay synced, so the
+        baseline pane's zoom is the shared truth."""
+        if not self.doc:
+            text = "—"
+        else:
+            text = f"{self.before._zoom * 100:.0f}%"
+        if self.zoom_label.text() != text:
+            self.zoom_label.setText(text)
 
     def _current_view(self):
         """Framing both panes share: layout dims + visible scene rect."""
@@ -674,6 +912,34 @@ class MainWindow(QMainWindow):
         ph = self.before._page_h()
         vis = self.before.mapToScene(self.before.viewport().rect()).boundingRect()
         return cols, pw, ph, (vis.x(), vis.y(), vis.width(), vis.height())
+
+    def _sized(self, nbytes: int) -> str:
+        """Real amount with % of the original file (designer §§61/65: rounded)."""
+        text = fmt_bytes(nbytes)
+        if self._orig_bytes:
+            text += f" ({nbytes / self._orig_bytes * 100:.0f}%)"
+        return text
+
+    def _update_pane_headers(self):
+        """Key facts above each main pane (designer §60).
+
+        Left mirrors the strip-thumbnail style (name + info, incl. the real
+        file size at 100%); right names the active filter with its recipe and
+        real total + % — exactly as its strip caption reads.
+        """
+        if not self.doc or not self.path:
+            left, right = "Original — no document", "Preview — no document"
+        else:
+            fs = fmt_bytes(self._orig_bytes) if self._orig_bytes else "?"
+            n = self.doc.page_count
+            left = f"Original · {os.path.basename(self.path)} · {fs} · 100% · {n} pages"
+            pid = self.preset.itemData(self.preset.currentIndex())
+            size = self._mini_est.get(pid, "sizing…")
+            right = f"{presets.get(pid)['label']} · {_preset_algo(pid)} · {size}"
+        if self.beforeHeader.text() != left:
+            self.beforeHeader.setText(left)
+        if self.afterHeader.text() != right:
+            self.afterHeader.setText(right)
 
     def _reframe_minis(self):
         """§48: repaint every mini as the current view through its own filter.
@@ -685,6 +951,7 @@ class MainWindow(QMainWindow):
             return
         for pid in self._strip_ids:
             self._reframe_one(pid)
+        self._update_pane_headers()
 
     def _reframe_one(self, pid: str):
         if not self.doc or not self.path:
@@ -694,19 +961,20 @@ class MainWindow(QMainWindow):
             return
         pages = self._mini_pages.get((fkey, pid))
         dpi = self.dpi.currentData()
-        # §§55/59: real post-save amounts, no estimates anywhere. BW sums the
-        # exact per-page payload bytes; color shows the exact per-image
-        # decision total. Container overhead is reported at Save instead.
+        # §§55/59/61: real post-save amounts with % of the original — no
+        # estimates anywhere. BW sums the exact per-page payload bytes; color
+        # shows the exact per-image decision total. Container overhead is
+        # reported at Save instead.
         if presets.get(pid)["mode"] == "bw":
             counts = self._est_bytes.get((fkey, pid, dpi))
             if counts is not None and len(counts) == self.doc.page_count and \
                     all(c is not None for c in counts):
-                shown = fmt_bytes(sum(counts))
+                shown = self._sized(sum(counts))
             else:
                 shown = None
         else:
-            total = self._est_doc.get((fkey, pid))
-            shown = fmt_bytes(total) if total is not None else None
+            total = self._est_doc.get((fkey, pid) + self._est_ck(pid, self._active_spec()))
+            shown = self._sized(total) if total is not None else None
         if shown is not None:
             if self._mini_est.get(pid) != shown:
                 self._mini_est[pid] = shown
@@ -813,8 +1081,9 @@ class MainWindow(QMainWindow):
         if job is None or getattr(job, "_fkey", None) != self._file_key():
             return
         if page < 0:
-            # Whole-document color total (§59).
-            self._est_doc[(job._fkey, pid)] = int(value)
+            # Whole-document color total (§59); key carries the values used.
+            ck = job.need_est_doc.get(pid)
+            self._est_doc[(job._fkey, pid) + tuple(ck)] = int(value)
         else:
             n = self.doc.page_count if self.doc else 0
             key = (job._fkey, pid, getattr(job, "_est_dpi", None))
@@ -875,9 +1144,11 @@ class MainWindow(QMainWindow):
                     "dpi": self.dpi.currentData(), "page_size": self.page_size.currentData(),
                     "force_raster": self.force_raster.isChecked()}
         elif p["mode"] == "color":
-            spec = {"mode": "color", "dpi_cap": p["params"]["dpi_cap"], "jpeg_q": p["params"]["jpeg_q"]}
+            spec = {"mode": "color", "dpi_cap": self.dpi.currentData(), "jpeg_q": p["params"]["jpeg_q"]}
         elif p["mode"] == "jpx":
-            spec = {"mode": "jpx", "dpi_cap": p["params"]["dpi_cap"], "rate": p["params"].get("rate", 24)}
+            spec = {"mode": "jpx", "dpi_cap": self.dpi.currentData(), "rate": p["params"].get("rate", 192)}
+        elif p["mode"] == "indexed":
+            spec = {"mode": "indexed", "dpi_cap": self.dpi.currentData(), "colors": self.colors.value()}
         else:
             spec = {"mode": "passthrough"}
         log.info("save start preset=%s spec=%s in=%s out=%s", pid, spec, self.path, out)
@@ -888,9 +1159,11 @@ class MainWindow(QMainWindow):
         self.worker.failed.connect(self._on_failed)
         self.worker.progressed.connect(self._on_progress)
         self.worker.start()
+        self.cancel_btn.setEnabled(True)
         self.status.setText("Working… ESC to cancel")
 
     def _on_done(self, path: str):
+        self.cancel_btn.setEnabled(False)
         # §53: the exact size is known once saving completes — report it with
         # the saving against the input.
         try:
@@ -908,6 +1181,7 @@ class MainWindow(QMainWindow):
             self.status.setText(f"Saved {path}")
 
     def _on_failed(self, msg: str):
+        self.cancel_btn.setEnabled(False)
         log.info("job ended: %s", msg)
         self.status.setText(msg)
 
@@ -917,6 +1191,11 @@ class MainWindow(QMainWindow):
         log.debug("progress page %d/%d", a, b)
 
     def cancel(self):
+        # §85: Cancel stops a RUNNING save only — there is nothing to undo
+        # (saves write a new file; the input is never touched). Quiet no-op
+        # otherwise, so ESC never pretends to act.
+        if self.worker is None or self.worker.isFinished():
+            return
         log.info("cancel requested by designer (ESC/button)")
         self.token.cancel()
         self.status.setText("Cancelling…")

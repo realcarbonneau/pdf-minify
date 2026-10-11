@@ -127,6 +127,9 @@ def mini_for_preset(gray_mini: np.ndarray, pid: str) -> np.ndarray:
               "adaptive": T.adaptive_mean, "sauvola": T.sauvola}[s]
         return fn(gray_mini)
     rgb = np.stack([gray_mini] * 3, axis=-1) if gray_mini.ndim == 2 else gray_mini
+    if p["mode"] == "indexed":
+        from ..core.pipeline import indexed_rgb
+        return indexed_rgb(rgb, p["params"].get("colors", 64))
     if p["mode"] == "jpx":
         return presets.apply_jpx_preview(rgb, pid)
     return presets.apply_color_preview(rgb, pid)
@@ -146,18 +149,21 @@ def estimate_bytes(path: str, page: int, pid: str, dpi: int) -> int:
     return len(payload)
 
 
-def color_doc_total(path: str, pid: str) -> int:
-    """Real post-save image-payload total for one color preset (§59).
+def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None = None) -> int:
+    """Real post-save image-payload total for one color preset (§§59/85).
 
     Replays the saver's exact per-image decision (`color_stream_plan`,
     doc-wide dedupe included) and sums final stream bytes — winners and
-    kept originals alike. Runs in a pool process (must stay picklable).
+    kept originals alike. `colors`/`dpi_cap` are the UI values for the active
+    filter (matching Save); the preset defaults seed them on selection.
+    Runs in a pool process.
     """
     import fitz
     from ..core.pipeline import color_stream_plan
     p = presets.get(pid)
     prm = p["params"]
-    codec = "jpx" if p["mode"] == "jpx" else "jpeg"
+    cap = dpi_cap if dpi_cap is not None else prm["dpi_cap"]
+    codec = "jpx" if p["mode"] == "jpx" else ("indexed" if p["mode"] == "indexed" else "jpeg")
     total = 0
     doc = _open(path)
     try:
@@ -176,9 +182,16 @@ def color_doc_total(path: str, pid: str) -> int:
                     continue
                 plan = color_stream_plan(
                     info["image"], info["width"], info["height"],
-                    info.get("bpc"), prm["dpi_cap"],
-                    prm.get("jpeg_q", 45), codec, prm.get("rate", 24))
-                total += len(plan[0]) if plan else len(info["image"])
+                    info.get("bpc"), cap,
+                    prm.get("jpeg_q", 45), codec, prm.get("rate", 192),
+                    colors)
+                if plan is None:
+                    total += len(info["image"])
+                else:
+                    total += len(plan["stream"])
+                    if plan["indexed"] is not None:
+                        # Inline hex palette costs 2x raw bytes in the dict.
+                        total += 2 * len(plan["indexed"]["palette"])
     finally:
         doc.close()
     return total
@@ -187,12 +200,16 @@ def color_doc_total(path: str, pid: str) -> int:
 def preview_page(path: str, page: int, spec: dict) -> np.ndarray:
     """Full preview render for one page under the active spec (own handle)."""
     from ..core import threshold as T
+    if spec["mode"] == "indexed":
+        from ..core.pipeline import indexed_rgb
+        rgb = render_rgb(path, page, PREVIEW_DPI)
+        return indexed_rgb(rgb, spec.get("colors", 64))
     if spec["mode"] == "jpx":
         rgb = render_rgb(path, page, PREVIEW_DPI)
-        return presets.apply_jpx_preview(rgb, spec["preset_id"])
+        return presets.apply_jpx_preview(rgb, spec["preset_id"], spec.get("dpi_cap"))
     if spec["mode"] == "color":
         rgb = render_rgb(path, page, PREVIEW_DPI)
-        return presets.apply_color_preview(rgb, spec["preset_id"])
+        return presets.apply_color_preview(rgb, spec["preset_id"], spec.get("dpi_cap"))
     if spec["mode"] == "passthrough":
         return render_rgb(path, page, PREVIEW_DPI)
     gray = render_gray(path, page, PREVIEW_DPI)
@@ -219,8 +236,11 @@ def mini_page_task(path: str, page: int, pid: str) -> np.ndarray:
         out = fn(gray)
         rgb = np.stack([out] * 3, axis=-1)
     else:
+        from ..core.pipeline import indexed_rgb
         rgb = render_rgb(path, page, MINI_PAGE_DPI)
-        if p["mode"] == "jpx":
+        if p["mode"] == "indexed":
+            rgb = indexed_rgb(rgb, p["params"].get("colors", 64))
+        elif p["mode"] == "jpx":
             rgb = presets.apply_jpx_preview(rgb, pid)
         else:
             rgb = presets.apply_color_preview(rgb, pid)
@@ -310,10 +330,10 @@ class FilterWorker(QThread):
         self.n_pages = int(n_pages)
         # §44 process-once: only compute what the GUI cache is missing.
         # need_mini/need_est_pages map pid -> sorted missing page indices;
-        # need_est_doc lists color pids missing their document total.
+        # need_est_doc maps color pid -> UI colors value for its doc total.
         self.need_mini = {pid: sorted(v) for pid, v in dict(need_mini or {}).items()}
         self.need_est_pages = {pid: sorted(v) for pid, v in dict(need_est_pages or {}).items()}
-        self.need_est_doc = list(need_est_doc or [])
+        self.need_est_doc = dict(need_est_doc or {})
         self.need_preview = bool(need_preview)
 
     @staticmethod
@@ -385,8 +405,8 @@ class FilterWorker(QThread):
         if self._alive() and est_tasks:
             futs = {ex.submit(estimate_bytes, self.path, i, pid, dpi): (pid, i)
                     for pid, idxs in self.need_est_pages.items() for i in idxs}
-            futs.update({ex.submit(color_doc_total, self.path, pid): (pid, -1)
-                         for pid in self.need_est_doc})
+            futs.update({ex.submit(color_doc_total, self.path, pid, colors, cap): (pid, -1)
+                         for pid, (colors, cap) in self.need_est_doc.items()})
             for fut in cf.as_completed(futs):
                 if not self._alive():
                     return
