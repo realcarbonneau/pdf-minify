@@ -17,7 +17,7 @@ from pdf_minimalist.core.pipeline import process_file, recompress_file, gc_copy
 FILES = [
     "examples/deed-brevard.pdf",
     "examples/form-fw9.pdf",
-    "examples/filled-background.pdf",
+    "examples/form-941-2026.pdf",
     "examples/images.pdf",
     "examples/paper-arxiv-1406.2661.pdf",
     "examples/scan-naca-formulas.pdf",

@@ -161,10 +161,12 @@ class MainWindow(QMainWindow):
         self._orig_bytes: int | None = None  # input file size for % (designer §61)
         self.token = CancelToken()
         self.worker: Worker | None = None
-        self._gen = 0  # background filter-job generation (stale jobs abandoned)
-        self._job = None
+        self._gen = 0  # background progress generation (cosmetic bar only)
+        self._mini_job = None  # minis for one file: reused, never re-run (§90)
+        self._work_job = None  # amounts + preview for one spec (cancelled on change)
         self._jobs: set = set()  # in-flight workers: dropping the last ref while
-        self._job_token = CancelToken()  # a QThread still runs aborts (Qt fatal)
+        self._mini_token = CancelToken()  # a QThread still runs aborts (Qt fatal)
+        self._work_token = CancelToken()
         self._mini_pages: dict = {}  # (file_key, pid) -> [mini-page array|None] (§48)
         self._est_bytes: dict = {}  # (file_key, pid, dpi) -> [int|None], BW pages (§55)
         self._est_doc: dict = {}  # (file_key, pid) -> int doc total, color (§59)
@@ -196,7 +198,7 @@ class MainWindow(QMainWindow):
         self.afterHeader = QLabel("Preview — no document")
         for hdr in (self.beforeHeader, self.afterHeader):
             hdr.setWordWrap(True)
-            hdr.setStyleSheet("QLabel { font-weight: bold; padding: 2px 4px; }")
+            hdr.setStyleSheet("QLabel { padding: 2px 4px; }")
         leftWrap, rightWrap = QWidget(), QWidget()
         lv, rv = QVBoxLayout(leftWrap), QVBoxLayout(rightWrap)
         lv.setContentsMargins(0, 0, 0, 0)
@@ -306,8 +308,9 @@ class MainWindow(QMainWindow):
         right.addWidget(QLabel("Page size:"))
         right.addWidget(self.page_size)
         right.addWidget(self.force_raster)
-        # §76/§78/§85: zoom is a joined segmented control — out, live scale
-        # %, in — 16px drawn magnifiers, tooltips, zero-gap group look.
+        # §76/§78/§85/§86: zoom is a joined segmented control — out, live
+        # editable % (Evince/Okular convention: preset menu + type any
+        # number), in — 16px drawn magnifiers, zero-gap group look.
         zoomBar = QToolBar("Zoom")
         zoomBar.setIconSize(QSize(16, 16))
         zoomBar.layout().setSpacing(0)
@@ -317,15 +320,20 @@ class MainWindow(QMainWindow):
         self.zoom_out_act = QAction(_zoom_icon(False), "Out", self)
         self.zoom_out_act.setToolTip("Zoom out (Ctrl+Minus)")
         self.zoom_out_act.triggered.connect(lambda: self._button_zoom(1 / 1.25))
-        self.zoom_label = QLabel("100%")
-        self.zoom_label.setMinimumWidth(48)
-        self.zoom_label.setAlignment(Qt.AlignCenter)
-        self.zoom_label.setToolTip("Current view scale (both panes stay synced)")
+        self.zoom_combo = QComboBox()
+        self.zoom_combo.setEditable(True)
+        for pct in (25, 50, 75, 100, 125, 150, 200, 300, 400):
+            self.zoom_combo.addItem(f"{pct}%", pct / 100)
+        self.zoom_combo.setCurrentIndex(3)
+        self.zoom_combo.setMinimumWidth(76)
+        self.zoom_combo.setToolTip("Zoom % — pick a preset or type a number")
+        self.zoom_combo.activated.connect(self._zoom_combo_chosen)
+        self.zoom_combo.lineEdit().returnPressed.connect(self._zoom_combo_chosen)
         self.zoom_in_act = QAction(_zoom_icon(True), "In", self)
         self.zoom_in_act.setToolTip("Zoom in (Ctrl+Plus)")
         self.zoom_in_act.triggered.connect(lambda: self._button_zoom(1.25))
         zoomBar.addAction(self.zoom_out_act)
-        zoomBar.addWidget(self.zoom_label)
+        zoomBar.addWidget(self.zoom_combo)
         zoomBar.addAction(self.zoom_in_act)
         right.addWidget(zoomBar)
         # §85: Save is small (half row); Cancel means "stop the running
@@ -660,6 +668,12 @@ class MainWindow(QMainWindow):
                 self.doc.close()
             self.doc = fitz.open(path)
             self.path = path
+            self._mini_token.cancel()
+            self._work_token.cancel()
+            self._mini_token = CancelToken()
+            self._work_token = CancelToken()
+            from PySide6.QtCore import QSettings as _QS
+            _QS("pdf-minimalist", "pdf-minimalist").setValue("lastFile", path)
             try:
                 self._orig_bytes = os.path.getsize(path)
             except OSError:
@@ -796,8 +810,66 @@ class MainWindow(QMainWindow):
         Dispatches on FILE change or SPEC change alone. Scroll, pan, zoom,
         page turns and strip clicks never reach here with work to do: minis
         reframe from the per-preset caches (§48) and previews hit
-        `_try_apply_cached` first. A click whose 150dpi preview was never
-        built dispatches a preview-only job — once per (file, spec), ever.
+        `_try_apply_cached` first.
+        Two slots (§90): a content job (minis + amounts) owns its token and
+        generation; a preview-only follow-up runs on its own token under the
+        SAME generation, so clicking a far-right filter never cancels —
+        never reprocesses — the left filters' in-flight work.
+        """
+        if not self.doc or not self.path:
+            return
+        fkey = self._file_key()
+        if fkey is None:
+            return
+        n = self.doc.page_count
+        spec = self._active_spec()
+        spec_tup = self._spec_tuple(spec)
+        dpi = spec.get("dpi")
+        preview_key = (fkey, spec_tup)
+
+        need_mini = {}
+        for pid in self._strip_ids:
+            pages = self._mini_pages.get((fkey, pid))
+            if pages is None:
+                need_mini[pid] = list(range(n))
+            else:
+                missing = [i for i, pg in enumerate(pages) if pg is None]
+                if len(pages) != n:
+                    missing = list(range(n))
+                if missing:
+                    need_mini[pid] = missing
+        need_est_pages = {}
+        need_est_doc = {}
+        for pid in self._strip_ids:
+            if presets.get(pid)["mode"] == "bw":
+                counts = self._est_bytes.get((fkey, pid, dpi))
+                if counts is None:
+                    need_est_pages[pid] = list(range(n))
+                else:
+                    missing = [i for i, t in enumerate(counts) if t is None]
+                    if len(counts) != n:
+                        missing = list(range(n))
+                    if missing:
+                        need_est_pages[pid] = missing
+            else:
+                # Color totals follow the single DPI (§85): active filter uses
+                # the UI values, inactive presets their own recipe values.
+                ck = self._est_ck(pid, spec)
+                if (fkey, pid) + ck not in self._est_doc:
+                    need_est_doc[pid] = ck
+    def _dispatch_filters(self):
+        """Background work for cache misses only (§§43/44/47/48).
+
+        Dispatches on FILE change or SPEC change alone. Scroll, pan, zoom,
+        page turns and strip clicks never reach here with work to do: minis
+        reframe from the per-preset caches (§48) and previews hit
+        `_try_apply_cached` first.
+        Two slots (§90): minis belong to the FILE — once launched they are
+        never cancelled or re-run, so clicking a far-right filter cannot
+        restart the left filters. Amounts + preview belong to the SPEC and
+        restart on change. Arrival handlers are key-addressed (file/spec
+        keys), never generation-gated; the generation drives only the
+        cosmetic global bar.
         """
         if not self.doc or not self.path:
             return
@@ -841,69 +913,99 @@ class MainWindow(QMainWindow):
                 if (fkey, pid) + ck not in self._est_doc:
                     need_est_doc[pid] = ck
         need_preview = preview_key not in self._preview_cache
-        if not need_mini and not need_est_pages and not need_est_doc and not need_preview:
-            if self._job is not None:
-                self._job_token.cancel()
-                self._gen += 1
+
+        mini_running = (self._mini_job is not None
+                        and not self._mini_job.isFinished()
+                        and getattr(self._mini_job, "_fkey", None) == fkey)
+        filter_pool()  # warm on the main thread; workers only ever submit
+        if need_mini and not mini_running:
+            if self._mini_job is not None:
+                self._mini_token.cancel()
+            self._mini_token = CancelToken()
+            for pid, idxs in need_mini.items():
+                exp = self._expect.setdefault(pid, [0, 0, 0, 0])
+                exp[1] = len(idxs)
+            self._reframe_minis()
+            self.status.setText("Rendering filters…")
+            log.info("mini job pages=%d preset=%s missing=%d",
+                     n, spec["preset_id"],
+                     sum(len(v) for v in need_mini.values()))
+            job = FilterWorker(self.path, self._strip_ids, spec,
+                               self._mini_token, self._gen, n,
+                               need_mini=need_mini)
+            job._fkey = fkey
+            job.mini_done.connect(self._jm_mini)
+            job.progressed.connect(self._jm_progress)
+            job.finished.connect(lambda: self._clear_job(job))
+            self._mini_job = job
+            self._jobs.add(job)
+            job.start()
+
+        if need_est_pages or need_est_doc or need_preview:
+            if self._work_job is not None:
+                self._work_token.cancel()
+            self._work_token = CancelToken()
+            self._gen += 1
+            for pid in self._strip_ids:
+                exp = self._expect.setdefault(pid, [0, 0, 0, 0])
+                if presets.get(pid)["mode"] == "bw":
+                    exp[3] = len(need_est_pages.get(pid, ()))
+                else:
+                    exp[3] = 0 if (fkey, pid) + self._est_ck(pid, spec) in self._est_doc else 1
+            self._reframe_minis()
+            self.status.setText(f"Rendering amounts… (job {self._gen})")
+            log.info("work job gen=%d pages=%d preset=%s need_est=%d need_preview=%s",
+                     self._gen, n, spec["preset_id"],
+                     sum(len(v) for v in need_est_pages.values()) + len(need_est_doc),
+                     need_preview)
+            job = FilterWorker(self.path, self._strip_ids, spec,
+                               self._work_token, self._gen, n,
+                               need_est_pages=need_est_pages,
+                               need_est_doc=need_est_doc,
+                               need_preview=need_preview)
+            job._fkey = fkey
+            job._est_dpi = dpi
+            job._preview_key = preview_key
+            job.est_done.connect(self._jm_est)
+            job.preview_done.connect(self._jm_preview)
+            job.progressed.connect(self._jm_progress)
+            job.finished.connect(lambda: self._clear_job(job))
+            self._work_job = job
+            self._jobs.add(job)
+            job.start()
+        else:
             self._reframe_minis()
             log.info("filter job skipped (cache hit) preset=%s", spec["preset_id"])
-            return
-
-        for pid in self._strip_ids:
-            mt = len(need_mini.get(pid, ()))
-            if presets.get(pid)["mode"] == "bw":
-                et = len(need_est_pages.get(pid, ()))
-            else:
-                et = 0 if (fkey, pid) + self._est_ck(pid, spec) in self._est_doc else 1
-            self._expect[pid] = [0, mt, 0, et]
-            if mt == 0 and et == 0:
-                self._filter_prog[pid] = 1.0
-            else:
-                self._filter_prog[pid] = 0.0
-        self._reframe_minis()
-
-        self._gen += 1
-        self._job_token.cancel()
-        self._job_token = CancelToken()
-        filter_pool()  # warm on the main thread; workers only ever submit
-        self.status.setText(f"Rendering filters… (job {self._gen})")
-        log.info("filter job gen=%d pages=%d preset=%s workers<=%d need_mini=%d need_est=%d need_preview=%s",
-                 self._gen, n, spec["preset_id"], cpu_cap(),
-                 sum(len(v) for v in need_mini.values()),
-                 sum(len(v) for v in need_est_pages.values()) + len(need_est_doc),
-                 need_preview)
-        job = FilterWorker(self.path, self._strip_ids, spec,
-                           self._job_token, self._gen, n,
-                           need_mini=need_mini, need_est_pages=need_est_pages,
-                           need_est_doc=need_est_doc,
-                           need_preview=need_preview)
-        # Remember what this generation computes (stale gens never write).
-        job._fkey = fkey
-        job._est_dpi = dpi
-        job._preview_key = preview_key
-        job.mini_done.connect(self._jm_mini)
-        job.est_done.connect(self._jm_est)
-        job.preview_done.connect(self._jm_preview)
-        job.progressed.connect(self._jm_progress)
-        job.finished.connect(lambda: self._clear_job(job))
-        self._job = job
-        self._jobs.add(job)
-        job.start()
 
     def _on_view_changed(self):
         """Any scroll/pan/zoom/layout change: reframe minis, debounced (§47)."""
-        self._update_zoom_label()
+        self._update_zoom_control()
         self._reframe_timer.start()
 
-    def _update_zoom_label(self):
-        """Live scale % in the zoom control (§85). Panes stay synced, so the
-        baseline pane's zoom is the shared truth."""
+    def _zoom_combo_chosen(self, *args):
+        """Preset picked or number typed in the zoom combo (§86)."""
         if not self.doc:
-            text = "—"
+            return
+        if args and isinstance(args[0], int) and not isinstance(args[0], bool):
+            factor = self.zoom_combo.itemData(args[0]) or 1.0
         else:
-            text = f"{self.before._zoom * 100:.0f}%"
-        if self.zoom_label.text() != text:
-            self.zoom_label.setText(text)
+            text = self.zoom_combo.currentText().strip().rstrip("%").strip()
+            try:
+                factor = float(text) / 100
+            except ValueError:
+                self._update_zoom_control()
+                return
+            factor = min(8.0, max(0.1, factor))
+        self.before.set_zoom(factor)
+        log.info("zoom combo -> %.0f%%", factor * 100)
+
+    def _update_zoom_control(self):
+        """Live zoom % in the combo, following every view change (§§85/86)."""
+        text = "—" if not self.doc else f"{self.before._zoom * 100:.0f}%"
+        if self.zoom_combo.currentText() != text:
+            blocked = self.zoom_combo.blockSignals(True)
+            self.zoom_combo.setCurrentText(text)
+            self.zoom_combo.blockSignals(blocked)
 
     def _current_view(self):
         """Framing both panes share: layout dims + visible scene rect."""
@@ -932,7 +1034,7 @@ class MainWindow(QMainWindow):
         else:
             fs = fmt_bytes(self._orig_bytes) if self._orig_bytes else "?"
             n = self.doc.page_count
-            left = f"Original · {os.path.basename(self.path)} · {fs} · 100% · {n} pages"
+            left = f"Original · {fs} · 100% · {n} pages"
             pid = self.preset.itemData(self.preset.currentIndex())
             size = self._mini_est.get(pid, "sizing…")
             right = f"{presets.get(pid)['label']} · {_preset_algo(pid)} · {size}"
@@ -999,8 +1101,10 @@ class MainWindow(QMainWindow):
 
     def _clear_job(self, job):
         self._jobs.discard(job)
-        if self._job is job:
-            self._job = None
+        if self._mini_job is job:
+            self._mini_job = None
+        if self._work_job is job:
+            self._work_job = None
 
     def _paint_strip_item(self, pid: str):
         if pid not in self._strip_ids:
@@ -1056,9 +1160,7 @@ class MainWindow(QMainWindow):
         self.filters.item(self._strip_ids.index(pid)).setText("")
 
     def _jm_mini(self, pid, page, arr, gen):
-        if gen != self._gen:
-            return
-        job = self._job
+        job = self.sender()
         if job is None or getattr(job, "_fkey", None) != self._file_key():
             return
         n = self.doc.page_count if self.doc else 0
@@ -1075,9 +1177,7 @@ class MainWindow(QMainWindow):
         self._reframe_one(pid)
 
     def _jm_est(self, pid, page, value, gen):
-        if gen != self._gen:
-            return
-        job = self._job
+        job = self.sender()
         if job is None or getattr(job, "_fkey", None) != self._file_key():
             return
         if page < 0:
@@ -1100,14 +1200,24 @@ class MainWindow(QMainWindow):
         self._reframe_one(pid)
 
     def _jm_preview(self, pages, gen):
-        if gen != self._gen or not self.doc:
+        if not self.doc:
             return
-        job = self._job
+        job = self.sender()
         pkey = getattr(job, "_preview_key", None)
-        if pkey is not None:
-            self._preview_cache[pkey] = list(pages)
-            while len(self._preview_cache) > 2:  # bound memory: latest specs only
-                self._preview_cache.pop(next(iter(self._preview_cache)))
+        if pkey is None:
+            return
+        # Cache every completed preview; show it only if it is still the
+        # active spec (a stale arrival must never steal the panes).
+        self._preview_cache[pkey] = list(pages)
+        while len(self._preview_cache) > 2:  # bound memory: latest specs only
+            self._preview_cache.pop(next(iter(self._preview_cache)))
+        try:
+            current = (self._file_key(), self._spec_tuple(self._active_spec()))
+        except Exception:  # noqa: BLE001
+            return
+        if pkey != current:
+            log.info("job gen=%d preview cached, not current (%d pages)", gen, len(pages))
+            return
         self._apply_preview_pages(pages, f"job {gen}")
         log.info("job gen=%d preview applied (%d pages)", gen, len(pages))
 
@@ -1203,6 +1313,15 @@ class MainWindow(QMainWindow):
 
 def main(start_pdf: str | None = None, debug: bool = False):
     log.info("starting pdf-minimalist debug=%s pdf=%s", debug, start_pdf)
+    if start_pdf is None:
+        # §91: reopen the last file; fall back to the photo demo.
+        from PySide6.QtCore import QSettings as _QS
+        last = _QS("pdf-minimalist", "pdf-minimalist").value("lastFile")
+        if last and os.path.exists(last):
+            start_pdf = last
+            log.info("reopening last file %s", start_pdf)
+        elif os.path.exists("examples/images.pdf"):
+            start_pdf = "examples/images.pdf"
     if debug:
         try:
             from PySide6 import __version__ as pyside_v

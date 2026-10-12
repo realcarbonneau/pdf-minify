@@ -3,7 +3,7 @@
 Corpus band (designer §35, supersedes the §24 band for new additions):
 **3–50 pages, 200KB–50MB per file.** The nine pre-corpus files (1–2 pages,
 `bug1721218*`, `images`, `issue*`, `deed`, `form-fw9`, `manual-maytag`,
-`paper-arxiv`, `filled-background`) are grandfathered.
+`paper-arxiv`) are grandfathered.
 Two requested-type files sit under the 200KB floor — marked (\*) below.
 
 Fetch/validate: `python3 tools/corpus/fetch_and_validate.py` →
@@ -47,7 +47,6 @@ Fetch/validate: `python3 tools/corpus/fetch_and_validate.py` →
 | `form-fw9.pdf` | 6 | 140,815* | IRS W-9 + instructions (pre-corpus) | text |
 | `manual-maytag-dryer.pdf` | 2 | 1,503,636 | Appliance quick-start EN/FR (pre-corpus) | JPEG |
 | `paper-arxiv-1406.2661.pdf` | 9 | 530,482 | Research paper, 6 figures (pre-corpus) | JPEG |
-| `filled-background.pdf` | 3 | 401,129 | 3-page scroll test (pre-corpus) | vector |
 
 Not fetched: `report-cdc-births-deaths.pdf` (CDC stacks returns 403 to scripts —
 validator status ERROR; direct browser download works).
@@ -77,7 +76,7 @@ embedded images (else gc-only, e.g. `scan-naca-formulas` 93% across the row).
 |---|---|---|---|---|---|---|---|---|
 | `deed-brevard` | 144K | 22K (15%) | 16K (11%) | 143K (99%) | 143K (99%) | 143K (99%) | 143K (99%) | 143K (99%) |
 | `form-fw9` | 141K | 27K (19%) | 18K (13%) | 125K (89%) | 125K (89%) | 125K (89%) | 125K (89%) | 125K (89%) |
-| `filled-background` | 401K | 4K (1%) | 9K (2%) | 1K (0%) | 1K (0%) | 1K (0%) | 1K (0%) | 1K (0%) |
+| `form-941-2026` | 842K | 146K (17%) | 89K (11%) | 817K (97%) | 817K (97%) | 817K (97%) | 817K (97%) | 817K (97%) |
 | `images` | 1494K | 4K (0%) | 3K (0%) | 192K (13%) | 179K (12%) | 230K (15%) | 177K (12%) | 1493K (100%) |
 | `paper-arxiv-1406.2661` | 530K | 28K (5%) | 18K (3%) | 301K (57%) | 328K (62%) | 372K (70%) | 348K (66%) | 490K (92%) |
 | `scan-naca-formulas` | 258K | 25K (10%) | 19K (7%) | 239K (93%) | 239K (93%) | 239K (93%) | 239K (93%) | 239K (93%) |

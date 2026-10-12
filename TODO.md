@@ -689,9 +689,17 @@ in-memory thumb cache; double-click opens.
 ~~Above the original and the applied preview, show the relevant information
 for each [...] it should say Original with a new key information, including
 the file size.~~
-Stub: splitter halves carry headers — left `Original · name · size · 100% ·
-N pages`, right `label · recipe · size (%)`. Verified offscreen.
+Stub: splitter halves carry headers — left `Original · size · 100% ·
+N pages` (no name since item 87; un-bolded), right `label · recipe ·
+size (%)`. Verified offscreen.
 See: `pdf_minimalist/ui_qt/app.py` (`_update_pane_headers`).
+
+## 87 — DONE
+~~remove the file name from the left side top title.  Also, remove the bold
+from both.~~
+Stub: name lives only in the File box now; both pane headers plain.
+Verified: suite green + offscreen.
+See: `pdf_minimalist/ui_qt/app.py`.
 
 ## 61 — DONE
 ~~Also, in the thumnails and top lines, shows the size percentage, like
@@ -699,6 +707,34 @@ original 230kb 100%, filter 1, 23kb 10%.~~
 Stub: every amount carries % of original (`_sized`); percents round to nearest
 per item 65. Verified offscreen.
 See: `pdf_minimalist/ui_qt/app.py` (`_sized`).
+
+## 90 — DONE
+~~Also, when I choose a to be processed filter to the far right, when other
+fitlers are processed to the left, reprocessing starts onthe left filters,
+this is also incorrect. [...]~~ (+ BUGS.md request)
+Stub: two job slots — minis belong to the file (launched once, never
+cancelled/re-run, arrivals key-addressed not generation-gated); amounts +
+preview belong to the spec (cancelled on change); a click during initial load
+reuses the running mini job with a preview follow-up. Previews cache always
+but apply only when still current. Verified: no-restart probe (same mini
+object, token uncancelled) + suite green. BUGS.md created with B1–B22,
+crossed on designer confirmation only.
+See: `pdf_minimalist/ui_qt/app.py` (`_dispatch_filters`), `BUGS.md`.
+
+## 91 — DONE
+~~Also, the app should remember the last opened file.~~
+Stub: last path in QSettings on every open; bare launch reopens it (photo
+demo fallback). `run.sh` no longer forces a file. Verified offscreen with
+isolated `XDG_CONFIG_HOME`.
+See: `pdf_minimalist/ui_qt/app.py` (`open_file`, `main`), `run.sh`.
+
+## 89 — DONE
+~~Why do the per filter progress bars always seem to start at 50%?  This is
+also incorrect please fix.~~
+Stub: phasing artifact — fast minis all finished before slow ests started,
+parking every bar at 50%. Minis and amounts now share one interleaved batch
+so each bar advances on its own completions. Verified: suite green.
+See: `pdf_minimalist/ui_qt/jobs.py` (`FilterWorker._run`).
 
 ## 62 — DONE (standing rule)
 ~~run, always run after a new build, kill the existing one~~
@@ -829,3 +865,10 @@ palette, probably lossless, jpeg full color usually lossy~~
 Stub: audited — BW save is lossless-only (`jbig2 -p` generic, no lossy
 symbol flags; PNG fallback lossless), indexed is Flate without dither
 (lossless), JPEG/JPX rates are lossy as ruled. No violations.
+
+## 88 — DONE
+~~Also, when you are done your current work, drop the filled-background file
+please, it's not usefull.~~
+Stub: `git rm`'d; references swapped to `form-941-2026.pdf` (bench script,
+README corpus + benchmark tables, bench CSV re-measured). Verified: suite
+green (no code depended on it).

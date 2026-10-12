@@ -530,6 +530,24 @@
 ## 85 — zoom %, small Save, Cancel meaning, one DPI (verbatim, 2026-10-10)
 > No, you said buttons combined with the scale percentage, no?  and save as a small button.  What is the X for?  Cancel?  Isn't that an undo?  ANd undo what?  Also, there should only be a single dpi value for the whole filter.  That is all user's care about, never two different dpi values.  DPI is clear and means for all images in the document, why are you making this complicated?
 
+## 86 — zoom spinner (verbatim, 2026-10-10)
+> what is modern best practices for a spinner in qt between 1 and 100% for zooming?  Please research and implement.  The current option is not good.
+
+## 87 — plain headers (verbatim, 2026-10-10)
+> remove the file name from the left side top title.  Also, remove the bold from both.
+
+## 88 — drop filled-background (verbatim, 2026-10-10)
+> Also, when you are done your current work, drop the filled-background file please, it's not usefull.
+
+## 89 — progress starts at 50% (verbatim, 2026-10-10)
+> Why do the per filter progress bars always seem to start at 50%?  This is also incorrect please fix.
+
+## 90 — click restarts left filters (verbatim, 2026-10-10)
+> Also, when I choose a to be processed filter to the far right, when other fitlers are processed to the left, reprocessing starts onthe left filters, this is also incorrect.  Add each of my notes to a BUGS.md doc, in a numbered list and cross only once I have comfirmed that they are fixed.  Look back at my past complaints and add them to the bugs list please.
+
+## 91 — remember last file (verbatim, 2026-10-10)
+> Also, the app should remember the last opened file.
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.

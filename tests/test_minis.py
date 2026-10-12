@@ -25,9 +25,11 @@ def _three_pages(tmpdir):
 
 
 def _wait_job(w, timeout=90):
+    # Queued cross-thread results can land after isFinished flips, so settle
+    # on the STORES (minis + amounts for every filter), not thread state.
     t0 = time.perf_counter()
-    while w._job is not None and not w._job.isFinished():
-        assert time.perf_counter() - t0 < timeout, "filter job hung"
+    while len(w._mini_view) < len(w._strip_ids) or len(w._mini_est) < len(w._strip_ids):
+        assert time.perf_counter() - t0 < timeout, "filter results hung"
         _app.processEvents()
         time.sleep(0.05)
     _app.processEvents()
@@ -122,6 +124,22 @@ def test_preset_owns_its_dpi(tmp_path):
     assert w.dpi.currentData() == 150  # preset cap seeds the combo
     w.preset.setCurrentIndex(ids.index("bw-otsu"))
     assert w.dpi.currentData() == 300 and w.dpi.isEnabled()
+
+
+def test_zoom_combo_two_way(tmp_path):
+    """Designer §86: preset pick, typed number, and live sync all work."""
+    from pdf_minimalist.core import presets
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    w.zoom_combo.setCurrentIndex(5)  # 150%
+    w._zoom_combo_chosen(5)
+    assert abs(w.before._zoom - 1.5) < 1e-9
+    assert w.after._zoom == w.before._zoom
+    w.zoom_combo.setCurrentText("42")
+    w._zoom_combo_chosen()
+    assert abs(w.before._zoom - 0.42) < 1e-9
+    w.before.set_zoom(2.0)
+    w._update_zoom_control()
+    assert w.zoom_combo.currentText() == "200%"
 
 
 def test_preset_strip_sync_by_id():

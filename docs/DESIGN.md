@@ -110,9 +110,13 @@ main preview re-renders at 150dpi on preset click (300dpi at Save).
   results with the dispatch generation. Rationale, verified by bisection:
   GUI-thread rendering froze the app; a thread pool then aborted bare inside
   numpy with Qt signals in play (isolated numpy, isolated fitz and paired
-  thread-workers all survive — only the full threaded path aborts), so threads
-  are out for compute. Pan/zoom never re-renders: purely a view transform
-  over already-rendered pixmaps.
+   thread-workers all survive — only the full threaded path aborts), so threads
+   are out for compute. Pan/zoom never re-renders: purely a view transform
+   over already-rendered pixmaps.
+ - Two background slots (designer ruling §90): minis belong to the FILE
+   (built once, never cancelled or re-run — clicking filters mid-load reuses
+   them); amounts + preview belong to the SPEC (restarted on change).
+   Arrivals are key-addressed, and previews apply only when still current.
 - Thumbnails = exact mini of the main view (designer ruling §48, intent §32
   + §37 + §45): each strip mini shows EXACTLY what the synced main windows
   show — same pages, same grid, same scroll framing down to the cut-off last

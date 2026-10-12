@@ -306,8 +306,8 @@ class FilterWorker(QThread):
     """One background job: every preset × every page, once (§§37/44/48).
 
     Phase 1 — full preview pages for the active filter (§51: the right pane
-    updates first). Phase 2 — mini-pages for exact-view compositing.
-    Phase 3 — real post-save amounts: BW per page, color per document (§59).
+    updates first). Phases 2+3 — mini-pages plus real amounts in ONE
+    interleaved batch (§89), so per-filter bars advance independently.
     Scrolling, panning, zooming and
     page changes never dispatch: the GUI reframes minis from these caches.
 
@@ -384,37 +384,28 @@ class FilterWorker(QThread):
             elif self._alive():
                 log.warning("job gen=%d preview incomplete (%d/%d pages)",
                             self.generation, len(pages), n_pages)
-        # Phase 2 — mini-pages for exact-view compositing (§48).
-        if self._alive() and mini_tasks:
-            futs = {ex.submit(mini_page_task, self.path, i, pid): (pid, i)
+        # Phases 2+3 — minis AND real amounts interleaved (§89): minis are
+        # fast and ests are slow, so running all minis first parked every
+        # filter bar at exactly 50%. One shared batch lets each bar advance
+        # on its own completions instead.
+        if self._alive() and (mini_tasks or est_tasks):
+            futs = {ex.submit(mini_page_task, self.path, i, pid): ("mini", pid, i)
                     for pid, idxs in self.need_mini.items() for i in idxs}
-            for fut in cf.as_completed(futs):
-                if not self._alive():
-                    return
-                pid, i = futs[fut]
-                try:
-                    self.mini_done.emit(pid, i, fut.result(), self.generation)
-                except Exception as e:  # noqa: BLE001
-                    log.warning("job gen=%d mini %s p%d failed: %s",
-                                self.generation, pid, i + 1, e)
-                done += 1
-                self.progressed.emit(done, total, self.generation)
-        # Phase 3 — real post-save amounts (§§55/59): BW per page (the exact
-        # encoder bytes), color per document (the saver's exact per-image
-        # decision summed with doc-wide dedupe).
-        if self._alive() and est_tasks:
-            futs = {ex.submit(estimate_bytes, self.path, i, pid, dpi): (pid, i)
-                    for pid, idxs in self.need_est_pages.items() for i in idxs}
-            futs.update({ex.submit(color_doc_total, self.path, pid, colors, cap): (pid, -1)
+            futs.update({ex.submit(estimate_bytes, self.path, i, pid, dpi): ("est", pid, i)
+                         for pid, idxs in self.need_est_pages.items() for i in idxs})
+            futs.update({ex.submit(color_doc_total, self.path, pid, colors, cap): ("est", pid, -1)
                          for pid, (colors, cap) in self.need_est_doc.items()})
             for fut in cf.as_completed(futs):
                 if not self._alive():
                     return
-                pid, i = futs[fut]
+                kind, pid, i = futs[fut]
                 try:
-                    self.est_done.emit(pid, i, int(fut.result()), self.generation)
+                    if kind == "mini":
+                        self.mini_done.emit(pid, i, fut.result(), self.generation)
+                    else:
+                        self.est_done.emit(pid, i, int(fut.result()), self.generation)
                 except Exception as e:  # noqa: BLE001
-                    log.warning("job gen=%d est %s p%s failed: %s",
-                                self.generation, pid, i + 1, e)
+                    log.warning("job gen=%d %s %s p%s failed: %s",
+                                self.generation, kind, pid, i + 1, e)
                 done += 1
                 self.progressed.emit(done, total, self.generation)
