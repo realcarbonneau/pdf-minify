@@ -557,6 +557,9 @@
 ## 94 — safe close (verbatim, 2026-10-10)
 > I closed the last one while it was processing as a test, this should not crash, this is normal to write safe code for all scenarios and have test cases for all scenarios, please make sure you do complete work.
 
+## 95 — bars start at 50% again (verbatim, 2026-10-10)
+> thumbnails progress bar always starts a 50% and stays there until real processing starts, this is incorrect. please fix and add to issues.
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.

@@ -175,6 +175,18 @@ def test_close_mid_processing_is_safe(tmp_path):
     _app.processEvents()
 
 
+def test_filter_progress_weights_cost(tmp_path):
+    """Designer §§89/95: bars start at 0, minis weigh ~15%, amounts ~85%."""
+    from pdf_minimalist.ui_qt.app import filter_progress
+    assert filter_progress(0, 7, 0, 7) == 0.0
+    first_mini = filter_progress(1, 7, 0, 7)
+    assert 0.0 < first_mini < 0.2, first_mini  # never near half
+    assert filter_progress(7, 7, 0, 7) < 0.5
+    assert filter_progress(7, 7, 7, 7) == 1.0
+    assert filter_progress(0, 0, 0, 0) == 1.0
+    assert filter_progress(0, 0, 3, 7) == 3 / 7
+
+
 def test_preset_strip_sync_by_id():
     import tempfile
     src = os.path.join(tempfile.mkdtemp(), "m.pdf")

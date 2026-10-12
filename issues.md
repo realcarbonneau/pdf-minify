@@ -102,9 +102,11 @@ Symptom: synthetic demo file as the default document. Fixed: photo-heavy
 
 ## B23 — OPEN — last-file reopen opened test garbage (§§91/93)
 Symptom: bare launch opened `/tmp/pytest-*/m.pdf` instead of the last real
-file. Cause: the test suite opened throwaway PDFs through MainWindow, which
-wrote the designer's real QSettings. Fixed: `tests/conftest.py` isolates
-`XDG_CONFIG_HOME` per run, so tests can never touch the real last file.
+file. First fix attempt (conftest `setdefault`) SILENTLY FAILED: this shell
+pre-exports `XDG_CONFIG_HOME`, so the guard never engaged — proven by config
+checksum changing across a suite run. Real fix: conftest overrides it
+unconditionally (test processes only); checksum now identical across a full
+49-test run. Awaiting designer confirmation.
 
 ## B24 — OPEN — right-pane zoom never reframed minis (§92)
 Symptom: minis stuck on an old view after zooming/scrolling the right pane.
@@ -122,3 +124,9 @@ Symptom: closing the window while workers run risked `QThread: Destroyed
 while thread is still running` and pool-teardown races. Fixed: `closeEvent`
 cancels all tokens, joins workers, closes the document; covered by a
 close-mid-processing test.
+
+## B27 — OPEN — bars start at 50% again (§95)
+Symptom: per-filter bars jump to 50% with the first mini and sit through the
+slow amounts. Cause: the 50/50 phase split weighed fast minis like slow
+encodings. Fixed: cost-weighted completions (15/85, current-job arrivals
+only) via a unit-tested `filter_progress` — bars always start at 0.

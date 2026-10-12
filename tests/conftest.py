@@ -12,4 +12,6 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 
 # Isolate QSettings (§91 last-file memory): tests open throwaway PDFs through
 # MainWindow, which must never overwrite the designer's real last file.
-os.environ.setdefault("XDG_CONFIG_HOME", tempfile.mkdtemp(prefix="pdfmin-test-xdg-"))
+# NOTE: unconditional override (not setdefault) — this shell pre-exports
+# XDG_CONFIG_HOME, which once silently defeated the isolation (issues.md B23).
+os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp(prefix="pdfmin-test-xdg-")

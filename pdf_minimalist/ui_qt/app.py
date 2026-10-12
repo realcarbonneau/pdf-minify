@@ -61,6 +61,21 @@ def fmt_bytes(n: int) -> str:
     return f"{n}B"
 
 
+def filter_progress(md: int, mt: int, ed: int, et: int) -> float:
+    """Per-filter bar fraction (designer §§89/95).
+
+    Minis are fast small renders, amounts are slow real encodings (measured
+    ~15/85 split) — so completions are cost-weighted, and only completions
+    inside the CURRENT job count. A bar therefore always starts at 0 and
+    climbs with actual arrivals; nothing pending means done.
+    """
+    num = 0.15 * md + 0.85 * ed
+    den = 0.15 * mt + 0.85 * et
+    if den <= 0:
+        return 1.0
+    return max(0.0, min(1.0, num / den))
+
+
 def _zoom_icon(plus: bool) -> QIcon:
     """Crisp magnifier + / − icon drawn in code (designer §84).
 
@@ -673,7 +688,8 @@ class MainWindow(QMainWindow):
             self._mini_token = CancelToken()
             self._work_token = CancelToken()
             from PySide6.QtCore import QSettings as _QS
-            _QS("pdf-minimalist", "pdf-minimalist").setValue("lastFile", path)
+            _QS("pdf-minimalist", "pdf-minimalist").setValue(
+                "lastFile", os.path.abspath(path))
             try:
                 self._orig_bytes = os.path.getsize(path)
             except OSError:
@@ -1092,9 +1108,7 @@ class MainWindow(QMainWindow):
                 return
             exp = self._expect.get(pid)
             if exp is not None and (exp[1] or exp[3]):
-                md, mt, ed, et = exp
-                self._filter_prog[pid] = 0.5 * (md / mt if mt else 1.0) + \
-                    0.5 * (ed / et if et else 1.0)
+                self._filter_prog[pid] = filter_progress(*exp)
             else:
                 self._filter_prog[pid] = 1.0
         self._paint_strip_item(pid)

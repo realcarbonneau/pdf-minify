@@ -891,3 +891,13 @@ please make sure you do complete work.~~
 Stub: `closeEvent` cancels all tokens, joins workers (8s each), closes the
 doc; new close-mid-processing test. Verified: 48/48 green.
 See: `pdf_minimalist/ui_qt/app.py` (`closeEvent`), `issues.md` (B26).
+
+## 95 — DONE
+~~thumbnails progress bar always starts a 50% and stays there until real
+processing starts, this is incorrect. please fix and add to issues.~~
+Stub: interleaving (item 89) wasn't enough — the 50/50 split still credited
+fast minis like slow encodings. Bars are now cost-weighted (15/85, current
+job arrivals only) via unit-tested `filter_progress`: always start at 0,
+climb with real completions. Logged as issues.md B27. Verified: unit vectors
++ 49/49 green.
+See: `pdf_minimalist/ui_qt/app.py` (`filter_progress`).
