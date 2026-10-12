@@ -278,6 +278,17 @@ def test_indexed_helpers():
     assert len(_np.unique(out.reshape(-1, 3), axis=0)) <= 16
 
 
+def test_indexed_palette_no_overflow():
+    """Live-log bug: numpy uint8 index math wrapped past 85 palette entries."""
+    from pdf_minimalist.core.pipeline import indexed_parts
+    import numpy as _np
+    rng = _np.random.default_rng(21)
+    arr = (rng.random((40, 50, 3)) * 255).astype(_np.uint8)
+    parts = indexed_parts(Image.fromarray(arr), 256)
+    n = parts["hival"] + 1
+    assert len(parts["palette"]) == 3 * n
+
+
 def test_flate_stream_decodes_exact():
     """Designer §80 fix: Flate streams carry raw rows, no filter bytes."""
     import zlib

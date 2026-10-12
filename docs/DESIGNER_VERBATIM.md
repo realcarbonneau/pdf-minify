@@ -548,6 +548,15 @@
 ## 91 — remember last file (verbatim, 2026-10-10)
 > Also, the app should remember the last opened file.
 
+## 92 — debounce review (verbatim, 2026-10-10)
+> when I scroll on the main windows, the previews are not always updated to the last view, there should be a debounce for updating and also update after the last view change after debounce time also.  I think debounce will always be correct for fixing this, but please review.
+
+## 93 — run normally + last file broken (verbatim, 2026-10-10)
+> always run normally so that I can test the features like opening the last opened file please.  So far, that has NOT worked also, add this and my previous message to the bugs list, maybe we should call it issues.md?
+
+## 94 — safe close (verbatim, 2026-10-10)
+> I closed the last one while it was processing as a test, this should not crash, this is normal to write safe code for all scenarios and have test cases for all scenarios, please make sure you do complete work.
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.

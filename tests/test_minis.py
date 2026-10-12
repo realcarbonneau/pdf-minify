@@ -142,6 +142,39 @@ def test_zoom_combo_two_way(tmp_path):
     assert w.zoom_combo.currentText() == "200%"
 
 
+def test_right_pane_zoom_reframes_minis(tmp_path):
+    """Designer §92: zooming the RIGHT pane notifies, and the trailing
+    debounce reframes minis to the last view (no stuck frames)."""
+    import time
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    _wait_job(w)
+    pid = w._strip_ids[0]
+    before = w._mini_view[pid].tobytes()
+    w.after.set_zoom(w.after._zoom * 2.0)
+    t0 = time.perf_counter()
+    while time.perf_counter() - t0 < 5:
+        _app.processEvents()
+        time.sleep(0.05)
+        if w._mini_view[pid].tobytes() != before:
+            break
+    assert w._mini_view[pid].tobytes() != before
+
+
+def test_close_mid_processing_is_safe(tmp_path):
+    """Designer §94: closing while workers run must never crash."""
+    import time
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    _app.processEvents()
+    assert w._mini_job is not None or w._work_job is not None
+    w.close()  # must not raise, hang, or abort
+    t0 = time.perf_counter()
+    while any(not j.isFinished() for j in list(w._jobs)):
+        assert time.perf_counter() - t0 < 60, "worker did not stop"
+        _app.processEvents()
+        time.sleep(0.05)
+    _app.processEvents()
+
+
 def test_preset_strip_sync_by_id():
     import tempfile
     src = os.path.join(tempfile.mkdtemp(), "m.pdf")

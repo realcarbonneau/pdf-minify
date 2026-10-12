@@ -1,4 +1,4 @@
-# BUGS — designer complaint log (confirmation-gated)
+# ISSUES — designer complaint log (confirmation-gated)
 
 Rule (designer §90): every past malfunction complaint is listed here, numbered.
 An item is crossed out ONLY after the designer confirms the fix. Fixed in code
@@ -99,3 +99,26 @@ load reuse the running job instead of restarting it.
 ## B22 — OPEN — terrible default demo PDF (§§27/31)
 Symptom: synthetic demo file as the default document. Fixed: photo-heavy
 `examples/images.pdf` default (plus last-file reopen under §91).
+
+## B23 — OPEN — last-file reopen opened test garbage (§§91/93)
+Symptom: bare launch opened `/tmp/pytest-*/m.pdf` instead of the last real
+file. Cause: the test suite opened throwaway PDFs through MainWindow, which
+wrote the designer's real QSettings. Fixed: `tests/conftest.py` isolates
+`XDG_CONFIG_HOME` per run, so tests can never touch the real last file.
+
+## B24 — OPEN — right-pane zoom never reframed minis (§92)
+Symptom: minis stuck on an old view after zooming/scrolling the right pane.
+Cause: synced peer zooms never emitted `changed`, so the trailing reframe
+debounce never saw the last view change. Fixed: `_pull` notifies; debounce
+confirmed trailing-edge (fires after the last change).
+
+## B25 — OPEN — palette bytes overflow past 85 entries (found in live log)
+Symptom: `RuntimeWarning: overflow` in the log; palettes with 86+ entries
+embedded wrong colors. Cause: numpy uint8 index arithmetic wrapped.
+Fixed: `int()` conversion before slicing the palette.
+
+## B26 — OPEN — closing mid-processing must never crash (§94)
+Symptom: closing the window while workers run risked `QThread: Destroyed
+while thread is still running` and pool-teardown races. Fixed: `closeEvent`
+cancels all tokens, joins workers, closes the document; covered by a
+close-mid-processing test.

@@ -201,6 +201,10 @@ class ContinuousDocView(QGraphicsView):
             self.verticalScrollBar().setValue(src.verticalScrollBar().value())
         finally:
             self._syncing = False
+        # §92: a synced zoom (Ctrl+wheel on the peer pane) changes this view
+        # without touching its own scrollbars — notify so the trailing
+        # reframe debounce still sees the last view change.
+        self._notify_changed()
 
     def _on_vscroll(self, _v):
         self._push()

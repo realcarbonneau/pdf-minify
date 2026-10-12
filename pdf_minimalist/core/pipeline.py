@@ -274,7 +274,9 @@ def indexed_parts(img: "Image.Image", colors: int) -> dict:
     n = len(used)
     bpc = bpc_for(n)
     pal = q.getpalette()
-    pal_bytes = b"".join(bytes(pal[i * 3:i * 3 + 3]) for i in used)
+    # int() first: `used` holds numpy uint8, whose i*3 overflows past 85
+    # and silently writes wrong palette bytes (found in the live log).
+    pal_bytes = b"".join(bytes(pal[i * 3:i * 3 + 3]) for i in map(int, used))
     packed = pack_indices(inv.reshape(idx.shape).astype(np.uint8), bpc)
     return {"stream": deflate_best(packed), "palette": pal_bytes,
             "bpc": bpc, "hival": n - 1, "w": idx.shape[1], "h": idx.shape[0]}

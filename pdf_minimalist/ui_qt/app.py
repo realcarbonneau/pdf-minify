@@ -1310,6 +1310,25 @@ class MainWindow(QMainWindow):
         self.token.cancel()
         self.status.setText("Cancelling…")
 
+    def closeEvent(self, e):
+        """§94: closing mid-processing must never crash. Cancel everything,
+        let worker threads notice between phases and join them, then close."""
+        self.token.cancel()
+        self._mini_token.cancel()
+        self._work_token.cancel()
+        for job in list(self._jobs):
+            try:
+                job.wait(8000)
+            except Exception:  # noqa: BLE001
+                pass
+        if self.doc:
+            try:
+                self.doc.close()
+            except Exception:  # noqa: BLE001
+                pass
+            self.doc = None
+        super().closeEvent(e)
+
 
 def main(start_pdf: str | None = None, debug: bool = False):
     log.info("starting pdf-minimalist debug=%s pdf=%s", debug, start_pdf)

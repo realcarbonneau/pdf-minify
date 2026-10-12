@@ -717,9 +717,9 @@ cancelled/re-run, arrivals key-addressed not generation-gated); amounts +
 preview belong to the spec (cancelled on change); a click during initial load
 reuses the running mini job with a preview follow-up. Previews cache always
 but apply only when still current. Verified: no-restart probe (same mini
-object, token uncancelled) + suite green. BUGS.md created with B1–B22,
+object, token uncancelled) + suite green. issues.md created with B1–B22,
 crossed on designer confirmation only.
-See: `pdf_minimalist/ui_qt/app.py` (`_dispatch_filters`), `BUGS.md`.
+See: `pdf_minimalist/ui_qt/app.py` (`_dispatch_filters`), `issues.md`.
 
 ## 91 — DONE
 ~~Also, the app should remember the last opened file.~~
@@ -872,3 +872,22 @@ please, it's not usefull.~~
 Stub: `git rm`'d; references swapped to `form-941-2026.pdf` (bench script,
 README corpus + benchmark tables, bench CSV re-measured). Verified: suite
 green (no code depended on it).
+
+## 93 — DONE
+~~always run normally so that I can test the features like opening the last
+opened file please.  So far, that has NOT worked also, add this and my
+previous message to the bugs list, maybe we should call it issues.md?~~
+Stub: bare `./run.sh` from here on (no forced file); last-file failure was
+test pollution of real QSettings (conftest now isolates `XDG_CONFIG_HOME`);
+`BUGS.md` renamed to `issues.md` with B23 (last-file garbage) + B24
+(right-pane zoom reframe) added. Verified: suite green, bare relaunch
+reopens the demo.
+See: `issues.md`, `tests/conftest.py`.
+
+## 94 — DONE
+~~I closed the last one while it was processing as a test, this is normal to
+write safe code for all scenarios and have test cases for all scenarios,
+please make sure you do complete work.~~
+Stub: `closeEvent` cancels all tokens, joins workers (8s each), closes the
+doc; new close-mid-processing test. Verified: 48/48 green.
+See: `pdf_minimalist/ui_qt/app.py` (`closeEvent`), `issues.md` (B26).
