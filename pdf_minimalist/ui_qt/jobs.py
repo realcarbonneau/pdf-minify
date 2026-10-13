@@ -135,21 +135,77 @@ def mini_for_preset(gray_mini: np.ndarray, pid: str) -> np.ndarray:
     return presets.apply_color_preview(rgb, pid)
 
 
-def estimate_bytes(path: str, page: int, pid: str, dpi: int) -> int:
-    """Real save-payload size for one BW preset page (§55: measured).
+def estimate_bytes(path: str, page: int, pid: str, dpi: int,
+                   force_raster: bool = True, preset: dict | None = None) -> int:
+    """Real save-payload size for one BW preset page (§§55/103: measured).
 
-    BW runs the exact encoder the saver embeds (validated JBIG2, else the
-    PNG fallback). Color presets use per-document totals instead
-    (`color_doc_total`); this stays for BW pages only.
+    Runs the exact encoder the saver embeds (validated JBIG2, else the PNG
+    fallback) — or, with force off on a text page, the mixed-mode image
+    total, exactly like Save. Color presets use per-document totals instead
+    (`color_doc_total`); this stays for BW pages only. `preset` is passed
+    explicitly for pool workers (see `mini_page_task`).
     """
     from ..core.pipeline import bw_page_payload
-    p = presets.get(pid)
+    p = preset if isinstance(preset, dict) else presets.get(pid)
+    if not force_raster and _page_has_text(path, page):
+        return estimate_mixed_page(path, page)
     gray = render_gray(path, page, dpi)
     payload, _codec = bw_page_payload(gray, p["params"]["strategy"], p["params"]["t"])
     return len(payload)
 
 
-def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None = None) -> int:
+def _page_has_text(path: str, page: int) -> bool:
+    import fitz
+    from ..core.pdf_io import FITZ_LOCK
+    with FITZ_LOCK:
+        doc = _open(path)
+        try:
+            return bool(doc[page].get_text().strip())
+        finally:
+            doc.close()
+
+
+def estimate_mixed_page(path: str, page: int) -> int:
+    """Mixed-mode page total (designer §103): text passes free, images replay
+    the saver's exact JPEG q45/150dpi decision. Shared streams are attributed
+    to their FIRST page (same doc-wide dedupe as Save), so per-page values
+    sum to the document total exactly."""
+    import fitz
+    from ..core.pipeline import color_stream_plan
+    subtotal = 0
+    doc = _open(path)
+    try:
+        done: set[int] = set()
+        for pno in range(min(page + 1, doc.page_count)):
+            entries = doc[pno].get_images(full=True)
+            masks = {e[1] for e in entries if e[1]}
+            for e in entries:
+                xref = e[0]
+                if xref in done or xref in masks:
+                    continue
+                done.add(xref)
+                if pno != page:
+                    continue
+                try:
+                    info = doc.extract_image(xref)
+                except Exception:
+                    continue
+                plan = color_stream_plan(
+                    info["image"], info["width"], info["height"],
+                    info.get("bpc"), 150, 45, "jpeg", 192, 64, False)
+                if plan is None:
+                    subtotal += len(info["image"])
+                else:
+                    subtotal += len(plan["stream"])
+                    if plan["indexed"] is not None:
+                        subtotal += 2 * len(plan["indexed"]["palette"])
+    finally:
+        doc.close()
+    return subtotal
+
+
+def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None = None,
+                    lossless: bool = False, preset: dict | None = None) -> int:
     """Real post-save image-payload total for one color preset (§§59/85).
 
     Replays the saver's exact per-image decision (`color_stream_plan`,
@@ -160,7 +216,7 @@ def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None =
     """
     import fitz
     from ..core.pipeline import color_stream_plan
-    p = presets.get(pid)
+    p = preset if isinstance(preset, dict) else presets.get(pid)
     prm = p["params"]
     cap = dpi_cap if dpi_cap is not None else prm["dpi_cap"]
     codec = "jpx" if p["mode"] == "jpx" else ("indexed" if p["mode"] == "indexed" else "jpeg")
@@ -184,7 +240,7 @@ def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None =
                     info["image"], info["width"], info["height"],
                     info.get("bpc"), cap,
                     prm.get("jpeg_q", 45), codec, prm.get("rate", 192),
-                    colors)
+                    colors, lossless)
                 if plan is None:
                     total += len(info["image"])
                 else:
@@ -197,8 +253,12 @@ def color_doc_total(path: str, pid: str, colors: int = 64, dpi_cap: int | None =
     return total
 
 
-def preview_page(path: str, page: int, spec: dict) -> np.ndarray:
-    """Full preview render for one page under the active spec (own handle)."""
+def preview_page(path: str, page: int, spec: dict,
+                 preset: dict | None = None) -> np.ndarray:
+    """Full preview render for one page under the active spec (own handle).
+
+    `preset` carries mode+params explicitly: pool workers re-import modules
+    fresh and never see runtime renames/copies/saves (same as mini/est)."""
     from ..core import threshold as T
     if spec["mode"] == "indexed":
         from ..core.pipeline import indexed_rgb
@@ -206,12 +266,17 @@ def preview_page(path: str, page: int, spec: dict) -> np.ndarray:
         return indexed_rgb(rgb, spec.get("colors", 64))
     if spec["mode"] == "jpx":
         rgb = render_rgb(path, page, PREVIEW_DPI)
-        return presets.apply_jpx_preview(rgb, spec["preset_id"], spec.get("dpi_cap"))
+        return presets.apply_jpx_preview(rgb, spec["preset_id"], spec.get("dpi_cap"),
+                                         spec.get("lossless", False), preset=preset)
     if spec["mode"] == "color":
         rgb = render_rgb(path, page, PREVIEW_DPI)
-        return presets.apply_color_preview(rgb, spec["preset_id"], spec.get("dpi_cap"))
+        return presets.apply_color_preview(rgb, spec["preset_id"], spec.get("dpi_cap"),
+                                           preset=preset)
     if spec["mode"] == "passthrough":
         return render_rgb(path, page, PREVIEW_DPI)
+    # §113: the preview ALWAYS shows the full filter effect, even where mixed
+    # mode passes text through at save — the right pane previews the
+    # selected filter, period (minis match it exactly).
     gray = render_gray(path, page, PREVIEW_DPI)
     s, t = spec["strategy"], spec["t"]
     fn = {"simple": lambda g: T.simple(g, t), "otsu": T.otsu,
@@ -220,13 +285,18 @@ def preview_page(path: str, page: int, spec: dict) -> np.ndarray:
     return np.stack([out] * 3, axis=-1)  # RGB for a uniform pane path
 
 
-def mini_page_task(path: str, page: int, pid: str) -> np.ndarray:
+def mini_page_task(path: str, page: int, pid: str, preset: dict | None = None) -> np.ndarray:
     """Small full-page render through one preset for mini compositing (§48).
 
     Runs in a pool process (must stay picklable). Always RGB so the
     framing composite has one code path; BW presets stack their 0/255 output.
+    Minis ALWAYS show the rasterized filter recipe — even where mixed mode
+    (§103) passes text through in preview/save — so a BW mini is never a
+    color photo and toggling force never touches a single mini (§105).
+    `preset` carries mode+params explicitly: pool workers re-import modules
+    fresh and never see runtime renames/copies/saves.
     """
-    p = presets.get(pid)
+    p = preset if isinstance(preset, dict) else presets.get(pid)
     if p["mode"] == "bw":
         from ..core import threshold as T
         gray = render_gray(path, page, MINI_PAGE_DPI)
@@ -241,9 +311,9 @@ def mini_page_task(path: str, page: int, pid: str) -> np.ndarray:
         if p["mode"] == "indexed":
             rgb = indexed_rgb(rgb, p["params"].get("colors", 64))
         elif p["mode"] == "jpx":
-            rgb = presets.apply_jpx_preview(rgb, pid)
+            rgb = presets.apply_jpx_preview(rgb, pid, preset=p)
         else:
-            rgb = presets.apply_color_preview(rgb, pid)
+            rgb = presets.apply_color_preview(rgb, pid, preset=p)
         rgb = np.asarray(rgb)
     img = PILImage.fromarray(rgb)
     w, h = img.size
@@ -320,7 +390,7 @@ class FilterWorker(QThread):
 
     def __init__(self, path, preset_ids, spec, token, generation, n_pages: int,
                    need_mini=None, need_est_pages=None, need_est_doc=None,
-                   need_preview=True):
+                   need_preview=True, preset_snap=None):
         super().__init__()
         self.path = path
         self.preset_ids = list(preset_ids)
@@ -335,6 +405,9 @@ class FilterWorker(QThread):
         self.need_est_pages = {pid: sorted(v) for pid, v in dict(need_est_pages or {}).items()}
         self.need_est_doc = dict(need_est_doc or {})
         self.need_preview = bool(need_preview)
+        # Snapshot of mode+params per pid: pool workers re-import modules
+        # fresh and never see runtime renames/copies/saves.
+        self.preset_snap = dict(preset_snap or {})
 
     @staticmethod
     def fmt(n: int) -> str:
@@ -364,7 +437,8 @@ class FilterWorker(QThread):
         # right pane is the designer's focus, so it updates before anything
         # else. Pooled per page.
         if self._alive() and self.need_preview:
-            futs = {ex.submit(preview_page, self.path, i, self.spec): i
+            _active_snap = self.preset_snap.get(self.spec.get("preset_id"))
+            futs = {ex.submit(preview_page, self.path, i, self.spec, _active_snap): i
                     for i in range(n_pages)}
             pages = {}
             for fut in cf.as_completed(futs):
@@ -389,12 +463,22 @@ class FilterWorker(QThread):
         # filter bar at exactly 50%. One shared batch lets each bar advance
         # on its own completions instead.
         if self._alive() and (mini_tasks or est_tasks):
-            futs = {ex.submit(mini_page_task, self.path, i, pid): ("mini", pid, i)
+            snap = self.preset_snap
+
+            def _recipe_force(_pid: str) -> bool:
+                # §106: each filter's amount follows its OWN recipe force
+                # (§103: only bw-fast forces) — never the checkbox, so the
+                # toggle cannot churn any size.
+                _prm = (snap.get(_pid) or {}).get("params", {})
+                return bool(_prm.get("force_raster", False))
+
+            futs = {ex.submit(mini_page_task, self.path, i, pid, snap.get(pid)): ("mini", pid, i)
                     for pid, idxs in self.need_mini.items() for i in idxs}
-            futs.update({ex.submit(estimate_bytes, self.path, i, pid, dpi): ("est", pid, i)
+            futs.update({ex.submit(estimate_bytes, self.path, i, pid, dpi,
+                                   _recipe_force(pid), snap.get(pid)): ("est", pid, i)
                          for pid, idxs in self.need_est_pages.items() for i in idxs})
-            futs.update({ex.submit(color_doc_total, self.path, pid, colors, cap): ("est", pid, -1)
-                         for pid, (colors, cap) in self.need_est_doc.items()})
+            futs.update({ex.submit(color_doc_total, self.path, pid, colors, cap, lossless, snap.get(pid)): ("est", pid, -1)
+                         for pid, (colors, cap, lossless) in self.need_est_doc.items()})
             for fut in cf.as_completed(futs):
                 if not self._alive():
                     return

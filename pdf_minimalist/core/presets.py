@@ -17,19 +17,19 @@ PRESETS = [
     {"id": "orig", "label": "Original", "mode": "passthrough",
      "params": {}, "blurb": "gc+deflate only, baseline"},
     {"id": "bw-otsu", "label": "BW · Otsu Auto", "mode": "bw", "default": True,
-     "params": {"strategy": "otsu", "t": 180, "dpi": 300, "encoder": "jbig2-g4"},
+     "params": {"strategy": "otsu", "t": 180, "dpi": 300, "encoder": "jbig2-g4", "force_raster": False},
      "blurb": "best default for scans"},
     {"id": "bw-t180", "label": "BW · Clean T=180", "mode": "bw",
-     "params": {"strategy": "simple", "t": 180, "dpi": 300, "encoder": "jbig2-g4"},
+     "params": {"strategy": "simple", "t": 180, "dpi": 300, "encoder": "jbig2-g4", "force_raster": False},
      "blurb": "clean laser prints (GIMP-Threshold style)"},
     {"id": "bw-t210", "label": "BW · Strong T=210", "mode": "bw",
-     "params": {"strategy": "simple", "t": 210, "dpi": 300, "encoder": "jbig2-g4"},
+     "params": {"strategy": "simple", "t": 210, "dpi": 300, "encoder": "jbig2-g4", "force_raster": False},
      "blurb": "faint pencil / gray background"},
     {"id": "bw-sauvola", "label": "BW · Stained Paper", "mode": "bw",
-     "params": {"strategy": "sauvola", "t": 180, "dpi": 300, "encoder": "jbig2-g4"},
+     "params": {"strategy": "sauvola", "t": 180, "dpi": 300, "encoder": "jbig2-g4", "force_raster": False},
      "blurb": "yellowed / uneven light, slower"},
     {"id": "bw-fast", "label": "BW · Fast Draft", "mode": "bw",
-     "params": {"strategy": "otsu", "t": 180, "dpi": 200, "encoder": "g4"},
+     "params": {"strategy": "otsu", "t": 180, "dpi": 200, "encoder": "g4", "force_raster": True},
      "blurb": "quick pass on old hardware"},
     {"id": "color-j2k", "label": "Color · JPEG2000", "mode": "jpx",
      "params": {"dpi_cap": 150, "rate": 192},
@@ -78,12 +78,13 @@ def apply_bw(gray, preset_id: str):
     return fn(gray)
 
 
-def apply_color_preview(rgb, preset_id: str, dpi_cap: int | None = None):
+def apply_color_preview(rgb, preset_id: str, dpi_cap: int | None = None,
+                          preset: dict | None = None):
     """RGB numpy array -> JPEG-roundtripped preview (§85: cap = single DPI)."""
     import numpy as np
     from PIL import Image
     import io
-    p = get(preset_id)
+    p = preset if isinstance(preset, dict) else get(preset_id)
     if p["mode"] != "color":
         raise ValueError(f"{preset_id} is not a color preset")
     q = p["params"]["jpeg_q"]
@@ -99,14 +100,15 @@ def apply_color_preview(rgb, preset_id: str, dpi_cap: int | None = None):
     return np.asarray(Image.open(buf).convert("RGB"))
 
 
-def apply_jpx_preview(rgb, preset_id: str, dpi_cap: int | None = None):
+def apply_jpx_preview(rgb, preset_id: str, dpi_cap: int | None = None,
+                      lossless: bool = False, preset: dict | None = None):
     """RGB numpy array -> JPEG2000-roundtripped preview (designer §§56/85)."""
     import numpy as np
     from PIL import Image
     import io
-    p = get(preset_id)
+    p = preset if isinstance(preset, dict) else get(preset_id)
     if p["mode"] != "jpx":
         raise ValueError(f"{preset_id} is not a JPEG2000 preset")
     cap = dpi_cap if dpi_cap is not None else p["params"]["dpi_cap"]
-    data = jpx_encode(rgb, cap, p["params"].get("rate", 192))
+    data = jpx_encode(rgb, cap, p["params"].get("rate", 192), lossless)
     return np.asarray(Image.open(io.BytesIO(data)).convert("RGB"))

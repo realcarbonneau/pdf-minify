@@ -125,8 +125,104 @@ while thread is still running` and pool-teardown races. Fixed: `closeEvent`
 cancels all tokens, joins workers, closes the document; covered by a
 close-mid-processing test.
 
+## B28 — OPEN — strip must be one full row, no vscroll (§96)
+Shipped: fixed height, vertical scrollbar off, horizontal on overflow.
+
+## B29 — OPEN — kill the selection bar, all of it (§§96/97)
+First pass removed only the blue background; the standard focus frame
+survived (visible only while focused — exactly as reported). Fixed: the
+strip takes no keyboard focus at all (mouse selection unaffected).
+
+## B32 — OPEN — ring instead of bar (§98)
+The bar is gone, but dropping ALL selection marking would break the modern
+pattern for a reason: the strip must always show which filter the right pane
+is displaying (plus keyboard position). The pattern is a ring ON the item,
+not a bar below it: the selected mini now paints a 2px theme-highlight frame
+around its preview box, drawn by us so no style or focus change can alter it.
+
+## B30 — OPEN — progress overlaid mid-thumbnail (§96)
+Shipped: centered overlay plate, reserved space below deleted, icons shorter.
+
+## B31 — OPEN — one compact action row (§96)
+Shipped: zoom-out / live % / zoom-in + separator + Save + X in a single
+toolbar; X stops the running save only (disabled otherwise).
+
 ## B27 — OPEN — bars start at 50% again (§95)
 Symptom: per-filter bars jump to 50% with the first mini and sit through the
 slow amounts. Cause: the 50/50 phase split weighed fast minis like slow
 encodings. Fixed: cost-weighted completions (15/85, current-job arrivals
 only) via a unit-tested `filter_progress` — bars always start at 0.
+
+## B33 — OPEN — preview grid out of sync (§101)
+Symptom: zoomed out, the original wraps to side-by-side pages but the right
+preview does not follow. Cause: downsampled color previews have smaller dims,
+so the right pane computed its own grid. Fixed: the preview mirrors the
+baseline grid exactly (`layout_from` — positions, columns, zoom source).
+
+## B34 — OPEN — zoom resets + processing on filter switch (§101)
+Symptom: changing filters reset the zoom and showed processing. Cause: same
+grid mismatch reflowed the view on every switch. Fixed by the §101 mirror —
+switches can't move the view; only the zoom controls reset it. First-view
+preview renders once per spec (process-once); repeats hit cache.
+
+## B35 — OPEN — palette enum crashed opens, popup buried it (§102)
+Symptom: opening any file failed with a popup; nothing about the cause in
+the log. Cause: `QPalette.Mid` exists on the class, not the instance — and
+`open_file` showed only a QMessageBox, swallowing the traceback (which also
+hung the headless suite on the modal). Fixed: class enum access; `open_file`
+logs the full traceback to stdout first.
+
+## B38 — OPEN — panes drifted unequal, divider invisible (§104)
+Symptom: no visible divider; dragging left unequal panes. Fixed: 6px styled
+divider handle; any drag snaps back to equal halves (single-pane mode
+excluded).
+
+## B39 — OPEN — raster toggle churned all minis (§105)
+Symptom: flipping force-raster visibly reprocessed every BW thumbnail.
+First fix (minis follow the UI checkbox) was wrong — it also painted BW
+minis as full-color photos on text pages. Real fix: minis ALWAYS show the
+rasterized filter recipe (achromatic for BW); only preview, amounts and save
+follow the checkbox. Pinned by a filter-set test covering every preset.
+
+## B41 — OPEN — BW minis showed color photos (§105 follow-up)
+Symptom: BW thumbnails rendered the original color page. Cause: mixed-mode
+mini logic returned the RGB original for text pages. Fixed as above; new
+`test_filter_set_covers_every_preset` asserts every strip preset renders its
+own kind (BW achromatic), previews, and measures.
+
+## B40 — OPEN — sizes blank on toggle (§106)
+Symptom: every amount blanked to sizing… on toggle, even when identical.
+Cause: reframe popped displayed values for missing keys. Fixed architecture:
+displayed minis/amounts are stable store views — recomputes update them in
+place, only a new file clears (stale-while-revalidate, bars signal work).
+
+## B43 — OPEN — splitter had to go (§107)
+Symptom: a draggable divider between panes that could never stay put.
+Fixed: deleted — fixed equal layout, direction flips per view mode.
+
+## B44 — OPEN — clicks looked like recompute (§108)
+Symptom: clicking a mini visibly reflashed the preview. Jobs never reran
+(§44 held, log-proven); the pane rebuilt identical pixmaps. Fixed: panes
+skip the rebuild when already showing the key.
+
+## B45 — OPEN — right preview sits empty (§111)
+Symptom: big right pane blank, especially right after open. The baseline
+rendered instantly on the left while the right waited for the first
+background preview. Fixed: right pane shows baseline immediately; the real
+filter preview replaces it the moment it lands.
+
+## B46 — OPEN — BW mini, original-looking preview (§113)
+Symptom: clicking a BW mini showed the original in the big preview. Cause:
+mixed-mode preview rendered text pages as original while minis showed the
+thresholded filter. Fixed: the right pane always shows the full filter
+effect; force left the preview identity (toggle never rebuilds it).
+
+## B36 — OPEN — raster was global, on by default (§103)
+Symptom: force-raster flattened text everywhere unless unticked. Fixed: per
+filter, default off except `BW · Fast Draft`; preset switch syncs the box.
+
+## B37 — OPEN — raster toggle recalculated nothing (§103)
+Symptom: flipping force-raster left previews and amounts stale. Cause:
+previews/amounts/keys ignored the flag. Fixed: the flag is in the spec,
+cache keys, mini keys and estimator; mixed mode (text passes, images
+compress) shared by save, preview and estimator alike.

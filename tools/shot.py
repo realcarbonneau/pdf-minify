@@ -21,7 +21,7 @@ from pdf_minimalist.ui_qt.app import MainWindow, setup_logging  # noqa: E402
 def wait_job(w, timeout=120):
     t0 = time.perf_counter()
     while any(j is not None and not j.isFinished()
-              for j in (w._mini_job, w._work_job)):
+              for j in (*w._mini_jobs, w._work_job)):
         if time.perf_counter() - t0 > timeout:
             print("WARN: job wait timed out")
             break

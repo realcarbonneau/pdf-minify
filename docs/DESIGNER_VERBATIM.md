@@ -560,6 +560,72 @@
 ## 95 — bars start at 50% again (verbatim, 2026-10-10)
 > thumbnails progress bar always starts a 50% and stays there until real processing starts, this is incorrect. please fix and add to issues.
 
+## 96 — strip height, selection bar, overlay progress, action row (verbatim, 2026-10-10)
+> The preview thumnail section below should always be full heigh, no vertical scroll bar. There is a blue bar under the selected filter which you should remove.  The progress bar should be layed over the middle of the thumbnail and remove the progress bar reserved space below the thumbnail.  Also, put the save and X button on the same line as zoom and put them less wide.  I still don't know what the X button does, please explain once you are done your work.  Create each of these as issues and I will confirm once they can be marked as completed.
+
+## 97 — focus bar remainder (verbatim, 2026-10-10)
+> why is there still a bar under the thumbnail when it is selected, but not when the window is out of focus, is that a standard part of the widgets?  I asked to remove the "blue bar", not just the "blue".
+
+## 98 — selection ring vs bar (verbatim, 2026-10-10)
+> The whole thumbnail is already highlighted when selected, the bar below it is redundant, at least from my perspective, but I want to follow modern best practices if there is a specific reason for ti.
+
+## 99 — standard progress + widget lab (verbatim, 2026-10-10)
+> The progress bar layed over the thumbnails should be the standard progress bar.  Why did you put it green which varies from the previous progress bars.  Make me a menu item with widget lab that shows various options for the progress bar, including a percentage in the center of each.  Also variations that follow modern best practices for Qt and the existing framework.  Also, make another menu option with a window with variations of the zoom, save, cancel buttons, also including those that follow modern best practices.
+
+## 100 — lossless checkbox (verbatim, 2026-10-10)
+> Also, add a checkbox for lossless.  If the algorithm doesn't have the choice, keep it, but make it grey with the correct otpion, it should always be show for each filter type on the right side.
+
+## 101 — preview grid out of sync (verbatim, 2026-10-10)
+> Also, when I zoom out, the original side works correctly by putting pages side-by-side, but the right preview side does not follow in sync.  Add this to the list of issues.
+
+## 102 — popup buried the traceback (verbatim, 2026-10-10)
+> 'PySide6.QtGui.QPalette' object has no attribute 'Mid', BUT you should see this in the log automatically, no?  This was in a popup.
+
+## 103 — raster is per-filter + toggle dead (verbatim, 2026-10-10)
+> force full page raste should be per filter option and should not be enabled on the default filters except for one BW example filter.  Normally, we don't want to raster the text, only copress the images.  Also, I change the full-page raster option on/off and no recacls, so that is another fail, another issue.
+
+## 104 — locked equal panes + relaunch rule (verbatim, 2026-10-10)
+> Also, another issue, no horizontal divider between original and right side preview, they must always have exact same size.  Also, I already told you to always stop and relauch the app after you make changes, why do I have to repeat??
+
+## 105 — toggle churns all minis (verbatim, 2026-10-10)
+> when I check/uncheck the force raster, it changes all the BW thumbnails, this is wrong!
+
+## 106 — sizes churn on toggle (verbatim, 2026-10-10)
+> It still changes the size of all the thumbnail previews, you clearly don't have clear app architecture, please improve and fix!
+
+## 107 — remove the splitter (verbatim, 2026-10-10)
+> Remove the vertical sizer between the two main previews, not just make it not draggable, that is just wrong.
+
+## 108 — click looks like recompute (verbatim, 2026-10-10)
+> also, why when I click on a mini, the filter seems to be recomputed, that is wrong, read my design rulings.
+
+## 109 — rename/copy filter (verbatim, 2026-10-10)
+> Also, have a button that permits naming/renaming the filter, and a popup for that.  Also have a copy button that shows the same naming popup, but used for the copy.
+
+## 110 — github text + findable readme (verbatim, 2026-10-10)
+> Also, when you are done, give me some text, descriptions and tags to put in github project.  Also, make sure the readme makes the project findable and well explained.
+
+## 111 — right preview empty (verbatim, 2026-10-10)
+> Big Preview right side is stil not working!!  Why are you failing so much?
+
+## 112 — save filter + one-line row (verbatim, 2026-10-10)
+> I need a save filter changes button also after the rename and copy, or before.  Also, put the filter name and these buttons on the same line, resizing the dropdown to fill the space.
+
+## 113 — preview must show the filter + button icons (verbatim, 2026-10-10)
+> It still doesn't work, I choose a BW mini and the big upper right preview is wrong!  Why are you so lost??
+
+## 114 — icons on Save/Rename/Copy (verbatim, 2026-10-10)
+> And put the proper icons on the save, rename, duplicate buttons.
+
+## 115 — amounts status, panel slider, rename icon (verbatim, 2026-10-10)
+> Why when I click on thumbnails is says "rendering amounts"?  And add an adjustable slider for the far right pane with the controls.  Also, find a rename icon, there are some standard.
+
+## 116 — force toggle churns filters (verbatim, 2026-10-13)
+> again, when I change full page raster, many filters get updated, this is wrong and I have said this many times!
+
+## 117 — panel slider wrong, want draggable divider (verbatim, 2026-10-13)
+> and the panel width slider is completely wrong, the divider should be adjustable, like the previous preview divider.
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.

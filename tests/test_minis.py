@@ -79,6 +79,82 @@ def test_threshold_slider_only_for_simple(tmp_path):
     assert not w.slider.isEnabled()
 
 
+def test_lossless_checkbox_states(tmp_path):
+    """Designer §100: choice only for JPX; grey + fixed everywhere else."""
+    from pdf_minimalist.core import presets
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    ids = [p["id"] for p in presets.PRESETS]
+    w.preset.setCurrentIndex(ids.index("bw-otsu"))
+    assert w.lossless_box.isChecked() and not w.lossless_box.isEnabled()
+    w.preset.setCurrentIndex(ids.index("color-j2k"))
+    assert w.lossless_box.isEnabled() and not w.lossless_box.isChecked()
+    w.lossless_box.setChecked(True)
+    assert w.lossless_box.isChecked()
+    w.preset.setCurrentIndex(ids.index("color-max"))
+    assert not w.lossless_box.isChecked() and not w.lossless_box.isEnabled()
+    w.preset.setCurrentIndex(ids.index("color-i64"))
+    assert w.lossless_box.isChecked() and not w.lossless_box.isEnabled()
+
+
+def test_recompute_never_blanks_amounts(tmp_path):
+    """Designer §106: stale-while-revalidate — a recompute keeps known
+    amounts on screen (bars signal the work); only a new file clears."""
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    held = {pid: f"{i}KB ({i}%)" for i, pid in enumerate(w._strip_ids)}
+    w._mini_est.update(held)
+    w._reframe_minis()
+    assert w._mini_est == held
+
+
+def test_filter_set_covers_every_preset(tmp_path):
+    """Designer complaint: every strip filter renders its own kind — BW minis
+    are never color photos, and every preset previews + measures cleanly."""
+    import numpy as _np
+    from pdf_minimalist.core import presets
+    from pdf_minimalist.ui_qt.jobs import (
+        mini_page_task, preview_page, estimate_bytes, color_doc_total,
+        PREVIEW_DPI, render_rgb)
+    from pdf_minimalist.core.cancel import CancelToken
+    src = str(_three_pages(str(tmp_path)))
+    for p in presets.PRESETS:
+        if p["mode"] == "passthrough":
+            continue
+        pid = p["id"]
+        mini = mini_page_task(src, 0, pid)
+        assert mini.ndim == 3 and mini.shape[2] == 3, pid
+        if p["mode"] == "bw":
+            # BW minis are achromatic (resampling fringes allowed) — never a
+            # color photo.
+            assert (mini[..., 0] == mini[..., 1]).all(), pid
+            assert (mini[..., 1] == mini[..., 2]).all(), pid
+        if p["mode"] == "bw":
+            assert estimate_bytes(src, 0, pid, 300, True) > 0, pid
+        else:
+            assert color_doc_total(src, pid) >= 0, pid
+        spec = {"preset_id": pid, "mode": p["mode"], "dpi": 300,
+                "strategy": "otsu", "t": 180, "colors": 64,
+                "dpi_cap": 150, "rate": 192, "lossless": False,
+                "force_raster": False}
+        prev = preview_page(src, 0, spec)
+        assert prev.ndim == 3 and prev.shape[2] == 3, pid
+
+
+def test_preview_ignores_force_raster(tmp_path):
+    """Designer §113: the right pane always shows the filter effect —
+    toggling force must not rebuild (or change) the preview."""
+    import numpy as _np
+    from pdf_minimalist.ui_qt.jobs import preview_page
+    from pdf_minimalist.ui_qt.app import MainWindow as _MW
+    src = str(_three_pages(str(tmp_path)))
+    base = {"preset_id": "bw-otsu", "mode": "bw", "dpi": 300,
+            "strategy": "otsu", "t": 180}
+    a = preview_page(src, 0, dict(base, force_raster=True))
+    b = preview_page(src, 0, dict(base, force_raster=False))
+    assert _np.array_equal(a, b)
+    assert _MW._spec_tuple(dict(base, force_raster=True)) == \
+        _MW._spec_tuple(dict(base, force_raster=False))
+
+
 def test_colors_slider_only_for_indexed(tmp_path):
     """Designer §67: Colors feeds Indexed only — disabled elsewhere."""
     from pdf_minimalist.core import presets
@@ -165,7 +241,7 @@ def test_close_mid_processing_is_safe(tmp_path):
     import time
     w = MainWindow(str(_three_pages(str(tmp_path))))
     _app.processEvents()
-    assert w._mini_job is not None or w._work_job is not None
+    assert w._mini_jobs or w._work_job is not None
     w.close()  # must not raise, hang, or abort
     t0 = time.perf_counter()
     while any(not j.isFinished() for j in list(w._jobs)):
@@ -185,6 +261,17 @@ def test_filter_progress_weights_cost(tmp_path):
     assert filter_progress(7, 7, 7, 7) == 1.0
     assert filter_progress(0, 0, 0, 0) == 1.0
     assert filter_progress(0, 0, 3, 7) == 3 / 7
+
+
+def test_panes_equal_no_splitter(tmp_path):
+    """Designer §107: no splitter — fixed equal layout, widths always match."""
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    w.resize(1100, 650)
+    w.show()
+    _app.processEvents()
+    assert hasattr(w, "panes") and not hasattr(w, "split")
+    assert abs(w.before.width() - w.after.width()) <= 2, \
+        (w.before.width(), w.after.width())
 
 
 def test_preset_strip_sync_by_id():
@@ -210,3 +297,110 @@ def test_file_menu_and_single_panel(tmp_path):
     assert w.before.page_count == 3  # baseline renders synchronously
     _wait_job(w)
     assert w.after.page_count == 3  # preview arrives via background job
+
+
+def test_force_raster_per_filter(tmp_path):
+    """Designer §103: only bw-fast forces; preset switch syncs the box."""
+    from pdf_minimalist.core import presets
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    ids = [p["id"] for p in presets.PRESETS]
+    forced = [p["id"] for p in presets.PRESETS
+              if p["mode"] == "bw" and p["params"].get("force_raster")]
+    assert forced == ["bw-fast"]
+    w.preset.setCurrentIndex(ids.index("bw-otsu"))
+    assert not w.force_raster.isChecked()
+    w.preset.setCurrentIndex(ids.index("bw-fast"))
+    assert w.force_raster.isChecked()
+
+
+def test_zz_rename_and_copy_filter(tmp_path, monkeypatch):
+    """Designer §109: rename + copy via naming popup, persisted. Last."""
+    from PySide6.QtWidgets import QInputDialog
+    from pdf_minimalist.core import presets
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    ids = [p["id"] for p in presets.PRESETS]
+    n_combo, n_strip = w.preset.count(), w.filters.count()
+    monkeypatch.setattr(QInputDialog, "getText",
+                        staticmethod(lambda *a, **k: ("My Otsu", True)))
+    w.preset.setCurrentIndex(ids.index("bw-otsu"))
+    w.rename_filter()
+    assert presets.get("bw-otsu")["label"] == "My Otsu"
+    assert w.preset.itemText(w.preset.currentIndex()) == "My Otsu"
+    monkeypatch.setattr(QInputDialog, "getText",
+                        staticmethod(lambda *a, **k: ("J2K copy", True)))
+    w.preset.setCurrentIndex(ids.index("color-j2k"))
+    w.copy_filter()
+    assert w.preset.count() == n_combo + 1
+    assert w.filters.count() == n_strip + 1
+    assert w._strip_ids[-1] not in ids
+    assert presets.get(w._strip_ids[-1])["mode"] == "jpx"
+
+
+def test_preview_only_status_and_panel_divider(tmp_path):
+    """Designer §§107/115/117: preview-only work says preview; the divider
+    between the previews and the right panel drags (slider gone), and the
+    two panes stay locked equal."""
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    _wait_job(w)
+    fkey = w._file_key()
+    pkey = (fkey, w._spec_tuple(w._active_spec()))
+    w._preview_cache.pop(pkey, None)  # force a preview-only miss
+    w._dispatch_filters()
+    assert w.status.text().startswith("Rendering preview"), w.status.text()
+    assert not hasattr(w, "pw_slider")  # slider removed, divider rules
+    assert hasattr(w, "panel_split") and not hasattr(w, "split")
+    w.resize(1100, 650)
+    w.show()
+    _app.processEvents()
+    before = w.panel_split.sizes()
+    assert len(before) == 2
+    w.panel_split.setSizes([before[0] + 120, max(200, before[1] - 120)])
+    _app.processEvents()
+    assert w.panel_split.sizes() != before  # divider really moved
+    assert abs(w.before.width() - w.after.width()) <= 2  # panes still equal
+    from pdf_minimalist.ui_qt.app import _rename_icon, _copy_icon
+    assert not _rename_icon().isNull() and not _copy_icon().isNull()
+
+
+def test_force_toggle_updates_no_filter(tmp_path):
+    """Designer §§105/106/113 + repeated complaint: flipping "Force
+    full-page raster" arms Save and refreshes details only — no mini, amount
+    or preview job may launch and no shown size may move."""
+    import time
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    _wait_job(w)
+    before_est = dict(w._mini_est)
+    before_view = {pid: arr.tobytes() for pid, arr in w._mini_view.items()}
+    before_details = w.details.text()
+    gen_before = w._gen
+    w.force_raster.toggle()
+    assert "text pass-through" in w.details.text() or "forced raster" in w.details.text()
+    assert w.details.text() != before_details  # details DO reflect it
+    # Settle to idle first: a slow initial job may still own the status
+    # line — the point is the toggle itself must not ADD any job.
+    t0 = time.perf_counter()
+    while (any(not j.isFinished() for j in w._mini_jobs)
+           or (w._work_job is not None and not w._work_job.isFinished())
+           or w.status.text().startswith("Rendering")):
+        assert time.perf_counter() - t0 < 120, "jobs never went idle"
+        _app.processEvents()
+        time.sleep(0.05)
+    assert w._gen == gen_before  # the toggle dispatched zero jobs
+    assert dict(w._mini_est) == before_est
+    assert {pid: arr.tobytes() for pid, arr in w._mini_view.items()} == before_view
+
+
+def test_zz_save_filter_persists_and_invalidates(tmp_path):
+    """Designer §112: Save writes UI settings into the filter and rebuilds."""
+    from pdf_minimalist.core import presets
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    ids = [p["id"] for p in presets.PRESETS]
+    w.preset.setCurrentIndex(ids.index("bw-t180"))
+    w.slider.setValue(210)
+    w.save_filter()
+    assert presets.get("bw-t180")["params"]["t"] == 210
+    store = w._custom_store().value("customPresets", [])
+    assert any(c.get("id") == "bw-t180" for c in store)
+    # caches for the new recipe are dropped so they rebuild
+    fkey = w._file_key()
+    assert all(k[1] != "bw-t180" for k in w._mini_pages)

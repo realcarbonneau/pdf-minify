@@ -140,7 +140,20 @@ main preview re-renders at 150dpi on preset click (300dpi at Save).
   instantly with NO new background job. A new job runs only when the file
   (path + mtime + size) or the spec (preset id/params, T/strategy, DPI,
   page-size, force-raster) or the page/crop changes.
-- Per-page override (brief §3): page remembers its preset; empty = current global.
+- BW raster policy (designer ruling §103): force-raster is PER FILTER, on by
+  default only for `BW · Fast Draft` — normally text is never rasterized.
+  With force off, text pages pass through with text intact while their
+  embedded images still compress (JPEG q45/150dpi mixed mode); previews,
+  amounts and minis all honor the flag, and toggling it re-renders like any
+  spec change.
+- Per-page override (brief §3, not yet built): page remembers its preset; empty = current global.
 - ESC cancels thumbnail batch + save job alike (<200ms, partial output deleted).
 - Born-digital warning: selecting a BW preset on a text-layer page shows the
   yellow banner (rasterizes text away) with [Continue] [Use Color instead].
+- Display rule §106: the strip shows key-addressed store views —
+  recomputes never blank displayed minis or amounts (stale-while-revalidate;
+  progress bars signal the work). Only opening a new file clears them.
+- Force rule §§103/105/106/113: minis, previews AND amounts are all
+  force-independent (amounts follow each filter's own recipe force). The
+  "Force full-page raster" checkbox arms Save and refreshes details only —
+  toggling it dispatches zero jobs and moves zero sizes.

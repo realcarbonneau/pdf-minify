@@ -901,3 +901,191 @@ job arrivals only) via unit-tested `filter_progress`: always start at 0,
 climb with real completions. Logged as issues.md B27. Verified: unit vectors
 + 49/49 green.
 See: `pdf_minimalist/ui_qt/app.py` (`filter_progress`).
+
+## 96 — DONE
+~~The preview thumnail section below should always be full heigh, no vertical
+scroll bar. [...] put the save and X button on the same line as zoom [...]~~
+Stub: strip fixed to one full row (no vscroll, h-scroll on overflow,
+selection highlight transparent); progress overlays the mini middle (no
+reserved space, icon shorter); zoom/Save/X share one compact toolbar row.
+Verified: suite green + offscreen.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 97 — DONE
+~~why is there still a bar under the thumbnail when it is selected, but not
+when the window is out of focus, is that a standard part of the widgets?  I
+asked to remove the "blue bar", not just the "blue".~~
+Stub: yes — Qt's focus frame, invisible when unfocused. Strip takes NoFocus
+now (mouse selection unaffected). Verified: suite green.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 98 — DONE
+~~The whole thumbnail is already highlighted when selected, the bar below it
+is redundant [...] follow modern best practices if there is a specific
+reason for ti.~~
+Stub: reason is real (active-filter visibility + keyboard position) but the
+bar is not the pattern — selected mini paints a 2px theme-highlight ring
+around its own box, always marking what the right pane shows; ring defaults
+onto the startup preset. Logged as issues.md B32. Verified: suite green +
+offscreen.
+See: `pdf_minimalist/ui_qt/app.py` (`_paint_strip_item`).
+
+## 100 — DONE
+~~Also, add a checkbox for lossless. [...] it should always be show for each
+filter type on the right side.~~
+Stub: Lossless checkbox — enabled choice only for JPEG2000 (reversible 5/3,
+default off per usually-lossy §81); grey + fixed-correct everywhere else
+(BW/indexed/passthrough on, JPEG off). Threaded through spec, preview, est
+keys, save and details. Verified: states test + JPX lossless roundtrip +
+suite green.
+See: `pdf_minimalist/ui_qt/app.py`, `pdf_minimalist/core/pipeline.py`.
+
+## 101 — DONE
+~~Also, when I zoom out [...] the right preview side does not follow in
+sync. [...] zoom resets [...] some processing [...] zoom should never reset
+unless I press a zoom reset button. Add these as two new issues please~~
+Stub: root cause — preview pages have different dims (color downsampling),
+so the right pane computed its own grid. The preview now mirrors the
+baseline grid exactly (`layout_from`: positions, columns, zoom source).
+Filter switches can't move the view; only the zoom controls reset it.
+Logged as issues.md B33 (grid sync) + B34 (zoom reset/processing on switch).
+Verified: suite green + offscreen grid-mirror check.
+See: `pdf_minimalist/ui_qt/viewer.py`, issues.md.
+
+## 102 — DONE
+~~'PySide6.QtGui.QPalette' object has no attribute 'Mid', BUT you should see
+this in the log automatically, no?  This was in a popup.~~
+Stub: two faults — (1) instance enum access (class-only in this PySide6);
+fixed to class access; (2) `open_file` showed only a popup, burying the
+traceback AND hanging headless runs on the modal. Now `log.exception` first.
+This also explains the stuck suite (modal block inside `open_file`).
+Logged as issues.md B35 (see below). Verified: 53/53 green in 23s.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 103 — DONE
+~~force full page raste should be per filter option [...] Normally, we don't
+want to raster the text, only copress the images. Also, [...] no recacls
+[...]~~
+Stub: per-filter `force_raster` params (only `BW · Fast Draft` True),
+preset switch syncs the box (default unchecked); force-off text pages pass
+through with text intact while images still compress (shared mixed-mode
+helper); flag lives in spec/tuples/mini+est keys so toggling re-renders.
+Logged as issues.md B36/B37. Verified: mixed/force/spec-key tests, 56/56.
+See: `pdf_minimalist/core/pipeline.py`, `pdf_minimalist/ui_qt/jobs.py`.
+
+## 104 — DONE
+~~Also, another issue, no horizontal divider between original and right side
+preview, they must always have exact same size.  Also, I already told you to
+always stop and relauch the app after you make changes, why do I have to
+repeat??~~
+Stub: visible 6px divider; drags snap back to equal halves (single-pane
+excluded). And heard: relaunching without being asked from here on (§62 was
+already the rule — my fault for asking). Logged as issues.md B38. Verified:
+new snap test + suite green.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 105 — DONE
+~~when I check/uncheck the force raster, it changes all the BW thumbnails,
+this is wrong!~~
+Stub: minis depict stable preset recipes, never the live checkbox — only
+preview, amounts and save follow it. First attempt was wrong (it painted BW
+minis as color photos on text pages); corrected to always-rasterized minis
++ filter-set test over every preset. Logged as issues.md B39/B41. Verified:
+suite green (59/59).
+See: `pdf_minimalist/ui_qt/jobs.py` (`mini_page_task`).
+
+## 106 — DONE
+~~It still changes the size of all the thumbnail previews, you clearly don't
+have clear app architecture, please improve and fix!~~
+Stub: fair — the display had no stated rule. Now it does (DESIGN display
+rule): minis/amounts are stable views over key-addressed stores;
+recomputes swap values in place and never blank them (bars signal work);
+only a new file clears. Logged as issues.md B40. Verified: no-blank test +
+suite green.
+See: `docs/DESIGN.md`, `pdf_minimalist/ui_qt/app.py` (`_reframe_one`).
+
+## 107 — DONE
+~~Remove the vertical sizer between the two main previews, not just make it
+not draggable, that is just wrong.~~
+Stub: QSplitter deleted — fixed equal QHBoxLayout (direction flips for
+stacked/single modes). Test asserts equal pane widths. Logged as issues.md
+B43. Verified: suite green + offscreen.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 108 — DONE
+~~also, why when I click on a mini, the filter seems to be recomputed, that
+is wrong, read my design rulings.~~
+Stub: §44 held — jobs never reran on clicks (log proves cache hits). The
+visible flicker was the preview pane rebuilding identical pixmaps: panes now
+skip the rebuild when already showing the key. Logged as issues.md B44.
+Verified: suite green.
+See: `pdf_minimalist/ui_qt/app.py` (`_apply_preview_pages`).
+
+## 109 — DONE
+~~Also, have a button that permits naming/renaming the filter, and a popup
+for that.  Also have a copy button that shows the same naming popup, but
+used for the copy.~~
+Stub: Rename…/Copy… buttons with naming popups; customs persisted in
+QSettings and merged at startup (combo + strip rebuild live). Verified:
+rename/copy test + suite green.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 110 — DONE
+~~Also, when you are done, give me some text, descriptions and tags to put in
+github project.  Also, make sure the readme makes the project findable and
+well explained.~~
+Stub: `docs/GITHUB.md` (short/long description, 12 topics, keywords) +
+rewritten findable README (pipelines, honesty rules, run/test/layout/docs).
+See: `docs/GITHUB.md`, `README.md`.
+
+## 111 — DONE
+~~Big Preview right side is stil not working!!  Why are you failing so much?~~
+Stub: the pane could sit empty until the first preview landed — it now shows
+baseline immediately, replaced by the real filter preview on arrival. Cause
+of confusion found too: theme-dependent selection paint (fixed with a custom
+delegate). Verified: suite green + live screenshots.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 112 — DONE
+~~I need a save filter changes button also after the rename and copy, or
+before.  Also, put the filter name and these buttons on the same line,
+resizing the dropdown to fill the space.~~
+Stub: `Save` writes UI settings into the filter (builtins shadowed by id,
+persisted; caches for the new recipe invalidated so it rebuilds); row is now
+dropdown-fills + Rename + Copy + Save. Verified: save-filter test + 61/61.
+See: `pdf_minimalist/ui_qt/app.py` (`save_filter`).
+
+## 113 — DONE
+~~It still doesn't work, I choose a BW mini and the big upper right preview
+is wrong! [...]~~
+Stub: the mixed-mode preview showed the ORIGINAL on text pages while minis
+showed thresholded — rebuilt so the right pane always shows the full filter
+effect (force left the preview cache key: toggling never rebuilds it).
+Verified: preview-ignores-force test + 62/62.
+See: `pdf_minimalist/ui_qt/jobs.py` (`preview_page`).
+
+## 114 — DONE
+~~And put the proper icons on the save, rename, duplicate buttons.~~
+Stub: Rename (edit-rename chain), Copy (edit-copy), Save (document-save)
+beside their words, theme-or-text fallback like the rest. Verified: suite.
+See: `pdf_minimalist/ui_qt/app.py`.
+
+## 116 — DONE
+~~again, when I change full page raster, many filters get updated, this is
+wrong and I have said this many times!~~
+Stub: BW amounts were still keyed on the checkbox (`_estb_key` carried
+force), so every toggle recomputed every BW size (§106 repeat). Amounts now
+follow each filter's OWN recipe force (only bw-fast forces, §103); the
+checkbox arms Save and refreshes details only — zero jobs dispatched.
+Verified: toggle regression test (fails pre-fix) + suite.
+See: `pdf_minimalist/ui_qt/app.py` (`_estb_key`), `pdf_minimalist/ui_qt/jobs.py`
+(`_recipe_force`).
+
+## 117 — DONE
+~~and the panel width slider is completely wrong, the divider should be
+adjustable, like the previous preview divider.~~
+Stub: dropped the Panel-width slider; the previews block and the right panel
+now sit in a real draggable QSplitter (`panel_split`, non-collapsible).
+§107 untouched: nothing splits the two panes themselves — they stay locked
+equal inside their own half.
+See: `pdf_minimalist/ui_qt/app.py` (`panel_split`).

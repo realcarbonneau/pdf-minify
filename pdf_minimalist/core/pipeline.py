@@ -171,10 +171,12 @@ def _fit_rect(src_w: float, src_h: float, dst_w: float, dst_h: float) -> fitz.Re
     return fitz.Rect(x0, y0, x0 + w, y0 + h)
 
 
-def jpx_encode(arr: np.ndarray, dpi_cap: int, rate: int = 24) -> bytes:
+def jpx_encode(arr: np.ndarray, dpi_cap: int, rate: int = 192,
+               lossless: bool = False) -> bytes:
     """RGB array -> JPEG2000 bytes at the cap rule (designer §56).
 
-    Shared by previews, estimates and saving so all three agree.
+    Shared by previews, estimates and saving so all three agree. Lossless
+    (`§100`, reversible 5/3) when asked; otherwise the given rate.
     """
     h, w = arr.shape[:2]
     scale = min(1.0, (dpi_cap * 11) / max(w, h))
@@ -182,7 +184,10 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int, rate: int = 24) -> bytes:
     if scale < 1.0:
         img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     buf = io.BytesIO()
-    img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[rate])
+    if lossless:
+        img.save(buf, "JPEG2000", quality_mode="lossless")
+    else:
+        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[rate])
     return buf.getvalue()
 
 
@@ -347,7 +352,8 @@ def _place_indexed(doc: "fitz.Document", xref: int, parts: dict):
 
 def color_stream_plan(image_bytes: bytes, w: int, h: int, bpc: int | None,
                       dpi_cap: int, jpeg_q: int = 45,
-                      codec: str = "jpeg", rate: int = 192, colors: int = 64):
+                      codec: str = "jpeg", rate: int = 192, colors: int = 64,
+                      lossless: bool = False):
     """Decide one embedded image's fate (designer §§57/67/80).
 
     Best tool wins per image: the codec re-encode (baseline JPEG, or JPEG2000
@@ -382,7 +388,7 @@ def color_stream_plan(image_bytes: bytes, w: int, h: int, bpc: int | None,
         return {"filter": "/FlateDecode", "stream": parts["stream"],
                 "w": iw, "h": ih, "indexed": parts}
     if codec == "jpx":
-        cands = [(jpx_encode(np.asarray(img), dpi_cap, rate), "/JPXDecode", None)]
+        cands = [(jpx_encode(np.asarray(img), dpi_cap, rate, lossless), "/JPXDecode", None)]
     else:
         buf = io.BytesIO()
         img.save(buf, "JPEG", quality=jpeg_q, optimize=True)
@@ -446,8 +452,9 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
     """Rasterize each page to 1-bit and rebuild PDF. Overwrites nothing in place.
 
     dpi: render resolution (default 300). page_size: "letter" | "a4" | "original".
-    force_raster: True flattens every page to one image; False copies pages that
-      carry extractable text through untouched (protects born-digital pages).
+    force_raster: True flattens every page to one image; False keeps pages
+      carrying extractable text as text while still compressing their images
+      (mixed mode, designer §103 — JPEG q45 at 150dpi for those images).
     per_page: {pageno: {"strategy"/"t"/"dpi"/"page_size"}} overrides.
     progress(pageno, total) called per page.
     Raises CancelledError on ESC. Deletes partial output on cancel (caller should unlink).
@@ -458,7 +465,8 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
     per_page = per_page or {}
     src = fitz.open(in_path)
     out = fitz.open()
-    n_jbig2 = n_png = 0
+    n_jbig2 = n_png = n_pass = 0
+    done: set[int] = set()
     try:
         for i in range(src.page_count):
             if token.cancelled:
@@ -469,7 +477,12 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
             dd = ov.get("dpi", dpi)
             ps = ov.get("page_size", page_size)
             if not force_raster and src[i].get_text().strip():
+                # Mixed mode (designer §103): text pages pass through with
+                # text intact, but their embedded images still compress.
                 out.insert_pdf(src, from_page=i, to_page=i)
+                n_pass += 1
+                _recompress_images(out, [out.page_count - 1], 150, 45,
+                                   "jpeg", 192, 64, False, token, done)
                 if progress:
                     progress(i + 1, src.page_count)
                 continue
@@ -500,7 +513,8 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
             if progress:
                 progress(i + 1, src.page_count)
         out.save(out_path, garbage=4, deflate=True, use_objstms=True)
-        log.info("saved %s: BW pages JBIG2=%d PNG-fallback=%d", out_path, n_jbig2, n_png)
+        log.info("saved %s: BW pages JBIG2=%d PNG-fallback=%d text-passthrough=%d",
+                 out_path, n_jbig2, n_png, n_pass)
     finally:
         out.close()
         src.close()
@@ -519,7 +533,8 @@ def gc_copy(in_path: str, out_path: str):
 @_fitz_locked
 def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int = 50,
                     token: CancelToken | None = None, progress=None,
-                    codec: str = "jpeg", rate: int = 192, colors: int = 64):
+                    codec: str = "jpeg", rate: int = 192, colors: int = 64,
+                    lossless: bool = False):
     """Color path: downsample oversized embedded images + re-encode.
 
     Designer §57: best tools win per image. Candidates per stream are the
@@ -538,41 +553,58 @@ def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int
         for pno in range(total):
             if token.cancelled:
                 raise CancelledError()
-            entries = doc[pno].get_images(full=True)
-            masks = {e[1] for e in entries if e[1]}
-            for e in entries:
-                if token.cancelled:
-                    raise CancelledError()
-                xref = e[0]
-                if xref in done or xref in masks:
-                    continue
-                done.add(xref)
-                try:
-                    info = doc.extract_image(xref)
-                except Exception:
-                    continue
-                plan = color_stream_plan(
-                    info["image"], info["width"], info["height"],
-                    info.get("bpc"), dpi_cap, jpeg_q, codec, rate, colors)
-                if plan is None:
-                    continue
-                if plan["indexed"] is not None:
-                    _place_indexed(doc, xref, plan["indexed"])
-                    continue
-                doc.update_stream(xref, plan["stream"])
-                doc.xref_set_key(xref, "Filter", plan["filter"])
-                doc.xref_set_key(xref, "Width", str(plan["w"]))
-                doc.xref_set_key(xref, "Height", str(plan["h"]))
-                doc.xref_set_key(xref, "ColorSpace", "/DeviceRGB")
-                doc.xref_set_key(xref, "BitsPerComponent", "8")
-                try:
-                    cur = doc.xref_get_key(xref, "DecodeParms")
-                    if cur[0] != "null":
-                        doc.xref_set_key(xref, "DecodeParms", "null")
-                except Exception:
-                    pass
+            _recompress_images(doc, [pno], dpi_cap, jpeg_q, codec, rate,
+                               colors, lossless, token, done)
             if progress:
                 progress(pno + 1, total)
         doc.save(out_path, garbage=4, deflate=True, use_objstms=True)
     finally:
         doc.close()
+
+
+def _recompress_images(doc: "fitz.Document", pages: list, dpi_cap: int,
+                       jpeg_q: int, codec: str, rate: int, colors: int,
+                       lossless: bool, token, done: set):
+    """Re-encode embedded images on the given pages, in place.
+
+    Shared by the color saver (all pages) and the BW mixed mode (copied text
+    pages keep their text while their images still compress — designer §103).
+    `done` dedupes xrefs shared across pages. Raises CancelledError on ESC.
+    """
+    for pno in pages:
+        if token.cancelled:
+            raise CancelledError()
+        entries = doc[pno].get_images(full=True)
+        masks = {e[1] for e in entries if e[1]}
+        for e in entries:
+            if token.cancelled:
+                raise CancelledError()
+            xref = e[0]
+            if xref in done or xref in masks:
+                continue
+            done.add(xref)
+            try:
+                info = doc.extract_image(xref)
+            except Exception:
+                continue
+            plan = color_stream_plan(
+                info["image"], info["width"], info["height"],
+                info.get("bpc"), dpi_cap, jpeg_q, codec, rate, colors,
+                lossless)
+            if plan is None:
+                continue
+            if plan["indexed"] is not None:
+                _place_indexed(doc, xref, plan["indexed"])
+                continue
+            doc.update_stream(xref, plan["stream"])
+            doc.xref_set_key(xref, "Filter", plan["filter"])
+            doc.xref_set_key(xref, "Width", str(plan["w"]))
+            doc.xref_set_key(xref, "Height", str(plan["h"]))
+            doc.xref_set_key(xref, "ColorSpace", "/DeviceRGB")
+            doc.xref_set_key(xref, "BitsPerComponent", "8")
+            try:
+                cur = doc.xref_get_key(xref, "DecodeParms")
+                if cur[0] != "null":
+                    doc.xref_set_key(xref, "DecodeParms", "null")
+            except Exception:
+                pass

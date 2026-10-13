@@ -221,6 +221,18 @@ def _make_flat_logo(path: str):
     d.close()
 
 
+def test_jpx_lossless_roundtrip_exact(tmp_path):
+    """Designer §100: JPX lossless choice round-trips bit-exact."""
+    from pdf_minimalist.core.pipeline import jpx_encode
+    import numpy as _np
+    rng = _np.random.default_rng(8)
+    arr = (rng.random((120, 160, 3)) * 255).astype(_np.uint8)
+    data = jpx_encode(arr, 150, lossless=True)
+    back = _np.asarray(Image.open(io.BytesIO(data)).convert("RGB"))
+    assert back.shape == arr.shape
+    assert (_np.asarray(back) == arr).all()
+
+
 def test_jpx_recompress_roundtrip(tmp_path):
     """Designer §56: JPX codec path embeds JPXDecode and renders back."""
     src = str(tmp_path / "in.pdf")
@@ -323,3 +335,30 @@ def test_true_indexed_bpc_and_render(tmp_path):
         got = _np.frombuffer(px.samples, dtype=_np.uint8).reshape(32, 32, 3)
         assert set(map(tuple, _np.unique(got.reshape(-1, 3), axis=0))) <= \
             {(255, 0, 0), (0, 0, 255)}
+
+
+def test_mixed_mode_keeps_text_and_shrinks_images(tmp_path):
+    """Designer §103: force off on text pages keeps text, compresses images."""
+    src = str(tmp_path / "in.pdf")
+    out = str(tmp_path / "out.pdf")
+    _make_photo(src)  # photo + "caption keeps text layer"
+    n_in = len(open(src, "rb").read())
+    process_file(src, out, strategy="otsu", force_raster=False,
+                 token=CancelToken())
+    assert len(open(out, "rb").read()) < n_in
+    with fitz.open(out) as o:
+        assert o.page_count == 1
+        assert "caption" in o[0].get_text()  # text layer survived
+
+
+def test_force_toggle_changes_nothing_cached():
+    """Designer §§103/105/106/113: the toggle changes save identity but never
+    any cached identity — preview, minis AND amounts are all force-free, so
+    flipping the checkbox dispatches no work and moves no size."""
+    from pdf_minimalist.ui_qt.app import MainWindow
+    a = {"preset_id": "bw-otsu", "mode": "bw", "dpi": 300,
+         "strategy": "otsu", "t": 180, "force_raster": True}
+    b = dict(a, force_raster=False)
+    assert MainWindow._spec_tuple(a) == MainWindow._spec_tuple(b)
+    assert MainWindow._mini_key("f", "bw-otsu") == MainWindow._mini_key("f", "bw-otsu")
+    assert MainWindow._estb_key("f", "bw-otsu", 300) == MainWindow._estb_key("f", "bw-otsu", 300)

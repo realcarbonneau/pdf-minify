@@ -94,6 +94,7 @@ class ContinuousDocView(QGraphicsView):
         self._peers: list["ContinuousDocView"] = []
         self._syncing = False
         self._current = 0
+        self.layout_from = None  # sibling view whose grid this one mirrors (§101)
         self.pageChanged = None  # callback(index): status + minis
         self.changed = None  # callback(): any zoom/scroll/layout change (mini reframe)
         self.relayouted = None  # callback(): grid reflowed (mini reframe, §48)
@@ -139,6 +140,24 @@ class ContinuousDocView(QGraphicsView):
     def _page_h(self) -> int:
         return max([pm.height() for pm in self._base], default=0)
 
+    def _gw(self) -> int:
+        """Grid page width: the mirrored sibling's when set (§101)."""
+        src = self.layout_from
+        if src is not None and src._base:
+            return src._page_w()
+        return self._page_w()
+
+    def _gh(self) -> int:
+        src = self.layout_from
+        if src is not None and src._base:
+            return src._page_h()
+        return self._page_h()
+
+    def _gcols(self) -> int:
+        vw = max(1, self.viewport().width())
+        slot = self._gw() * self._zoom + self.GAP
+        return max(1, int(vw / slot)) if slot > 0 else 1
+
     def cols(self) -> int:
         vw = max(1, self.viewport().width())
         slot = self._page_w() * self._zoom + self.GAP
@@ -147,8 +166,8 @@ class ContinuousDocView(QGraphicsView):
     def relayout(self):
         if not self._items:
             return
-        cols = self.cols()
-        pw, ph = self._page_w(), self._page_h()
+        cols = self._gcols()
+        pw, ph = self._gw(), self._gh()
         for i, it in enumerate(self._items):
             r, c = divmod(i, cols)
             it.setPos(c * (pw + self.GAP), r * (ph + self.GAP))
@@ -160,6 +179,15 @@ class ContinuousDocView(QGraphicsView):
             self.relayouted()
 
     def fit_width(self):
+        src = self.layout_from
+        if src is not None and src._base:
+            # Mirrored pane: take the sibling's zoom, never compute our own —
+            # zoom must never reset from layout differences (§101).
+            self._zoom = src._zoom
+            self.setTransform(QTransform().scale(self._zoom, self._zoom))
+            self.relayout()
+            self._push()
+            return
         if self._page_w():
             vw = max(1, self.viewport().width())
             self._zoom = max(0.05, vw / (self._page_w() + self.GAP))
@@ -214,9 +242,9 @@ class ContinuousDocView(QGraphicsView):
         if not self._items:
             return
         y = self.mapToScene(QPoint(0, 0)).y()
-        stride = self._page_h() + self.GAP
+        stride = self._gh() + self.GAP
         row = max(0, int(y / stride)) if stride else 0
-        idx = min(len(self._items) - 1, row * self.cols())
+        idx = min(len(self._items) - 1, row * self._gcols())
         if idx != self._current:
             self._current = idx
             if self.pageChanged is not None:
