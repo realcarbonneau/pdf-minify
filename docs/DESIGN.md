@@ -103,6 +103,22 @@ native compression and all PDF overhead. Exact quote, protocol and measured
 outputs: `IMAGE_STREAM_COMPRESSION.md`. This authorizes headless benchmarking,
 not new GUI options/defaults.
 
+### Retain paired benchmark results; omit editorial corrections (§220)
+
+Designer §220 (verbatim excerpt):
+> ok, then leave in the tables as it was.  Also, clean this up, we should NOT have typo correction discussions in the docs.
+
+Retain the plain/`+PNG` pairs alongside BW/colored JBIG2 in the main size
+tables. This supersedes §219's split. Compare prediction with the same
+encoder's plain output, retaining identical prepared pixels and complete PDF
+sizes. Sixty of 66 pairs grow; six BW pairs shrink; no algorithm winner
+changes in this corpus. All results remain in `IMAGE_STREAM_COMPRESSION.md`.
+
+Use correct technical names directly in explanatory prose, without typo
+discussions, correction lists or mnemonic asides. Retain designer quotations
+unchanged and keep substantive codec/reader-support decisions in their
+topical documents.
+
 ### Compression combinations: documentation and UI review (§§210/211)
 
 Designer §211:

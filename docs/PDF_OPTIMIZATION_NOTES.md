@@ -1,10 +1,5 @@
 # PDF Optimization Notes (research + ideas)
 
-## Correction: you mean JBIG2, not "JDIC2"
-"JDIC2" doesn't exist — it's **JBIG2** (Joint Bi-level Image Experts Group,
-ISO/IEC 14492). PDF natively supports it via `/Filter /JBIG2Decode`.
-Remember as: **JBIG2 = black & white, JPEG2000 = color**.
-
 ## What PDF viewers actually support (verified Oct 2026)
 PDF image filters in ISO 32000: `DCTDecode` (JPEG), `JPXDecode` (JPEG2000),
 `JBIG2Decode`, `CCITTFaxDecode` (G3/G4), `FlateDecode`, `LZWDecode`, `RunLength`.

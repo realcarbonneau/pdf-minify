@@ -1,21 +1,23 @@
 # Bitmap PDF compression — size-only paired benchmarks
 
-Designer §§208/209, 2026-10-15 (America/New_York); TODO §212.
+Designer §§208/209/220, 2026-10-15 (America/New_York); TODO §§212/223.
 Related: [COMPRESSION.md](COMPRESSION.md),
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md),
 [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md),
 [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md),
 [TEST_PLAN.md](TEST_PLAN.md).
 
+Size tables: [indexed color](#indexed-color-versus-colored-jbig2) and
+[BW / FFPR](#bw-image-layer-and-full-page-rasterization).
+
 ## Scope and ruling
 
 > you have color index filters that use flate, so you should make equivalent bechmarks for better compression on color index and bw please, compare with JBIG2 and color JPBIG2 also.  Do the work please.  We are only comparing size a this time.  Compute time is not measure because the cpu load on this workstation is fluctuating alot and unpredictably.
 
-"JPBIG2" refers to the previously requested colored JBIG2 stencil model;
-the original quote is preserved. This headless study does not add product
-codecs or change presets/defaults. No encode/decode times
-are collected or compared in this study. Process timeouts are safety limits,
-not performance data. Work runs sequentially with numerical thread limits.
+This headless study does not add product codecs or change presets/defaults.
+No encode/decode times are collected or compared in this study. Process
+timeouts are safety limits, not performance data. Work runs sequentially
+with numerical thread limits.
 
 The earlier native-stream benchmark deliberately preserved image bytes. Its
 19.32% NASA Brotli saving cannot be used as an image-compression result.
@@ -107,9 +109,13 @@ study, a size estimator, a page subset or an invalid decoder placeholder.
 All figures below are **complete final PDF bytes**, not bitmap payload sums.
 `Flate` means explicit zlib-9/plain; it equals the current product-Flate
 reference's size in EVERY case in this corpus. Both entries remain in JSON;
-the duplicate table column is omitted. `+PNG` means reversible adaptive row
-prediction, not smoothing or PNG files embedded in the PDF. Zopfli uses the
-entire workload; Brotli is level 11. Native streams remain Flate in every row.
+the duplicate table column is omitted. Classic Flate results remain reference
+comparisons, not an additional product choice (§214). `+PNG` means reversible
+adaptive row prediction BEFORE the same compressor, not a PNG file embedded
+in the PDF or a second compression pass. Compare each predicted result with
+its matching plain column. Zopfli uses the entire workload; Brotli is level
+11. Native streams remain Flate in every row. All columns are retained
+together under §220, superseding the earlier documentation split.
 
 ### Indexed color versus colored JBIG2
 
@@ -172,11 +178,13 @@ content as though those were the same rendered image.
   JBIG2's image payload is 13,241 B versus Brotli's 14,128 B, yet its COMPLETE
   file is 24,814 B versus 22,488 B. Fifteen masks plus paint/resources cost
   more than the payload saving. At 64 colors there are 63 masks, not one.
-- **Prediction is not automatically an improvement.** It loses against
-  plain streams in every color case here. It helps some BW combinations:
-  NACA/Zopfli, GAN-FFPR/Flate or Zopfli, and the noisy control. The best
-  Brotli BW-noise result is the predicted 81,018 B, still above JBIG2's
-  63,075 B. All losing variants are retained, not removed from the table.
+- **Prediction is not automatically an improvement.** Against the same
+  encoder WITHOUT prediction, 60 of 66 predicted PDFs are larger, including
+  all indexed-color pairs. Six BW pairs shrink by 1.25%–5.69%: NACA/Zopfli,
+  GAN-FFPR/Flate or Zopfli, and the noisy control with all three compressors.
+  Each percentage is `100 × (plain bytes - predicted bytes) / plain bytes`;
+  none changes the winning algorithm. The best Brotli BW-noise result is the
+  predicted 81,018 B, still above JBIG2's 63,075 B. All variants remain visible.
 - Native text/fonts/vectors dominate some retained-native files, especially
   GAN, so whole-file gains can be much smaller than bitmap-payload gains.
   Conversely, a processed 300dpi scan need not be smaller than its original

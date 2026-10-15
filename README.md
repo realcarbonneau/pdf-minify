@@ -102,7 +102,7 @@ platforms and installers are not yet certified or built.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
-- `docs/IMAGE_STREAM_COMPRESSION.md` — size-only, equal-pixel indexed/BW comparisons: Flate/Zopfli/Brotli versus BW/colored JBIG2.
+- [Bitmap algorithm-size tables](docs/IMAGE_STREAM_COMPRESSION.md#results) — equal-pixel indexed/BW comparisons: Flate/Zopfli/Brotli versus BW/colored JBIG2.
 - `docs/NATIVE_STREAM_COMPRESSION.md` — separate native text/vector/font benchmarks and reader limits.
 - `docs/ICONS.md` — native-theme action icons, stock Breeze fallback and provenance.
 - `docs/ICON_LAB.md` — View → Icon Lab…; compare stock libraries and copy permanent choice codes.

@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 222. Routine execution requests are not TODOs (§218).
+new TODO ID is 224. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -24,7 +24,7 @@ See: `docs/00_OVERVIEW.md`, `docs/ARCHITECTURE.md`, `docs/PDF_OPTIMIZATION_NOTES
 
 ## 4 — DONE
 ~~Yes, JBIG2, summarize your suggestions to me.~~
-Stub: confirmed JBIG2 (not JDIC2); suggestions summarized (Q&A + codec notes).
+Stub: JBIG2 compression guidance is recorded in the research notes.
 See: `docs/PDF_OPTIMIZATION_NOTES.md`.
 
 ## 5 — DONE
@@ -1956,3 +1956,22 @@ Stub: request history is preserved at `docs/TODO.md`; developer entry points,
 README and root issue references use the new location. Remaining historic
 numbers/order are unchanged. Old stubs retain their period-specific layout
 descriptions, identified as historical in this file's introduction.
+
+## 222 — DONE (designer §219: separate PNG prediction from the main size analysis)
+~~Move the paired +PNG comparison into its own document and explain the expected size overhead.~~
+Stub: the documentation split was implemented, then superseded by designer
+§220 / TODO §223. All paired results and relevant interpretation are retained
+in the main tables of `docs/IMAGE_STREAM_COMPRESSION.md`; no separate
+predictor-only document remains. Dataset and product behavior are unchanged.
+
+## 223 — DONE (designer §220: restore paired benchmark columns and remove editorial corrections)
+~~Keep the +PNG results in the main tables and remove typo-correction discussions from the docs.~~
+Stub: both main bitmap tables again show Flate/Zopfli/Brotli plain and +PNG
+alongside JBIG2. All 154 size cells match the unchanged measurements and actual
+PDF sizes/hashes. Same-encoder baselines and six BW gains remain explicit.
+Removed the editorial codec-correction passage, correction log, mnemonic,
+inline correction asides and instructions to maintain those discussions.
+Designer quotations, stable IDs, codec requirements and reader-support rules
+remain intact. The redundant predictor-only document is removed; its results
+and relevant methods are retained in `docs/IMAGE_STREAM_COMPRESSION.md`.
+Documentation only; no new encoding or timing run, code change or issue acceptance.

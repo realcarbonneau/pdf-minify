@@ -1,10 +1,9 @@
 # Designer directives — VERBATIM
 
-> Preservation rule: the quotes below are the designer's own words,
-> copied exactly, typos and all. Do NOT fix spelling, grammar, or punctuation.
-> Do NOT paraphrase. If you need a corrected term (e.g. JDIC2 → JBIG2), add it
-> in brackets outside the quote. New designer comments get appended
-> here with date + full verbatim text.
+Preserve retained designer quotations exactly, without paraphrasing or
+editorial annotations. Append substantive new directives with date and
+verbatim text. Use correct technical terminology directly in explanatory
+prose; do not add correction discussions or correction logs (§220).
 
 Scope: substantive project requirements, defects, acceptance and lasting
 development rules. One-off execution/status chatter is not a design record.
@@ -917,9 +916,10 @@ Clarification question: should the mini bar be 25% larger (1.25×), or one-quart
 ## 218 — document durable design, not routine execution requests (verbatim, 2026-10-15)
 > commit/push is not a todo/issue neither, you can scrub/drop those, if any, from the docs.  Do you see anything else that is not design related?  Like requesting to run the app or whatever else that has no added value to the docs.
 
-## Corrections log (outside the quotes, for the record)
-- "JDIC2" → designer confirmed: JBIG2.
-- §168 "GBIG2" is interpreted as JBIG2; the original spelling above is untouched.
-- "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.
-- "optmized" → optimized. "targetting" → targeting. "remeber" → remember. "lok" → ok. "alot" → a lot.
-  (Originals above untouched.)
+## 219 — separate PNG-predictor comparisons from the main algorithm-size analysis (verbatim, 2026-10-15)
+> are all of your *+PNG benchmarks larger than the non +PNG versions?  It looks like that at first glance.  That seems obvious.  I think you should delegate that comparison specifically to a separate doc and state that this is to be exepected, and removed from the main analysis to avoid noise.
+
+Superseded by §220: retain the paired predictor columns in the main tables.
+
+## 220 — retain all benchmark columns; omit typo-correction commentary (verbatim excerpt, 2026-10-15)
+> ok, then leave in the tables as it was.  Also, clean this up, we should NOT have typo correction discussions in the docs.

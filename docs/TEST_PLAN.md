@@ -482,11 +482,15 @@ pages**, exact decoded samples/mask reconstruction and all-page MuPDF pixels
 at 72dpi and recipe DPI. Final normalization/readback reuses all encoded
 outputs, records output hashes and returns IMAGE STREAM SIZE BENCHMARK GREEN.
 The JSON has zero timing fields; all current-Flate/plain-Flate reference
-sizes agree. Both full tables (154 distinct size cells) were mechanically
-diffed against JSON and match. See `IMAGE_STREAM_COMPRESSION.md` for complete
-results/limits. No UI/default-codec change or timing comparison;
-the shared saver only has an optional preserved-ID flag with product default
-unchanged.
+sizes agree. Both main tables retain all 154 case/variant size cells,
+including the paired plain/PNG-predicted columns (§220). All cells were
+mechanically checked against the unchanged JSON and actual PDF sizes/hashes.
+The predictor recount is 60 larger / six smaller / zero equal; the six
+exceptions save 1.25%–5.69% against their own plain counterparts and do not
+change any case's winning algorithm. See
+[IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md) for algorithm
+results/limits. No UI/default-codec change or timing comparison; the shared
+saver only has an optional preserved-ID flag with product default unchanged.
 
 Initial final-suite run: 459 passed / one pre-existing ghost pixel test failed.
 Diagnosis reproduced it with a queued-event boundary: all filter jobs finished,

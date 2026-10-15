@@ -8,8 +8,8 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 
 ## 0. General guidelines (designer rulings — always in force)
 - The designer is the sole authority. In all docs, call them "the designer".
-- Designer words are preserved verbatim (see §1). Corrections and interpretations
-  live OUTSIDE the quotes, never inside them.
+- Designer words are preserved verbatim (see §1). Technical explanations live
+  outside the quotes; omit editorial correction commentary (§220).
 - `TODO.md` tracks substantive project requirements, defects and design work,
   not every conversational instruction (§218). IDs are NEVER renumbered,
   reordered or reused. No checkboxes. Open items carry full detail; completed
@@ -40,14 +40,17 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   for direction the docs already give.
 
 ## 1. Keep designer comments verbatim — always
-- NEVER fix the designer's spelling/grammar inside `DESIGNER_VERBATIM.md`.
-  Typos (`targetting`, `remeber`, `lok`, `optmized`, `alll`, `alot`, double/triple spaces)
-  are intentional preservation, not bugs.
+- Preserve retained designer quotations exactly in `DESIGNER_VERBATIM.md`;
+  do not rewrite their wording or add editorial annotations.
 - New substantive designer ruling? Append it verbatim (numbered, dated) before
   acting. §218 excludes routine operational chat; do not turn every command
   or housekeeping exchange into a documentation entry.
-- Corrections (JDIC2→JBIG2, JXL dropped) go in the "Corrections log" section or in
-  code/docs OUTSIDE the quotes — never by editing the quotes.
+- §220: do not document typo/spelling corrections, correction logs or mnemonic
+  asides. Use correct technical names directly in explanatory prose. Keep
+  substantive codec decisions, compatibility evidence and actual defect
+  diagnoses; these are not spelling discussions. Explicit cleanup requests
+  remove editorial material without re-archiving it or changing retained
+  designer quotations.
 
 ## 2. Stack & layout (locked unless the designer says otherwise)
 - Python + PySide6 (Qt6) GUI + PyMuPDF pipeline. `core/` = headless, NO Qt imports.
@@ -108,6 +111,12 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   FFPR fixed states and color FFPR are not approved replacements for the
   existing selectors. Never treat a worker recommendation as a designer
   ruling or silently migrate saved mixed-codec recipes.
+- §220 supersedes §219's documentation split: retain the plain and `+PNG`
+  columns together in the main bitmap-size tables. Explain that prediction
+  precedes the same compressor; any percentage compares with that encoder's
+  plain counterpart using complete PDF bytes. Preserve both wins and losses;
+  do not assert universal growth. No benchmark variant or product behavior
+  changes merely to simplify presentation.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image
