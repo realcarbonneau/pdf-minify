@@ -10,17 +10,21 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 - The designer is the sole authority. In all docs, call them "the designer".
 - Designer words are preserved verbatim (see §1). Corrections and interpretations
   live OUTSIDE the quotes, never inside them.
-- `TODO.md` tracks EVERY designer request: numbered append-only, NEVER renumbered
-  or reordered. No checkboxes. Open items carry full detail; completed items are
-  stubbed — request struck through, stub summary, cross-refs to the implementing
+- `TODO.md` tracks substantive project requirements, defects and design work,
+  not every conversational instruction (§218). IDs are NEVER renumbered,
+  reordered or reused. No checkboxes. Open items carry full detail; completed
+  items are stubbed — request struck through, stub summary, cross-refs to the implementing
   docs/code. Dropped ideas move to `DROPPED.md` with reasons + revisit
   conditions. Knowledge is referenced, never redone.
-- §§216/217 move the log to `docs/TODO.md` and explicitly remove unrelated
-  material. Keep project requirements/workflow, not unrelated coding-tool
-  maintenance Q&A. An explicit designer removal overrides preservation for
-  that material: delete it rather than re-archiving/requoting it, and never
-  renumber remaining entries. App-specific launch/test instructions and PDF
-  benchmark provenance remain project-relevant.
+- §§216/218 place the log in `docs/TODO.md` and limit documentation to durable
+  project value. Do not log one-off execution/publication commands, bare
+  run/resume/status prompts, temporary scheduling or per-session handoffs as
+  TODOs, issues or design rulings. Preserve real requirements, defect reports,
+  acceptance and lasting developer rules; excerpt mixed requests verbatim
+  without the routine chatter. Explicit removal overrides preservation:
+  delete rather than re-archive/requote, with no renumbering or ID reuse.
+  Keep reproducible benchmark/test evidence and source-version identifiers,
+  not a diary of process IDs, startup timestamps or routine delivery events.
 - Implementation completion is not designer acceptance (§147). In `issues.md`,
   use `FIXED — DESIGNER CONFIRMED — YYYY-MM-DD` only for an explicit designer
   confirmation, with its verbatim ruling and exact scope. Use the designer's
@@ -39,7 +43,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 - NEVER fix the designer's spelling/grammar inside `DESIGNER_VERBATIM.md`.
   Typos (`targetting`, `remeber`, `lok`, `optmized`, `alll`, `alot`, double/triple spaces)
   are intentional preservation, not bugs.
-- New designer note? Append it verbatim (full text, numbered, dated) before acting.
+- New substantive designer ruling? Append it verbatim (numbered, dated) before
+  acting. §218 excludes routine operational chat; do not turn every command
+  or housekeeping exchange into a documentation entry.
 - Corrections (JDIC2→JBIG2, JXL dropped) go in the "Corrections log" section or in
   code/docs OUTSIDE the quotes — never by editing the quotes.
 
@@ -185,14 +191,15 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   the desktop GUI PID and process group independently, especially if no
   `APP_EXIT` line was reported. Record GUI PID/PGID alongside the retained
   execution session. Never report the app closed from supervisor status alone.
-  Respect an explicit designer closure/leave-closed instruction (§206): do
+  Respect an explicit designer closure/leave-closed instruction: do
   not automatically reopen the app to complete or repeat this workflow.
-  Record the normal exit and any startup checks not reached before closure.
-  §207 defers designer acceptance testing while the workstation is overloaded;
-  finish lightweight documentation without starting new heavy verification.
-  Subsequent §209 explicitly authorizes sequential bitmap SIZE benchmarks;
-  collect no compute-time comparisons under the fluctuating CPU load. The
-  leave-closed instruction remains in force; this is not a new GUI build.
+  Never choose Save/Discard for the designer merely to automate a restart;
+  leave their unsaved-data decision to them.
+  Use retained tool/session state for immediate run status, not permanent
+  launch-history TODOs. Keep actual startup/exit failures and their regression
+  evidence in the relevant issue/test records. The size-only bitmap protocol
+  (§209) collects no compute-time comparisons; temporary workstation scheduling
+  does not belong in the design log.
   Confirm `window shown` + preview applied in
   `${TMPDIR:-/tmp}/pdf-minimalist/pdf-minimalist.log`. Never leave the
   designer on a stale build. Sandbox process lists may not include desktop

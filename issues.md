@@ -599,10 +599,8 @@ UUID-addressed content updates, and deduplicated startup order. No suppressed
 exception or extra repaint repair. Full suite 131 passed; native 100%/200%
 runs preserve all 11 UUIDs/rows and prepared artifacts through eight gestures
 and 33 subsequent clicks at each scale. Captures actually viewed. Explicit
-designer acceptance in §159 on 2026-10-14 (America/New_York). Relaunched
-under retained supervision: PID 1868470, window shown 10:36:26 and real-file
-preview applied 10:36:28, with subsequent real clicks/reorders and no tracebacks.
-See: `docs/UI_LAYOUT.md`, TODO §§161/162.
+designer acceptance in §159 on 2026-10-14 (America/New_York).
+See: `docs/UI_LAYOUT.md`, TODO §161.
 
 ## B82 — OPEN — excessive bottom whitespace in minis strip (§159)
 The 178px cell's final caption rectangle ends at y=158 (exclusive), leaving 20px below
@@ -617,10 +615,6 @@ hold. Full suite 134 passed, including painted margins and intact last caption.
 Native 100%/200% runs passed eight gestures and 33 clicks each. Offscreen
 main/stacked/zoom, 1:1 strip, and native captures actually viewed. Still
 OPEN: implementation/test completion is not designer acceptance.
-2026-10-14 relaunch verified: old PID 1868470 exited status 0 and its entire
-worker group was gone. Retained supervisor session 9036 owns new PID 1888820;
-window shown 11:28:41, real-file preview applied 11:28:43, all 11 artifacts
-ready 11:28:45. Supervisor polled and still running, with no tracebacks.
 See: `docs/UI_LAYOUT.md`, TODO §164.
 
 ## B83 — OPEN — white mini pages blend into strip background (§159)
@@ -679,16 +673,8 @@ pending revert with saved result reused and no new filtering. Native 100%/
 pending explicit designer acceptance.
 See: `docs/UI_LAYOUT.md`, `docs/FILTER_LIFECYCLE.md`, TODO §168.
 
-B84–B86 implementation was verified, but initial desktop restart awaited the
-designer's unsaved-edit choice in the old GUI (PID 1888820, PGID 1888816;
-main window 56623111, "Unsaved filter changes" dialog 56623244). Old retained
-supervisor 9036 ended 143 without terminating that detached GUI. The designer's
-edits were not saved/discarded automatically. Resolved on their §163 run
-request: old entire group verified gone; new GUI 1946638, PGID/SID 1946634,
-supervisor session 27115. Window shown 13:46:42, real preview applied 13:46:44,
-all 11 artifacts ready 13:46:47 on 2026-10-14. Desktop ownership and live
-supervisor poll verified. These implementation issues still await explicit
-designer acceptance, not inferred from launching or test interaction.
+B84–B86 still await explicit designer acceptance; launching the app or
+worker test interaction does not constitute that acceptance.
 
 ## B87 — OPEN — zoom-out centers phantom columns; original/preview disagree (§§164/165)
 Original computes capacity without capping it by actual page count, then
@@ -713,10 +699,7 @@ the phantom-column/peer failure before repair; exact-fit testing additionally
 reproduced the stale-scrollbar capacity failure. Full suite 166 passed with
 16 new viewer cases plus real-file/no-processing integration coverage.
 Offscreen one/two/seven-page, row-major and stacked captures actually viewed
-at whole-window and 1:1 pane/strip sizes. Old GUI 1946638 and entire group
-1946634 verified gone after clean status 0; updated GUI 1984881, PGID/SID
-1984877, retained session 69351. Window shown 14:27:05, real preview applied
-14:27:07, all 11 artifacts ready 14:27:09; visible desktop/live poll verified.
+at whole-window and 1:1 pane/strip sizes.
 Still OPEN pending explicit designer confirmation, not self-marked fixed.
 See: `docs/UI_LAYOUT.md`, `docs/DESIGN.md`, TODO §§170/171.
 
@@ -749,10 +732,6 @@ the panel itself preserved the chosen divider and native horizontal overflow.
 Whole-window/1:1 header/panel captures and standard shots actually viewed.
 Designer explicitly confirmed in §167: "Ok, this is confirmed fixed, thank you."
 Acceptance scope is the resize/divider feedback issue, not unrelated issues.
-Desktop old GUI 1984881/PGID 1984877 exited cleanly and its entire group was
-verified gone. Updated GUI 2033346, PGID/SID 2033342, retained session 73627:
-window shown 15:08:39, real preview applied 15:08:42, all 11 artifacts ready
-15:08:47 (2026-10-14 America/New_York). Visible desktop and live poll verified.
 See: `docs/UI_LAYOUT.md`, TODO §172.
 
 ## B89 — OPEN — BW text-preserving outputs much larger than FFPR (§168)
@@ -945,7 +924,7 @@ centering. Local date America/New_York. This does not confirm B96/B97 or other
 DnD/layout/filter issues. The OPEN statements below are historical stage logs,
 superseded by this explicit acceptance, not worker self-certification.
 
-Reported 2026-10-14; resumed in §186. `_paint_strip_item` manually paints a
+Reported 2026-10-14. `_paint_strip_item` manually paints a
 104×12px groove/chunk/text into the cached icon. This is narrower than both the
 120px preview box and 150px reserved cell, bypasses Qt's actual progress style
 and native font metrics, and lacks an opaque white backing. The selection
@@ -1092,7 +1071,7 @@ stencils. The leading-packed-newline regression now yields genuine lossless
 JBIG2 with exact decoder pixels; explicit selections never hide failure with
 Flate. Covered by the final 429-test suite. This is a production repair under
 §203, not a retroactive change to the study's original scope or acceptance.
-B99 remains OPEN pending explicit designer confirmation (§207: testing later).
+B99 remains OPEN pending explicit designer confirmation.
 
 ## B100 — OPEN — all-black error placeholder can pass the production JBIG2 pixel gate (worker study finding)
 
@@ -1142,8 +1121,7 @@ and normal restart. Implemented/worker-verified: shared provider and stock
 16/22px light/dark SVGs, actual surface-palette refresh, no action/selection/
 processing changes. Full suite 339 passed; 33 focused checks pass at 2×;
 real/fallback enabled/disabled full windows and 1:1 crops viewed at both
-scales. Normally stopped old GUI2386118/group2386114, then restarted in
-session9907 (GUI2409896/group2409892). See `docs/ICONS.md`, TODO §201.
+scales. See `docs/ICONS.md`, TODO §201.
 Designer acceptance pending.
 
 ## B104 — OPEN — designer cannot compare and identify preferred stock icons (§200)
@@ -1197,9 +1175,8 @@ match actual PDF filters with no hidden JPEG/JPX-to-Indexed or JBIG2-to-Flate
 substitution. UUIDs/names/order/defaults, native artwork, BW-only FFPR and
 one 300ms timer remain intact. Forty core/actual-PDF and seven lifecycle
 cases are in the final 429-test suite; both-scale actual-file captures and
-resize checks plus modal lifecycle smoke pass and were viewed. The desktop
-was restarted normally, then closed by the designer and left closed (§206).
-§207 defers designer testing; B105 remains OPEN, not designer-confirmed.
+resize checks plus modal lifecycle smoke pass and were viewed.
+B105 remains OPEN, not designer-confirmed.
 
 ## B106 — OPEN — native compression not selectable or benchmarked (§§204/205)
 
@@ -1223,14 +1200,12 @@ FAIL Brotli and pass ordinary codecs; both success and failure are documented.
 LZW/RunLength lose on this corpus and remain controls, not UI choices.
 Final 429-test suite and both-scale UI/resize/lifecycle evidence are recorded
 in `docs/TEST_PLAN.md`. No claim of isolated CPU timing or universal reader
-support. B106 remains OPEN; the designer will test later (§207).
+support. B106 remains OPEN pending designer acceptance.
 
 ## B107 — OPEN — native callback cancellation becomes an unpickleable worker error (worker audit finding)
 
-Observed 2026-10-15 while the designer closed the final supervised launch
-(session25396 / GUI2955881). The GUI itself exited normally, APP_EXIT 0;
-the designer confirmed the closure and requested it remain closed (§206).
-At 10:40:44, the log records `_Selector.culler` in `core/image_layers.py`
+Observed 2026-10-15 during close-while-processing. The GUI exited normally,
+but the log records `_Selector.culler` in `core/image_layers.py`
 raising Python `CancelledError` inside a native SWIG director callback.
 MuPDF wraps it as `FzErrorGeneric`; returning that exception from the process
 pool fails serialization: `cannot pickle 'swig_runtime_data5.SwigPyObject'
@@ -1244,6 +1219,5 @@ the correct side of the native callback boundary and return only serializable
 worker failures; preserve genuine decode errors, saved/draft ownership and
 partial-file cleanup. A future repair needs an actual native-callback plus
 process-pool cancellation regression, not a mocked Python-only exception.
-No repair or new heavy reproduction was attempted in the final documentation
-pass while the workstation was overloaded (§207). Keep OPEN; the green
-429-test compression suite does not establish coverage of this shutdown path.
+Keep OPEN; the green compression suite does not establish coverage or repair
+of this shutdown path.

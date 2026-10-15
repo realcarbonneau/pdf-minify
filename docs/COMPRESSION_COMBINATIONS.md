@@ -224,6 +224,3 @@ Evidence and primary sources:
   separate reader capability.
 - [Qt QWidget enabled property](https://doc.qt.io/qt-6/qwidget.html#enabled-prop):
   native disabled input/state behavior, not a prescription for this layout.
-
-Documentation-only delivery: no app code, new benchmark, test run or GUI
-launch is part of this request. The designer's leave-closed instruction stands.

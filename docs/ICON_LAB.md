@@ -63,8 +63,8 @@ radio exclusivity per action, copyable summary, no implicit initial choices,
 window reuse and no application-action/settings/filter/job mutations. Use
 `tools/shot.py` to capture/view the actual lab at normal/2×, light/dark,
 selected/disabled states and narrow-window scrolling, including 1:1 crops.
-Run the full regression suite, then verify the old GUI/process group exited
-and relaunch in a retained session. Only explicit designer confirmation
+Run the full regression suite and follow the shared developer verification
+rules in `DEVELOPER_GUIDELINES.md`. Only explicit designer confirmation
 closes the issue; selection codes themselves are not permission to infer
 unmentioned production changes.
 
@@ -88,11 +88,5 @@ at 100% (3.72s) and 2× (4.37s).
 dialog, no PDF processing. Unselected, light/dark selected fixtures, lower
 rows, 640×520 top and bottom-right scrolling and 1:1 code/icon cards were
 actually viewed. Paint-fixture choices are not designer choices and were
-never applied to the app. Current runtime/restart evidence is recorded in
+never applied to the app. Runtime/version evidence is recorded in
 `PLATFORMS.md`; B104 remains OPEN for designer acceptance.
-
-During this task the designer requested an immediate checkpoint/push. Commit
-`8d7f0954555329b2f97e2ee2851ae99eabd55038` was pushed to `origin/main` and
-verified remotely BEFORE the lab UI implementation continued. It includes
-the initial design/licensed resources but explicitly not the yet-unbuilt UI.
-Later UI/tests/docs are local working changes, not silently claimed pushed.

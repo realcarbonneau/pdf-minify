@@ -1,6 +1,6 @@
-# TODO — designer request log (append-only, NEVER renumber)
+# TODO — substantive project requirements (stable IDs, NEVER renumber)
 
-Format (designer ruling §16): no checkboxes. Open items carry full detail.
+Format (designer rulings §§16/218): no checkboxes. Open items carry full detail.
 Completed items are stubbed: request struck through, stub summary, cross-refs
 to the final docs/code that implement it. Dropped items move to
 [DROPPED.md](DROPPED.md) with reasons. Knowledge is referenced, never redone.
@@ -9,12 +9,13 @@ numbering, so use each entry's explicit designer-§ reference. Historical
 duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
-the highest existing number.
+the highest previously allocated number, including removed entries. The next
+new TODO ID is 222. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
 old descriptions of the previous root placement are historical, not current
-instructions. Explicitly removed unrelated entries leave numbering gaps (§217).
+instructions. Explicitly removed unrelated entries leave numbering gaps (§218).
 
 ## 3 — DONE
 ~~Full app-vision brief (scans → BW threshold + image recompression, max compression default, ESC cancel, md docs with notes/ideas/tests).~~
@@ -72,13 +73,13 @@ Stub: general rulings live in dev guidance.
 See: `docs/DEVELOPER_GUIDELINES.md` (§0).
 
 ## 14 — DONE
-~~Run the UI so I can see; log everything important to stdout for run-and-review; --debug dumps more; belongs in dev guidelines (process, not UI/feature).~~
+~~Log important app activity to stdout and provide --debug diagnostics; document the developer workflow.~~
 Stub: INFO stdout logging everywhere, `--debug` adds versions/argv/timings, `./run.sh` launcher + `.tmp/` log, offscreen review shots.
 See: `pdf_reducer/ui_qt/app.py` (`setup_logging`), `pdf_reducer/__main__.py`, `docs/DEVELOPER_GUIDELINES.md` (§6), `run.sh`, `tools/shot.py`.
 
 ## 15 — DONE
-~~Stay inside the local dir; scratch in gitignored ./.tmp/; GitHub-ready later.~~
-Stub: all scratch local; repo clean for future push.
+~~Keep project work local and scratch in gitignored ./.tmp/.~~
+Stub: project-local scratch policy is documented and generated artifacts are ignored.
 See: `.tmp/`, `.gitignore`, `run.sh`, `tools/make_demo.py`, `tools/shot.py`.
 
 ## 16 — DONE
@@ -100,24 +101,6 @@ See: `docs/`, `README.md`.
 ~~docs-lead ruling (verbatim §19).~~
 Stub: all doc xrefs corrected first, ruling recorded, then verification.
 See: `docs/DEVELOPER_GUIDELINES.md` (§0).
-
-## 20 — DONE
-~~continue, why did you stop?~~
-Stub: ARCHITECTURE fixed to Qt-locked (D2); Save now dispatches by preset
-mode — BW raster, color JPEG recompress, gc passthrough — with previews.
-See: `docs/ARCHITECTURE.md`, `pdf_reducer/core/pipeline.py`
-(`recompress_file`, `gc_copy`), `pdf_reducer/core/presets.py`
-(`apply_color_preview`), `pdf_reducer/ui_qt/app.py`, `tests/test_pipeline.py`.
-Remaining queue (not yet ruled on): JBIG2 wiring, GitHub push.
-
-## 21 — DONE
-~~run the app, or it's not reaady?~~
-Stub: READY and RUNNING — live on the designer display (pid confirmed, window
-shown, log streaming to `.tmp/pdf-reducer.log`, live screenshot in `.tmp/`).
-Earlier failure was my sandbox's `pkill -f` matching its own command line;
-relaunch used a self-safe pattern. Leave it running for designer review;
-`./run.sh` relaunches any time.
-See: `run.sh`, `.tmp/pdf-reducer.log`, `.tmp/shot-live.png`.
 
 ## 22 — DONE
 ~~page zoom, pan, etc is always synced on both panes~~
@@ -239,7 +222,7 @@ Stub: 10 scans fetched (NACA ×4, NARA schedule, JFK ×5); LoC leads logged
 manual in README (no direct PDFs). Faint/dark/ruled scans are now mandatory
 regression tests — thresholds must never blank or flood a page.
 See: `examples/scan-*.pdf`, `tests/test_regression_scans.py`.
-Remaining queue (not yet ruled on): JBIG2 wiring, GitHub push, software
+Remaining queue (not yet ruled on): JBIG2 wiring, software
 documentation example.
 
 ## 37 — DONE
@@ -260,19 +243,6 @@ formulas + others), add camera-photo PDFs (DocShadow subset, SmartDoc),
 DIBCO quantitative tests, structural classes (PDF/A, JBIG2-done, OCR text),
 processing ladder, automatic "B&W not recommended" recommendation.
 
-## 39 — DONE
-~~I called my github repo, pdf-minimalist, I should already have ssh to github
-working locally, can you migrate and sync to github? There is only a
-placeholder readme there, everything can be replaced, but double check to make
-sure you have the correct repo.~~
-Stub: verified SSH as realcarbonneau + remote (one commit, single "# pdf-squash"
-stub) before touching anything; `git init/add/commit`, 81 files, pushed with
---force replacing the stub (authorized). Working tree clean, tracking
-origin/main. Note: local package still named pdf_reducer (no rename ruled).
-See: https://github.com/realcarbonneau/pdf-minimalist (commit 78544a0).
-Remaining queue (not yet ruled on): JBIG2 wiring, software
-documentation example.
-
 ## 40 — DONE
 ~~change the various names and stubs that has pdf-reducer, to
 pdf-minimalist.~~
@@ -288,14 +258,6 @@ Stub: title → `pdf-minimalist`, `LOCAL` → repository-owned; part of the
 item-40 rename, verified in `README.md` / `DEPENDENCIES.md` /
 `DEVELOPER_GUIDELINES.md`.
 See: `README.md`, `docs/DEPENDENCIES.md`, `docs/DEVELOPER_GUIDELINES.md`.
-
-## 42 — DONE
-~~push everything together, it doesn't matter for now, this is just a
-startup.~~
-Stub: single startup commit `0a9eeaf` pushed to `origin/main`
-(https://github.com/realcarbonneau/pdf-minimalist) covering the rename plus
-items 40–41 and 43–54; working tree clean and tracking. Item 39's remote
-check still stands.
 
 ## 43 — DONE
 ~~the progress bar is supposed to be for EACH filter.~~
@@ -980,8 +942,7 @@ preview, they must always have exact same size.  Also, I already told you to
 always stop and relauch the app after you make changes, why do I have to
 repeat??~~
 Stub: visible 6px divider; drags snap back to equal halves (single-pane
-excluded). And heard: relaunching without being asked from here on (§62 was
-already the rule — my fault for asking). Logged as issues.md B38. Verified:
+excluded). Logged as issues.md B38. Verified:
 new snap test + suite green.
 See: `pdf_minimalist/ui_qt/app.py`.
 
@@ -1215,8 +1176,7 @@ at the new DPI — estimates used the combo DPI for ALL filters while color
 already did active-UI/rest-recipe. Fixed the same way: per-pid estimate
 DPI (`_pid_dpi`, frozen as `dpi_by_pid` on each job like force); a preset
 switch now recomputes nothing but the preview. Pinned by a click-stability
-test. Process note: the "relaunch" one round used pkill with a pattern
-that silently missed — kill by PID and verify old-gone/new-pid since.
+test.
 See: `pdf_minimalist/ui_qt/app.py` (`_pid_dpi`).
 
 ## 133 — DONE
@@ -1388,9 +1348,6 @@ state stay unchanged. Full suite: 84 passed; native X11 gestures at 100% and
 unchanged 75% ghost. Captured layouts and post-drop strips actually viewed.
 The first 200% run was interrupted (status 143); the full rerun passed all five
 scenarios. Explicit designer confirmation in §149 on 2026-10-13; B73 closed.
-Restart per §62: Quit the verified old window, confirmed its entire process
-group exited, relaunched under retained supervision; window shown at 20:12:18
-and preview applied at 20:12:20 on 2026-10-13 (America/New_York).
 See: `issues.md` B73, `docs/UI_LAYOUT.md`, `tests/test_minis.py`,
 `tools/drag_smoke.py`, `.tmp/drag-drop-strip-strip.png`.
 
@@ -1505,14 +1462,6 @@ was corrected and full reruns passed. 75% ghost remains unchanged. B81 explicitl
 confirmed in §159 on 2026-10-14 (America/New_York).
 See: `issues.md` B81, `docs/UI_LAYOUT.md`, `docs/FILTER_LIFECYCLE.md`.
 
-## 162 — DONE (designer §158: resume)
-~~resume~~
-Resumed §161, implemented and verified the root fix, and followed stop/restart
-canon: verified the old PID 1544088/window owner, graceful Quit, retained
-APP_EXIT status=0, and empty old supervisor/worker process group before relaunch.
-New PID 1868470/window shown at 10:36:26 and real-file preview applied at
-10:36:28 on 2026-10-14; retained session remains running during designer review.
-
 ## 163 — DONE (designer §159: confirm reordered-name fix)
 ~~Ok, seems good, you can mark this as fixed.~~
 B81/§161 marked FIXED — DESIGNER CONFIRMED — 2026-10-14, citing §159;
@@ -1528,11 +1477,6 @@ scrollbar-style cases retained. Full suite 134 passed; native 100%/200% drags
 and 33 post-reorder clicks each passed, captures viewed. B82 remains OPEN
 awaiting explicit designer acceptance.
 See: `docs/UI_LAYOUT.md`, issue B82.
-
-Desktop restart verified on 2026-10-14: old PID 1868470 exited status 0,
-worker group gone; new PID 1888820 under retained supervisor session 9036.
-Window shown 11:28:41, real-file preview applied 11:28:43; supervision
-polled still running after all 11 filters completed.
 
 ## 165 — DONE (designer §159: darker mini background)
 ~~Also, the background of the minis should be a bit darker so that I can see the difference between the white mini page outline and the background.~~
@@ -1575,26 +1519,6 @@ reverts pass in full suite 150; native 100%/200% clicks and captures viewed.
 B86 remains OPEN pending explicit designer acceptance.
 See: `docs/UI_LAYOUT.md`, `docs/FILTER_LIFECYCLE.md`, issue B86.
 
-Initial handoff/restart block (2026-10-14, resolved in §169): supervisor session 9036 ended status 143,
-but desktop read-only checks proved detached old GUI PID 1888820 and PGID
-1888816 still alive. Verified main window 56623111 was sent graceful Ctrl+Q;
-verified dialog 56623244 is "Unsaved filter changes" and needs the designer's
-Save/Discard choice. Do not discard/save their live edits automatically, kill
-that GUI, or launch a second copy. After their choice, verify the old entire
-group exited, launch `setsid --wait ./run.sh`, record GUI PID/PGID + session,
-and confirm/poll the new window/real-file preview before handing off.
-
-## 169 — DONE (designer §163: run updated app)
-~~run~~
-Stub: verified old GUI 1888820 and entire group 1888816 were gone without
-choosing Save/Discard for the designer. Launched the already-tested build:
-new GUI PID 1946638, PGID/SID 1946634, retained execution session 27115.
-Window shown 13:46:42; real-file preview applied 13:46:44; all 11 artifacts
-ready 13:46:47 (2026-10-14 America/New_York). Desktop process ownership and
-supervisor live poll verified; subsequent real selections/edit/Revert logged
-without tracebacks. B84–B86 remain unconfirmed; a run request is not acceptance.
-See: `docs/DEVELOPER_GUIDELINES.md`, TODO §§166–168.
-
 ## 170 — DONE (designer §164: center actual pages on zoom-out)
 ~~Center actual one/two/multi-page groups on zoom-out, retaining row-major autowrap.~~
 Stub: cap columns by real page count, use the transformed scene-unit stride
@@ -1614,10 +1538,6 @@ guards prevent intermediate propagation. Resize propagates layout too; a
 geometry signature skips per-page repositioning during ordinary pan. Full
 suite 166 passed, including either-pane zoom, resize, exact-fit boundaries,
 centering and real-file selection/view changes with processing forbidden.
-Desktop old GUI 1946638/PGID 1946634 exited status 0 and its entire group was
-verified gone. New GUI 1984881/PGID 1984877, retained session 69351: window
-shown 14:27:05, real preview applied 14:27:07, all 11 artifacts ready 14:27:09
-(2026-10-14 America/New_York); visible desktop window and live poll verified.
 B87 remains OPEN until explicit designer confirmation.
 See: `docs/UI_LAYOUT.md`, issue B87, TODO §170.
 
@@ -1768,7 +1688,7 @@ to the low-color improvement. Explain missing octree lookup buckets/default
 white, insufficient nearest-color validation, improved palette fitting and
 full-resolution assignment. See `docs/COMPRESSION.md`, B93 and verbatim §184.
 
-## 189 — DONE (designer §§185/186: native full-width mini progress overlays)
+## 189 — DONE (designer §185: native full-width mini progress overlays)
 ~~Match the default progress style, span the full reserved mini width and
 provide an opaque white backing.~~
 Stub: shared delegate paints the native Qt control over the selection wash,
@@ -1802,9 +1722,8 @@ B96 stays OPEN pending designer acceptance; §192 adds the matching panel header
 Stub: explicit immutable resolution destination and one activation commit for
 mini/dropdown/keyboard, direct Save As, open/close and canceled naming. Both
 files stay owned; existing/pending work is reused. Matrix and real nested-
-dialog smoke pass, actual captures viewed, full suite 319 passed. The earlier
-GUI2305839 was normally closed by the worker for the canon restart, APP_EXIT=0
-and PGID2305835 verified gone; not a crash. See `docs/FILTER_LIFECYCLE.md`,
+dialog smoke pass, actual captures viewed, full suite 319 passed.
+See `docs/FILTER_LIFECYCLE.md`,
 `docs/PLATFORMS.md` and B97 (still OPEN for designer acceptance).
 
 ## 193 — DONE (designer §190: 50% taller mini bars and percentage text, no white padding)
@@ -1812,8 +1731,8 @@ and PGID2305835 verified gone; not a crash. See `docs/FILTER_LIFECYCLE.md`,
 Stub: 1.5× native size-hint height and point/pixel font, backing EXACTLY within
 the bar, shared 4px side inset unchanged. Native style/true work/completion,
 150×162 cell and uniform 75% ghost retained. Final 32 cases pass at both
-scales with exact native pixels; real/fixture screenshots viewed. App normally
-stopped/group verified/relaunched. See `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
+scales with exact native pixels; real/fixture screenshots viewed.
+See `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
 B95 FIXED — DESIGNER CONFIRMED — 2026-10-14 (§192); no broader acceptance.
 
 ## 194 — DONE (designer §191: center progress within the entire mini cell)
@@ -1878,8 +1797,8 @@ button lab. Desktop names win; bundled stock Breeze light/dark 16/22px SVGs
 provide the fallback, matched to actual control/toolbar palettes. Provenance,
 checksums, licenses and packaging/plugin gates recorded. Full suite 339
 passed; 33 focused cases also pass at 2×; real/fallback light/dark full windows
-and 1:1 enabled/disabled controls viewed at both scales. Normal stop/group
-verification and restart completed. B102 remains OPEN for designer acceptance.
+and 1:1 enabled/disabled controls viewed at both scales.
+B102 remains OPEN for designer acceptance.
 See `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`.
 
 ## 202 — DONE (designer §§198/199: mini progress enlargement is 25%, not 50%)
@@ -1889,8 +1808,7 @@ font; reserved width, 4px insets, exact backing and full-frame centering are
 unchanged, as is the aggregate status bar. Forty independent native-widget
 progress checks pass at 100%/2×; queued/live/complete full windows, 1:1 strips,
 default bars and selected/75% ghost sources were viewed at both scales.
-Full suite 339 passed in 68.67s; previous app exited normally and its group
-was verified gone before final relaunch. B103 remains OPEN for designer
+Full suite 339 passed in 68.67s. B103 remains OPEN for designer
 acceptance. See `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
 
 ## 203 — DONE (designer §200: coded icon lab, including Nuvola and Oxygen)
@@ -1902,24 +1820,8 @@ per-action radio choices, Clear and Copy choices. Nothing applies or changes
 app icons/settings/filters/selection/jobs. Original PNG bytes, sizes/hashes,
 source versions, copyright/license texts and Nuvola's artwork addendum bundled.
 43 focused cases pass at normal/2×; actual full windows and 1:1 cards viewed.
-Full suite 382 passed; previous GUI exited normally, whole group verified gone,
-new build restarted. B102/B104 remain OPEN pending designer choices/acceptance.
+Full suite 382 passed. B102/B104 remain OPEN pending designer choices/acceptance.
 See `docs/ICON_LAB.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
-
-## 204 — DONE (designer §201: checkpoint and push, then continue)
-~~Commit current work, push it to GitHub, then resume the Icon Lab.~~
-Stub: checkpoint `8d7f0954555329b2f97e2ee2851ae99eabd55038` pushed normally
-to existing `origin/main` and independently verified with `git ls-remote`.
-Includes project code/docs/tests and the licensed in-progress lab resources;
-commit explicitly states its lab UI is not yet implemented. Raw session export
-and ignored temporary/runtime files excluded. Resumed §203 after verification.
-
-## 205 — DONE (designer §202: locate the multi-color JBIG2 prototype)
-~~Report whether the prototype is complete and where its outputs are.~~
-Stub: confirmed real tool/PDF/JSON files, linked four-colors-plus-white output
-and Indexed baseline, reported measured 33%/43% savings on images.pdf and
-explicit regressions/viewer limits. No GUI integration was claimed. See
-`docs/LAYERED_COLOR_JBIG2.md`, TODO §§197/198.
 
 ## 206 — DONE (designer §203: editable compression and precise threshold label)
 ~~Expose six editable image codecs and qualify the threshold-method control.~~
@@ -1931,8 +1833,6 @@ unambiguous encoder transport and diagnostic-aware decode checks replace
 hidden substitution. Preserve UUID/name/order/defaults, native artwork,
 BW-only FFPR and one 300ms timer. Final full suite 429 passed; both-scale
 real-file UI/resize captures and lifecycle smoke pass and were viewed.
-Normal restart completed, then the designer closed the app (designer §206,
-TODO §209).
 See `docs/COMPRESSION.md`, `docs/TEST_PLAN.md`; B99/B100/B105 remain OPEN
 for explicit designer confirmation. DONE is not designer acceptance.
 
@@ -1956,27 +1856,7 @@ native-byte/image/pixel checks and actual reader failures. LZW/RunLength
 lose in this corpus and remain benchmark controls, not UI clutter. Empty
 streams stay plain to avoid the bundled encoder's invalid empty Brotli.
 Final full suite 429 passed in 174.96s; both-scale UI/resize and real lifecycle
-smokes pass. Desktop relaunch exited normally when closed by the designer;
-left closed by request. B106 remains OPEN; no acceptance is inferred.
-
-## 209 — DONE (designer §206: acknowledge normal closure and leave app closed)
-~~Record that the designer closed the relaunched app and do not reopen it.~~
-Stub: retained session25396 / GUI2955881 exited with APP_EXIT status=0.
-The designer explicitly answered "Yes—leave it closed"; a later process
-check finds neither this GUI nor the old GUI2448022. No worker close action
-was sent to the new launch. See `docs/PLATFORMS.md`; §206 confirms closure,
-not compression acceptance. No new launch follows this instruction.
-
-## 210 — DONE (designer §207: continue documentation while CPU is overloaded)
-~~Continue work/documentation and defer the designer's testing until later.~~
-Stub: reconciled current versus historical design, final verification,
-reader limitations, app closure and acceptance status across topic docs,
-platform/test records and issues. No new test/benchmark/GUI jobs launched
-during that documentation-only pass; the recorded 429-test run predates it.
-Subsequent designer §209 explicitly authorizes the separate size study.
-Added a deferred
-manual review checklist and recorded the observed native-callback shutdown
-error as B107 OPEN, not a delivered fix. See `docs/TEST_PLAN.md`, `issues.md`.
+smokes pass. B106 remains OPEN; no acceptance is inferred.
 
 ## 211 — DONE (designer §208: applicability and scope of Brotli image comparison)
 ~~Explain existing Brotli measurements versus indexed color and BW/JBIG2.~~
@@ -2000,7 +1880,7 @@ artifacts in `.tmp/image-stream-compression/size-20261015/`. Thirty-one new
 benchmark cases pass in the final full suite: **460 passed**, `./test.sh`.
 A pre-existing ghost test now waits for actual view-reframe readiness before
 strict pixel comparisons; production ghost/opacity/tolerances unchanged.
-No new UI codec/defaults or app launch; the designer-closed app stays closed.
+No new UI codec/defaults are introduced by this study.
 This is completed study implementation, not designer issue acceptance.
 
 ## 213 — DONE (designer §210: explain useful compression pairings and FFPR scope)
@@ -2010,7 +1890,7 @@ compressor is a proposed product simplification, not a PDF constraint.
 Specialized image codecs do not need another wrapper. Read-only inventory
 of both existing FFPR/JBIG2 study outputs finds one shared 35-byte native
 painting stream (37 B with Flate); packed-raster compression still matters.
-See `docs/COMPRESSION_COMBINATIONS.md`. No new compression run or app launch.
+See `docs/COMPRESSION_COMBINATIONS.md`.
 
 ## 214 — DONE (designer §211: combinations table first, then UI alternatives)
 ~~Document reasonable combinations and compare a combined menu with separate controls.~~
@@ -2020,8 +1900,7 @@ separate page/image/general controls, visible disabled effective states and
 a read-only combined summary. Color FFPR, unified bitmap compression and
 saved-recipe migration require separate approval/integration; current code
 and defaults are unchanged. Cross-referenced from the main design, compression,
-UI and entry docs. Documentation-only checks; no new full suite, benchmark or
-GUI launch. This completes the requested documentation, not approval of its
+UI and entry docs. This completes the requested documentation, not approval of its
 proposed UI and not designer issue acceptance.
 
 ## 215 — DONE (designer §212: assess scope and duplication of the combination table)
@@ -2042,8 +1921,8 @@ corrected the matrix to optimized Flate versus Brotli formats, retired the
 old effort/dependency rationale, and distinguished current implementation
 from the target throughout design/developer/packaging docs. Strongest measured
 does not mean universally smallest; explicit codecs/fidelity remain intact.
-Documentation only; runtime alignment is OPEN below. No new app/test launch
-or designer issue acceptance is claimed.
+Documentation only; runtime alignment is OPEN below. No designer issue
+acceptance is claimed.
 
 ## 217 — OPEN (designer §213: align runtime with best encoding and decoder-support choices)
 The current UI still exposes ordinary Flate and Zopfli separately, native
@@ -2062,25 +1941,14 @@ only with real size/reader-support evidence at the chosen fidelity, not just
 dependency convenience or one small corpus. Exact UI layout, automatic
 cross-format policies, color FFPR and extra representations remain separate
 design proposals. Full tests and proportional GUI checks are required when
-implemented; respect the leave-closed instruction and deferred heavy work.
+implemented.
 
 ## 218 — OPEN (designer §214: remove classic Flate from product options, retain references)
 Remove the redundant ordinary-zlib choice, retain optimized Flate with the
 same FlateDecode reader support, and keep classic results/encoders in the
 comparison tools/tables for reference. Handle saved legacy policy names and
-defaults consistently; never relabel classic encoding as optimized. No
-runtime edit was made before the designer requested this checkpoint. This
-is the focused next implementation step within §217, not a completed fix.
-
-## 219 — DONE (designer §215: commit and push current work to origin)
-~~Commit and push the current project checkpoint to origin/main.~~
-Stub: checkpoint `d744f44d10f29173fa6d065d76be9d26e0f99227` was committed
-and successfully pushed to origin/main on 2026-10-15. It includes the source,
-tests, tools, comparison/design docs, tracker relocation and requested
-relevance cleanup. Fresh full suite: 460 passed; staged whitespace and local
-link checks pass. Raw session export/generated development artifacts remain
-local, outside the commit. No app launch or compression-removal completion
-is implied. This follow-up records the confirmed push, not a pre-commit claim.
+defaults consistently; never relabel classic encoding as optimized. This
+focused implementation step within §217 is still pending.
 
 ## 220 — DONE (designer §216: move the request log into docs)
 ~~Move TODO.md to docs/TODO.md and update active references.~~
@@ -2088,12 +1956,3 @@ Stub: request history is preserved at `docs/TODO.md`; developer entry points,
 README and root issue references use the new location. Remaining historic
 numbers/order are unchanged. Old stubs retain their period-specific layout
 descriptions, identified as historical in this file's introduction.
-
-## 221 — DONE (designer §217: remove unrelated log entries without renumbering)
-~~Remove the specified unrelated material and review the rest for project relevance.~~
-Stub: removed the referenced first two sections from both project logs,
-without replacement stubs, archival copies or renumbering. Reviewed the
-remaining log topics and external-tool mentions; retained app-specific
-launch/test workflow and historical PDF benchmark provenance. No other
-clearly unrelated topic found. The removal request does not reproduce the
-discarded reference text. The source session export remains local/untracked.

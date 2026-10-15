@@ -1,5 +1,9 @@
 # DESIGN — preset filter-strip + comparison views
 
+Documentation scope (§218): keep substantive design, defect reports and dated
+acceptance. One-off execution, status and publication commands are not design
+requirements. Lasting development/test rules belong in `DEVELOPER_GUIDELINES.md`.
+
 ## Designer rulings (verbatim)
 Quoted exactly from `DESIGNER_VERBATIM.md`. Do not edit the quotes.
 
@@ -97,7 +101,7 @@ or speed rankings under the workstation's fluctuating load. Compare actual
 Indexed/BW Flate with full Zopfli, Brotli and colored/BW JBIG2, retaining common
 native compression and all PDF overhead. Exact quote, protocol and measured
 outputs: `IMAGE_STREAM_COMPRESSION.md`. This authorizes headless benchmarking,
-not new GUI options/defaults or reopening the designer-closed app (§206).
+not new GUI options/defaults.
 
 ### Compression combinations: documentation and UI review (§§210/211)
 
@@ -113,7 +117,7 @@ implemented or approved. Mixed native-Brotli/image-Flate is valid PDF even if
 omitted from a future simplified editor. Recommendation: separate controls,
 visible disabled effective states and a read-only combined summary, not an
 enumerated cross-product menu. This does not supersede §§203–205, change any
-saved recipe/default or authorize another GUI launch.
+saved recipe/default.
 
 ### Opinionated best encoding, with reader-support choices (§213)
 

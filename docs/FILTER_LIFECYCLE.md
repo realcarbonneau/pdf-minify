@@ -255,7 +255,6 @@ draft's actual mode/policy and selects the new copy, and built-in override
 reload restores the saved mode. Seven new lifecycle cases are included in
 the final **429 passed** suite; real-file modal smoke and both-scale captures
 were viewed. See `TEST_PLAN.md`, `COMPRESSION.md` and
-`NATIVE_STREAM_COMPRESSION.md`. B105/B106 remain unconfirmed; the designer
-defers testing (§207). The app is left closed by explicit request (§206).
+`NATIVE_STREAM_COMPRESSION.md`. B105/B106 remain unconfirmed.
 The separate native callback cancellation/serialization defect observed on
 shutdown is B107 OPEN; it is not certified repaired by these tests.

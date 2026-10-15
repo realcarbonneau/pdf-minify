@@ -248,18 +248,15 @@ Implementation verification is not designer acceptance. Tests additionally
 cover independent image/native keys, all six actual image filters, shared
 debounce, Save/Save As/load/Cancel and the empty-stream encoder defect.
 
-## Delivery and deferred designer review
+## Integration verification and acceptance
 
 Final full suite: **429 passed in 174.96s**, 2026-10-15. Actual six-codec and
 three-stream-policy GUI captures were viewed at normal/2×, with both-scale
 resize and native-widget lifecycle checks passing; details and limits are in
 [TEST_PLAN.md](TEST_PLAN.md). B105/B106 remain OPEN pending explicit designer
-acceptance. The supervised desktop relaunch exited normally; the designer
-confirmed closing it and requested it remain closed (§206). §207 postpones
-their testing due to workstation load. No new heavy verification was started
-for the final documentation pass, and no CPU-isolated benchmark is claimed.
+acceptance. No CPU-isolated benchmark is claimed.
 
-The close also exposed a pre-existing callback-cancellation/worker error
+A shutdown exposed a pre-existing callback-cancellation/worker error
 serialization problem, recorded separately as B107 OPEN in `issues.md`.
 Do not mistake a green compression suite for coverage or repair of that
 shutdown path, or the normal GUI exit for proof that every canceled worker

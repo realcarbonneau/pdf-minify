@@ -1,19 +1,12 @@
 # Test Plan
 
-## Checkpoint verification — 2026-10-15 (designer §§215–217)
+## Current regression verification — 2026-10-15
 
 Fresh full `./test.sh` run: **460 passed**, exit 0 / FULL SUITE GREEN.
 Ran at low priority with numerical thread limits; this is regression
-verification, not a new compression-time benchmark. No application source
-was changed during the subsequent documentation move/cleanup.
-Checked 51 local Markdown links and the removal of the old root tracker.
-All 224 remaining existing TODO headings and 211 remaining existing
-verbatim headings retain their exact numbers/order; only the two explicitly
-removed sections were excluded from those comparisons. Project documents
-no longer contain the removed maintenance Q&A. Staged whitespace checks pass.
-The raw session export stays local/untracked. No desktop app launch; the
-designer's leave-closed instruction remains in force. Classic-Flate option
-removal is still pending in [TODO.md](TODO.md) §218, not shipped by this pass.
+verification, not a new compression-time benchmark. Classic-Flate option
+removal is still pending in [TODO.md](TODO.md) §218; this suite does not
+certify that unimplemented change.
 
 Current canon coverage (§§149/150/155): `test_filter_lifecycle.py` verifies every
 real output file and exact final size, zero jobs on first/repeated selection
@@ -329,10 +322,6 @@ exit 143 before completion, not called green. No production layout workaround
 was added. An earlier full-suite run was likewise interrupted (143); the
 complete rerun above is the regression evidence.
 
-Old GUI2386118 exited normally (`APP_EXIT status=0`), its whole group2386114
-was independently verified gone, and session9907 launched GUI2409896 /
-PGID2409892. Preview applied 22:43:52; all 12 artifacts ready 22:44:02.
-This icon-only restart precedes the designer's next 1.25× progress refinement.
 B102 remains OPEN pending designer acceptance; see `ICONS.md`.
 
 ## 25% mini progress enlargement (§§198/199)
@@ -355,10 +344,7 @@ lock was moved to `/tmp/pdf-minimalist/diagnostic-pid2-lock-interrupted-20261014
 for recovery; no PDFs, user drafts or live GUI files were removed, and the
 canonical screenshot runs then completed normally. No production PID/session
 design change was made to accommodate the harness's shared PID-2 namespaces.
-The previous GUI2409896 independently exited normally (`APP_EXIT status=0`);
-its full group2409892 was verified gone before final relaunch. No worker
-Save/Discard/Quit action was sent to that GUI for this second restart.
-Final retained-session/PID evidence is in `PLATFORMS.md`. B103 remains OPEN.
+B103 remains OPEN pending designer acceptance.
 
 ## Coded stock Icon Lab (§200)
 
@@ -384,11 +370,6 @@ not blank stretched space outside Qt's normal radio hit region.
 
 No production icon replacement has been inferred from the designer's rejection;
 the new window is a review aid only. B102/B104 remain OPEN; see `ICON_LAB.md`.
-Checkpoint `8d7f095` was pushed and independently verified BEFORE completing
-this new UI; later local lab changes are not represented as already pushed.
-The old GUI2415604/session18645 exited normally (`APP_EXIT status=0`), and
-its whole PGID2415600 was verified gone before final relaunch. No automatic
-Save/Discard input was sent. Final session/PID evidence is in `PLATFORMS.md`.
 
 ## Editable image/native compression (§§203–205)
 
@@ -423,11 +404,9 @@ real images.pdf: last geometry change 0.121s/0.315s, stable for ten seconds,
 equal panes/aligned headers/4px gutters/native panel overflow and no filtering.
 The actual filter lifecycle smoke passes; dirty, real modal Escape/Discard,
 Save As new selection and icon/control captures were viewed. An initial
-resize run was interrupted (143), not certified; desktop checks proved its
-GUI diagnostic gone but the real app2448022 remained alive despite its
-separately interrupted supervisor65772. After confirming no helper remained,
-only the diagnostic PID-2 `.process.lock` was moved to a recoverable dated
-name; no production GUI lock/settings/data was touched. The first full suite
+resize run was interrupted (143), not certified. Only a stale diagnostic
+PID-2 `.process.lock` was moved to a recoverable dated name after verifying
+its owner was gone; no production GUI lock/settings/data was touched. The first full suite
 had 427 passes and one obsolete Strategy-label assertion; it was updated to
 pin all five new qualified inline rows. The final full rerun is **429 passed
 in 174.96s (2:54)**, `./test.sh`, 2026-10-15, exit 0. No production code
@@ -444,25 +423,14 @@ even when it returns zero; QPDF's ordinary checks/readback pass but Brotli
 checks exit 2. Complete figures, CPU-time caveat, source diagnostics and
 reproduction commands: `NATIVE_STREAM_COMPRESSION.md`.
 
-Final desktop lifecycle: old GUI2448022's supervisor65772 had exited 143,
-but independent desktop checks proved the app still alive. Normal Ctrl+Q
-to its verified window56623111 closed it; the whole PGID2448018 was verified
-gone before `setsid --wait ./run.sh` launched retained session25396 /
-GUI2955881. Window shown 10:40:07; one actual artifact ready 10:40:33.
-The designer closed this launch during startup filtering; retained status
-was APP_EXIT 0 and the GUI PID was independently gone. No worker close/
-Save/Discard was sent to the new launch. The designer confirmed the close
-and instructed "Yes—leave it closed" (§206); the app is not relaunched.
-This is not evidence of all artifacts ready or preview applied. A cancellation
-inside the native culler exposed the separate B107 worker-error path; it is
-recorded OPEN, not treated as fixed by the green compression suite.
+A cancellation inside the native culler exposed the separate B107 worker-
+error path; it remains OPEN, not treated as fixed by the green compression
+suite or by the GUI's normal exit status.
 
-### Deferred designer review (§207)
+### Designer acceptance checklist
 
-The workstation was reported overloaded after the final verification above.
-No additional benchmark, test or GUI jobs were launched for the documentation
-pass. B99/B100/B105/B106 remain OPEN; testing later must not be described as
-already accepted. When the designer chooses to reopen the app, review:
+B99/B100/B105/B106 remain OPEN; worker verification is not designer acceptance.
+The acceptance review covers:
 
 - All six Image compression choices, enabled parameters, precise Threshold
   method/readout and genuine JBIG2 Color output, without losing filter names
@@ -516,9 +484,9 @@ outputs, records output hashes and returns IMAGE STREAM SIZE BENCHMARK GREEN.
 The JSON has zero timing fields; all current-Flate/plain-Flate reference
 sizes agree. Both full tables (154 distinct size cells) were mechanically
 diffed against JSON and match. See `IMAGE_STREAM_COMPRESSION.md` for complete
-results/limits. No UI/default-codec change, app launch or timing comparison;
+results/limits. No UI/default-codec change or timing comparison;
 the shared saver only has an optional preserved-ID flag with product default
-unchanged. §206's leave-closed ruling remains in force.
+unchanged.
 
 Initial final-suite run: 459 passed / one pre-existing ghost pixel test failed.
 Diagnosis reproduced it with a queued-event boundary: all filter jobs finished,

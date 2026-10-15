@@ -6,9 +6,10 @@
 > in brackets outside the quote. New designer comments get appended
 > here with date + full verbatim text.
 
-Scope: project requirements and development workflow. Explicit designer
-removals are omitted rather than copied into another entry; existing numbers
-are never changed to fill the resulting gaps (§217).
+Scope: substantive project requirements, defects, acceptance and lasting
+development rules. One-off execution/status chatter is not a design record.
+Explicit removals are not re-archived or replaced by stubs; remaining IDs
+stay unchanged and removed IDs are never reused (§218).
 
 ## 3 — app vision (original brief)
 > I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
@@ -43,11 +44,11 @@ are never changed to fill the resulting gaps (§217).
 ## 13 — dev guidance rulings (verbatim, 2026-10-09)
 > developement guidelines has my ruling for general guidelines, including the todo instructions.
 
-## 14 — run UI + stdout logging + --debug (verbatim, 2026-10-09)
-> run the ui please so I can see.  The app should log everything important to the stdout so that you can run and review what happened from the log.  Also, have a --debug mode that dumps more so you can rune and evaluate issues and problems as required.  This goes in development guidelines, as it is not a ui nor feature design issue.
+## 14 — stdout logging and --debug (verbatim excerpt, 2026-10-09)
+> The app should log everything important to the stdout so that you can run and review what happened from the log.  Also, have a --debug mode that dumps more so you can rune and evaluate issues and problems as required.  This goes in development guidelines, as it is not a ui nor feature design issue.
 
-## 15 — stay local (verbatim, 2026-10-09)
-> don't go outside the local dir, make a local ./.tmp/ and gitignore it.  Later we will push to github.
+## 15 — stay local (verbatim excerpt, 2026-10-09)
+> don't go outside the local dir, make a local ./.tmp/ and gitignore it.
 
 ## 16 — todo format + dropped log (verbatim, 2026-10-09)
 > no checkbox for doto list, put item in full detail, when completed, stub, cross ref with final docs that implement it and strikethrough.  If dropped, we can have a doc with dropped ideas and log them for historical reference with reasons.  Once we do work, we don't want to redo the work and knowledge.
@@ -60,12 +61,6 @@ are never changed to fill the resulting gaps (§217).
 
 ## 19 — docs lead (verbatim, 2026-10-09)
 > yes, correct docs, don't ask, docs should be all updated first, then dev work.  Docs lead the decisions, rulings, design intent.  Everything else follows.
-
-## 20 — continue (verbatim, 2026-10-09)
-> continue, why did you stop?
-
-## 21 — run it or not ready (verbatim, 2026-10-09)
-> run the app, or it's not reaady?
 
 ## 22 — synced panes (verbatim, 2026-10-09)
 > page zoom, pan, etc is always synced on both panes
@@ -384,17 +379,11 @@ are never changed to fill the resulting gaps (§217).
 >
 > My next priority would be a focused 12–16-page extreme-lighting test PDF using selected DocShadow-SD7K examples, followed by a SmartDoc handheld-photo PDF. Those two would probably reveal more about the quality of your future thresholding interface than another dozen clean government documents.
 
-## 39 — GitHub repository migration (verbatim, 2026-10-09)
-> I called my github repo, pdf-minimalist, I should already have ssh to github working locally, can you migrate and sync to github? There is only a placeholder readme there, everything can be replaced, but double check to make sure you have the correct repo.
-
 ## 40 — product and stub rename (verbatim, 2026-10-09)
 > change the various names and stubs that has pdf-reducer, to pdf-minimalist.
 
 ## 41 — stale local label (verbatim, 2026-10-09)
 > also, why does it say local? Ref: pdf-reducer (local)
-
-## 42 — startup commit scope (verbatim, 2026-10-09)
-> push everything together, it doesn't matter for now, this is just a startup.
 
 ## 43 — per-filter progress (verbatim, 2026-10-10)
 > the progress bar is supposed to be for EACH filter.
@@ -747,9 +736,6 @@ are never changed to fill the resulting gaps (§217).
 ## 157 — repeated request for reordered-mini root fix (verbatim, 2026-10-13)
 > New issue, everytime I click on the minis, after reordering them, the last ones seems to flicker old names, for the current layout, the flicker of other wrong layout names starts as of filter number 5.  Regardless, this is another clear spaghetti code symptom from the weak worker.  Please review carefully and fix the code to address the root cause in the code please!
 
-## 158 — resume ongoing work (verbatim, 2026-10-13)
-> resume
-
 ## 159 — reordered names confirmed; equal mini padding and darker background (verbatim, 2026-10-14)
 > Ok, seems good, you can mark this as fixed.  Next issue.  Your previous fix to the mini hightlight and vertical scroll added back the white space gap at the bottom of the minis strip.  I want the same gap as at the top of the minis.  Also, the background of the minis should be a bit darker so that I can see the difference between the white mini page outline and the background.
 
@@ -761,9 +747,6 @@ are never changed to fill the resulting gaps (§217).
 
 ## 162 — revert changes icon beside dropdown (verbatim, 2026-10-14)
 > Also, add a revert changes igon beside the dropdown, the typical counter-clockwise arrow, right?
-
-## 163 — run the updated app (verbatim, 2026-10-14)
-> run
 
 ## 164 — center the actual page group when zooming out (verbatim, 2026-10-14)
 > When I zoom in, what happens incorrectly is that sorry, when I zoom out, what happens incorrectly is that since the pages get smaller and smaller and they're supposed to be tiled one beside each other, going from left to right row by row, the page gets left aligned when it should be centered.When I zoom in, what happens incorrectly is that sorry, when I zoom out, what happens incorrectly is that since the pages get smaller and smaller and they're supposed to be tiled one beside each other, going from left to right row by row, the page gets left aligned when it should be centered. However, it does stay vertically centered, which is odd. It should stay both vertically centered and horizontally centered when there's no other pages, when there's one page. If there's two pages, then the layout of two pages should be horizontally centered, etcetera. It should not just go off to the left as if it had other pages when it doesn't.
@@ -855,9 +838,6 @@ are never changed to fill the resulting gaps (§217).
 ## 185 — native full-width mini progress bars with an opaque white backing (verbatim, 2026-10-14)
 > I want the minis progress bars to follow the same style as the default progress bar and to span the full width of the minis reserved width (larger than the mini image) and also to have an opaque white background behind to make the progress bars visible.  Follow modern GUI best practices.
 
-## 186 — resume the mini progress-bar work (verbatim, 2026-10-14)
-> resume
-
 ## 187 — retain visible mini highlight around progress overlays (verbatim, 2026-10-14)
 > Obviously you need to have some padding between the progress bar and the edge of the minis to permit some highlight to show.  What is the common padding we are using?  I see a bit of padding above and below.
 
@@ -901,12 +881,6 @@ Clarification question: should the mini bar be 25% larger (1.25×), or one-quart
 ## 200 — reject the current icons and request an icon lab with choice codes (verbatim, 2026-10-14)
 > I don't like those icons, make an icon lab menu item with a window with various options and codes for each so I can tell you my choices.  use icons from nuvola, oxygen and other similar libraries.
 
-## 201 — checkpoint current work to GitHub, then continue (verbatim, 2026-10-14)
-> commit your current and push to github, then continue working
-
-## 202 — ask where the multi-color JBIG2 prototype is (verbatim, 2026-10-15)
-> I will look at icons later.  Where is the JBIG2, multi colors?  Did you complete the prototype?
-
 ## 203 — editable compression algorithm and qualified threshold terminology (verbatim, 2026-10-15)
 > I think we need to add an option that is the algorithm, JBIG2 BW, JBIG2 Color, Flate BW, Flate Color JPEG2000, JPEG.  Because we have no way of choosing between the options at the moment, filters seem to be locked into their algo.  Also, why do we have both JPEG and JPEG2000, and Flate BW and Flate Color?  For backward compatibility?  Aso, the terms strategy should be qualified, is that Threshold automatic strategy?
 
@@ -915,13 +889,6 @@ Clarification question: should the mini bar be 25% larger (1.25×), or one-quart
 
 ## 205 — native text/vector compression options, benchmarks and support limits (verbatim, 2026-10-15)
 > what are the top text compression algorithms, and we should add an option for this also.  And make a benchmark document for that scope of compression also.  Are there support limitations on some of these algorithms?  Any reason to keep lesser compression algorithms?
-
-## 206 — confirm designer closure and leave the app closed (verbatim, 2026-10-15)
-Clarification question: "The relaunched app exited normally (status 0), and I sent no close action to that launch. Did you close it?" Selected answer:
-> Yes—leave it closed
-
-## 207 — continue work/documentation while workstation is overloaded; defer designer testing (verbatim, 2026-10-15)
-> workstation cpu is overloaded now, I will test later, but continue your work and documentation please
 
 ## 208 — ask whether Brotli image comparisons exist and are applicable (verbatim, 2026-10-15)
 > what do your benchmarks show for brotli on color index versus jbig2, and on BW?  Is that applicable comparison?
@@ -944,18 +911,11 @@ Clarification question: "The relaunched app exited normally (status 0), and I se
 ## 214 — remove classic Flate as a selectable encoder; retain comparison evidence (verbatim, 2026-10-15)
 > Compression time is not a concern, so we drop classic Flate from the options?  Keep in the comparison table for reference.
 
-## 215 — commit and push the current checkpoint to origin (verbatim, 2026-10-15)
-> commit and push to origin please
-
 ## 216 — move the request log into docs (verbatim, 2026-10-15)
 > Move the TODO.md to the docs dir please also
 
-## 217 — remove unrelated material without renumbering; audit project relevance (verbatim excerpt, 2026-10-15)
-> Completely drop these from the docs, do NOT renumber, this is not relevant to the project, is there anything else like this that is completely irrelevant to the project?
-
-The unrelated reference material attached to this request is intentionally
-omitted under the designer's explicit removal instruction; it is not copied
-back into the project log. Remaining entry numbers stay unchanged.
+## 218 — document durable design, not routine execution requests (verbatim, 2026-10-15)
+> commit/push is not a todo/issue neither, you can scrub/drop those, if any, from the docs.  Do you see anything else that is not design related?  Like requesting to run the app or whatever else that has no added value to the docs.
 
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.

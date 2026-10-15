@@ -12,10 +12,8 @@ Related: [COMPRESSION.md](COMPRESSION.md),
 > you have color index filters that use flate, so you should make equivalent bechmarks for better compression on color index and bw please, compare with JBIG2 and color JPBIG2 also.  Do the work please.  We are only comparing size a this time.  Compute time is not measure because the cpu load on this workstation is fluctuating alot and unpredictably.
 
 "JPBIG2" refers to the previously requested colored JBIG2 stencil model;
-the original quote is preserved. This is a headless benchmark, not permission
-to add product codecs, change presets/defaults or reopen the designer's app.
-§209 explicitly authorizes size benchmarking after §207's defer-testing note;
-the leave-closed instruction (§206) remains in force. No encode/decode times
+the original quote is preserved. This headless study does not add product
+codecs or change presets/defaults. No encode/decode times
 are collected or compared in this study. Process timeouts are safety limits,
 not performance data. Work runs sequentially with numerical thread limits.
 

@@ -97,8 +97,8 @@ platforms and installers are not yet certified or built.
 
 ## Docs
 
-- `docs/DESIGNER_VERBATIM.md` — every designer ruling, word for word.
-- [docs/TODO.md](docs/TODO.md) — numbered project request log and pending work.
+- `docs/DESIGNER_VERBATIM.md` — substantive project rulings and confirmations, word for word.
+- [docs/TODO.md](docs/TODO.md) — numbered project requirements and pending engineering work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
