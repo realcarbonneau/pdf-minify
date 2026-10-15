@@ -1,5 +1,20 @@
 # Test Plan
 
+## Checkpoint verification — 2026-10-15 (designer §§215–217)
+
+Fresh full `./test.sh` run: **460 passed**, exit 0 / FULL SUITE GREEN.
+Ran at low priority with numerical thread limits; this is regression
+verification, not a new compression-time benchmark. No application source
+was changed during the subsequent documentation move/cleanup.
+Checked 51 local Markdown links and the removal of the old root tracker.
+All 224 remaining existing TODO headings and 211 remaining existing
+verbatim headings retain their exact numbers/order; only the two explicitly
+removed sections were excluded from those comparisons. Project documents
+no longer contain the removed maintenance Q&A. Staged whitespace checks pass.
+The raw session export stays local/untracked. No desktop app launch; the
+designer's leave-closed instruction remains in force. Classic-Flate option
+removal is still pending in [TODO.md](TODO.md) §218, not shipped by this pass.
+
 Current canon coverage (§§149/150/155): `test_filter_lifecycle.py` verifies every
 real output file and exact final size, zero jobs on first/repeated selection
 or view/DnD changes, one debounced edit, dirty markers, full effective keys,
@@ -345,7 +360,182 @@ its full group2409892 was verified gone before final relaunch. No worker
 Save/Discard/Quit action was sent to that GUI for this second restart.
 Final retained-session/PID evidence is in `PLATFORMS.md`. B103 remains OPEN.
 
-## Automated (pytest, run with `python3 -m pytest`)
+## Coded stock Icon Lab (§200)
+
+`test_icon_lab.py` plus the actual-main-window menu regression cover 37 stable
+code meanings, all seven action/four-family combinations, 121 original PNG
+hashes/dimensions and notices/licenses, explicit-family loading without theme
+fallback, light/dark normal/disabled/HiDPI rendering, initial no-selection,
+cross-family row exclusivity, real radio mouse/keyboard events, preview clicks,
+copy text, Clear, small-window scrolling and reusable modeless menu access.
+The app-level test pins production icons, QSettings, recipes, prepared results,
+selection and no new filtering. Focused **43 passed** at 100% (3.72s) and 2×
+(4.37s). Full suite **382 passed in 78.93s**, `./test.sh`.
+
+`QT_QPA_PLATFORM=offscreen .venv/bin/python tools/shot.py --icon-lab-only`
+and its `QT_SCALE_FACTOR=2` run pass. Actual menu-opened full dialogs and 1:1
+tables/cards were viewed: unselected state, selected light/dark fixtures,
+lower Save/Stop/Zoom rows, and 640×520 scrolling in both directions. Enabled,
+disabled, app-size and 32px previews all load real bundled stock artwork.
+Stock shadows can contain nearly transparent (alpha=1) edge pixels: tests
+require transparency/nonblank rendering and exact original hashes, not an
+invented hard alpha cutoff. Mouse tests click the native radio indicator,
+not blank stretched space outside Qt's normal radio hit region.
+
+No production icon replacement has been inferred from the designer's rejection;
+the new window is a review aid only. B102/B104 remain OPEN; see `ICON_LAB.md`.
+Checkpoint `8d7f095` was pushed and independently verified BEFORE completing
+this new UI; later local lab changes are not represented as already pushed.
+The old GUI2415604/session18645 exited normally (`APP_EXIT status=0`), and
+its whole PGID2415600 was verified gone before final relaunch. No automatic
+Save/Discard input was sent. Final session/PID evidence is in `PLATFORMS.md`.
+
+## Editable image/native compression (§§203–205)
+
+`tests/test_compression.py`: forty actual-PDF/core cases cover six distinct
+image modes, final Filter/BitsPerComponent/stencil dictionaries, native text/
+links, FFPR codec selection, multipage independence, identical layered/Indexed
+page pixels at multiple zooms, missing encoders with no silent fallback,
+leading-packed-whitespace transport, corrupt all-black decode recovery,
+native/image key independence, eight native benchmark codecs, exact decoded
+native bytes and unchanged images/metadata/attachments. Independent QPDF
+decodes ordinary native filters; Brotli is explicitly not supported by the
+installed older checker. Empty streams have NO filter: never embed MuPDF's
+invalid zero-byte Brotli result. Encoder cancellation/unavailability is tested.
+
+Seven main-window lifecycle cases prove all modes are editable without changing
+UUID/name/order, precise threshold label/readout, proper enabled/fixed states,
+one trailing timer for image/native/numeric edits, exact actual-file preview,
+Save and fresh-default reload of a built-in override, Save As's actual mode
+and native policy, retained source, Cancel/Discard transaction behavior and
+correct inactive/restored BW-only FFPR state on color transitions. Six initial
+focused cases passed at 2× (11.00s); the extra FFPR/updated inline-label subset
+passed at normal scale. The final full suite includes all seven.
+
+`tools/shot.py --compression-only` captures the real six image choices and
+three native choices after genuine debounce/save/readback, with full windows,
+1:1 panels/panes/minis and actual popup choices. Final normal shots were
+viewed, including colored JBIG2, manual/automatic disabled controls and Brotli
+warning, at normal/2×. Extra `--compression-state-only` full/1:1 captures at
+both scales prove color keeps native artwork with the BW-only toggle off,
+and Revert restores the saved FFPR state. Both-scale resize smokes pass on
+real images.pdf: last geometry change 0.121s/0.315s, stable for ten seconds,
+equal panes/aligned headers/4px gutters/native panel overflow and no filtering.
+The actual filter lifecycle smoke passes; dirty, real modal Escape/Discard,
+Save As new selection and icon/control captures were viewed. An initial
+resize run was interrupted (143), not certified; desktop checks proved its
+GUI diagnostic gone but the real app2448022 remained alive despite its
+separately interrupted supervisor65772. After confirming no helper remained,
+only the diagnostic PID-2 `.process.lock` was moved to a recoverable dated
+name; no production GUI lock/settings/data was touched. The first full suite
+had 427 passes and one obsolete Strategy-label assertion; it was updated to
+pin all five new qualified inline rows. The final full rerun is **429 passed
+in 174.96s (2:54)**, `./test.sh`, 2026-10-15, exit 0. No production code
+changed after that run; the final pass is documentation-only.
+The inherited native/layered study limits remain documented; this integration
+does not claim universal-viewer exactness or designer acceptance.
+
+Native benchmark: `tools/bench_native_streams.py --repeat 2 --label main`,
+32 source/policy cases, 64 outputs, 26 original pages (208 candidate page
+comparisons per repeat). Exact bytes/word geometry/all-page MuPDF pixels and
+unchanged image signatures pass; original-to-subset baseline is separately
+pixel/word checked. Poppler passes ordinary codecs but fails Brotli content,
+even when it returns zero; QPDF's ordinary checks/readback pass but Brotli
+checks exit 2. Complete figures, CPU-time caveat, source diagnostics and
+reproduction commands: `NATIVE_STREAM_COMPRESSION.md`.
+
+Final desktop lifecycle: old GUI2448022's supervisor65772 had exited 143,
+but independent desktop checks proved the app still alive. Normal Ctrl+Q
+to its verified window56623111 closed it; the whole PGID2448018 was verified
+gone before `setsid --wait ./run.sh` launched retained session25396 /
+GUI2955881. Window shown 10:40:07; one actual artifact ready 10:40:33.
+The designer closed this launch during startup filtering; retained status
+was APP_EXIT 0 and the GUI PID was independently gone. No worker close/
+Save/Discard was sent to the new launch. The designer confirmed the close
+and instructed "Yes—leave it closed" (§206); the app is not relaunched.
+This is not evidence of all artifacts ready or preview applied. A cancellation
+inside the native culler exposed the separate B107 worker-error path; it is
+recorded OPEN, not treated as fixed by the green compression suite.
+
+### Deferred designer review (§207)
+
+The workstation was reported overloaded after the final verification above.
+No additional benchmark, test or GUI jobs were launched for the documentation
+pass. B99/B100/B105/B106 remain OPEN; testing later must not be described as
+already accepted. When the designer chooses to reopen the app, review:
+
+- All six Image compression choices, enabled parameters, precise Threshold
+  method/readout and genuine JBIG2 Color output, without losing filter names
+  or UUIDs. Color displays BW-only FFPR off; Revert restores its saved state.
+- The independent PDF streams choices, one debounced real-file update,
+  exact preview/size, Save/Save As persistence and Cancel retaining the
+  edited filter. First/repeat selection and zoom must not reprocess.
+- The explicit Brotli reader warning. Use a supporting reader for Brotli;
+  the installed older Poppler/QPDF failures are expected, not hidden.
+- Zopfli's encoding cost versus unchanged Flate compatibility; do not infer
+  responsiveness from the noisy desktop timing samples.
+
+This is a future review checklist, not a request to run heavy checks now or
+permission to automatically launch the app. B107 needs a separate targeted
+native-callback/process-pool cancellation regression before any repair claim.
+
+The lightweight documentation audit also found inherited duplicate TODO
+headings and B39. `git show HEAD` confirms both predate this work; numbering
+was preserved and explanatory notes added, not rewritten to hide the history.
+New request/issue IDs are unique. `git diff --check` passes; no new full-suite
+claim is inferred from documentation-only checks.
+
+## Size-only bitmap study (§209)
+
+`tests/test_image_stream_bench.py`: 31 cases cover independent
+PNG-predictor reversal and actual native PDF readback at 1/2/4/8bpc, odd row
+padding, eight real saved variants on color/BW/native-overlay/FFPR pages,
+rotation/annotations/links, one palette/threshold preparation, fixed native
+Flate despite an inherited Brotli context, actual byte counts and absence of
+timing fields. The current-Flate reference matches real production saver size
+in all six fixture mode/rotation cases. Explicit missing encoders fail; existing
+output directories and mismatched prepared-page counts are rejected. Resume
+revalidates unchanged outputs without encoding again and rejects changed
+preparation. A genuinely malformed native path regression preserves original/
+output diagnostics without confusing them with image decoder errors.
+Identifier framing is explicitly controlled: the initial byte-parity oracle
+exposed random PDF IDs switching between literal/hex serialization (4 B in
+one fixture), not different image/native stream bytes. Fixed-width distinct
+IDs remove that noise without a size tolerance or changed product default.
+The additional read-back/xref-stream test verifies that identifier control
+changes the actual writer trailer, not only a copied xref dictionary. That
+focused regression passes and is included in the complete final suite below.
+
+`tools/bench_image_streams.py --smoke --label smoke-20261015` passes: two small
+36dpi control cases / sixteen actual PDFs, exact image samples and all actual
+page renders. This is a tool smoke, not the requested full-resolution corpus.
+The full corpus then passes: **22 cases / 176 actual PDFs / 600 candidate
+pages**, exact decoded samples/mask reconstruction and all-page MuPDF pixels
+at 72dpi and recipe DPI. Final normalization/readback reuses all encoded
+outputs, records output hashes and returns IMAGE STREAM SIZE BENCHMARK GREEN.
+The JSON has zero timing fields; all current-Flate/plain-Flate reference
+sizes agree. Both full tables (154 distinct size cells) were mechanically
+diffed against JSON and match. See `IMAGE_STREAM_COMPRESSION.md` for complete
+results/limits. No UI/default-codec change, app launch or timing comparison;
+the shared saver only has an optional preserved-ID flag with product default
+unchanged. §206's leave-closed ruling remains in force.
+
+Initial final-suite run: 459 passed / one pre-existing ghost pixel test failed.
+Diagnosis reproduced it with a queued-event boundary: all filter jobs finished,
+but resize/show had left the existing 150ms mini REFRAMING timer active;
+the thumbnail changed between captures WITHOUT scrolling. The oracle compared
+different view states, not a changed opacity/selection renderer. The test now
+waits for that actual timer to settle BEFORE taking its first reference and
+still crosses a full timer interval between strict pixel comparisons. No
+production ghost/view behavior or pixel/opacity tolerance is changed. The
+focused strict regression passes, and the final full rerun is **460 passed**,
+`./test.sh`, 2026-10-15, exit 0 / FULL SUITE GREEN. This failed attempt is
+retained as history, not reported as all green. No code changes follow the
+successful full rerun; the remaining pass is documentation-only. A fresh
+process check finds no desktop `python -m pdf_minimalist`; no app relaunch
+was performed. Verification remains distinct from designer acceptance.
+
+## Original v0.1 automated-test sketch (historical, not current coverage)
 1. `test_threshold_simple`: 3×3 gray array, T=127 → exact 1-bit output.
 2. `test_threshold_otsu`: synthetic bimodal image (half 50, half 200) → Otsu T in 100–150, output has both classes.
 3. `test_threshold_adaptive`: gradient + dark corner → corner stays readable (no all-black).
@@ -371,11 +561,13 @@ Fixtures to create in `tests/data/`:
 - [ ] Save BW: check size −60% or better on scans; open in Evince + MuPDF + Chromium.
 - [ ] Save Color: JPEG q50 photo PDF −30% or better, no visible blocks at 100%.
 - [ ] ESC during 20-page Max job → stops <1s, UI alive, partial file deleted.
-- [ ] Kill `jbig2enc` path (rename binary) → app falls back to G4 with info bar, no crash.
+- [ ] Simulate an unavailable `jbig2` using an isolated test PATH, without
+  renaming system binaries: explicit JBIG2 must show a clear error and retain
+  the saved file; deliberate Flate BW remains available. No silent G4 fallback.
 - [ ] 1GB RAM limit (`systemd-run --scope -p MemoryMax=1G`) → 50-page PDF still completes (streaming, no OOM).
 - [ ] No-network run (unplug) → everything works.
 
-## Metrics to record per test
+## General regression metrics (not the §209 size-only study)
 Input bytes, output bytes, % saved, time sec, effort preset, strategy, T, DPI,
 encoder (G4/JBIG2/JPEG/JP2), viewer check (Evince OK?), readability 1–5.
 

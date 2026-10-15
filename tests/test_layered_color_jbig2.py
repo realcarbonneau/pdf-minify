@@ -1,4 +1,4 @@
-"""Experimental tool only: exact palette stencils, not a new product mode."""
+"""Exact palette-stencil study; shared production primitives since §203."""
 import io
 import shutil
 
@@ -136,4 +136,4 @@ def test_existing_production_recipes_remain_unchanged():
     from pdf_minimalist.core.presets import PRESETS
     assert not any(preset["mode"] == "layered-jbig2" for preset in PRESETS)
     with pytest.raises(ValueError, match="Unknown filter mode"):
-        study.pipeline._save_recipe("unused", "unused", {"mode": "layered-jbig2"}, None, None)
+        study.pipeline._save_recipe("unused", "unused", {"mode": "not-an-algorithm"}, None, None)

@@ -209,6 +209,39 @@ def test_action_icon_refresh_preserves_filter_and_processing(tmp_path, monkeypat
         assert button.iconSize() == QSize(20, 20)
 
 
+def test_icon_lab_menu_reuses_window_without_filter_or_settings_changes(tmp_path, monkeypatch):
+    from PySide6.QtCore import QSettings
+    w = MainWindow(str(_three_pages(str(tmp_path))))
+    _wait_job(w)
+    settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    settings_before = {key: settings.value(key) for key in settings.allKeys()}
+    before = (w._gen, w._active_pid, w.filters.currentRow(), w.preset.currentData(),
+              dict(w._saved_specs), dict(w._draft_specs), dict(w._artifacts.results),
+              [target.icon().cacheKey() for target, _, _ in w._action_icons._targets])
+    started = []
+    monkeypatch.setattr(w._artifacts, "start", lambda *a, **kw: started.append(a))
+    assert w._icon_lab is None
+    view = next(action.menu() for action in w.menuBar().actions() if action.text() == "&View")
+    assert w.icon_lab_act in view.actions()  # direct, not hidden in Widget lab
+    w.icon_lab_act.trigger()
+    lab = w._icon_lab
+    assert lab.isVisible() and lab.parent() is w
+    lab.choices["N-REV-02"].setChecked(True)
+    lab.choices["O-REN-01"].setChecked(True)
+    lab.background.setCurrentIndex(2)
+    lab.close()
+    w.icon_lab_act.trigger()
+    assert w._icon_lab is lab and lab.isVisible()
+    assert lab.choice_text() == "Revert Changes: N-REV-02\nRename Filter: O-REN-01"
+    after = (w._gen, w._active_pid, w.filters.currentRow(), w.preset.currentData(),
+             dict(w._saved_specs), dict(w._draft_specs), dict(w._artifacts.results),
+             [target.icon().cacheKey() for target, _, _ in w._action_icons._targets])
+    assert after == before and not started
+    assert {key: settings.value(key) for key in settings.allKeys()} == settings_before
+    assert not w._preview_timer.isActive() and not w._artifacts.pending
+    lab.close()
+
+
 def test_details_codec_first_for_all_modes():
     """Designer §82: Codec opens the details in every mode, same sequence."""
     from pdf_minimalist.core import presets
@@ -1018,15 +1051,17 @@ def test_strip_gap_bar_and_drop(tmp_path):
 
 
 def test_control_rows_inline(tmp_path):
-    """Designer §128: Strategy, DPI and page size share a line with their
+    """Designer §§128/203/205: compression/method/DPI/page-size share a line with
     labels instead of stacking above their controls."""
     from PySide6.QtWidgets import QLabel
     w = MainWindow(str(_three_pages(str(tmp_path))))
     w.resize(1100, 650)
     w.show()
     _app.processEvents()
-    labels = {l.text(): l for l in w.panelScroll.findChildren(QLabel)}
-    for ctl, text in ((w.strategy, "Strategy:"),
+    labels = {l.text().replace("&", ""): l for l in w.panelScroll.findChildren(QLabel)}
+    for ctl, text in ((w.compression, "Image compression:"),
+                      (w.stream_compression, "PDF streams:"),
+                      (w.strategy, "Threshold method:"),
                       (w.dpi, "Raster DPI:"),
                       (w.page_size, "Page size:")):
         lab = labels[text]
@@ -1272,13 +1307,23 @@ def test_drag_ghost_is_translucent(tmp_path):
     """
     from PySide6.QtCore import QPoint
     from PySide6.QtGui import QImage
+    from PySide6.QtTest import QTest
     w = MainWindow(str(_three_pages(str(tmp_path))))
     _wait_job(w)
     v = w.filters
     w.resize(1100, 650)
     w.show()
     v.setCurrentRow(0)
-    _app.processEvents()
+    # Artifact readiness predates resize/show. The current view's minis are
+    # reframed by a separate timer; compare the same settled view, not an old
+    # thumbnail with the new thumbnail arriving between two ghost captures.
+    deadline = time.monotonic() + 90
+    while True:
+        _app.processEvents()
+        if not w._reframe_timer.isActive():
+            break
+        assert time.monotonic() < deadline, "view reframing did not settle"
+        QTest.qWait(10)
     item_rect = v.visualRect(v.model().index(0, 0))
     press = item_rect.topLeft() + QPoint(37, 61)
     assert v._drag_hotspot_for(0, press) == QPoint(37, 61)
@@ -1301,6 +1346,9 @@ def test_drag_ghost_is_translucent(tmp_path):
 
     # A partially scrolled source still produces the same complete mini;
     # there are no viewport-capture gaps to pad with white.
+    # Cross the old race window deliberately. No pixel equality or alpha
+    # checks are weakened, even if callbacks run between the captures.
+    QTest.qWait(w._reframe_timer.interval() + 20)
     hb = v.horizontalScrollBar()
     hb.setValue(37)
     _app.processEvents()

@@ -890,3 +890,143 @@ def test_zopfli_uses_valid_zlib_container_and_rejects_bad_output(tmp_path, monke
     assert Path(commands[0][-1]).parent == tmp_path
     assert zlib.decompress(result) == payload
     assert not list(tmp_path.iterdir())  # no escaped/leaked encoder scratch
+
+
+def test_every_filter_can_edit_all_six_image_algorithms_without_changing_identity(window):
+    from pdf_minimalist.core.algorithms import ALGORITHMS, BW_MODES, PALETTE_MODES
+    w = window
+    choose(w, "bw-t180")
+    pid = w._active_pid
+    saved, uid, name = dict(w._saved_specs[pid]), presets.get(pid)["uuid"], w._preset_label(pid)
+    saved_result = w._artifacts.results[w._result_key(pid)]
+    order = w._strip_ids
+    assert w.strategy_label.text().replace("&", "") == "Threshold method:"
+    for mode, label in ALGORITHMS:
+        w.compression.setCurrentIndex(w.compression.findData(mode))
+        spec = w._spec_for(pid)
+        assert spec["mode"] == mode and w._saved_specs[pid] == saved
+        assert w._active_pid == pid and presets.get(pid)["uuid"] == uid
+        assert w._preset_label(pid) == name and w._strip_ids == order
+        assert w.dpi.currentData() == 300
+        assert w.strategy.isEnabled() == (mode in BW_MODES)
+        assert w.threshold_control.isEnabled() == (mode in BW_MODES)
+        assert w.colors_control.isEnabled() == (mode in PALETTE_MODES)
+        assert w.force_raster.isEnabled() == (mode in BW_MODES)
+        assert w.lossless_box.isEnabled() == (mode == "jpx")
+        assert w.details.text().splitlines()[0] == "Codec: "+label
+        if mode == "jpx":
+            assert not w.lossless_box.isChecked()  # not the old BW fixed state
+        if mode == "layered-jbig2":
+            assert w.colors_value.value() == 5
+    w.revert_filter()
+    assert w.compression.currentData() == "bw" and not w._draft_specs
+    assert os.path.isfile(saved_result.pdf_path)
+    assert "Threshold method: simple" in w.details.text() and "T=180" in w.details.text()
+    w.strategy.setCurrentText("otsu")
+    assert "Threshold method: otsu (automatic)" in w.details.text()
+    assert "T=" not in w.details.text() and not w.threshold_control.isEnabled()
+    w.revert_filter()
+
+
+def test_image_and_native_compression_share_single_trailing_edit_debounce(window, monkeypatch):
+    w = window
+    choose(w, "bw-t180")
+    calls = []
+    start = w._artifacts.start
+    def record(key, path, spec, *args, **kwargs):
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None:
+            calls.append(dict(spec))
+        return worker
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    QTest.qWait(40)
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    QTest.qWait(40)
+    w.compression.setCurrentIndex(w.compression.findData("layered-jbig2"))
+    QTest.qWait(40)
+    w.colors_value.setValue(4)
+    assert not calls and w._preview_timer.isActive()
+    assert w._filter_display_name(w._active_pid).endswith(" *")
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(calls) == 1 and calls[0]["mode"] == "layered-jbig2"
+    assert calls[0]["stream_compression"] == "zopfli" and calls[0]["colors"] == 4
+    result = w._artifacts.results[w._result_key(w._active_pid)]
+    assert result.nbytes == os.path.getsize(result.pdf_path)
+    assert w.after._pdf_source.path == result.pdf_path
+
+
+def test_color_algorithm_does_not_display_inactive_bw_full_page_flag_as_applied(window):
+    w = window
+    choose(w, "bw-fast")
+    assert w.force_raster.isChecked() and w.force_raster.isEnabled()
+    original = dict(w._saved_specs["bw-fast"])
+    w.compression.setCurrentIndex(w.compression.findData("color"))
+    assert not w.force_raster.isEnabled() and not w.force_raster.isChecked()
+    assert "Text/vectors kept" in w.details.text()
+    # The inactive preference is remembered for returning to BW, not applied
+    # to color or used as an effective color cache input.
+    w.compression.setCurrentIndex(w.compression.findData("bw"))
+    assert w.force_raster.isChecked() and w.force_raster.isEnabled()
+    assert spec_key(w._spec_for("bw-fast")) == spec_key(original)
+    assert not w._draft_specs
+
+
+def test_changed_algorithm_and_native_compression_save_and_reload_builtin_override(window):
+    w = window
+    choose(w, "bw-t180")
+    uid = presets.get("bw-t180")["uuid"]
+    w.compression.setCurrentIndex(w.compression.findData("layered-jbig2"))
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
+    assert not w.stream_warning.isHidden()
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    result = w._artifacts.results[w._result_key("bw-t180")]
+    w.save_filter()
+    assert not w._draft_specs and presets.get("bw-t180")["mode"] == "layered-jbig2"
+    persisted = next(p for p in w._custom_store().value("customPresets") if p["id"] == "bw-t180")
+    assert persisted["mode"] == "layered-jbig2" and persisted["uuid"] == uid
+    assert persisted["params"]["stream_compression"] == "brotli"
+    assert w._artifacts.results[w._result_key("bw-t180")] is result
+    # A fresh process starts from built-in templates, NOT the modified globals.
+    presets.PRESETS[:] = copy.deepcopy(_defaults)
+    loaded = ui.MainWindow(None)
+    try:
+        choose(loaded, "bw-t180")
+        assert loaded.compression.currentData() == "layered-jbig2"
+        assert loaded.stream_compression.currentData() == "brotli"
+        assert loaded.colors_value.value() == 5 and loaded.colors_control.isEnabled()
+        assert not loaded.strategy.isEnabled() and not loaded._draft_specs
+        assert presets.get("bw-t180")["uuid"] == uid
+    finally:
+        loaded.close()
+
+
+@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
+def test_algorithm_changes_obey_existing_switch_transaction(window, monkeypatch, choice):
+    w = window
+    choose(w, "bw-t180")
+    original_mode = w._saved_specs["bw-t180"]["mode"]
+    original_uuid = presets.get("bw-t180")["uuid"]
+    w.compression.setCurrentIndex(w.compression.findData("bw-flate"))
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    draft = w._artifacts.results[w._result_key("bw-t180")]
+    monkeypatch.setattr(w, "_ask_unsaved_filter", lambda pid: choice)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Explicit codec copy", True))
+    w.preset.setCurrentIndex(w.preset.findData("color-max"))
+    assert w._saved_specs["bw-t180"]["mode"] == original_mode
+    assert presets.get("bw-t180")["uuid"] == original_uuid
+    if choice == "cancel":
+        assert w._active_pid == "bw-t180" and w.compression.currentData() == "bw-flate"
+        assert w.stream_compression.currentData() == "zopfli" and "bw-t180" in w._draft_specs
+        assert os.path.isfile(draft.pdf_path)
+    elif choice == "discard":
+        assert w._active_pid == "color-max" and not w._draft_specs
+    else:
+        assert w._active_pid not in ("bw-t180", "color-max")
+        assert w.compression.currentData() == "bw-flate"
+        assert w.stream_compression.currentData() == "zopfli" and not w._draft_specs
+        copied = presets.get(w._active_pid)
+        assert copied["mode"] == "bw-flate" and copied["uuid"] != original_uuid
+        assert copied["params"]["stream_compression"] == "zopfli"
+        assert w._saved_specs[w._active_pid]["mode"] == "bw-flate"

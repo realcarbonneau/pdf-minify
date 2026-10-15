@@ -21,6 +21,8 @@ from ..core.cancel import CancelToken
 from ..core import pdf_io, threshold as T
 from ..core import presets
 from ..core.recipes import preset_spec, spec_key, recipe_params
+from ..core.algorithms import ALGORITHMS, ALGORITHM_LABELS, BW_MODES, PALETTE_MODES, with_algorithm
+from ..core.stream_compression import STREAM_POLICIES, STREAM_LABELS
 from ..core.identity import canonical_uuid, new_filter_uuid, repair_filter_uuids
 from ..core.pdf_io import CancelledError
 from ..core.display import render_display_page
@@ -32,6 +34,7 @@ from .icons import ActionIcons
 from .jobs import cpu_cap, pool as filter_pool, frame_view
 from .artifacts import ArtifactStore
 from .lab import open_progress_lab, open_buttons_lab
+from .icon_lab import IconLab
 
 import fitz
 
@@ -673,9 +676,10 @@ def _preset_algo(pid: str, spec: dict | None = None) -> str:
     """One recipe readout for mini and preview, including live edits."""
     recipe = preset_spec(presets.get(pid)) if spec is None else spec
     mode = recipe["mode"]
-    if mode == "bw":
+    if mode in BW_MODES:
         strategy, dpi = recipe["strategy"], recipe["dpi"]
-        return (f"simple T{recipe.get('t', 180)}" if strategy == "simple" else strategy) + f" · {dpi}dpi · JBIG2"
+        codec = "JBIG2" if mode == "bw" else "Flate BW"
+        return (f"simple T{recipe.get('t', 180)}" if strategy == "simple" else strategy) + f" · {dpi}dpi · {codec}"
     if mode == "color":
         return f"JPEG q{recipe['jpeg_q']} · {recipe['dpi_cap']}dpi"
     if mode == "jpx":
@@ -683,6 +687,8 @@ def _preset_algo(pid: str, spec: dict | None = None) -> str:
         return f"{codec} · {recipe['dpi_cap']}dpi"
     if mode == "indexed":
         return f"Indexed {recipe['colors']}c · {recipe['dpi_cap']}dpi"
+    if mode == "layered-jbig2":
+        return f"JBIG2 Color {recipe['colors']}c · {recipe['dpi_cap']}dpi"
     return "as-is"
 
 
@@ -816,8 +822,26 @@ class MainWindow(QMainWindow):
         self._rebuild_preset_combo()  # strip order, Original first (§128)
         _def = self.preset.findData(presets.default_preset_id())
         self.preset.setCurrentIndex(_def if _def >= 0 else 0)
+        self.compression = QComboBox()
+        self.compression.setAccessibleName("Image compression")
+        for mode, label in ALGORITHMS:
+            self.compression.addItem(label, mode)
+        self.compression.setToolTip("Bitmap encoding only. Native text/vectors and fonts "
+                                   "still use lossless PDF stream/container optimization.")
+        self.stream_compression = QComboBox()
+        self.stream_compression.setAccessibleName("PDF stream compression")
+        for policy, label in STREAM_POLICIES:
+            self.stream_compression.addItem(label, policy)
+        self.stream_compression.setToolTip("Lossless native text/vector/font streams only; "
+                                          "image bytes and image compression stay unchanged. "
+                                          "Zopfli is slower; Brotli needs compatible readers.")
+        self.stream_warning = QLabel("Brotli requires a compatible PDF 2.0 reader; "
+                                     "older readers may show missing content.")
+        self.stream_warning.setWordWrap(True)
+        self.stream_warning.hide()
         self.strategy = QComboBox()
         self.strategy.addItems(["otsu", "simple", "adaptive", "sauvola"])
+        self.strategy.setAccessibleName("Threshold method")
         self.threshold_control = NumericSlider(0, 255, 180, "Threshold")
         self.slider = self.threshold_control.slider
         self.threshold_value = self.threshold_control.number
@@ -826,7 +850,8 @@ class MainWindow(QMainWindow):
         self.colors_control = NumericSlider(2, 256, 64, "Palette colors")
         self.colors = self.colors_control.slider  # §67: forced palette count
         self.colors_value = self.colors_control.number
-        self.colors_control.setToolTip("Palette colors — only the Indexed filters use it.")
+        self.colors_control.setToolTip("Maximum bitmap palette colors, including white: "
+                                      "JBIG2 Color and Flate Color (palette). No dithering.")
         self.c_label = QLabel("&Colors:")
         self.c_label.setBuddy(self.colors_value)
         self.lossless_box = QCheckBox("Lossless")  # §100: JPX reversible
@@ -840,7 +865,7 @@ class MainWindow(QMainWindow):
         for pid in presets.PAGE_SIZE_IDS:
             self.page_size.addItem(presets.PAGE_SIZE_LABELS[pid], pid)
         self.page_size.setCurrentIndex(list(presets.PAGE_SIZE_IDS).index(presets.DEFAULT_PAGE_SIZE))
-        for _cb in (self.strategy, self.dpi, self.page_size):
+        for _cb in (self.compression, self.stream_compression, self.strategy, self.dpi, self.page_size):
             _fit_combo(_cb)  # static items: fit once (§130)
         self.force_raster = QCheckBox("Force full-page raster")
         self.force_raster.setChecked(False)
@@ -884,12 +909,27 @@ class MainWindow(QMainWindow):
         self.details.setWordWrap(True)
         self.details.setStyleSheet("QLabel { background: palette(base); "
                                    "border: 1px solid palette(mid); padding: 4px; }")
+        # §§128/203: algorithm, threshold method, DPI and page size sit beside
+        # labels (label left, control fills the rest).
+        compressionRow = spaced(QHBoxLayout())
+        compressionLabel = QLabel("&Image compression:")
+        compressionLabel.setBuddy(self.compression)
+        compressionRow.addWidget(compressionLabel)
+        compressionRow.addWidget(self.compression, 1)
+        right.addLayout(compressionRow)
+        streamRow = spaced(QHBoxLayout())
+        streamLabel = QLabel("PDF &streams:")
+        streamLabel.setBuddy(self.stream_compression)
+        streamRow.addWidget(streamLabel)
+        streamRow.addWidget(self.stream_compression, 1)
+        right.addLayout(streamRow)
+        right.addWidget(self.stream_warning)
         right.addWidget(QLabel("Filter details:"))
         right.addWidget(self.details)
-        # §128: Strategy, DPI and page size sit on the same line as their
-        # labels (label left, control fills the rest).
         stratRow = spaced(QHBoxLayout())
-        stratRow.addWidget(QLabel("Strategy:"))
+        self.strategy_label = QLabel("Threshold &method:")
+        self.strategy_label.setBuddy(self.strategy)
+        stratRow.addWidget(self.strategy_label)
         stratRow.addWidget(self.strategy, 1)
         right.addLayout(stratRow)
         right.addWidget(self.t_label)
@@ -1012,6 +1052,8 @@ class MainWindow(QMainWindow):
         for control, signal in ((self.threshold_control, "valueChanged"),
                                 (self.colors_control, "valueChanged"),
                                 (self.lossless_box, "toggled"), (self.strategy, "currentTextChanged"),
+                                (self.compression, "currentIndexChanged"),
+                                (self.stream_compression, "currentIndexChanged"),
                                 (self.dpi, "currentIndexChanged"), (self.page_size, "currentIndexChanged"),
                                 (self.force_raster, "toggled")):
             getattr(control, signal).connect(self._filter_edited)
@@ -1054,6 +1096,8 @@ class MainWindow(QMainWindow):
         lab_menu.addAction("Zoom/Save/Cancel buttons…").triggered.connect(
             lambda: self._labs.append(open_buttons_lab(self)))
         self._labs: list = []
+        self._icon_lab = None
+        self.icon_lab_act = view.addAction("&Icon Lab…", self._open_icon_lab)
         self.set_main_mode("side-h")
         self.set_filter_mode("film-h")
 
@@ -1103,6 +1147,7 @@ class MainWindow(QMainWindow):
             else:
                 p = entries[c["id"]]
                 p["params"] = dict(c.get("params", p["params"]))
+                p["mode"] = c.get("mode", p["mode"])
                 p["label"] = c.get("label", p["label"])
                 if "uuid" in c:
                     p["uuid"] = c["uuid"]
@@ -1118,6 +1163,13 @@ class MainWindow(QMainWindow):
         for p in presets.PRESETS:
             if p["id"] in renames:
                 p["label"] = renames[p["id"]]
+
+    def _open_icon_lab(self):
+        if self._icon_lab is None:
+            self._icon_lab = IconLab(self)
+        self._icon_lab.show()
+        self._icon_lab.raise_()
+        self._icon_lab.activateWindow()
 
     def _preset_label(self, pid: str) -> str:
         return presets.get(pid)["label"]
@@ -1146,12 +1198,17 @@ class MainWindow(QMainWindow):
         self._loading_controls = True
         try:
             with ExitStack() as stack:
-                for widget in (self.strategy, self.threshold_control, self.dpi, self.colors_control,
+                for widget in (self.compression, self.stream_compression, self.strategy,
+                               self.threshold_control, self.dpi, self.colors_control,
                                self.lossless_box, self.force_raster, self.page_size):
                     stack.enter_context(QSignalBlocker(widget))
+                self.compression.setCurrentIndex(self.compression.findData(spec["mode"]))
+                self.stream_compression.setCurrentIndex(self.stream_compression.findData(
+                    spec.get("stream_compression", "flate")))
                 self.strategy.setCurrentText(spec.get("strategy", "otsu"))
                 self.threshold_control.setValue(spec.get("t", 180))
-                self.dpi.setCurrentIndex(self.dpi.findData(spec.get("dpi", spec.get("dpi_cap", 300))))
+                dpi_field = "dpi" if spec["mode"] in BW_MODES else "dpi_cap"
+                self.dpi.setCurrentIndex(self.dpi.findData(spec.get(dpi_field, 300)))
                 self.colors_control.setValue(spec.get("colors", 64))
                 self.force_raster.setChecked(spec.get("force_raster", False))
                 self.lossless_box.setChecked(spec.get("lossless", False))
@@ -1163,16 +1220,19 @@ class MainWindow(QMainWindow):
 
     def _controls_spec(self):
         spec = self._spec_for(self._active_pid)
-        mode = spec["mode"]
-        if mode == "bw":
+        mode = self.compression.currentData()
+        if mode != spec["mode"]:
+            spec = with_algorithm(spec, mode)
+        spec["stream_compression"] = self.stream_compression.currentData()
+        if mode in BW_MODES:
             spec.update(strategy=self.strategy.currentText(), t=self.slider.value(),
                         dpi=self.dpi.currentData(), force_raster=self.force_raster.isChecked(),
                         page_size=self.page_size.currentData())
-        elif mode in ("color", "jpx", "indexed"):
+        else:
             spec["dpi_cap"] = self.dpi.currentData()
             if mode == "jpx":
                 spec["lossless"] = self.lossless_box.isChecked()
-            elif mode == "indexed":
+            elif mode in PALETTE_MODES:
                 spec["colors"] = self.colors.value()
         return spec
 
@@ -1180,14 +1240,22 @@ class MainWindow(QMainWindow):
         if self._loading_controls or self._switching_filter or self._active_pid is None:
             return
         pid = self._active_pid
-        before, spec = self._spec_for(pid), self._controls_spec()
+        before = self._spec_for(pid)
+        algorithm_changed = before["mode"] != self.compression.currentData()
+        # Fixed/disabled controls show the PREVIOUS codec's state. Do not
+        # accidentally seed JPX losslessness or palette count from that chrome.
+        spec = (with_algorithm(before, self.compression.currentData())
+                if algorithm_changed else self._controls_spec())
         if spec_key(before) == spec_key(spec):
             return  # disabled/irrelevant controls do not create false edits
         if spec_key(spec) == spec_key(self._saved_specs[pid]):
             self._draft_specs.pop(pid, None)
         else:
             self._draft_specs[pid] = spec
-        self._sync_filter_controls()
+        if algorithm_changed:
+            self._load_filter_controls(pid)
+        else:
+            self._sync_filter_controls()
         self._refresh_details()
         self._refresh_dirty_labels()
         self._filter_prog[pid] = 0.0
@@ -1255,8 +1323,8 @@ class MainWindow(QMainWindow):
         spec = self._spec_for(pid)
         p = presets.get(pid)
         params = recipe_params(p, spec)
-        self._persist_filter(dict(p, params=params))  # UUID survives recipe Save
-        p["params"] = params
+        self._persist_filter(dict(p, mode=spec["mode"], params=params))  # UUID survives Save
+        p.update(mode=spec["mode"], params=params)
         self._saved_specs[pid] = spec
         self._draft_specs.pop(pid, None)
         self._preview_timer.stop()
@@ -1292,7 +1360,7 @@ class MainWindow(QMainWindow):
         nid = uid  # new filters no longer derive internal aliases from editable names
         source_key = self._result_key(pid) if self.doc is not None else None
         src, spec = presets.get(pid), self._spec_for(pid)
-        entry = {"id": nid, "uuid": uid, "label": name, "mode": src["mode"],
+        entry = {"id": nid, "uuid": uid, "label": name, "mode": spec["mode"],
                  "params": recipe_params(src, spec), "blurb": f"copy of {src['label']}"}
         self._persist_filter(entry)
         presets.PRESETS.append(entry)
@@ -1353,22 +1421,24 @@ class MainWindow(QMainWindow):
             self._save_filter_pid(self._active_pid)
 
     def _sync_filter_controls(self):
-        """§§65/67/85/100: T feeds ONLY Simple; Colors feeds ONLY Indexed;
+        """§§65/67/85/100/203: T feeds Simple; Colors feeds both palette codecs;
         Lossless is a choice ONLY for JPEG2000. Raster DPI feeds every mode
         (§85: the single DPI) so it stays enabled.
 
         Controls without a choice stay visible but grey, showing the correct
         fixed state (§100) — and live controls that change nothing stay
         disabled (this also stops pointless identical-output jobs)."""
-        mode = presets.get(self._active_pid or self.preset.currentData())["mode"]
-        t_on = mode == "bw" and self.strategy.currentText() == "simple"
+        pid = self._active_pid or self.preset.currentData()
+        mode = self._spec_for(pid)["mode"]
+        bw = mode in BW_MODES
+        t_on = bw and self.strategy.currentText() == "simple"
         self.threshold_control.setEnabled(t_on)
         self.t_label.setEnabled(t_on)
         self.t_label.setToolTip("Fixed threshold — only the Simple strategy uses it."
                                 if t_on else "Fixed threshold — only the Simple strategy uses it "
                                 "(Otsu/adaptive/Sauvola are automatic).")
         self.threshold_control.setToolTip(self.t_label.toolTip())
-        c_on = mode == "indexed"
+        c_on = mode in PALETTE_MODES
         self.colors_control.setEnabled(c_on)
         self.c_label.setEnabled(c_on)
         self.dpi.setEnabled(True)
@@ -1378,14 +1448,21 @@ class MainWindow(QMainWindow):
         else:
             # Fixed state per mode (§100): BW/indexed/passthrough are always
             # lossless; baseline JPEG never is.
-            fixed = mode in ("bw", "indexed", "passthrough")
+            fixed = bw or mode in PALETTE_MODES or mode == "passthrough"
             if self.lossless_box.isChecked() != fixed:
                 with QSignalBlocker(self.lossless_box):
                     self.lossless_box.setChecked(fixed)
             self.lossless_box.setEnabled(False)
-        self.strategy.setEnabled(mode == "bw")
-        self.force_raster.setEnabled(mode == "bw")
-        self.page_size.setEnabled(mode == "bw" and self.force_raster.isChecked())
+        self.strategy.setEnabled(bw)
+        self.strategy_label.setEnabled(bw)
+        if not bw and self.force_raster.isChecked():
+            # Color always retains native artwork. An inactive remembered BW
+            # preference must not look like an applied full-page raster flag.
+            with QSignalBlocker(self.force_raster):
+                self.force_raster.setChecked(False)
+        self.force_raster.setEnabled(bw)
+        self.page_size.setEnabled(bw and self.force_raster.isChecked())
+        self.stream_warning.setVisible(self._spec_for(pid).get("stream_compression") == "brotli")
 
     def _sync_threshold_enabled(self):
         self._sync_filter_controls()
@@ -1430,33 +1507,34 @@ class MainWindow(QMainWindow):
         pid = self.preset.itemData(self.preset.currentIndex())
         if not pid:
             return
-        p = presets.get(pid)
-        if p["mode"] == "bw":
+        spec = self._spec_for(pid)
+        mode = spec["mode"]
+        if mode in BW_MODES:
+            method = self.strategy.currentText()
+            threshold = (f"simple · T={self.slider.value()}" if method == "simple"
+                         else f"{method} (automatic)")
             lines = [
-                "Codec: JBIG2",
-                f"Threshold: {self.strategy.currentText()} "
-                f"T={self.slider.value()}",
+                f"Codec: {ALGORITHM_LABELS[mode]}",
+                f"Threshold method: {threshold}",
                 f"Render: {self.dpi.currentData()} dpi · "
                 f"{'full-page raster' if self.force_raster.isChecked() else 'text/vectors kept · BW image canvas'}",
             ]
-        elif p["mode"] == "color":
-            prm = p["params"]
+        elif mode == "color":
             lines = [
                 "Codec: JPEG",
-                f"Quality: q={prm['jpeg_q']} · {self.dpi.currentData()}dpi",
+                f"Quality: q={spec['jpeg_q']} · {self.dpi.currentData()}dpi",
                 "Text/vectors kept · color image canvas",
             ]
-        elif p["mode"] == "jpx":
-            prm = p["params"]
+        elif mode == "jpx":
             lines = [
                 "Codec: JPEG2000",
                 ("Lossless" if self.lossless_box.isChecked() else
-                 f"Rate: r={prm.get('rate', 192)}") + f" · {self.dpi.currentData()}dpi",
+                 f"Rate: r={spec.get('rate', 192)}") + f" · {self.dpi.currentData()}dpi",
                 "Text/vectors kept · color image canvas",
             ]
-        elif p["mode"] == "indexed":
+        elif mode in PALETTE_MODES:
             lines = [
-                "Codec: Flate (palette)",
+                f"Codec: {ALGORITHM_LABELS[mode]}",
                 f"Colors: {self.colors.value()} (auto algorithm, no dither)",
                 "Text/vectors kept · color image canvas",
             ]
@@ -1465,6 +1543,7 @@ class MainWindow(QMainWindow):
                 "Codec: none (passthrough)",
                 "gc + deflate only — pixels unchanged",
             ]
+        lines.append("PDF streams: " + STREAM_LABELS[spec.get("stream_compression", "flate")])
         self.details.setText("\n".join(lines))
         for _cb in (self.preset, self.strategy, self.dpi, self.page_size):
             _cur = _cb.itemText(_cb.currentIndex())

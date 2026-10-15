@@ -2,7 +2,13 @@
 
 Designer rulings: `DESIGNER_VERBATIM.md` §§192–194. Recorded 2026-10-14
 (America/New_York). Scope: **design and benchmarks first**, not production
-integration or a new GUI filter. Work: root `TODO.md` §§197/198.
+integration or a new GUI filter. Work: [TODO.md](TODO.md) §§197/198.
+
+Subsequent ruling §203 (2026-10-15) requests editable compression including
+JBIG2 Color. The study and measurements below retain their original scope;
+the optional production integration is tracked separately in TODO §206/B105
+and [COMPRESSION.md](COMPRESSION.md#editable-compression-selection-203).
+Production must reuse promoted core primitives, not import this benchmark tool.
 
 Related canon: [COMPRESSION.md](COMPRESSION.md) (compose/resize/quantize),
 [DESIGN.md](DESIGN.md) (native artwork and exact prepared files),
@@ -253,20 +259,25 @@ failed/corrupt encoders, cancellation, multipage independence, original page
 geometry/native annotations/links, one shared palette fit and unchanged
 production modes. Test completion is NOT designer acceptance or integration.
 
-### Production audit findings (not changed by this study)
+### Historical production audit findings (not changed during the study)
 
-- B99: current production PBM transport can fail when its first packed byte
+- B99: production PBM transport at the time could fail when its first packed byte
   is whitespace (the stress fixture begins `0x0a`). Installed `jbig2` exits 3
   with a Leptonica PNM read error. The reviewed reader uses whitespace-
   consuming `fscanf` for dimensions; PNG transport removes this ambiguity.
   [Leptonica's PNM reader](https://github.com/DanBloomberg/leptonica/blob/master/src/pnmio.c).
-  Production presently falls back; the prototype does not edit that path.
-- B100: the production `jbig2_renders` pixel comparison can accept an invalid
+  Production then fell back; the prototype did not edit that path.
+- B100: the then-production `jbig2_renders` pixel comparison could accept an invalid
   stream for an all-black expected image because MuPDF's error placeholder
   happens to be black. Decode warnings expose the failure. Prototype checks
-  reject diagnostics as well as pixel mismatches; production remains unchanged.
+  rejected diagnostics as well as pixel mismatches; production was unchanged
+  DURING the study. Both later production repairs are recorded in §6, not
+  retroactively attributed to this experiment.
 
-## 5. Decisions after measurement
+## 5. Historical recommendations after measurement
+
+These were the study's recommendations. §203 subsequently chooses explicit
+optional production selection; §6 records that implemented integration.
 
 If useful, propose an explicitly named additional low-color codec/profile,
 with color-count and final-DPI controls reusing the single edit debounce and
@@ -283,3 +294,35 @@ as an alternative: flat/noisy examples and the 16-color GAN case prove that
 forcing layered JBIG2 globally would be a regression. Resolve viewer sampling
 policy and the two existing encoder audit findings before proposing production
 integration. No GUI option/default was added in this study (§193).
+
+## 6. Subsequent optional production integration (§203, 2026-10-15)
+
+The designer now requests six editable image compression choices, including
+JBIG2 Color. The actual recipe mode is no longer locked by its seed preset;
+no new preset is inserted and existing default codecs remain unchanged.
+`core/stencils.py` owns the promoted PaletteCanvas/stencil builder, reused
+by both `save_with_spec` and this study tool. Production never imports tools.
+The production compositor prepares full RGB/target DPI once, quantizes once,
+then uses the same physical-page-unit stencil placement/native layer assembly.
+The single artifact saver still produces the actual PDF observed/exported.
+
+Shared encoding now uses 1-bit PNG transport for BW AND colored masks (B99),
+and shared decode validation rejects newly appended diagnostics as well as
+wrong pixels, without consuming unrelated warning history (B100). Explicit
+JBIG2 cannot fall back silently. These repairs are worker-verified, not
+designer-confirmed issue closure. Native/image layer retention and exact
+Flate-palette versus colored-stencil page pixels are regression-tested at
+three zoom scales through the production entry point. Existing Poppler
+sampling differences remain documented; no all-viewer certificate is implied.
+
+Section 4 is the historical 2026-10-14 benchmark, retained in checkpoint
+`8d7f095`. Re-running today's tool shares the current native stream optimizer
+(§205), so complete-file overhead may differ from that snapshot; don't silently
+rewrite its measured results. New independent native-stream measurements and
+reader limits are in [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
+
+§209 adds a separate size-only image study comparing the same Indexed/BW
+pixels with Flate, full Zopfli, Brotli and BW/colored JBIG2, including reversible
+row prediction. See [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md).
+Native-only Brotli savings are not used as bitmap figures; the old study's
+timings are not extended or used to rank new codecs under fluctuating CPU load.

@@ -30,10 +30,12 @@ bundling route per target; do not combine several freezers by default.
 | CPython | Required; bundle a private interpreter or declare a supported OS Python | Match OS/architecture and binary wheels; only 3.13.5 is currently certified |
 | PySide6-Essentials + Shiboken6 | Qt Widgets/Core/Gui/Svg, native Qt libraries and platform plugins | Match binding/runtime versions; include xcb, Windows or Cocoa plugin for the target, plus required image/font support and the SVG icon engine |
 | Bundled KDE Breeze action SVGs | Portable action-icon fallback when a desktop theme/name is absent | Include all `ui_qt/assets/breeze/` data (16/22px light/dark SVGs, manifest, notices and LGPL/GPL texts); no KDE package is required at runtime |
+| Icon Lab stock PNG resources | Coded Nuvola/Oxygen/GNOME Classic comparison; not a production theme change | Include `ui_qt/assets/icon_lab/` JSON data, provenance, all copyright/license notices and Nuvola's original artwork addendum, plus the reused Breeze assets; decode original PNG bytes in memory, no runtime theme install/download |
 | PyMuPDF >=1.28.2 | Required, including its matching native MuPDF binding/library | The native PDF filtering/display APIs are used directly; an older distro binding is not a substitute |
 | NumPy, Pillow | Required, including their native extensions/codecs | Use target-specific tested wheels and record exact resolved dependencies |
-| `jbig2` / `jbig2.exe` | Required for the intended JBIG2 compression profile | Native executable and its shared-library dependencies; not supplied by pip requirements. Without it the implemented lossless 1-bit PNG path works, but is a different compression profile |
-| `zopfli` | Optional compression enhancement | Absence uses validated zlib fallback; declare/record availability because bytes can differ |
+| `jbig2` / `jbig2.exe` | Required when selecting JBIG2 BW or JBIG2 Color | Native executable and dependencies, not supplied by pip. Explicit choices fail clearly when unavailable; the user can choose Flate instead, never a hidden fallback |
+| `zopfli` | Optional in the CURRENT build; required for the explicit native Zopfli choice | §213 targets one best-encoded Flate format, not a speed/dependency fallback. Package the chosen strongest encoder; current automatic zlib fallback/caps and redundant UI choice require alignment (TODO §217). No new package is claimed here |
+| Bundled MuPDF Brotli support | Optional native-stream choice with PDF 2.0 reader warning | Verified in the existing 1.28.2 binding, no extra Python package. Verify encoding/decoding, empty-stream guard and PDFa extension metadata on each target; ordinary Flate stays default |
 | `mutool`, `pdfimages`, `jbig2dec` | Not core GUI runtime dependencies | Inspection/independent validation tools; `pdfimages` is used by the saved-image benchmark |
 | pytest, Xvfb, xdotool | Not app runtime dependencies | Automated/offscreen and real X11 drag validation tools, respectively |
 | Package builders, compiler/SDK, installer tooling | Build only | Keep out of runtime requirements and the certified development environment unless a build is explicitly requested |
@@ -82,8 +84,8 @@ and verified; Task Coach having them does not certify or require them here.
    integration; [PyInstaller explicitly requires early freeze_support](https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html#multi-processing).
 3. Resolve bundled external tools at controlled application-relative paths,
    and use the resolved path for both detection and subprocess execution.
-   Currently `pipeline.py` detects `jbig2` with `shutil.which` and invokes it
-   by name; a bundle needs an intentional launcher/PATH or resolver. Verify
+   `pipeline.py` detects `jbig2` with `shutil.which` and now invokes that
+   resolved path; a bundle still needs an intentional launcher/PATH or resolver. Verify
    the actual `jbig2 -p` output with the installed native MuPDF decoder.
 4. Keep helper DLL/shared-library lookup compatible with the helper's origin.
    [PyInstaller's subprocess guidance](https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html#launching-external-programs-from-the-frozen-application)
@@ -111,6 +113,10 @@ and verified; Task Coach having them does not certify or require them here.
    theme, an individually missing name, light/dark palettes, disabled states
    and 1×/2× SVG rendering from the installed artifact without `/usr/share/icons`.
    See [ICONS.md](ICONS.md); do not install theme packages on first launch.
+   The separate [Icon Lab](ICON_LAB.md) must render its named families directly,
+   without inherited theme substitution. Retain both resource directories,
+   original PNG-byte hashes and all LGPL/GPL texts in installed artifacts.
+   Test choice codes/copy, real/disabled/HiDPI previews and native scrolling.
 
 ## Release and certification checklist
 

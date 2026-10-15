@@ -1,10 +1,10 @@
 # Developer guidelines — pdf-minimalist (full)
 
 Read this before touching code. Source of truth for designer intent:
-`DESIGNER_VERBATIM.md`. Request tracker: `../TODO.md` (repo root).
+`DESIGNER_VERBATIM.md`. Request tracker: [TODO.md](TODO.md) (this directory).
 Root docs: `00_OVERVIEW.md`, `ARCHITECTURE.md`.
-Entry points at repo root: `../README.md`, `../TODO.md`. All other analysis
-docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
+Entry point at repo root: `../README.md`. The request log and analysis docs
+live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
 
 ## 0. General guidelines (designer rulings — always in force)
 - The designer is the sole authority. In all docs, call them "the designer".
@@ -15,6 +15,12 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
   stubbed — request struck through, stub summary, cross-refs to the implementing
   docs/code. Dropped ideas move to `DROPPED.md` with reasons + revisit
   conditions. Knowledge is referenced, never redone.
+- §§216/217 move the log to `docs/TODO.md` and explicitly remove unrelated
+  material. Keep project requirements/workflow, not unrelated coding-tool
+  maintenance Q&A. An explicit designer removal overrides preservation for
+  that material: delete it rather than re-archiving/requoting it, and never
+  renumber remaining entries. App-specific launch/test instructions and PDF
+  benchmark provenance remain project-relevant.
 - Implementation completion is not designer acceptance (§147). In `issues.md`,
   use `FIXED — DESIGNER CONFIRMED — YYYY-MM-DD` only for an explicit designer
   confirmation, with its verbatim ruling and exact scope. Use the designer's
@@ -46,11 +52,25 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
   Qt6 C++ libs. Never `sudo pip install`; pip targets `./.venv` only.
 
 ## 3. Opinionated product rules (from the brief)
-- Max compression by default; single Effort knob (Max/Balanced/Fast) to trade speed.
+- Designer §213 supersedes the old Max/Balanced/Fast encoding-effort brief:
+  this is an opinionated best-compression suite. Encoder speed/cost and
+  dependency convenience are not reasons to retain superseded encoding
+  choices. Preserve the chosen image representation/fidelity; minimize actual
+  complete PDF bytes within the intended reader-support requirements.
+  Distinguish decoder FORMAT from encoder implementation: Zopfli produces
+  ordinary FlateDecode data, with no new reader requirement. Target one
+  optimized Flate choice using the best validated encoder, not separate
+  fast-zlib versus Zopfli products. Retain alternate formats for meaningful
+  size outcomes or reader-support requirements, never merely as a faster or
+  easier-to-install option. Current runtime has not yet been aligned; see
+  TODO §217 and `COMPRESSION_COMBINATIONS.md`. No arbitrary performance cutoff
+  or silent weaker-encoder fallback under a best-compression label.
 - BW: Otsu auto default, Simple (= GIMP Threshold) + Adaptive + Sauvola available,
   global T slider + per-page override. Encode JBIG2 lossless (each page's
-  stream is test-decoded before embedding; 1-bit PNG where the decoder
-  can't take it).
+  stream is test-decoded before embedding). §203 adds explicit Flate BW and
+  forbids silent codec substitution: a failed selected JBIG2 leaves a clear
+  error and the saved file intact. Only legacy automatic headless helpers
+  retain the earlier 1-bit PNG fallback contract.
   Lossy JBIG2 OFF by default (glyph-substitution risk).
 - BW OFF (§§168–171): text AND vector diagrams remain native, preserving
   original fonts, geometry, colors and opacity. §171 chooses ONE combined BW
@@ -60,6 +80,28 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
   glyph-shaped masks. Lossless content/font/container compression is distinct
   from image thresholding. See `COMPRESSION.md`, issues B89/B90.
 - Color: downsample 150dpi + JPEG q~50 default; JPEG2000 opt-in only.
+- §203: compression is editable recipe state, never locked by the seed
+  preset. Expose the six explicit choices documented in `COMPRESSION.md`;
+  persist actual saved mode through Save/Save As/load. Explicit codecs cannot
+  silently substitute another codec. Threshold method (not an unqualified
+  Strategy or universally automatic strategy) covers manual AND automatic BW
+  thresholding. Both palette codecs share the existing exact palette helper;
+  production and benchmark tooling share core stencil code. Existing defaults,
+  UUIDs, native artwork and real-file/edit lifecycle remain unchanged.
+- §§204/205 distinguish image codecs from lossless native-stream compression.
+  A separate PDF stream policy (Flate default, Zopfli-Flate, limited-support
+  Brotli) is effective recipe state. Share the core adapter with benchmark
+  tooling; verify decoded bytes, image-byte preservation, whole-PDF sizes and
+  installed readers. Keep empty streams plain; MuPDF 1.28.2's zero-byte Brotli
+  result is invalid and its decoder can hang. Do not silently fall back or
+  advertise the new extension as universally supported. See
+  `NATIVE_STREAM_COMPRESSION.md`.
+- §§210/211 request a compression-combination table and UI recommendation,
+  not implementation. `COMPRESSION_COMBINATIONS.md` marks current versus
+  proposed capabilities explicitly. Shared image/native general compression,
+  FFPR fixed states and color FFPR are not approved replacements for the
+  existing selectors. Never treat a worker recommendation as a designer
+  ruling or silently migrate saved mixed-codec recipes.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image
@@ -123,6 +165,11 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
   control/toolbar palette, preserve action semantics/sizes/state, and refresh
   on theme/palette changes without filtering or changing selection. Revert
   uses `document-revert`, not history Undo. See `ICONS.md`.
+- Icon Lab (§200): current icon appearance is rejected, not accepted. Expose
+  a direct View menu comparison with genuine stock-family assets and permanent
+  choice codes; retain their provenance/licenses. Per-action radio selection,
+  background review and Copy choices never mutate production icons/settings
+  or filter/selection/processing state. See `ICON_LAB.md`.
 
 ## 5. Workflow
 - `./test.sh` (full `./.venv/bin/python -m pytest tests/ -q`) must stay green —
@@ -138,6 +185,14 @@ docs live in this dir (`DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
   the desktop GUI PID and process group independently, especially if no
   `APP_EXIT` line was reported. Record GUI PID/PGID alongside the retained
   execution session. Never report the app closed from supervisor status alone.
+  Respect an explicit designer closure/leave-closed instruction (§206): do
+  not automatically reopen the app to complete or repeat this workflow.
+  Record the normal exit and any startup checks not reached before closure.
+  §207 defers designer acceptance testing while the workstation is overloaded;
+  finish lightweight documentation without starting new heavy verification.
+  Subsequent §209 explicitly authorizes sequential bitmap SIZE benchmarks;
+  collect no compute-time comparisons under the fluctuating CPU load. The
+  leave-closed instruction remains in force; this is not a new GUI build.
   Confirm `window shown` + preview applied in
   `${TMPDIR:-/tmp}/pdf-minimalist/pdf-minimalist.log`. Never leave the
   designer on a stale build. Sandbox process lists may not include desktop

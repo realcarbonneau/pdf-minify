@@ -6,15 +6,20 @@ Sauvola, adaptive), JPEG, JPEG2000, and palette-indexed filters, and watch
 every filter's **real measured output size** update under its thumbnail.
 What you see is what saving writes.
 
-- **BW pipeline**: threshold → lossless JBIG2 (1-bit PNG where undecodable),
+- **BW pipeline**: threshold → selected lossless JBIG2 or 1-bit Flate,
   300dpi default, original page size kept unless you pick Letter/A4.
   FFPR off combines images into one BW canvas with native text/vector
   overlays; FFPR on flattens the entire page, preserving its stacked appearance.
 - **Image processing**: compose original imagery/opacity in full color, resize
   once to final DPI, then threshold or reduce colors/compress. No post-filter
   resizing; native text/vectors survive unless FFPR is on.
-- **Color pipeline**: one combined image canvas — JPEG, JPEG2000, or palette
-  Flate; few-color lossless candidates compete by actual encoded size.
+- **Image compression**: each filter can select JBIG2 BW, colored JBIG2 stencils,
+  Flate BW, palette Flate Color, JPEG2000 or JPEG; no preset codec lock or
+  silent codec substitution. Color uses one composed canvas with native artwork.
+- **PDF stream compression**: independently choose Flate (default), compatible
+  but slower Zopfli-Flate, or Brotli (requires a supporting PDF 2.0 reader).
+  Native text/vector/font data stays lossless; image bytes are unaffected by
+  this choice. [Native-stream benchmarks and reader limits](docs/NATIVE_STREAM_COMPRESSION.md).
 - **Honest UI**: original and preview panes stay synced (zoom, pan, scroll);
   view changes never reprocess filters; ESC cancels an active operation/dialog;
   both PDF panes display without added AA/smoothing, and native shapes gain
@@ -24,6 +29,12 @@ What you see is what saving writes.
   unsaved filter offers Save, Save As…, Discard, or Cancel. Completed files
   supply preview, minis, sizes, and PDF export without reprocessing on selection.
 - **Local-first**: Qt6/PySide6 + PyMuPDF, everything Python-side in `./.venv`.
+
+Latest product ruling: encoding cost is not a selection criterion; use the
+best validated encoding and retain alternatives for reader support or real
+size outcomes. Zopfli adds no decoder requirement beyond Flate. The current
+three-way native selector described above is awaiting alignment; see the
+[updated compression policy](docs/COMPRESSION_COMBINATIONS.md#decoder-support-not-encoder-cost-213).
 
 Keywords: pdf optimizer, pdf compressor, reduce pdf size, threshold
 binarization, otsu sauvola, jbig2 encoder, jpeg2000 pdf, downsample images,
@@ -72,21 +83,29 @@ pdf-minimalist/
 
 See `docs/DEPENDENCIES.md` for the full local-vs-system table.
 Source runtime: Python/venv plus `requirements.txt`; `jbig2` supplies the
-intended BW compression profile. `mutool`/`pdfimages` are inspection/validation
+JBIG2 BW/Color modes. Optional `zopfli` is required only when explicitly
+selecting native Zopfli-Flate; ordinary Flate needs no external encoder.
+`mutool`/`pdfimages` are inspection/validation
 tools, not GUI runtime requirements. PySide6 brings its own Qt libraries but
 still needs compatible OS display/font libraries.
 
 Certified current platform: **Debian 13 x86-64, LXDE/X11**, source/workspace
-runtime (2026-10-14). See [platform/version evidence](docs/PLATFORMS.md) and the
+runtime (initial certificate 2026-10-14, updated verification 2026-10-15).
+See [platform/version evidence](docs/PLATFORMS.md) and the
 [multi-platform packaging guide](docs/PACKAGING.md). Windows/macOS/other
 platforms and installers are not yet certified or built.
 
 ## Docs
 
 - `docs/DESIGNER_VERBATIM.md` — every designer ruling, word for word.
+- [docs/TODO.md](docs/TODO.md) — numbered project request log and pending work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
+- [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
+- `docs/IMAGE_STREAM_COMPRESSION.md` — size-only, equal-pixel indexed/BW comparisons: Flate/Zopfli/Brotli versus BW/colored JBIG2.
+- `docs/NATIVE_STREAM_COMPRESSION.md` — separate native text/vector/font benchmarks and reader limits.
 - `docs/ICONS.md` — native-theme action icons, stock Breeze fallback and provenance.
+- `docs/ICON_LAB.md` — View → Icon Lab…; compare stock libraries and copy permanent choice codes.
 - `docs/DEVELOPER_GUIDELINES.md` — workflow (docs lead, full suite green).
 - `docs/PLATFORMS.md` — dated certified runtime, evidence and explicit limits.
 - `docs/PACKAGING.md` — Task Coach-inspired per-platform build/dependency plan.

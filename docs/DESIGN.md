@@ -59,12 +59,87 @@ View=Main:V + Filters:V (square / portrait screens) → panes stacked, rail on r
 | 9 | Color · Poster 16 | indexed | 150dpi, 16 colors | flat graphics, tiny |
 | 10 | Color · Indexed 64 | indexed | 150dpi, 64 colors | diagrams and logos |
 
-Few-color images (designer ruling §57: ≤256 distinct colors — logos,
-diagrams, flat screenshots) take a lossless true-Indexed version (designer
+Historical automatic choice (§57), superseded for explicit selections by
+§203: few-color images (≤256 distinct colors — logos,
+diagrams, flat screenshots) took a lossless true-Indexed version (designer
 §80: packed 1/2/4/8-bit samples by actual entry count + inline palette +
 best Deflate) whenever it beats the codec re-encode, in every color preset —
 ~10x smaller than RGB-Flate on flat graphics, benchmarked in
 `tools/bench_indexed.py`.
+
+### Editable image and native-stream compression (§§203–205)
+
+Designer §203:
+> I think we need to add an option that is the algorithm, JBIG2 BW, JBIG2 Color, Flate BW, Flate Color JPEG2000, JPEG.  Because we have no way of choosing between the options at the moment, filters seem to be locked into their algo.  Also, why do we have both JPEG and JPEG2000, and Flate BW and Flate Color?  For backward compatibility?  Aso, the terms strategy should be qualified, is that Threshold automatic strategy?
+
+Designer §205:
+> what are the top text compression algorithms, and we should add an option for this also.  And make a benchmark document for that scope of compression also.  Are there support limitations on some of these algorithms?  Any reason to keep lesser compression algorithms?
+
+A preset is a named starting recipe, never a codec lock. The six-choice Image
+compression control edits the actual mode while preserving filter UUID/name/
+position. Flate Color qualifies the existing palette representation; colored
+JBIG2 uses one exact stencil per non-white palette entry. No hidden codec
+substitutions. Threshold method names its scope and contains manual AND
+automatic options; manual T is not advertised as active for automatic methods.
+An independent PDF stream policy compresses native content/fonts, without
+changing image samples or re-rasterizing native artwork. Flate is the current
+default; Zopfli produces the same Flate format. §213 supersedes encoding-speed
+trade-offs as a product rationale. Brotli requires a supporting
+PDF 2.0 reader, with an explicit warning and proper extension metadata.
+Sizes/times, legacy comparisons and actual reader failures are documented in
+`NATIVE_STREAM_COMPRESSION.md`; image rules are in `COMPRESSION.md`.
+Both choices use the existing real-PDF/debounce/saved-draft lifecycle, not a
+parallel saver. Existing preset defaults remain, but their recipes are editable.
+
+§209 explicitly requests SIZE-ONLY bitmap comparisons at equivalent filtered
+pixels, separate from the native-stream study. No compute-time measurements
+or speed rankings under the workstation's fluctuating load. Compare actual
+Indexed/BW Flate with full Zopfli, Brotli and colored/BW JBIG2, retaining common
+native compression and all PDF overhead. Exact quote, protocol and measured
+outputs: `IMAGE_STREAM_COMPRESSION.md`. This authorizes headless benchmarking,
+not new GUI options/defaults or reopening the designer-closed app (§206).
+
+### Compression combinations: documentation and UI review (§§210/211)
+
+Designer §211:
+> Make a documentation table of reasonable combinations, also, should we have the combination as a single compression dropdown (eg Brotli+JBIG2, FFPR+JPEG2000, etc.)? Or separate controls that are enabled/disabled?  Start with the table please.
+
+The designer asks for a table and recommendation, not an approved replacement
+UI. `COMPRESSION_COMBINATIONS.md` separates current capabilities from proposals:
+shared general compression for packed BW/palette pixels plus native streams;
+native-only compression alongside specialized image codecs; automatic small
+painting streams after FFPR + a specialized codec. Color FFPR is not currently
+implemented or approved. Mixed native-Brotli/image-Flate is valid PDF even if
+omitted from a future simplified editor. Recommendation: separate controls,
+visible disabled effective states and a read-only combined summary, not an
+enumerated cross-product menu. This does not supersede §§203–205, change any
+saved recipe/default or authorize another GUI launch.
+
+### Opinionated best encoding, with reader-support choices (§213)
+
+Designer §213:
+> so all pdf readers can decode flate encoded with zopfli?  Encoding is not a constrain, the objective of this project is to be an opinionated pdf compression suite with the best available algorithms for encoding, we drop superceded algorithms, the only concern that affects decisions would be pdf reader support, where for some usage, a more generally supported decoder would be proferred, in others, the user may expect readers to have the most modern and best pdf reader.
+
+Do not preserve a weaker encoder or product mode because it is faster or has
+fewer encoding dependencies. Select the strongest validated encoding for the
+intended reader support, comparing complete PDFs at the chosen representation
+and fidelity. Keep superseded methods as benchmark baselines, not normal
+product choices. Zopfli and ordinary zlib target the SAME Flate decoder, so
+there is no compatibility reason to present them as different user choices.
+The target is optimized Flate (currently Zopfli is the strongest measured
+Flate encoder here) versus genuinely different decoder requirements such as
+Brotli. Modern-reader support must be feature-tested, not inferred solely
+from a new version or PDF 2.0 label; allowing Brotli does not prove it always
+makes the smallest full file. Existing exact-codec/fidelity rules remain.
+
+§213 supersedes the old speed-knob brief and worker arguments for keeping
+Flate BW merely to avoid the JBIG2 encoder dependency. It does not prove all
+BW/palette/photo codecs are universally dominated, approve the proposed UI
+layout/color FFPR, or authorize cross-codec substitution under explicit labels.
+Current three-way native selector and zlib paths remain implementation gaps,
+tracked in TODO §217; no runtime change is claimed by this documentation pass.
+See `COMPRESSION_COMBINATIONS.md`, `NATIVE_STREAM_COMPRESSION.md` and
+`DROPPED.md` D3 for the corrected policy and measured scope.
 
 Defined in code: `pdf_minimalist/core/presets.py` → `PRESETS` (id, label, mode, params).
 Rendering/proof rules have moved to their topical docs (designer §125):

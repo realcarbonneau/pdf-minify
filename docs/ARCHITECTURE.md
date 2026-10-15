@@ -37,13 +37,18 @@ pdf-minimalist/
       pdf_io.py       # open, page count, gray render, save with gc
       display.py      # exact read-only native PDF display, no AA/interpolation
       pipeline.py     # BW full-page raster + color JPEG recompress + gc copy
-      presets.py      # 8 opinionated presets, view modes, apply helpers
+      algorithms.py   # editable six-codec image recipe choices, no preset lock
+      stencils.py     # exact colored JBIG2 masks, shared by product/benchmark
+      stream_compression.py # independent lossless native content/font encoders
+      presets.py      # opinionated starting recipes, view modes, apply helpers
     ui_qt/            # Qt GUI only
       app.py          # DnD, pages, presets, main panes, save worker, ESC
       layout.py       # shared 4px token, PaneBlock headers/content, equal/stacked PreviewPair
       headers.py      # metadata elides on paint, never drives splitter widths
       icons.py        # one named-theme action provider, stock Breeze SVG fallback (§197)
+      icon_lab.py     # reusable stock-family comparison, permanent codes, no Apply (§200)
       assets/breeze/  # 16/22px light/dark icons with provenance and licenses
+      assets/icon_lab/ # original PNG resource bank, hashes, provenance/notices/licenses
       viewer.py       # QGraphicsView: wheel=scroll, ctrl+wheel=zoom, drag-pan, peer-synced
     __main__.py       # CLI: [pdf] [--debug]
   tests/  (see TEST_PLAN.md)
@@ -221,6 +226,19 @@ page at target DPI instead. All modes still use `save_with_spec` and actual
 saved-file readback; no second GUI filter pipeline.
 
 ### Layered-color JBIG2 study (§§192–194)
+
+§§203–205 subsequently make compression editable recipe state. The actual
+saved/draft mode, not the seed preset mode, controls UI behavior and dispatch;
+mode is persisted on Save/Save As and loaded even for built-in overrides.
+`core/algorithms.py` describes six image choices; `core/stencils.py` owns the
+promoted colored-mask implementation reused by production and the study.
+`core/stream_compression.py` independently encodes non-image native resources
+after font subsetting and before the shared container save. Its policy is an
+effective cache input and uses the same dirty/edit/lifecycle controller.
+Explicit codecs never silently substitute another encoder. See
+`COMPRESSION.md` and [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
+The paragraph below describes the historical study boundary, not a prohibition
+on this later separately requested integration.
 
 [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) records the proposed colored
 1-bit stencil representation and actual full-PDF benchmark/decoder evidence.

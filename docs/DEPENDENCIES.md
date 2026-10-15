@@ -31,6 +31,7 @@ sudo apt install python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qt
 |---|---|
 | `pdf_minimalist/` | all app source (`core/` headless + `ui_qt/` GUI) |
 | `pdf_minimalist/ui_qt/assets/breeze/` | stock LGPL-3-or-later Breeze icon subset, provenance, notices and license texts; portable fallback, not a system-theme dependency |
+| `pdf_minimalist/ui_qt/assets/icon_lab/` | curated Nuvola/Oxygen/GNOME PNG resources, original hashes and notices/licenses for §200's comparison lab; not a system package or Task Coach dependency |
 | `tests/` | pytest suite + future fixtures in `tests/data/` |
 | `tools/check_env.py` | prints system-vs-local diagnostic |
 | `requirements.txt` | `pymupdf, PySide6-Essentials, Pillow, numpy` → installed into `.venv`, NOT system-wide |
@@ -51,3 +52,28 @@ QtSvg and the SVG icon-engine plugin; no new pip/apt dependency was added.
 The copied development-source theme was Debian `breeze-icon-theme`
 4:5.116.0-1, but the running app never needs it installed. Bundle the
 repository-owned subset and Qt SVG support per `ICONS.md` / `PACKAGING.md`.
+
+2026-10-14 Icon Lab (§200): 121 original PNG size variants cover 30 stock
+glyphs from Nuvola 15.08.3-2 (official Debian archive), Oxygen 5:6.1.0+dfsg-2
+and GNOME 3.12.0-6; seven existing Breeze glyphs complete 37 coded choices.
+The resource bank stores lossless base64 and decodes original bytes in memory
+with existing Qt PNG support. No new pip/apt dependency was installed. Keep
+Nuvola's original copyright/artwork addendum and each family's full notices
+and license texts; see `ICON_LAB.md` / the resource manifest.
+
+2026-10-15 explicit compression (§§203–205): the existing jbig2 encoder is shared
+by BW and colored stencils. Native Flate uses Python zlib; optional Zopfli uses
+the existing `/usr/bin/zopfli`, with a clear failure if selected but unavailable.
+Brotli uses the verified bundled MuPDF 1.28.2 native encoder/decoder: no brotli
+Python package or new install. Older readers may not decode its PDF 2.0
+extension. QPDF 12.2.0 and Poppler 25.03.0 are independent BENCHMARK tools,
+not runtime dependencies; they fail Brotli decoding in the measured cases.
+See `NATIVE_STREAM_COMPRESSION.md` for versions, complete sizes and limitations.
+
+Latest product ruling §213: encoding dependency convenience is not a reason
+to retain inferior compression. The optional-Zopfli description above records
+the current build, not a reason to keep separate zlib/Zopfli user choices.
+Target packaging must provide the selected best validated encoder and fail
+clearly if unavailable, not silently substitute weaker output to save setup
+or processing work. Runtime/packaging alignment is pending in TODO §217;
+no dependency was installed by the documentation update.

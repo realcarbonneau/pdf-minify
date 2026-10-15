@@ -1,11 +1,10 @@
-"""Experimental colored JBIG2 stencils; NOT a production filter (§§192–194).
+"""Paired colored-JBIG2 benchmark (§§192–194), reusing shared core (§203).
 
 Run ./.venv/bin/python tools/layered_color_jbig2.py --help.
 Both encoders receive the same once-prepared palette/index map. The production
 canvas, native-layer assembler, encoder validation and PDF optimizer are reused.
 """
 import argparse
-from dataclasses import dataclass
 import io
 import json
 import os
@@ -30,41 +29,13 @@ from pdf_minimalist.core.cancel import CancelToken
 from pdf_minimalist.core.canvas import flatten_rgb
 from pdf_minimalist.core.display import DisplayPage
 from pdf_minimalist.core.pdf_io import CancelledError
+from pdf_minimalist.core import stencils
+from pdf_minimalist.core.stencils import PaletteCanvas
 
 
 def check_cancel(token):
     if token.cancelled:
         raise CancelledError()
-
-
-@dataclass(frozen=True)
-class PaletteCanvas:
-    indices: np.ndarray
-    palette: np.ndarray
-
-    @classmethod
-    def from_rgb(cls, image, colors):
-        quantized = pipeline._quantize_palette(image, colors)
-        used, inverse = np.unique(np.asarray(quantized), return_inverse=True)
-        palette = np.asarray(quantized.getpalette(), dtype=np.uint8).reshape(-1, 3)[used]
-        indices = inverse.reshape(quantized.height, quantized.width).astype(np.uint8)
-        return cls(indices, palette)
-
-    @property
-    def width(self):
-        return self.indices.shape[1]
-
-    @property
-    def height(self):
-        return self.indices.shape[0]
-
-    @property
-    def rgb(self):
-        return self.palette[self.indices]
-
-    @property
-    def nonwhite_colors(self):
-        return sum(not np.all(color == 255) for color in self.palette)
 
 
 def indexed_payload(canvas):
@@ -78,82 +49,12 @@ def indexed_payload(canvas):
 
 
 def encode_mask(mask):
-    """Same jbig2 -p generic coder, with unambiguous 1-bit PNG transport.
-
-    The installed PNM reader consumes certain leading bitmap whitespace in
-    the dense-noise PBM fixture. This prototype does NOT change core encoding.
-    """
-    binary = pipeline.jbig2_binary()
-    if binary is None:
-        return None
-    with tempfile.TemporaryDirectory(prefix="stencil-encode-", dir=pipeline._ENCODE_WORKDIR.get()) as scratch:
-        path = Path(scratch) / "mask.png"
-        Image.fromarray(mask).convert("1", dither=Image.Dither.NONE).save(path, "PNG")
-        result = subprocess.run([binary, "-p", str(path)], capture_output=True, timeout=120)
-        if result.returncode or not result.stdout:
-            raise RuntimeError(f"JBIG2 encoder failed: {result.stderr.decode(errors='replace')}")
-        return result.stdout
+    """Shared production lossless coder; retained seam for failure injection."""
+    return stencils.encode_mask(mask)
 
 
 def stencil_pdf(canvas, token=None, *, page_size=None):
-    """Actual self-contained PDF canvas, one validated JBIG2 mask per color.
-
-    A white base makes the canvas opaque even over a colored source backdrop.
-    No per-image source masks, soft masks, lossy symbol matching or fallback.
-    """
-    token = token or CancelToken()
-    check_cancel(token)
-    if canvas.nonwhite_colors and pipeline.jbig2_binary() is None:
-        raise RuntimeError("JBIG2 experiment unavailable: jbig2 encoder not installed")
-    doc = fitz.open()
-    try:
-        width, height = page_size or (canvas.width, canvas.height)
-        page = doc.new_page(width=width, height=height)
-        resources = []
-        commands = [f"q 1 1 1 rg 0 0 {width} {height} re f Q"]
-        for index, color in enumerate(canvas.palette):
-            check_cancel(token)
-            if np.all(color == 255):
-                continue
-            mask = np.where(canvas.indices == index, 0, 255).astype(np.uint8)
-            payload = encode_mask(mask)
-            check_cancel(token)
-            fitz.TOOLS.mupdf_warnings()  # isolated prototype process, clear prior diagnostics
-            valid = payload is not None and pipeline.jbig2_renders(
-                payload, canvas.width, canvas.height, mask)
-            diagnostics = fitz.TOOLS.mupdf_warnings()
-            if not valid or diagnostics:
-                raise RuntimeError("JBIG2 experiment failed: mask did not decode pixel-exact")
-            xref = doc.get_new_xref()
-            doc.update_object(xref, f"<< /Type /XObject /Subtype /Image "
-                              f"/Width {canvas.width} /Height {canvas.height} "
-                              "/ImageMask true /BitsPerComponent 1 "
-                              "/Interpolate false /Decode [0 1] >>")
-            doc.update_stream(xref, payload, compress=False)
-            doc.xref_set_key(xref, "Filter", "/JBIG2Decode")
-            resources.append(f"/C{index} {xref} 0 R")
-            commands.append(f"q /Palette cs {index} scn "
-                            f"{width} 0 0 {height} 0 0 cm /C{index} Do Q")
-        doc.xref_set_key(page.xref, "Resources", "<< /XObject << " + " ".join(resources) +
-                         f" >> /ColorSpace << /Palette [/Indexed /DeviceRGB {len(canvas.palette)-1} "
-                         f"<{canvas.palette.tobytes().hex()}>] >> >>")
-        content = doc.get_new_xref()
-        doc.update_object(content, "<< >>")
-        doc.update_stream(content, "\n".join(commands).encode("ascii"))
-        page.set_contents(content)
-        # This verifies both polarity AND color compositing, not just each
-        # binary stream in a separate black/white wrapper.
-        actual = rgb_pixels(DisplayPage(page).render(fitz.Matrix(canvas.width/width, canvas.height/height)))
-        if not np.array_equal(actual, canvas.rgb):
-            expected = canvas.rgb
-            wrong = np.any(actual != expected, axis=2)
-            pairs = np.unique(np.concatenate((expected[wrong], actual[wrong]), axis=1), axis=0)
-            raise RuntimeError(f"Colored stencil canvas did not reconstruct the palette exactly: "
-                               f"{wrong.sum()} pixels; expected/actual RGB {pairs[:12].tolist()}")
-        return doc
-    except BaseException:
-        doc.close()
-        raise
+    return stencils.stencil_pdf(canvas, token, page_size=page_size, mask_encoder=encode_mask)
 
 
 def rgb_pixels(pix):

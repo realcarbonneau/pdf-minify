@@ -18,3 +18,17 @@ so PySide6 was built directly and there is no Tk code. Note: `ARCHITECTURE.md`
 still describes the old Tk-first staging — treat Qt as locked.
 Revisit if: never expected; kept here so nobody rebuilds the Tk detour.
 See: `ARCHITECTURE.md`, `DESIGNER_VERBATIM.md` §6.
+
+## D3 — inferior encoders retained for speed/dependency convenience — SUPERSEDED 2026-10-15 (request §213)
+Reason: the designer specifies an opinionated best-compression suite. Encoding
+cost is not a constraint; superseded encoders are dropped as product choices.
+The old Max/Balanced/Fast brief and worker justification for a separate
+ordinary-zlib versus Zopfli speed choice no longer apply. Zopfli uses the SAME
+Flate decoder. Avoiding the JBIG2 encoder dependency is likewise not a reason
+to keep a dominated image option. Reader support and actual compressed-size
+outcomes at the chosen fidelity decide which formats remain useful.
+Historical benchmark controls/results are retained; this ruling does not
+delete working code or establish universal dominance of one image codec.
+Revisit if: the designer explicitly introduces an encoding-cost constraint,
+or an alternative demonstrates a genuine size or reader-support advantage.
+See: `DESIGN.md`, `COMPRESSION_COMBINATIONS.md`, TODO §217 (integration pending).

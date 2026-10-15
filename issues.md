@@ -4,7 +4,7 @@ Rule (designer §90): every past malfunction complaint is listed here, numbered.
 An item is crossed out ONLY after the designer confirms the fix. Fixed in code
 but unconfirmed stays OPEN. Verbatim rulings live in
 `docs/DESIGNER_VERBATIM.md` (§ numbers below); implementation notes in
-`TODO.md`.
+`docs/TODO.md`.
 
 Status convention (§147): `OPEN` includes implemented-but-unconfirmed fixes.
 `FIXED — DESIGNER CONFIRMED — YYYY-MM-DD` records explicit designer acceptance,
@@ -16,6 +16,11 @@ Older implementation notes below are dated history, not current canon. The
 §§149–155 audit and `docs/FILTER_LIFECYCLE.md` supersede split preview/mini/
 estimate jobs, two-slot caches, and worker-added session directories. New
 repairs remain OPEN awaiting explicit designer confirmation.
+
+Historical numbering note (audit 2026-10-15): B39 has two same-title entries
+already present in checkpoint `8d7f095`. Do not silently renumber the log or
+interpret this duplication as a second designer confirmation. New issue IDs
+continue above the highest existing ID.
 
 ## B1 — OPEN — process closed by itself (§45)
 Symptom: the app vanished after launch. Cause found: the launcher command
@@ -502,7 +507,7 @@ the original failure and now pass for ready/pending/queued content without
 refreshes. Full suite: 84 passed. Native 100%/200% drop checks inspect the
 actual X11 window pixels without forcing a new widget paint; screenshots
 viewed. Explicit designer confirmation in §149 on 2026-10-13.
-See: `docs/UI_LAYOUT.md`, `TODO.md` §148.
+See: `docs/UI_LAYOUT.md`, `docs/TODO.md` §148.
 
 ## B74 — OPEN — first filter selection starts another preview job (§149)
 Visible symptom: a mini already depicts a processed filter, but first-time
@@ -512,7 +517,7 @@ Implemented 2026-10-13: removed three independent GUI job paths and the
 two-entry visited-preview cache. All filters are real-file jobs queued on
 open; selection/view/reorder adds zero filtering calls in regression tests.
 Real lifecycle smoke passes. Awaiting designer confirmation.
-See: `docs/FILTER_LIFECYCLE.md`, `TODO.md` §150.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/TODO.md` §150.
 
 ## B75 — OPEN — displayed amounts are not final filtered PDF sizes (§149)
 Canon requires `os.path.getsize` of the actual filtered PDF, including
@@ -521,7 +526,7 @@ Preview/minis/export must consume the same artifact that was measured.
 Implemented 2026-10-13: `nbytes` measures the whole completed PDF; actual
 readback pixels and exported bytes are checked against that file. Awaiting
 designer confirmation, not closed by the 124-test suite.
-See: `docs/ARCHITECTURE.md`, `docs/FILTER_LIFECYCLE.md`, `TODO.md` §150.
+See: `docs/ARCHITECTURE.md`, `docs/FILTER_LIFECYCLE.md`, `docs/TODO.md` §150.
 
 ## B76 — OPEN — no saved/live draft separation or dirty marker (§149)
 Live controls must edit one filter draft, debounce processing, and show `*`
@@ -529,7 +534,7 @@ until saved or reverted. Selection must not mutate recipes or dirty state.
 Implemented 2026-10-13: saved/draft recipe separation, 200ms debounce, full
 effective inputs, blocked load signals, `*` labels/window state, and instant
 saved-value reuse. Regression tests and viewed GUI captures pass. Unconfirmed.
-See: `docs/FILTER_LIFECYCLE.md`, `docs/UI_LAYOUT.md`, `TODO.md` §151.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/UI_LAYOUT.md`, `docs/TODO.md` §151.
 
 ## B77 — OPEN — unsaved filter switching loses edits and artifact ownership (§149)
 Require Save / Save As… / Discard / Cancel before leaving a dirty filter,
@@ -538,7 +543,7 @@ Implemented 2026-10-13: standard Qt decision roles plus Save As; every
 decision and canceled naming is tested. Save As preserves old saved files
 and copies prepared new files into its new UUID without re-filtering. Source/
 worker/export references prevent premature deletion. Awaiting confirmation.
-See: `docs/FILTER_LIFECYCLE.md`, `docs/PERSISTENCE_AND_TEMP.md`, `TODO.md` §152.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/PERSISTENCE_AND_TEMP.md`, `docs/TODO.md` §152.
 
 ## B78 — OPEN — temp sweeper removes live worker directories (§§123/149/150)
 Concurrent GUI smoke sessions exposed FileNotFoundError in workers writing
@@ -1078,6 +1083,16 @@ decode, including a leading-newline regression. Production was deliberately
 NOT changed: designer §193 authorizes design/benchmarks, not integration or
 unrelated encoder fixes. See `docs/LAYERED_COLOR_JBIG2.md` for the primary
 reader source, reproducer and measured scope. No designer confirmation.
+Subsequent §203 requests production codec selection; the shared transport
+repair is now in scope for TODO §206. Keep this issue OPEN until confirmation.
+
+Implemented/worker-verified 2026-10-15: one shared encoder feeds valid 1-bit
+PNG transport to the same resolved `jbig2 -p` executable for BW and colored
+stencils. The leading-packed-newline regression now yields genuine lossless
+JBIG2 with exact decoder pixels; explicit selections never hide failure with
+Flate. Covered by the final 429-test suite. This is a production repair under
+§203, not a retroactive change to the study's original scope or acceptance.
+B99 remains OPEN pending explicit designer confirmation (§207: testing later).
 
 ## B100 — OPEN — all-black error placeholder can pass the production JBIG2 pixel gate (worker study finding)
 
@@ -1089,6 +1104,15 @@ rejects diagnostics; its regression passes. Production remains unchanged
 under §193's study-only scope. A production repair should validate decoder
 success as well as pixels without swallowing unrelated concurrent warnings.
 See `docs/LAYERED_COLOR_JBIG2.md`. No designer confirmation.
+Subsequent §203's production integration must repair this shared validation
+gate, not duplicate the prototype workaround. TODO §206; confirmation pending.
+
+Implemented/worker-verified 2026-10-15: the shared gate snapshots MuPDF
+diagnostics under FITZ_LOCK and rejects newly appended decode errors even
+when an all-black recovery image equals the expected samples. Existing
+diagnostics are preserved, not consumed as a workaround. Valid sparse masks
+and the deliberately corrupt all-black fixture are covered by the final
+429-test suite. B100 remains OPEN pending explicit designer confirmation.
 
 ## B101 — OPEN — redundant mini working placeholders (§195)
 
@@ -1129,6 +1153,14 @@ Nuvola, Oxygen and similar choices, permanent visible codes, app-size/disabled/
 enlarged previews and a copyable per-action selection. This is a review tool,
 not an automatic icon-theme/apply operation. Keep source/license provenance
 and no-filtering/settings invariants. See TODO §203 and `docs/ICON_LAB.md`.
+Implemented/worker-verified: 37 choices / four genuine stock families, explicit
+permanent IDs, original source names, app-size/disabled/32px previews, scoped
+background review and native scrolling, per-action selection, Clear and Copy.
+One reusable modeless window; no production icon/settings/filter/job mutation.
+Original PNG hashes, source versions and all notices/licenses bundled.
+43 focused cases pass at both scales, actual full/1:1 captures viewed; full
+suite 382 passed, previous normal exit/group verification and restart recorded
+in `docs/PLATFORMS.md`. Still OPEN pending designer choices/acceptance.
 
 ## B103 — OPEN — refine mini progress enlargement to 25% (§§198/199)
 
@@ -1144,3 +1176,74 @@ insets/centering and uniform 75% drag snapshot. Queued/live/complete full
 windows and 1:1 controls/strips viewed at 100%/2×. Final full suite 339 passed
 in 68.67s; normal prior exit/group verification and final relaunch recorded
 in `docs/PLATFORMS.md`. Work: TODO §202. Designer acceptance pending.
+
+## B105 — OPEN — compression locked to seed filter; ambiguous Strategy (§203)
+
+Reported 2026-10-15. There is no compression selector: `_controls_spec` keeps
+the existing mode, `_sync_filter_controls` and details consult the preset's
+mode, and Save/Save As/load cannot persist a changed mode. Expose six explicit
+compression choices, make effective recipe state authoritative throughout,
+promote shared validated colored stencils and add deliberate BW Flate.
+Qualify Strategy as Threshold method (manual AND automatic). Preserve UUIDs,
+existing defaults, native artwork, exact real-file lifecycle and debounce.
+No silent codec substitutions. See TODO §206, `docs/COMPRESSION.md` and B99/
+B100 for shared encoder requirements.
+
+Implemented/worker-verified 2026-10-15: one six-choice Image compression
+selector and qualified Threshold method label, authoritative saved/draft mode
+through control state/readout/effective keys/Save/Save As/fresh built-in
+override reload. Shared core stencils serve production/tooling; codec labels
+match actual PDF filters with no hidden JPEG/JPX-to-Indexed or JBIG2-to-Flate
+substitution. UUIDs/names/order/defaults, native artwork, BW-only FFPR and
+one 300ms timer remain intact. Forty core/actual-PDF and seven lifecycle
+cases are in the final 429-test suite; both-scale actual-file captures and
+resize checks plus modal lifecycle smoke pass and were viewed. The desktop
+was restarted normally, then closed by the designer and left closed (§206).
+§207 defers designer testing; B105 remains OPEN, not designer-confirmed.
+
+## B106 — OPEN — native compression not selectable or benchmarked (§§204/205)
+
+Requested 2026-10-15: separate native text/vector/font compression from image
+encoding; expose useful encoder choices and document true sizes/times/reader
+limits. The shared native adapter and actual benchmark cover Flate, optimized
+Flate, the 2026 Brotli extension and legacy controls. Empty native streams
+exposed a MuPDF 1.28.2 encoder/decoder defect: leave them uncompressed rather
+than embedding invalid zero-byte Brotli. Only two hung worker-owned diagnostic
+tests were terminated; the desktop GUI was not touched for that diagnosis.
+See TODO §208, `docs/NATIVE_STREAM_COMPRESSION.md`. Acceptance pending.
+
+Implemented/worker-verified 2026-10-15: separate PDF streams selector offers
+Flate (unchanged default), compatible Zopfli-Flate and limited-support Brotli
+with visible warning, effective keys, shared timer and Save/Save As/load.
+The shared adapter preserves decoded native bytes and encoded images,
+metadata and attachments; native/container optimization is not tied to the
+chosen image codec. Benchmarks cover 32 source/policy pairs / 64 outputs
+with exact readback/all-page MuPDF pixels. Poppler 25.03.0 and QPDF 12.2.0
+FAIL Brotli and pass ordinary codecs; both success and failure are documented.
+LZW/RunLength lose on this corpus and remain controls, not UI choices.
+Final 429-test suite and both-scale UI/resize/lifecycle evidence are recorded
+in `docs/TEST_PLAN.md`. No claim of isolated CPU timing or universal reader
+support. B106 remains OPEN; the designer will test later (§207).
+
+## B107 — OPEN — native callback cancellation becomes an unpickleable worker error (worker audit finding)
+
+Observed 2026-10-15 while the designer closed the final supervised launch
+(session25396 / GUI2955881). The GUI itself exited normally, APP_EXIT 0;
+the designer confirmed the closure and requested it remain closed (§206).
+At 10:40:44, the log records `_Selector.culler` in `core/image_layers.py`
+raising Python `CancelledError` inside a native SWIG director callback.
+MuPDF wraps it as `FzErrorGeneric`; returning that exception from the process
+pool fails serialization: `cannot pickle 'swig_runtime_data5.SwigPyObject'
+object`. A BW draft is consequently logged as an artifact failure rather than
+clean cancellation. This callback path predates the compression selector work.
+It is not evidence that the app crashed or that the selected codecs produced
+corrupt completed files. Normal GUI exit does not certify clean worker reports.
+
+Root-cause direction, NOT an implemented fix: keep cancellation handling on
+the correct side of the native callback boundary and return only serializable
+worker failures; preserve genuine decode errors, saved/draft ownership and
+partial-file cleanup. A future repair needs an actual native-callback plus
+process-pool cancellation regression, not a mocked Python-only exception.
+No repair or new heavy reproduction was attempted in the final documentation
+pass while the workstation was overloaded (§207). Keep OPEN; the green
+429-test compression suite does not establish coverage of this shutdown path.

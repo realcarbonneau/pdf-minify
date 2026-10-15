@@ -5,13 +5,113 @@ How every pixel is resampled and encoded, and why. Ruling quotes:
 B10, B16, B25, B36, B37 (superseded), B39, B40, B47, B58, B60, B62, B89, B90 (see
 `issues.md` — the gated log; this page explains the substance).
 
-New design/benchmark study (§§192–194): [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md)
+Historical design/benchmark study (§§192–194): [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md)
 specifies one lossless colored JBIG2 stencil per non-white palette entry.
-It shares the current compose-first RGB/nearest-palette path. Design and
-prototype measurements ONLY: no production filter/default/recipe changes.
-The current single opaque color image below remains the production design;
-the proposed multi-stencil representation is an explicit studied alternative,
-not a resurrection of per-original-image/mask processing or rasterized text.
+It shares the current compose-first RGB/nearest-palette path. Its original
+scope was design/prototype measurements ONLY, with no production changes.
+Designer §203 subsequently requested explicit selection; the studied stencil
+path is now promoted into shared core as an optional production codec.
+This is not a resurrection of per-original-image/mask processing or
+rasterized text.
+
+Size-only follow-up (§209): [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md)
+compares identical indexed/BW bitmap samples with Flate, full Zopfli, Brotli
+and the corresponding JBIG2 representation. Native compression is held fixed;
+no time comparisons or new production choices/defaults are part of that study.
+
+Combination review (§§210/211): [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md)
+starts with the reasonable-combinations table, distinguishes implemented modes
+from proposed bitmap-policy/color-FFPR extensions, and compares one combined
+menu with separate enabled/disabled controls. Its recommended shared general
+compressor and FFPR fixed-state behavior are PROPOSALS, not changes to the
+current independent selectors below or approval to migrate saved recipes.
+
+## Latest product ruling: best encoding, reader-support alternatives (§213)
+
+Encoder speed, compute cost or ease of installing dependencies are NOT
+reasons to keep a superseded encoder/product option. Target the smallest
+validated complete PDF at the chosen image representation/fidelity and reader
+requirements. Zopfli's zlib output is standard FlateDecode data; the encoder
+adds no reader requirement. Expose one optimized Flate format, with the best
+validated implementation behind it, rather than a zlib-versus-Zopfli speed
+choice. Retain other decoder formats when actual size results or reader
+support justify them; newer does not guarantee smaller for every stream/file.
+Keep historical controls/results for analysis, not as a menu of superseded
+encoders. See [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md)
+for decoder tiers, exact compatibility wording and pending integration.
+
+This supersedes the historical encoding-effort rationale, not the explicit
+codec, real-file or fidelity rules. The implementation described below is
+still the current six-image/three-native-policy build; TODO §217 tracks its
+alignment. Color FFPR and an automatic cross-codec selector remain unapproved
+proposals, not implied by §213.
+
+## Editable compression selection (§203)
+
+Presets seed recipes; they do not restrict the recipe's compression. Offer
+one **Image compression** dropdown: **JBIG2 BW**, **JBIG2 Color**, **Flate BW**,
+**Flate Color (palette)**, **JPEG2000**, **JPEG**. The parenthetical qualifies
+the existing Indexed 2–256-color mode; a new unquantized RGB-Flate mode was
+not requested. BW and Color here describe the bitmap representation, not
+different Flate codecs. JBIG2 Color means disjoint colored 1-bit stencils,
+one per used non-white palette entry, not a multichannel JBIG2 bitstream.
+Keep the measured study's wins AND regressions and Poppler sampling caveat
+visible; availability in the app is not universal viewer certification.
+
+Internally retain legacy recipe mode IDs for existing filters and add explicit
+IDs for BW Flate and colored stencils. The effective recipe's mode is editable
+and authoritative everywhere, including saved custom overrides, Save As,
+readouts, control enablement and cache keys. Never read the seed preset's old
+mode to decide live behavior. Algorithm changes preserve the current DPI;
+irrelevant fields do not affect effective identity or start jobs. Filter UUID,
+name, position and original input remain unchanged. Existing presets/defaults
+are not replaced and no extra preset is inserted automatically.
+
+Explicit codec selection is exact: JPEG means DCT, JPEG2000 means JPX,
+Flate means FlateDecode, and JBIG2 means validated JBIG2Decode. No silent
+Indexed substitution for JPEG/JPX or Flate fallback under a JBIG2 label.
+Missing/failed encoders fail the draft clearly and retain the saved file.
+Headless legacy automatic helpers may keep their documented fallback behavior;
+the explicit GUI/saver selection must not use it. All paths share composition,
+palette fitting, placement and the final lossless PDF optimization, not a
+parallel GUI or tool-only saver. Promote stencil primitives into core and make
+the study tool reuse them. Use unambiguous 1-bit PNG transport into jbig2enc;
+reject native decode diagnostics as well as pixel differences (B99/B100).
+
+Rename the unqualified Strategy label to **Threshold method**. Otsu, Adaptive
+and Sauvola are automatic; Simple uses the manually chosen Threshold value.
+The word "automatic" must not describe the whole dropdown. Threshold controls
+apply to both BW encoders; palette count applies to both color-palette encoders.
+Lossless is editable only for JPEG2000; codec losslessness describes encoding
+AFTER resizing/thresholding/palette reduction, not losslessness to the original.
+FFPR/page reshaping retains its established BW-only semantics, using the same
+selected BW codec. All algorithm edits use the shared 300ms debounce, dirty
+star and Save / Save As / Discard / Cancel transaction. Selection/zoom still
+only observe completed actual PDFs; exports copy those exact files.
+
+JPEG and JPEG2000 are different transform codecs, not historical aliases:
+JPEG uses DCT and the app's encoding is lossy; JPEG2000 uses wavelets and
+supports lossy rate control or lossless encoding. Keep both as explicit choices
+without promising either always wins size, speed or quality. Flate is one
+lossless general-purpose codec used on packed 1-bit BW samples or packed
+palette indices. Both represent meaningful alternatives to the matching JBIG2
+representation, not merely backward compatibility. Normative filter definitions:
+[ISO 32000-1 Table 6, §§7.4.4/7.4.7–9](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf);
+encoder options: [Pillow JPEG/JPEG2000](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
+
+§204 clarification: the selector governs the bitmap canvas ONLY. Every selected
+image codec still uses `_save_optimized_pdf`: font subsetting, explicit native
+stream compression, garbage=4, use_objstms=True, compression_effort=100.
+Lossless native text/vector/font compression and object/container optimization
+are independent of image encoding; they do not turn native artwork into
+1-bit/color images. PDF also permits lossless LZW and RunLength stream filters.
+§205 subsequently adds an independent native-stream option and benchmark:
+[NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md). That policy now
+deliberately recompresses eligible native streams, including already-compressed
+ones; image payloads, metadata and embedded files are excluded. Container/xref
+streams remain the shared optimizer's responsibility. Empty streams stay plain.
+Existing compressed image codecs are not wrapped in accidental
+extra Flate data while declaring a different Filter (the B79 regression).
 
 ## Current BW ruling (§§168–171, supersedes per-image-only implementation)
 
@@ -49,8 +149,11 @@ embedded font programs. Object-stream compression, unused-resource removal
 and deduplication reduce the PDF container. Font subsetting retains the
 original glyphs actually used, not a substitute font or rasterized letters.
 These optimizations require no new image-mode switch. The current saver
-uses native font subsetting followed by garbage=4, deflate=True,
-deflate_fonts=True, use_objstms=True and compression_effort=100. Original
+uses native font subsetting and explicit lossless native-stream compression
+(Flate by default; §205 permits Zopfli-Flate or limited-support Brotli),
+followed by garbage=4, use_objstms=True and compression_effort=100. The final
+writer's automatic stream replacement is disabled because the selected
+native streams and image streams are already explicitly encoded. Original
 fonts/glyphs are retained, not replaced with smaller substitute fonts.
 Native text/fonts are not zero bytes; font and container costs can exceed
 the incremental cost of a few rasterized letters in an exceptionally sparse
@@ -115,9 +218,11 @@ thresholding; it intentionally includes native text/vector artwork.
   original image/mask dimensions (including rotated/nested placements), at
   least 72dpi. The target canvas uses actual page bounds × setting DPI.
   Small, transparent and 1-bit originals are not silently exempted.
-- Choose the smallest valid encoded candidate for the completed canvas, not
-  the old per-image source stream. Keeping an original would violate both
-  final DPI and composition. Native text/vector colors stay unchanged.
+- §203 selects an explicit codec for the completed canvas; do not silently
+  substitute another codec or retain the old per-image source stream. Keeping
+  an original would violate final DPI and composition. Native text/vector
+  colors stay unchanged. The prior automatic cross-codec candidate policy
+  below is superseded for the explicit saver/GUI selection.
 
 ## 2. Flows per codec
 
@@ -158,21 +263,24 @@ large full-resolution pages; the exact full-resolution assignment uses signed
 overflowing uint8 subtraction. No new package or optional algorithm UI.
 
 - **BW forced ON** (`process_file`, force on): page rendered gray at the DPI
-  → threshold (simple/otsu/adaptive/sauvola) → JBIG2 (test-decoded) else
-  1-bit PNG → one image per page.
+  → threshold (simple/otsu/adaptive/sauvola) → selected validated JBIG2 or
+  packed 1-bit Flate → one image per page. Explicit JBIG2 failure is an error,
+  not a mislabeled Flate result. Legacy automatic headless helpers retain
+  their separate documented fallback behavior, not used by the selector.
 - **BW FFPR OFF** (`image_layers.compose_page_images`): full-color original
   image composition on white → one final-DPI Lanczos resize → gray/threshold
-  → validated lossless JBIG2 else 1-bit PNG/Flate.
+  → selected validated lossless JBIG2 or explicit 1-bit Flate.
   Native text/vector PDF operators overlay the canvas; flat page backdrops
   stay below. Original bitmap masks/hidden overlapping pixels are not retained
   separately. Native-only pages do not acquire a needless bitmap canvas.
   The old `_rasterize_images_1bit`/individual-mask path has been removed.
-- **Color/JPX/Indexed** (`image_layers.compose_color_page`): native full-color
+- **Color/JPX/Indexed/colored JBIG2** (`image_layers.compose_color_page`): native full-color
   image composition, including real flat page backdrops → one final-DPI
   Lanczos resize → JPEG quality / JPEG2000 rate or lossless / forced palette.
-  JPEG/JPX also consider a lossless true-Indexed candidate when the full
-  canvas has ≤256 actual colors; smallest encoded candidate wins. Save ONE
-  opaque canvas, no original bitmap soft masks. Native text/vector overlays,
+  Explicit JPEG/JPX never substitute Indexed (§203). Flate Color saves the
+  quantized index map; JBIG2 Color splits that SAME map into exact colored
+  stencils with an opaque white base. Save ONE opaque composite canvas, not
+  redundant source imagery or original bitmap soft masks. Native text/vector overlays,
   links, annotations, crop boxes and rotation remain native. Native-only pages
   do not acquire a bitmap. The old `color_stream_plan`/per-image rewrite path
   is removed, not retained as a fallback. B92 awaits designer confirmation.

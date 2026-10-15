@@ -61,6 +61,51 @@ def capture(w, name):
     print(f"shot: .tmp/shot-{name}.png + 1:1 strip/panes")
 
 
+def icon_lab_samples(w):
+    """Actual View menu dialog; sample choices never apply to the app."""
+    generation, active = w._gen, w._active_pid
+    originals = [target.icon().cacheKey() for target, _, _ in w._action_icons._targets]
+    w.icon_lab_act.trigger()
+    lab = w._icon_lab
+    tag = "" if lab.devicePixelRatioF() == 1 else f"-{lab.devicePixelRatioF():g}x"
+
+    def take(name):
+        app.processEvents()
+        lab.grab().save(f".tmp/shot-icon-lab-{name}{tag}.png")
+        lab.table.grab().save(f".tmp/shot-icon-lab-{name}{tag}-table.png")
+        for code in ("N-REV-02", "O-REN-01", "O-REN-02", "G-REN-01"):
+            lab.choices[code].parentWidget().grab().save(f".tmp/shot-icon-lab-{name}{tag}-{code}.png")
+        print(f"shot: .tmp/shot-icon-lab-{name}{tag}.png + 1:1 table/cards")
+
+    assert not lab.choice_text()
+    take("unselected")
+    for code in ("N-REV-02", "O-REN-01", "N-COP-01", "O-SAV-01",
+                 "N-STP-02", "G-ZIN-01", "G-ZOU-01"):
+        lab.choices[code].setChecked(True)
+    expected = lab.choice_text()
+    for index, name in ((1, "light-selected-fixture"), (2, "dark-selected-fixture")):
+        lab.background.setCurrentIndex(index)
+        take(name)
+        lab.table.verticalScrollBar().setValue(lab.table.verticalScrollBar().maximum())
+        take(name + "-bottom")
+        lab.table.verticalScrollBar().setValue(0)
+    lab.background.setCurrentIndex(1)
+    lab.resize(640, 520)
+    take("narrow-top")
+    assert lab.table.horizontalScrollBar().maximum() > 0
+    assert lab.table.verticalScrollBar().maximum() > 0
+    lab.table.horizontalScrollBar().setValue(lab.table.horizontalScrollBar().maximum())
+    lab.table.verticalScrollBar().setValue(lab.table.verticalScrollBar().maximum())
+    take("narrow-bottom-right")
+    lab.close()
+    w.icon_lab_act.trigger()
+    assert w._icon_lab is lab and lab.choice_text() == expected
+    assert w._gen == generation and w._active_pid == active
+    assert originals == [target.icon().cacheKey() for target, _, _ in w._action_icons._targets]
+    assert not w._artifacts.pending and not w._preview_timer.isActive()
+    lab.close()
+
+
 def icon_samples(pdf):
     """Actual controls, native/portable icons, light/dark and disabled states.
 
@@ -141,6 +186,63 @@ def icon_samples(pdf):
         QIcon.setThemeName(theme[0])
         app.setPalette(original_palette)
         app.processEvents()
+
+
+def compression_samples(w):
+    """Real debounced codec changes; preview comes from each completed PDF."""
+    from pdf_minimalist.core.algorithms import ALGORITHMS, PALETTE_MODES
+    from pdf_minimalist.core.stream_compression import STREAM_POLICIES
+    w.preset.setCurrentIndex(w.preset.findData("color-p16"))
+    tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
+    pid = w._active_pid
+    for mode, _ in ALGORITHMS:
+        w.compression.setCurrentIndex(w.compression.findData(mode))
+        if mode in PALETTE_MODES:
+            w.colors_value.setValue(5)
+        wait_job(w)
+        assert w._active_pid == pid
+        assert w._shown_preview_key == w._result_key(pid)
+        assert w.after._pdf_source.path == w._artifacts.results[w._result_key(pid)].pdf_path
+        settle_view(w)
+        name = f"compression-{mode}{tag}"
+        capture(w, name)
+        w.panelScroll.widget().grab().save(f".tmp/shot-{name}-panel.png")
+    w.revert_filter()
+    for policy, _ in STREAM_POLICIES:
+        w.stream_compression.setCurrentIndex(w.stream_compression.findData(policy))
+        wait_job(w)
+        settle_view(w)
+        name = f"compression-stream-{policy}{tag}"
+        capture(w, name)
+        w.panelScroll.widget().grab().save(f".tmp/shot-{name}-panel.png")
+    w.revert_filter()
+    w.compression.showPopup()
+    app.processEvents()
+    w.compression.view().window().grab().save(f".tmp/shot-compression-options{tag}.png")
+    w.compression.hidePopup()
+    w.stream_compression.showPopup()
+    app.processEvents()
+    w.stream_compression.view().window().grab().save(f".tmp/shot-compression-stream-options{tag}.png")
+    w.stream_compression.hidePopup()
+    assert not w._draft_specs and not w._artifacts.pending
+
+
+def compression_state_samples(w):
+    """An inactive remembered BW-only flag must not claim color rasterization."""
+    tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
+    w.preset.setCurrentIndex(w.preset.findData("bw-fast"))
+    assert w.force_raster.isChecked()
+    w.compression.setCurrentIndex(w.compression.findData("color"))
+    wait_job(w)
+    assert not w.force_raster.isEnabled() and not w.force_raster.isChecked()
+    w.panelScroll.ensureWidgetVisible(w.force_raster)
+    capture(w, f"compression-color-native-state{tag}")
+    w.panelScroll.widget().grab().save(f".tmp/shot-compression-color-native-state{tag}-panel.png")
+    w.revert_filter()
+    assert w.force_raster.isEnabled() and w.force_raster.isChecked()
+    capture(w, f"compression-bw-ffpr-restored{tag}")
+    w.panelScroll.widget().grab().save(f".tmp/shot-compression-bw-ffpr-restored{tag}-panel.png")
+    assert not w._draft_specs
 
 
 def progress_samples(w):
@@ -231,6 +333,12 @@ def main():
     parser.add_argument("pdf", nargs="?", default="examples/images.pdf")
     parser.add_argument("--progress-only", action="store_true",
                         help="capture the actual queued/live/complete mini progress states only")
+    parser.add_argument("--icon-lab-only", action="store_true",
+                        help="capture the real coded stock-icon lab without processing a PDF")
+    parser.add_argument("--compression-only", action="store_true",
+                        help="capture real image/native compression choices and completed files")
+    parser.add_argument("--compression-state-only", action="store_true",
+                        help="capture BW/color inactive FFPR control state and revert")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -249,10 +357,26 @@ def main():
         review_settings.setValue(key, value)
     review_settings.sync()
     pdf = args.pdf
-    w = MainWindow(pdf)
+    w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
     w.show()
     app.processEvents()
+
+    if args.icon_lab_only:
+        icon_lab_samples(w)
+        close_review_window(w)
+        print("ICON LAB SHOTS GREEN")
+        return
+
+    if args.compression_only or args.compression_state_only:
+        wait_job(w)
+        if args.compression_state_only:
+            compression_state_samples(w)
+        else:
+            compression_samples(w)
+        close_review_window(w)
+        print("COMPRESSION SHOTS GREEN")
+        return
 
     capture(w, "progress-queued")
     wait_job(w)

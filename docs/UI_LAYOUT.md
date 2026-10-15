@@ -118,6 +118,32 @@ real transparency or convert original color photos into BW.
 
 ## Right panel (top to bottom)
 
+§§203/204 add a labeled **Image compression** dropdown immediately after the filter
+name/actions, before the recipe readout. Six choices: JBIG2 BW, JBIG2 Color,
+Flate BW, Flate Color (palette), JPEG2000, JPEG. Every filter can select any
+choice; its seed preset does not lock controls. Label the threshold dropdown
+**Threshold method:** (not Strategy): it includes automatic and manual methods.
+Existing 4px spacing, native overflow, header/frame alignment and dirty-edit
+transactions apply. Readouts and control enabled/fixed states derive from the
+actual saved/draft recipe. No automatic filter additions or icon changes.
+§205 adds **PDF stream compression:** as a separate dropdown (Flate,
+Flate/Zopfli, Brotli with an explicit limited-support warning). This controls
+native non-image text/vector/font streams, never the Image compression choice.
+The extra warning is in the native scrollable panel, not a modal on every edit.
+
+§213 supersedes the product rationale for separate zlib-versus-Zopfli speed
+choices: target one optimized Flate choice and Brotli's genuine reader-support
+distinction. The three-choice panel above is the CURRENT implementation,
+not the updated target. TODO §217 tracks alignment; no new control layout,
+color FFPR or cross-codec automatic profile is implied by this policy ruling.
+
+§§210/211 request a table and review of combined versus separate controls:
+[COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md). Separate controls
+with visible disabled effective states and a combined summary are recommended,
+not approved or implemented. Shared bitmap/native general compression and
+color FFPR would require explicit integration; the current panel above stays
+unchanged. Preserve the designer's grey-but-visible fixed-state rule (§100).
+
 Numeric sliders (§178): Threshold (T, 0–255) and Colors (2–256) each use a
 standard horizontal QSlider paired with a right-aligned editable QSpinBox
 and its native up/down arrows. Both represent one bounded integer with step
@@ -140,11 +166,12 @@ File box (full path, pages, page size, original size — constant for every
 filter, §§68/69/73; absurd scan sizes get a Letter/A4 suggestion, never
 auto-applied, §74) → Filter row (dropdown fills the row; Revert Changes,
 Rename, Copy, Save are icon-only buttons with tooltips, §§109/112/114/120/162,
-B51/B86) → Filter
+B51/B86) → Image compression / PDF streams (§§203–205) → Filter
 details (`Codec:` first, fixed order every mode, §§72/79/82, B14/B15) →
 per-filter controls, each feeding ONLY its filter and grey-but-visible
-otherwise: T slider (Simple only, §65, B13), Colors slider (Indexed only,
-§67), Lossless checkbox (JPEG2000 only, §100). Strategy, DPI and page size
+otherwise: T slider (Simple only, both BW encoders, §65, B13), Colors slider
+(Flate palette and colored JBIG2, §§67/203), Lossless checkbox (JPEG2000 only,
+§100). Threshold method, DPI and page size
 sit inline with their labels (§128, B59): single shared DPI combo seeded
 per preset (rules preview, totals and save, §§83/85, B17), page-size combo
 (Original default, §74), Force full-page raster checkbox (§127: ON = page
@@ -161,6 +188,20 @@ See `ICONS.md` for exact action names and bundled asset provenance.
 The standard document-revert icon (§197, replacing the §162 custom arrow) is enabled only for the
 active draft; it restores the saved filter without changing selection or
 re-filtering. See `FILTER_LIFECYCLE.md`.
+
+## Icon Lab (separate review window, §200)
+
+View → Icon Lab… opens one reusable modeless dialog; it does not change the
+main-region layout or app icons. Columns compare Nuvola, Oxygen, GNOME Classic
+and Breeze, with permanent family/action/variant codes on every radio option.
+Each row is one action with an exclusive cross-family choice. Show actual
+16px/20px app-size enabled/disabled controls plus a 32px inspection preview.
+The table stretches its four columns at normal width and scrolls natively
+when narrow/short; action/family headers and the always-visible choice summary
+make the mapping readable. Background selection affects the lab only.
+Copy choices produces a per-action text reply; no Apply button or automatic
+settings/filter/selection/job change. Source names are visible and codes never
+depend on row order. See `ICON_LAB.md` for assets, licenses and acceptance.
 
 ## Filter strip (full window width, below the main row, §§77/96/128)
 

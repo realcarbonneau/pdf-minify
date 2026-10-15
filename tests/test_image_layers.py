@@ -22,9 +22,9 @@ def _pixels(page, dpi=72):
     return np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, 3)
 
 
-def _save(source, output, *, dpi=72):
+def _save(source, output, *, dpi=72, mode="bw"):
     pipeline.save_with_spec(str(source), str(output), dict(
-        mode="bw", force_raster=False, strategy="simple", t=128,
+        mode=mode, force_raster=False, strategy="simple", t=128,
         dpi=dpi, page_size="original"))
 
 
@@ -63,10 +63,11 @@ def test_overlapping_images_combine_without_duplicate_mask_or_glyphs(tmp_path):
         assert next(after[0].annots()).info["content"] == "Retain annotation"
 
 
-@pytest.mark.parametrize("png_fallback", [False, True])
-def test_simple_canvas_has_native_overlay_and_no_image_masks(tmp_path, monkeypatch, png_fallback):
-    if png_fallback:
-        monkeypatch.setattr(pipeline, "bw_page_jbig2", lambda *a, **k: None)
+@pytest.mark.parametrize("mode", ["bw", "bw-flate"])
+def test_simple_canvas_has_native_overlay_and_no_image_masks(tmp_path, monkeypatch, mode):
+    if mode == "bw-flate":
+        monkeypatch.setattr(pipeline, "bw_page_jbig2",
+                            lambda *a, **k: pytest.fail("Explicit Flate must not call JBIG2"))
     source, output = tmp_path / "ordered.pdf", tmp_path / "bw.pdf"
     with fitz.open() as doc:
         page = doc.new_page(width=144, height=180)
@@ -80,7 +81,7 @@ def test_simple_canvas_has_native_overlay_and_no_image_masks(tmp_path, monkeypat
                 page.draw_rect(fitz.Rect(15, 125, 100, 135), color=None, fill=(0, 0, 1))
         page.insert_text((5, 165), "Foreground", color=(1, 1, 1), fill_opacity=.5)
         doc.save(source)
-    _save(source, output)
+    _save(source, output, mode=mode)
     with fitz.open(source) as before, fitz.open(output) as after:
         pixels = _pixels(after[0])
         assert tuple(pixels[70, 30]) == (0, 0, 0)  # image alpha composited onto white, then BW

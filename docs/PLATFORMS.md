@@ -2,6 +2,7 @@
 
 Designer ruling: `DESIGNER_VERBATIM.md` §176. Recorded **2026-10-14**
 (America/New_York). Packaging plan: [PACKAGING.md](PACKAGING.md).
+Latest verification update: **2026-10-15** (America/New_York).
 
 ## Current certificate: Debian 13 x86-64, source/workspace build
 
@@ -16,8 +17,8 @@ Designer ruling: `DESIGNER_VERBATIM.md` §176. Recorded **2026-10-14**
 | PDF binding / actual rendering engine | PyMuPDF 1.28.2 / bundled MuPDF 1.28.2 |
 | Numeric / image libraries | NumPy 2.5.3 / Pillow 12.3.0 |
 | External BW encoder | `/usr/bin/jbig2`, jbig2enc 0.30 |
-| Optional stream optimizer | `/usr/bin/zopfli` present; zlib fallback remains available |
-| Independent PDF validation tools | Poppler `pdfimages` 25.03.0; `mutool` 1.25.1 |
+| Optional stream optimizer | `/usr/bin/zopfli` present; explicit native Zopfli selection requires it, with no hidden fallback |
+| Independent PDF validation tools | Poppler 25.03.0; QPDF 12.2.0; `mutool` 1.25.1 |
 
 This certifies the tested **development/source runtime**, not an installer,
 binary release, every Debian desktop, or unimplemented features. The current
@@ -28,7 +29,54 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
 
 ## Evidence and limits
 
-- Current full suite: **339 passed in 68.67s**, `./test.sh`, 2026-10-14;
+- Current full suite: **460 passed**, `./test.sh`, 2026-10-15, exit 0.
+  The separate size-only bitmap study (§209) adds 31 headless cases and
+  22 paired real/control cases / 176 actual PDFs / 600 candidate pages.
+  Flate/Zopfli/Brotli plain/predicted Indexed/BW data and BW/colored JBIG2
+  decode exactly; all app-engine page pixels match at 72dpi and recipe DPI.
+  Final output hashes and all size cells are verified; no codec time figures
+  are collected. Native compression stays Flate across each comparison.
+  Source closepath warnings and experimental-reader limitations are retained,
+  not called an all-reader certificate. The ghost oracle now waits for the
+  existing view-reframe timer after resize/show; its exact pixels/opacity
+  remain unchanged. Initial 459/one-race failure and deterministic diagnosis
+  are recorded in `TEST_PLAN.md`, not omitted from the evidence.
+  No new product codec/UI/default policy or dependency; ordinary ID generation
+  stays unchanged, while the benchmark explicitly controls ID framing through
+  an optional shared-saver flag. No desktop app was relaunched; a fresh
+  process check found it closed as requested (§206). New study results:
+  `IMAGE_STREAM_COMPRESSION.md`. No new GUI/platform certification is inferred
+  from this headless scope, and no designer acceptance is inferred.
+- Previous integration suite: **429 passed in 174.96s**, `./test.sh`, 2026-10-15.
+  Six editable image codecs and three independent native-stream choices
+  preserve actual saved/draft state, UUIDs, native artwork and one edit timer.
+  Forty new core/actual-PDF cases and seven lifecycle cases cover actual
+  codec filters, exact palette/native pixels, persistence, strict failures,
+  shared debounce and inactive/restored FFPR state. The full suite includes
+  all seven lifecycle cases; six initial cases additionally passed at 2×.
+  Actual full-window/1:1 control and pane captures were viewed at both scales,
+  including all choices, limited-support warning and BW-to-color/Revert state.
+  Final resize smokes settle in 0.121s/0.315s, then remain stable for ten
+  seconds with equal panes, aligned headers, native overflow and no filtering.
+  Actual filter-lifecycle smoke passes, with modal Escape/Discard/Save As
+  captures viewed. The native-stream benchmark covers 32 cases / 64 outputs;
+  all candidate native bytes and MuPDF pages match, image bytes are unchanged.
+  Installed Poppler/QPDF pass ordinary codecs but FAIL Brotli; this is not
+  an all-reader certificate. See `NATIVE_STREAM_COMPRESSION.md` and
+  `TEST_PLAN.md` for scope, CPU-timing caveats and interrupted checks.
+  No dependencies were installed; existing certified runtime versions remain
+  unchanged. This verification predates the designer's CPU-overload note;
+  no new heavy runs were launched during the final documentation pass.
+- Previous stage: **382 passed in 78.93s**, `./test.sh`, 2026-10-14.
+  The separate Icon Lab (§200) has 37 permanent choices across Nuvola,
+  Oxygen, GNOME Classic and Breeze, with bundled source/license provenance.
+  Forty-three focused checks pass at normal/2× (3.72s/4.37s), including
+  direct family loading, stock hashes, choices/copy/clear, small-window
+  scrolling and no production-icon/settings/filter/job mutation. Actual
+  light/dark, unselected/selected, lower-row and narrow-window screenshots
+  plus 1:1 candidate cards were viewed at both scales. The main layout and
+  production icon choices are unchanged. See `ICON_LAB.md` and `TEST_PLAN.md`.
+- Previous stage: **339 passed in 68.67s**, `./test.sh`, 2026-10-14;
   includes standard native-theme/Breeze fallback icons (§197) and the final
   1.25× mini progress height/font (§§198/199). Forty progress checks pass at
   normal/2× (2.13s/2.49s), with exact native-widget pixels and unchanged
@@ -72,13 +120,46 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
 - Compression corpus evidence includes native text/vector retention, distinct
   per-page FFPR payloads and independent image decoding; `COMPRESSION.md`
   records actual bytes, timings and the intentional native-overlay policy.
-- Layered-color JBIG2 is a DESIGN/BENCHMARK prototype, not a production
-  filter or runtime certification. Eighteen cases / 34 page pairs / 107
+- Historical layered-color JBIG2 study (§§192–194): Eighteen cases /
+  34 page pairs / 107
   masks pass exact stored readback and MuPDF display; Poppler decodes each
   mask exactly but its full-page sampling differs. Thirteen tool tests
   pass. Measured wins, regressions and source diagnostics are documented in
-  `LAYERED_COLOR_JBIG2.md`; existing production modes remain unchanged.
-- Current desktop build: retained session **18645**, GUI PID **2415604**,
+  `LAYERED_COLOR_JBIG2.md`; production modes were unchanged DURING that study.
+  §203 subsequently requested the optional production codec now covered by
+  the current suite/captures above. The historical study's output sizes are
+  not relabeled as current-saver measurements or universal-viewer proof.
+- Latest desktop launch, **now closed at the designer's request**: retained
+  session **25396**, GUI PID **2955881**; its PGID/SID were not captured and
+  are not inferred. Started 2026-10-15 10:40:03, window shown 10:40:07;
+  reopened the 12-page NASA source and queued all 12 saved filters with
+  default native Flate. Fast Draft's actual 211,181-byte result was ready
+  at 10:40:33. The designer closed the app during filtering; retained session
+  reported **APP_EXIT status=0**, and desktop PID checks found the GUI gone.
+  No worker close/Save/Discard input was sent to this launch. §206 explicitly
+  confirms "Yes—leave it closed"; §207 defers designer testing. No later
+  launch is made. No preview-applied/all-artifacts-ready claim is made for
+  this interrupted startup. A native callback cancellation produced a worker
+  error during shutdown (B107 OPEN), despite the normal GUI exit.
+  Before this launch, old GUI2448022 was normally closed via Ctrl+Q to its
+  verified X11 window56623111; the whole PGID2448018 was independently
+  verified gone. Supervisor65772's earlier 143 was NOT taken as GUI exit;
+  no APP_EXIT code is invented for that older closure. No worker Save/Discard
+  choice was made.
+- Previous desktop build: retained session **65772**, GUI PID **2448022**,
+  PPID/PGID/SID **2448018**, independently verified in desktop `ps`.
+  Window shown 2026-10-14 23:27:40 (America/New_York), exact-file preview
+  applied 23:27:49, all 12 artifacts ready by 23:27:59, including the
+  designer-created copy. This build adds the separate Icon Lab without
+  changing the production icons or the final 1.25× mini progress scale.
+  On resume at 2026-10-15 09:12, the retained session remained running and
+  desktop `ps` independently confirmed this same GUI/process group alive.
+  Previous session18645 / GUI2415604 / PGID2415600 exited normally
+  (`APP_EXIT status=0`); its whole process group was independently verified
+  gone before relaunch. No worker Quit/Save/Discard input was sent for that
+  closure. These IDs are dated observations; future status claims require
+  a fresh retained-session/desktop check.
+- Previous desktop build: retained session **18645**, GUI PID **2415604**,
   PPID/PGID/SID **2415600**, independently verified in desktop `ps`.
   Window shown 22:56:30, exact-file preview applied 22:56:44, all 12 artifacts
   ready by 22:56:58, including the designer-created copy. The retained session
@@ -122,8 +203,11 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
   closed app remains alive; poll the retained execution session again.
 
 Certification is worker verification, **not designer acceptance of issues**.
-B89/B90/B91/B92/B94/B96/B97/B98/B101/B102/B103 remain OPEN until explicit designer confirmation.
-B99/B100 are new production audit findings, not fixes delivered by the study.
+B89/B90/B91/B92/B94/B96/B97/B98/B101/B102/B103/B104/B105/B106 remain OPEN
+until explicit designer confirmation. B99/B100 were audit findings only in
+the historical study; their production repairs are now worker-verified under
+§203 but remain OPEN pending confirmation. B107 is a new unimplemented
+shutdown audit finding. §207 explicitly defers acceptance testing, not work.
 B95's final progress appearance is designer-confirmed in §192; B93's palette
 improvement is designer-confirmed in §184, both 2026-10-14. Previous dated
 designer confirmations keep their exact recorded scope in `issues.md`.

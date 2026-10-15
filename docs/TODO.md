@@ -3,16 +3,18 @@
 Format (designer ruling §16): no checkboxes. Open items carry full detail.
 Completed items are stubbed: request struck through, stub summary, cross-refs
 to the final docs/code that implement it. Dropped items move to
-`docs/DROPPED.md` with reasons. Knowledge is referenced, never redone.
-Mirrors `docs/DESIGNER_VERBATIM.md` § numbers.
+[DROPPED.md](DROPPED.md) with reasons. Knowledge is referenced, never redone.
+Entries reference [DESIGNER_VERBATIM.md](DESIGNER_VERBATIM.md); the two logs have independent
+numbering, so use each entry's explicit designer-§ reference. Historical
+duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
+headings among §§60–79). They are preserved, not silently renumbered; identify
+those entries by title/scope as well as number. New entries continue above
+the highest existing number.
 
-## 1 — DONE
-~~is my opencode harness up to date?  How do I update it?~~
-Stub: version check + update instructions (Q&A, no artifact).
-
-## 2 — DONE
-~~`opencode update` fails: `Failed to change directory to .../update`.~~
-Stub: explained — `update` isn't a command, parsed as project path; correct cmd is `opencode upgrade` (Q&A, no artifact).
+Current location is `docs/TODO.md` (designer §216). Paths in historical
+backtick references are repository-root paths unless stated otherwise;
+old descriptions of the previous root placement are historical, not current
+instructions. Explicitly removed unrelated entries leave numbering gaps (§217).
 
 ## 3 — DONE
 ~~Full app-vision brief (scans → BW threshold + image recompression, max compression default, ESC cancel, md docs with notes/ideas/tests).~~
@@ -1891,22 +1893,204 @@ Full suite 339 passed in 68.67s; previous app exited normally and its group
 was verified gone before final relaunch. B103 remains OPEN for designer
 acceptance. See `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
 
-## 203 — OPEN (designer §200: coded icon lab, including Nuvola and Oxygen)
-Add a direct View → Icon Lab… menu item opening a resizable modeless comparison
-window. Show genuine stock Nuvola, Oxygen, GNOME Classic and Breeze choices
-for Revert, Rename, Save As/Copy, Save, Stop and Zoom, including useful alternate
-glyphs. Label every choice with a permanent family/action/variant code and
-source name, native app-size and enlarged/disabled previews. Let the designer
-pick per action and copy the codes as a reply; never apply choices, run PDF
-processing or change settings/selection. Reuse one window per app. Bundle only
-the licensed subset with exact source/hash provenance; no system-theme fallback
-may silently substitute another family. Capture/view at normal/2×, run full
-suite and perform the required verified restart. Current icons are rejected,
-not designer-confirmed fixed. See `docs/ICON_LAB.md`, B102/B104.
+## 203 — DONE (designer §200: coded icon lab, including Nuvola and Oxygen)
+~~Add an Icon Lab window with stock-library options and shareable choice codes.~~
+Stub: direct View → Icon Lab… opens one reusable modeless table with 37 coded
+Nuvola/Oxygen/GNOME Classic/Breeze options; app-size, disabled and 32px previews,
+original source names, light/dark review, native small-window scrolling,
+per-action radio choices, Clear and Copy choices. Nothing applies or changes
+app icons/settings/filters/selection/jobs. Original PNG bytes, sizes/hashes,
+source versions, copyright/license texts and Nuvola's artwork addendum bundled.
+43 focused cases pass at normal/2×; actual full windows and 1:1 cards viewed.
+Full suite 382 passed; previous GUI exited normally, whole group verified gone,
+new build restarted. B102/B104 remain OPEN pending designer choices/acceptance.
+See `docs/ICON_LAB.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
 
-## 204 — OPEN (designer §201: checkpoint and push, then continue)
-Commit the current project implementation/docs/tests and licensed in-progress
-Icon Lab catalog assets to the existing main/origin GitHub remote. Exclude the
-raw exported session and ignored temporary/runtime files. Push a normal
-checkpoint (no force), verify the remote hash, then resume TODO §203 without
-claiming the not-yet-built lab UI is complete or designer-confirmed.
+## 204 — DONE (designer §201: checkpoint and push, then continue)
+~~Commit current work, push it to GitHub, then resume the Icon Lab.~~
+Stub: checkpoint `8d7f0954555329b2f97e2ee2851ae99eabd55038` pushed normally
+to existing `origin/main` and independently verified with `git ls-remote`.
+Includes project code/docs/tests and the licensed in-progress lab resources;
+commit explicitly states its lab UI is not yet implemented. Raw session export
+and ignored temporary/runtime files excluded. Resumed §203 after verification.
+
+## 205 — DONE (designer §202: locate the multi-color JBIG2 prototype)
+~~Report whether the prototype is complete and where its outputs are.~~
+Stub: confirmed real tool/PDF/JSON files, linked four-colors-plus-white output
+and Indexed baseline, reported measured 33%/43% savings on images.pdf and
+explicit regressions/viewer limits. No GUI integration was claimed. See
+`docs/LAYERED_COLOR_JBIG2.md`, TODO §§197/198.
+
+## 206 — DONE (designer §203: editable compression and precise threshold label)
+~~Expose six editable image codecs and qualify the threshold-method control.~~
+Stub: Image compression offers JBIG2 BW/Color, Flate BW/Color (palette),
+JPEG2000 and JPEG. Actual saved/draft mode controls dispatch, enabled states,
+readouts, effective keys, Save/Save As and built-in override reload. Shared
+core stencil code serves production and the study; strict codec selection,
+unambiguous encoder transport and diagnostic-aware decode checks replace
+hidden substitution. Preserve UUID/name/order/defaults, native artwork,
+BW-only FFPR and one 300ms timer. Final full suite 429 passed; both-scale
+real-file UI/resize captures and lifecycle smoke pass and were viewed.
+Normal restart completed, then the designer closed the app (designer §206,
+TODO §209).
+See `docs/COMPRESSION.md`, `docs/TEST_PLAN.md`; B99/B100/B105 remain OPEN
+for explicit designer confirmation. DONE is not designer acceptance.
+
+## 207 — DONE (designer §204: distinguish native-stream and image compression)
+~~Explain native text/vector/font compression independently of image encoding.~~
+Stub: Image compression never disables shared native/font/container
+optimization. Flate is the default native codec; LZW/RunLength are valid
+historical alternatives. The subsequent §205 explicitly requests a native
+selector, expanding the initial explanation-only scope: eligible compressed
+native streams are now deliberately recompressed, while encoded images,
+metadata and attachments remain untouched by that selector. See
+`docs/COMPRESSION.md`, `docs/NATIVE_STREAM_COMPRESSION.md`, TODO §208.
+
+## 208 — DONE (designer §205: native-stream selection and benchmark document)
+~~Add independent native-stream compression and benchmark sizes/times/support.~~
+Stub: PDF streams offers Flate (unchanged default), Flate (Zopfli, slow)
+and Brotli (limited reader support), using shared saved/draft state and timer.
+`docs/NATIVE_STREAM_COMPRESSION.md` records primary sources, 32 paired
+source/policy cases / 64 outputs, complete PDF sizes, both timing repeats,
+native-byte/image/pixel checks and actual reader failures. LZW/RunLength
+lose in this corpus and remain benchmark controls, not UI clutter. Empty
+streams stay plain to avoid the bundled encoder's invalid empty Brotli.
+Final full suite 429 passed in 174.96s; both-scale UI/resize and real lifecycle
+smokes pass. Desktop relaunch exited normally when closed by the designer;
+left closed by request. B106 remains OPEN; no acceptance is inferred.
+
+## 209 — DONE (designer §206: acknowledge normal closure and leave app closed)
+~~Record that the designer closed the relaunched app and do not reopen it.~~
+Stub: retained session25396 / GUI2955881 exited with APP_EXIT status=0.
+The designer explicitly answered "Yes—leave it closed"; a later process
+check finds neither this GUI nor the old GUI2448022. No worker close action
+was sent to the new launch. See `docs/PLATFORMS.md`; §206 confirms closure,
+not compression acceptance. No new launch follows this instruction.
+
+## 210 — DONE (designer §207: continue documentation while CPU is overloaded)
+~~Continue work/documentation and defer the designer's testing until later.~~
+Stub: reconciled current versus historical design, final verification,
+reader limitations, app closure and acceptance status across topic docs,
+platform/test records and issues. No new test/benchmark/GUI jobs launched
+during that documentation-only pass; the recorded 429-test run predates it.
+Subsequent designer §209 explicitly authorizes the separate size study.
+Added a deferred
+manual review checklist and recorded the observed native-callback shutdown
+error as B107 OPEN, not a delivered fix. See `docs/TEST_PLAN.md`, `issues.md`.
+
+## 211 — DONE (designer §208: applicability and scope of Brotli image comparison)
+~~Explain existing Brotli measurements versus indexed color and BW/JBIG2.~~
+Stub: existing Brotli study changes native streams ONLY and preserves bitmap
+bytes, so it provides no image-codec ranking. The PDF extension allows Brotli
+on image XObjects; a valid comparison encodes identical packed palette/BW
+pixels versus the corresponding exact JBIG2 representation. Reported the
+actual historical Indexed/JBIG2 color numbers, not invented Brotli results.
+
+## 212 — DONE (designer §209: size-only bitmap compression benchmarks)
+~~Benchmark equal-pixel Indexed/BW Flate, full Zopfli and Brotli versus BW/colored JBIG2.~~
+Stub: 22 paired cases / 176 actual optimized PDFs / 600 candidate pages;
+same prepared pixels, palette/threshold/DPI and native Flate per case. Plain
+and reversible PNG-predicted byte streams, current product policy, real
+artwork/scans/native-overlay/FFPR and flat/noise controls. Every final image/
+mask and actual MuPDF page matches; complete PDF bytes, image bytes, hashes
+and source diagnostics retained. Zero timing fields. Controlled identifier
+framing removes size noise without changing product ID defaults. Full tables,
+wins/regressions and reproduction are in `docs/IMAGE_STREAM_COMPRESSION.md`;
+artifacts in `.tmp/image-stream-compression/size-20261015/`. Thirty-one new
+benchmark cases pass in the final full suite: **460 passed**, `./test.sh`.
+A pre-existing ghost test now waits for actual view-reframe readiness before
+strict pixel comparisons; production ghost/opacity/tolerances unchanged.
+No new UI codec/defaults or app launch; the designer-closed app stays closed.
+This is completed study implementation, not designer issue acceptance.
+
+## 213 — DONE (designer §210: explain useful compression pairings and FFPR scope)
+~~Distinguish valid mixed PDF codecs from useful UI combinations and FFPR overhead.~~
+Stub: native Brotli + Flate images is technically valid; a shared general
+compressor is a proposed product simplification, not a PDF constraint.
+Specialized image codecs do not need another wrapper. Read-only inventory
+of both existing FFPR/JBIG2 study outputs finds one shared 35-byte native
+painting stream (37 B with Flate); packed-raster compression still matters.
+See `docs/COMPRESSION_COMBINATIONS.md`. No new compression run or app launch.
+
+## 214 — DONE (designer §211: combinations table first, then UI alternatives)
+~~Document reasonable combinations and compare a combined menu with separate controls.~~
+Stub: `docs/COMPRESSION_COMBINATIONS.md` starts with twelve mode/FFPR rows,
+compressor scope and explicit current-versus-proposed availability. Recommends
+separate page/image/general controls, visible disabled effective states and
+a read-only combined summary. Color FFPR, unified bitmap compression and
+saved-recipe migration require separate approval/integration; current code
+and defaults are unchanged. Cross-referenced from the main design, compression,
+UI and entry docs. Documentation-only checks; no new full suite, benchmark or
+GUI launch. This completes the requested documentation, not approval of its
+proposed UI and not designer issue acceptance.
+
+## 215 — DONE (designer §212: assess scope and duplication of the combination table)
+~~Review the table against repository document types and the available benchmarks.~~
+Stub: recommended factoring FFPR out of repeated family rows, retaining
+mixed palette winners, and recording preserve-images/native-only cases.
+Full-color/grayscale lossless byte encoding remains a research suggestion,
+not an approved addition. The worker's encoder-dependency rationale for
+retaining Flate BW is subsequently superseded by designer §213. No code
+change, new benchmark or assertion of whole-corpus codec dominance.
+
+## 216 — DONE (designer §213: verify Zopfli support and record opinionated best-encoding policy)
+~~Confirm unchanged Flate decoder support and supersede speed-based product choices.~~
+Stub: upstream Zopfli and RFC 1950/1951 confirm standard zlib/DEFLATE output;
+any conforming FlateDecode implementation can decode correctly embedded
+Zopfli data without encoder-specific support. Recorded the exact ruling,
+corrected the matrix to optimized Flate versus Brotli formats, retired the
+old effort/dependency rationale, and distinguished current implementation
+from the target throughout design/developer/packaging docs. Strongest measured
+does not mean universally smallest; explicit codecs/fidelity remain intact.
+Documentation only; runtime alignment is OPEN below. No new app/test launch
+or designer issue acceptance is claimed.
+
+## 217 — OPEN (designer §213: align runtime with best encoding and decoder-support choices)
+The current UI still exposes ordinary Flate and Zopfli separately, native
+Flate defaults to zlib, and Indexed has a 100,000-byte Zopfli performance
+cutoff. Align the implementation with §213: one optimized Flate output format
+using the best validated encoder(s), no weaker speed/dependency choice or
+arbitrary performance cap. Retain same-format alternatives internally only
+when actual valid output size justifies them; preserve exact filtered pixels,
+native data and the selected decoder format. Package required encoders and
+report real failures, not silent inferior fallback. Review image/native and
+container paths without inventing new reader filters. Preserve UUIDs, saved
+recipes, dirty lifecycle, exact readback/amounts and cache correctness; do not
+claim zlib-versus-Zopfli needs a different reader or confuse format/encoder.
+Keep Brotli's measured-reader warning. Other image families may be retired
+only with real size/reader-support evidence at the chosen fidelity, not just
+dependency convenience or one small corpus. Exact UI layout, automatic
+cross-format policies, color FFPR and extra representations remain separate
+design proposals. Full tests and proportional GUI checks are required when
+implemented; respect the leave-closed instruction and deferred heavy work.
+
+## 218 — OPEN (designer §214: remove classic Flate from product options, retain references)
+Remove the redundant ordinary-zlib choice, retain optimized Flate with the
+same FlateDecode reader support, and keep classic results/encoders in the
+comparison tools/tables for reference. Handle saved legacy policy names and
+defaults consistently; never relabel classic encoding as optimized. No
+runtime edit was made before the designer requested this checkpoint. This
+is the focused next implementation step within §217, not a completed fix.
+
+## 219 — OPEN (designer §215: commit and push current work to origin)
+Checkpoint the current project source, tests, tools and documentation on
+main and push normally to origin/main. Include the subsequent log relocation
+and relevance cleanup. Exclude the raw session export and generated/private
+development artifacts. Verify tests, staged content, commit identity and the
+actual remote hash; record completion only after push confirmation.
+
+## 220 — DONE (designer §216: move the request log into docs)
+~~Move TODO.md to docs/TODO.md and update active references.~~
+Stub: request history is preserved at `docs/TODO.md`; developer entry points,
+README and root issue references use the new location. Remaining historic
+numbers/order are unchanged. Old stubs retain their period-specific layout
+descriptions, identified as historical in this file's introduction.
+
+## 221 — DONE (designer §217: remove unrelated log entries without renumbering)
+~~Remove the specified unrelated material and review the rest for project relevance.~~
+Stub: removed the referenced first two sections from both project logs,
+without replacement stubs, archival copies or renumbering. Reviewed the
+remaining log topics and external-tool mentions; retained app-specific
+launch/test workflow and historical PDF benchmark provenance. No other
+clearly unrelated topic found. The removal request does not reproduce the
+discarded reference text. The source session export remains local/untracked.

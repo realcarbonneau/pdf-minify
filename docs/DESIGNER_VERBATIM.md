@@ -6,13 +6,9 @@
 > in brackets outside the quote. New designer comments get appended
 > here with date + full verbatim text.
 
-## 1 — tooling
-> is my opencode harness up to date?  How do I update it?
-
-## 2 — tooling
-> user@main:~/Downloads/pdf-reducer$ opencode update
-> Error: Failed to change directory to /home/user/Downloads/pdf-reducer/update
-> user@main:~/Downloads/pdf-reducer$
+Scope: project requirements and development workflow. Explicit designer
+removals are omitted rather than copied into another entry; existing numbers
+are never changed to fill the resulting gaps (§217).
 
 ## 3 — app vision (original brief)
 > I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
@@ -907,6 +903,59 @@ Clarification question: should the mini bar be 25% larger (1.25×), or one-quart
 
 ## 201 — checkpoint current work to GitHub, then continue (verbatim, 2026-10-14)
 > commit your current and push to github, then continue working
+
+## 202 — ask where the multi-color JBIG2 prototype is (verbatim, 2026-10-15)
+> I will look at icons later.  Where is the JBIG2, multi colors?  Did you complete the prototype?
+
+## 203 — editable compression algorithm and qualified threshold terminology (verbatim, 2026-10-15)
+> I think we need to add an option that is the algorithm, JBIG2 BW, JBIG2 Color, Flate BW, Flate Color JPEG2000, JPEG.  Because we have no way of choosing between the options at the moment, filters seem to be locked into their algo.  Also, why do we have both JPEG and JPEG2000, and Flate BW and Flate Color?  For backward compatibility?  Aso, the terms strategy should be qualified, is that Threshold automatic strategy?
+
+## 204 — clarify content-stream compression versus image compression (verbatim, 2026-10-15)
+> But flate also always compresses the contents (eg characters, vectors) of the pdf? or are there other options?
+
+## 205 — native text/vector compression options, benchmarks and support limits (verbatim, 2026-10-15)
+> what are the top text compression algorithms, and we should add an option for this also.  And make a benchmark document for that scope of compression also.  Are there support limitations on some of these algorithms?  Any reason to keep lesser compression algorithms?
+
+## 206 — confirm designer closure and leave the app closed (verbatim, 2026-10-15)
+Clarification question: "The relaunched app exited normally (status 0), and I sent no close action to that launch. Did you close it?" Selected answer:
+> Yes—leave it closed
+
+## 207 — continue work/documentation while workstation is overloaded; defer designer testing (verbatim, 2026-10-15)
+> workstation cpu is overloaded now, I will test later, but continue your work and documentation please
+
+## 208 — ask whether Brotli image comparisons exist and are applicable (verbatim, 2026-10-15)
+> what do your benchmarks show for brotli on color index versus jbig2, and on BW?  Is that applicable comparison?
+
+## 209 — size-only equivalent bitmap compression benchmarks (verbatim, 2026-10-15)
+> you have color index filters that use flate, so you should make equivalent bechmarks for better compression on color index and bw please, compare with JBIG2 and color JPBIG2 also.  Do the work please.  We are only comparing size a this time.  Compute time is not measure because the cpu load on this workstation is fluctuating alot and unpredictably.
+
+## 210 — ask which compression combinations are useful, especially with FFPR (verbatim, 2026-10-15)
+> So we need a option for the compression algorithms, however, there are only certain combinations that make sense, right? Brotli content implied Brotli images or Jpeg/jbig2, never Brotli+Flate for example.  Also, when we use FFPR+J* does it still make sense to choose Flate/Zopfli/Brotli?  Or there is litle/nothing to compress?
+
+## 211 — document reasonable combinations first; compare combined versus separate controls (verbatim, 2026-10-15)
+> Make a documentation table of reasonable combinations, also, should we have the combination as a single compression dropdown (eg Brotli+JBIG2, FFPR+JPEG2000, etc.)? Or separate controls that are enabled/disabled?  Start with the table please.
+
+## 212 — review whether the combinations cover the full range of documents (verbatim, 2026-10-15)
+> of the tabe options, considering the full variety of files and situations, including those in this repo, do you think that tabe of combinations could be reduced?  Or should be increased?
+
+## 213 — opinionated best encoding; retain alternatives for reader support, not encoding cost (verbatim, 2026-10-15)
+> so all pdf readers can decode flate encoded with zopfli?  Encoding is not a constrain, the objective of this project is to be an opinionated pdf compression suite with the best available algorithms for encoding, we drop superceded algorithms, the only concern that affects decisions would be pdf reader support, where for some usage, a more generally supported decoder would be proferred, in others, the user may expect readers to have the most modern and best pdf reader.
+
+## 214 — remove classic Flate as a selectable encoder; retain comparison evidence (verbatim, 2026-10-15)
+> Compression time is not a concern, so we drop classic Flate from the options?  Keep in the comparison table for reference.
+
+## 215 — commit and push the current checkpoint to origin (verbatim, 2026-10-15)
+> commit and push to origin please
+
+## 216 — move the request log into docs (verbatim, 2026-10-15)
+> Move the TODO.md to the docs dir please also
+
+## 217 — remove unrelated material without renumbering; audit project relevance (verbatim excerpt, 2026-10-15)
+> Completely drop these from the docs, do NOT renumber, this is not relevant to the project, is there anything else like this that is completely irrelevant to the project?
+
+The unrelated reference material attached to this request is intentionally
+omitted under the designer's explicit removal instruction; it is not copied
+back into the project log. Remaining entry numbers stay unchanged.
 
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.

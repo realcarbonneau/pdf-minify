@@ -32,6 +32,7 @@ alternatives honestly with the original library glyph name.
 One radio group per action lets the designer collect a per-action selection.
 A read-only summary and Copy choices button produce a pasteable reply with
 action labels and codes. Initially select nothing: no implied endorsement.
+Clear choices resets only this review selection, not the background or app.
 There is NO Apply button, no settings write, no production-icon update, no
 filter edit/selection change and no PDF processing from any lab interaction.
 Closing the lab is not an unsaved-filter operation.
@@ -66,3 +67,32 @@ Run the full regression suite, then verify the old GUI/process group exited
 and relaunch in a retained session. Only explicit designer confirmation
 closes the issue; selection codes themselves are not permission to infer
 unmentioned production changes.
+
+## Implemented evidence — 2026-10-14
+
+37 permanent choices cover seven action rows and four families, including
+curved-arrow/page-revert, copy/Save As and stop/cancel visual alternatives.
+121 original PNG size variants cover 30 distinct Nuvola/Oxygen/GNOME glyphs;
+seven existing Breeze SVG glyphs complete the matrix. Resource data is 268KB
+before git compression, not whole theme bundles. Package/hash provenance
+and unmodified notices/licenses are in `assets/icon_lab/`; no pip/apt package
+was installed. `tests/test_icon_lab.py` pins every initial code meaning,
+stock hashes/dimensions, family-specific loading without theme inheritance,
+normal/disabled/HiDPI rendering, radio/copy/clear/keyboard/scroll behavior.
+The main-window regression additionally proves direct menu access, one-window
+reuse, retained review choices and no production-icon/settings/filter/job
+mutation. Full suite: **382 passed in 78.93s**. Focused cases: **43 passed**
+at 100% (3.72s) and 2× (4.37s).
+
+`tools/shot.py --icon-lab-only` passed at both scales, using the actual menu
+dialog, no PDF processing. Unselected, light/dark selected fixtures, lower
+rows, 640×520 top and bottom-right scrolling and 1:1 code/icon cards were
+actually viewed. Paint-fixture choices are not designer choices and were
+never applied to the app. Current runtime/restart evidence is recorded in
+`PLATFORMS.md`; B104 remains OPEN for designer acceptance.
+
+During this task the designer requested an immediate checkpoint/push. Commit
+`8d7f0954555329b2f97e2ee2851ae99eabd55038` was pushed to `origin/main` and
+verified remotely BEFORE the lab UI implementation continued. It includes
+the initial design/licensed resources but explicitly not the yet-unbuilt UI.
+Later UI/tests/docs are local working changes, not silently claimed pushed.

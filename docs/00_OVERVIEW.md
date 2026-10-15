@@ -17,11 +17,33 @@ Task Coach-inspired cross-platform dependency/build plans are in
 Action icons (§197) use the desktop theme with a bundled stock Breeze SVG
 fallback, not custom glyphs. Naming, palette handling, licenses and packaging
 requirements are in [ICONS.md](ICONS.md).
+§200 rejects the current appearance and adds View → Icon Lab… for genuine
+Nuvola/Oxygen/GNOME/Breeze comparisons, permanent choice codes and a copyable
+per-action reply. Selections never apply automatically; see [ICON_LAB.md](ICON_LAB.md).
 
 The designer's new low-color experiment is documented separately in
 [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) (§§192–194): one colored
-lossless JBIG2 stencil per non-white palette entry. Design/benchmarks only;
-existing production filters and the single-saver lifecycle are unchanged.
+lossless JBIG2 stencil per non-white palette entry. §203 subsequently makes
+this an optional explicit image codec; existing preset defaults are unchanged.
+Every filter can now edit Image compression independently of its name/template.
+§205 adds independent PDF stream compression (Flate, Zopfli-Flate or limited-
+reader-support Brotli). Design, measured full-PDF results and actual reader
+limits: [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
+§209 separately benchmarks image compression at equal pixels, size-only:
+[IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). Native-only
+Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
+
+§§210/211 request [a reasonable-combinations table and UI review](COMPRESSION_COMBINATIONS.md).
+The proposed shared general-compressor/disabled-control design is separate
+from current capabilities; no new selector behavior, color FFPR or saved-recipe
+migration is approved by the documentation request.
+
+Designer §213 subsequently rules that encoding cost is not a product constraint:
+use the best validated encoding and drop superseded encoder choices. Zopfli
+needs only the existing Flate decoder, so the target is one optimized Flate
+format versus genuinely different reader-support requirements such as Brotli.
+The current three-way selector has not yet been aligned (TODO §217). This
+supersedes the historical Max/Balanced/Fast effort brief, not fidelity rules.
 
 HISTORICAL BRIEF BELOW — original JPEG defaults, DPI-ceiling wording,
 page-list/per-page-control plan, on-click work and size estimates are

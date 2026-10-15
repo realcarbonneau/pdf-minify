@@ -26,6 +26,14 @@ effective recipe change authorizes filtering work.
 
 ## Saved recipe and live draft are separate states
 
+§§203–205: compression is part of that editable recipe, not immutable preset
+metadata. Image mode and native-stream policy are authoritative saved/draft
+inputs: enable controls/readouts from this state, include both in cache keys,
+and persist/reload them even when overriding a built-in filter. Save As must
+copy the draft's actual mode/policy, not the source template's original mode.
+Changes use the same 300ms timer and explicit switch transaction described
+below. UUID/name/order remain unchanged on Save; a named copy gets a new UUID.
+
 Each filter keeps a saved recipe/result and, while dirty, a live draft.
 Loading controls under signal blockers is not an edit. Effective comparisons
 exclude irrelevant disabled controls and normalize defaults, so selection
@@ -226,7 +234,8 @@ TODO §122 correctly remained OPEN, but surrounding documents contradicted
 that status by describing a completed single path. Its stated open design
 questions were settled by §127 and reiterated by §149; do not ask again.
 
-Current implementation/verification is tracked by TODO §§150–162 and issues
+Historical implementation/verification for §§149–162 is tracked by TODO
+§§150–162 and issues
 B74–B81. The original 124-test flow/identity suite, real lifecycle GUI smoke, and native
 drag gestures at 100%/200% passed, with captures actually viewed. The B81
 extension brought the suite to 131 tests and checks eight native
@@ -234,7 +243,19 @@ gestures plus 33 post-reorder clicks at each scale. B81 is explicitly
 designer-confirmed on 2026-10-14 (§159); B74–B80 remain unconfirmed.
 The new mini-padding/background issues B82/B83 are tracked separately;
 their three regression cases brought the suite to 134 tests. §§160–162 add
-16 selection/revert regressions for a current total of 150. The real modal
+16 selection/revert regressions for a then-total of 150. The real modal
 tests include mouse, keyboard and post-reorder cancellation, both visible and
 current selection, repeated attempts with one prompt each, retained drafts/
 files, and revert before/during/after processing without new work.
+
+Latest integration (§§203–205, 2026-10-15): six image modes and independent
+native-stream policy use these same saved/draft transactions and shared
+300ms timer. Effective keys ignore inactive fields; Save As persists the
+draft's actual mode/policy and selects the new copy, and built-in override
+reload restores the saved mode. Seven new lifecycle cases are included in
+the final **429 passed** suite; real-file modal smoke and both-scale captures
+were viewed. See `TEST_PLAN.md`, `COMPRESSION.md` and
+`NATIVE_STREAM_COMPRESSION.md`. B105/B106 remain unconfirmed; the designer
+defers testing (§207). The app is left closed by explicit request (§206).
+The separate native callback cancellation/serialization defect observed on
+shutdown is B107 OPEN; it is not certified repaired by these tests.
