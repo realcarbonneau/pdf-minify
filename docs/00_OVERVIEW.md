@@ -33,6 +33,11 @@ limits: [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). Native-only
 Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
 
+§222 makes [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) the primary
+size analysis: actual complete saved PDFs across image/predictor × native
+policies, with all overhead included and no timing comparisons. The two
+component studies above support that analysis, not substitute for it.
+
 §§210/211 request [a reasonable-combinations table and UI review](COMPRESSION_COMBINATIONS.md).
 The proposed shared general-compressor/disabled-control design is separate
 from current capabilities; no new selector behavior, color FFPR or saved-recipe

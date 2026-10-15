@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 224. Routine execution requests are not TODOs (§218).
+new TODO ID is 226. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -1975,3 +1975,28 @@ Designer quotations, stable IDs, codec requirements and reader-support rules
 remain intact. The redundant predictor-only document is removed; its results
 and relevant methods are retained in `docs/IMAGE_STREAM_COMPRESSION.md`.
 Documentation only; no new encoding or timing run, code change or issue acceptance.
+
+## 224 — DONE (designer §221: bold the smallest size in every benchmark row)
+~~Highlight the best result in each main bitmap benchmark row using Markdown bold.~~
+Stub: both size tables in `docs/IMAGE_STREAM_COMPRESSION.md` emphasize the
+smallest complete-PDF size per same-input row, with ties included by rule.
+All 22 rows are checked against the stored measurements; all 154 numeric
+values, row labels and codec columns remain unchanged. Highlighting does
+not override reader-support limitations. Documentation only.
+
+## 225 — DONE (designer §222: integrated complete-file compression matrix)
+~~Measure image/predictor × native policies as actual final PDFs in one primary size matrix.~~
+Stub: `tools/bench_integrated_compression.py` measures 549 actual PDFs across
+51 recipes / 11 complete inputs / 1,980 candidate pages: all 21 paired bitmap/
+native combinations per case, plus explicit JPEG, JPEG2000 lossy/lossless and
+preserve-images recipes. Plain/+PNG, classic reference Flate, full Zopfli,
+Brotli and BW/colored JBIG2 remain visible; unsupported color FFPR is explicit.
+Actual complete-file bytes only; frozen image/font inputs, exact native/image/
+page readback, controlled IDs, validated resume and retained provenance/hashes.
+The shared saver can skip re-subsetting already-prepared fonts after an
+eight-byte checksum rewrite was caught; normal product behavior is unchanged.
+The primary Markdown matrix is in `docs/INTEGRATED_COMPRESSION.md`;
+component docs/README point there. Independent audit verifies all 549
+cells/files and tied bold minima.
+Fourteen focused tests and fresh full suite **474 passed**. No benchmark
+timings, GUI codec/default change, desktop launch or issue acceptance claimed.

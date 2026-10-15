@@ -2,11 +2,35 @@
 
 ## Current regression verification — 2026-10-15
 
-Fresh full `./test.sh` run: **460 passed**, exit 0 / FULL SUITE GREEN.
+Fresh full `./test.sh` run: **474 passed**, exit 0 / FULL SUITE GREEN.
 Ran at low priority with numerical thread limits; this is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §218; this suite does not
 certify that unimplemented change.
+
+## Integrated complete-file compression matrix (§222)
+
+`tests/test_integrated_compression_bench.py`: 14 focused tests cover all 21
+bitmap/native combinations on actual multi-page color/BW/FFPR documents,
+rotation, native text/vectors, metadata, annotations, links and attachments.
+Checks include exact encoded/decoded images and decoded native bytes, actual
+all-page pixels, final native filters and Brotli declarations, real JPEG/JPX
+dispatch, complete-file sizes/hashes, no timing fields, changed-input/output
+rejection, verified resume, explicit frozen-preparation provenance and tied
+Markdown minima. A real embedded-font regression freezes native bytes across
+policies: repeated TrueType subsetting rewrote eight checksum bytes. The
+shared saver can skip re-subsetting an already-prepared artifact; ordinary
+product calls retain the unchanged default of subsetting once.
+
+The full integrated corpus passes: **51 recipes, 549 actual PDFs, 11 whole
+inputs, 1,980 candidate pages**, all-page no-AA checks at 72dpi/recipe DPI.
+Every final byte count/hash, source/prepared artifact hash, page count,
+published matrix cell and tied bold minimum was independently checked.
+The first rejected font-variant output is excluded, not counted as a success.
+The primary result is [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md);
+older component studies are supporting evidence, not estimated cross-products.
+Fresh complete suite: **474 passed**, exit 0 / FULL SUITE GREEN. No desktop
+launch or product codec/default change; no designer issue acceptance implied.
 
 Current canon coverage (§§149/150/155): `test_filter_lifecycle.py` verifies every
 real output file and exact final size, zero jobs on first/repeated selection
@@ -491,6 +515,11 @@ change any case's winning algorithm. See
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md) for algorithm
 results/limits. No UI/default-codec change or timing comparison; the shared
 saver only has an optional preserved-ID flag with product default unchanged.
+
+§221's Markdown emphasis is checked independently: each of the 22 main
+comparison rows bolds exactly its minimum complete-PDF size (all tied minima
+if present). All 154 numeric values, row labels and headers remain unchanged;
+the saved dataset/PDF sizes and hashes are unaffected by this formatting.
 
 Initial final-suite run: 459 passed / one pre-existing ghost pixel test failed.
 Diagnosis reproduced it with a queued-event boundary: all filter jobs finished,

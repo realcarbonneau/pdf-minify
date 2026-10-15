@@ -599,9 +599,11 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
         src.close()
 
 
-def _save_optimized_pdf(doc: "fitz.Document", out_path: str, *, no_new_id: bool = False):
-    """Shared optimizer. Benchmarks may preserve controlled IDs; product default unchanged."""
-    doc.subset_fonts()
+def _save_optimized_pdf(doc: "fitz.Document", out_path: str, *, no_new_id: bool = False,
+                        subset_fonts: bool = True):
+    """Shared optimizer; studies can freeze already-subset fonts/controlled IDs."""
+    if subset_fonts:
+        doc.subset_fonts()
     policy = _STREAM_POLICY.get()
     stats = recompress_native_streams(doc, policy, directory=_ENCODE_WORKDIR.get(),
                                      token=_SAVE_TOKEN.get())

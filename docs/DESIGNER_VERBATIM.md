@@ -923,3 +923,9 @@ Superseded by §220: retain the paired predictor columns in the main tables.
 
 ## 220 — retain all benchmark columns; omit typo-correction commentary (verbatim excerpt, 2026-10-15)
 > ok, then leave in the tables as it was.  Also, clean this up, we should NOT have typo correction discussions in the docs.
+
+## 221 — bold the smallest size in each benchmark row (verbatim, 2026-10-15)
+> Also highlight in bold the best of each row in the tables, can you do that in md?  Or not supported?
+
+## 222 — integrated algorithm-combination matrix of final complete-PDF sizes (verbatim, 2026-10-15)
+> where is the matrix comparing all algo combos file sizes on complete files, your analysis seems scattered.  We only care about the final file size, this is integrated compression analysis.

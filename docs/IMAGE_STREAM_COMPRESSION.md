@@ -1,5 +1,9 @@
 # Bitmap PDF compression — size-only paired benchmarks
 
+Supporting component study: native compression is fixed in this document.
+The primary image × native final-file comparison is
+[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
 Designer §§208/209/220, 2026-10-15 (America/New_York); TODO §§212/223.
 Related: [COMPRESSION.md](COMPRESSION.md),
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md),
@@ -117,6 +121,9 @@ its matching plain column. Zopfli uses the entire workload; Brotli is level
 11. Native streams remain Flate in every row. All columns are retained
 together under §220, superseding the earlier documentation split.
 
+**Bold** marks the smallest complete-PDF size in each row, including ties (§221).
+Reader-support limitations above still apply to highlighted results.
+
 ### Indexed color versus colored JBIG2
 
 The color number is the requested maximum total palette entries, including
@@ -125,18 +132,18 @@ DPIs are different prepared images, not an equal-quality contest.
 
 | Source / DPI / colors | Flate | Flate+PNG | Zopfli | Zopfli+PNG | Brotli | Brotli+PNG | Colored JBIG2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| images / 150 / 5 | 19,598 | 20,912 | 18,284 | 19,118 | 15,100 | 17,551 | 13,320 |
-| images / 150 / 16 | 29,039 | 31,815 | 26,986 | 28,696 | 22,488 | 26,874 | 24,814 |
-| images / 150 / 64 | 34,550 | 46,550 | 31,108 | 40,785 | 27,259 | 38,609 | 46,557 |
-| GAN / 150 / 5 | 344,069 | 347,428 | 339,419 | 341,833 | 330,312 | 338,060 | 338,703 |
-| GAN / 150 / 16 | 378,991 | 388,336 | 373,255 | 378,806 | 361,219 | 373,583 | 389,741 |
-| GAN / 150 / 64 | 429,411 | 459,529 | 419,203 | 441,977 | 405,276 | 433,448 | 478,968 |
-| images / 300 / 5 | 32,293 | 40,180 | 29,509 | 35,127 | 23,741 | 30,686 | 18,543 |
-| images / 300 / 16 | 50,951 | 60,783 | 45,315 | 51,758 | 37,026 | 47,564 | 35,412 |
-| Synthetic flat / 150 / 5 | 3,103 | 3,776 | 2,788 | 3,578 | 2,347 | 2,874 | 3,415 |
-| Synthetic flat / 150 / 16 | 3,103 | 3,776 | 2,788 | 3,578 | 2,347 | 2,874 | 3,415 |
-| Synthetic noise / 150 / 5 | 115,567 | 152,625 | 108,454 | 151,581 | 107,798 | 149,562 | 145,977 |
-| Synthetic noise / 150 / 16 | 115,567 | 152,625 | 108,454 | 151,581 | 107,798 | 149,562 | 145,977 |
+| images / 150 / 5 | 19,598 | 20,912 | 18,284 | 19,118 | 15,100 | 17,551 | **13,320** |
+| images / 150 / 16 | 29,039 | 31,815 | 26,986 | 28,696 | **22,488** | 26,874 | 24,814 |
+| images / 150 / 64 | 34,550 | 46,550 | 31,108 | 40,785 | **27,259** | 38,609 | 46,557 |
+| GAN / 150 / 5 | 344,069 | 347,428 | 339,419 | 341,833 | **330,312** | 338,060 | 338,703 |
+| GAN / 150 / 16 | 378,991 | 388,336 | 373,255 | 378,806 | **361,219** | 373,583 | 389,741 |
+| GAN / 150 / 64 | 429,411 | 459,529 | 419,203 | 441,977 | **405,276** | 433,448 | 478,968 |
+| images / 300 / 5 | 32,293 | 40,180 | 29,509 | 35,127 | 23,741 | 30,686 | **18,543** |
+| images / 300 / 16 | 50,951 | 60,783 | 45,315 | 51,758 | 37,026 | 47,564 | **35,412** |
+| Synthetic flat / 150 / 5 | 3,103 | 3,776 | 2,788 | 3,578 | **2,347** | 2,874 | 3,415 |
+| Synthetic flat / 150 / 16 | 3,103 | 3,776 | 2,788 | 3,578 | **2,347** | 2,874 | 3,415 |
+| Synthetic noise / 150 / 5 | 115,567 | 152,625 | 108,454 | 151,581 | **107,798** | 149,562 | 145,977 |
+| Synthetic noise / 150 / 16 | 115,567 | 152,625 | 108,454 | 151,581 | **107,798** | 149,562 | 145,977 |
 
 Both controls have FIVE actual colors even when 16 are requested, so their
 5/16 rows intentionally have identical pixels/bytes; they are not independent
@@ -153,16 +160,16 @@ content as though those were the same rendered image.
 
 | Source / mode / threshold | Flate | Flate+PNG | Zopfli | Zopfli+PNG | Brotli | Brotli+PNG | BW JBIG2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| images / image layer / Otsu | 22,605 | 24,096 | 21,051 | 21,637 | 15,158 | 18,342 | 10,133 |
-| images / image layer / T=180 | 23,451 | 24,888 | 21,853 | 22,344 | 15,852 | 19,230 | 10,410 |
-| images / image layer / T=210 | 26,843 | 28,550 | 24,670 | 25,452 | 18,289 | 22,644 | 11,244 |
-| GAN / image layer / Otsu | 337,441 | 338,931 | 334,900 | 335,319 | 324,046 | 328,099 | 319,797 |
-| JFK poor copies / image layer / Otsu | 709,790 | 818,583 | 634,911 | 740,164 | 581,140 | 706,763 | 350,007 |
-| NACA formulas / image layer / Otsu | 440,623 | 443,514 | 402,184 | 390,412 | 299,426 | 366,834 | 198,920 |
-| images / FFPR / Otsu | 17,976 | 19,777 | 16,136 | 16,930 | 10,003 | 13,903 | 4,095 |
-| GAN / FFPR / Otsu | 786,664 | 776,860 | 732,409 | 693,876 | 563,226 | 624,740 | 321,295 |
-| Synthetic flat / image layer / Otsu | 3,479 | 4,489 | 3,256 | 4,269 | 2,555 | 3,399 | 2,094 |
-| Synthetic noise / image layer / Otsu | 102,092 | 98,119 | 91,217 | 86,029 | 83,432 | 81,018 | 63,075 |
+| images / image layer / Otsu | 22,605 | 24,096 | 21,051 | 21,637 | 15,158 | 18,342 | **10,133** |
+| images / image layer / T=180 | 23,451 | 24,888 | 21,853 | 22,344 | 15,852 | 19,230 | **10,410** |
+| images / image layer / T=210 | 26,843 | 28,550 | 24,670 | 25,452 | 18,289 | 22,644 | **11,244** |
+| GAN / image layer / Otsu | 337,441 | 338,931 | 334,900 | 335,319 | 324,046 | 328,099 | **319,797** |
+| JFK poor copies / image layer / Otsu | 709,790 | 818,583 | 634,911 | 740,164 | 581,140 | 706,763 | **350,007** |
+| NACA formulas / image layer / Otsu | 440,623 | 443,514 | 402,184 | 390,412 | 299,426 | 366,834 | **198,920** |
+| images / FFPR / Otsu | 17,976 | 19,777 | 16,136 | 16,930 | 10,003 | 13,903 | **4,095** |
+| GAN / FFPR / Otsu | 786,664 | 776,860 | 732,409 | 693,876 | 563,226 | 624,740 | **321,295** |
+| Synthetic flat / image layer / Otsu | 3,479 | 4,489 | 3,256 | 4,269 | 2,555 | 3,399 | **2,094** |
+| Synthetic noise / image layer / Otsu | 102,092 | 98,119 | 91,217 | 86,029 | 83,432 | 81,018 | **63,075** |
 
 ### What these sizes show
 

@@ -119,6 +119,24 @@ discussions, correction lists or mnemonic asides. Retain designer quotations
 unchanged and keep substantive codec/reader-support decisions in their
 topical documents.
 
+Designer §221:
+> Also highlight in bold the best of each row in the tables, can you do that in md?  Or not supported?
+
+In the main bitmap benchmark tables, bold the smallest complete-PDF size
+within each same-input row, including every tied minimum. This is a size
+comparison, not a claim of universal reader support or different fidelity.
+
+Designer §222:
+> where is the matrix comparing all algo combos file sizes on complete files, your analysis seems scattered.  We only care about the final file size, this is integrated compression analysis.
+
+Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) as the primary
+algorithm-combination comparison. Each reported cell is an actual complete
+saved PDF, including native/image/resource/extension/container overhead.
+Cross image encoding and prediction with native compression; never add
+separate payload savings to predict an unmeasured cell. Keep fixed-pixel
+comparisons distinct from different DPI, palette, threshold or lossy recipes.
+The older isolated studies remain supporting methodology/evidence only.
+
 ### Compression combinations: documentation and UI review (§§210/211)
 
 Designer §211:

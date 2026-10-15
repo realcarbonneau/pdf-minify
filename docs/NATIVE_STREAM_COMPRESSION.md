@@ -1,5 +1,9 @@
 # Native PDF stream compression — design, benchmarks and compatibility
 
+Supporting component study: image bytes are fixed in this document.
+The primary image × native final-file comparison is
+[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
 Designer §§204/205, 2026-10-15 (America/New_York); TODO §§207/208.
 Related: [COMPRESSION.md](COMPRESSION.md),
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md),

@@ -1,5 +1,9 @@
 # Reasonable compression combinations and control design
 
+This is the capability/UI design table, not a measured file-size matrix.
+Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) for the primary
+comparison of actual complete saved PDFs across image/native combinations.
+
 Design review requested by designer §§210–212, followed by the opinionated
 encoding ruling §213, 2026-10-15 (America/New_York). The best-encoding/reader-
 support policy is now a designer ruling; exact control layout, color FFPR and

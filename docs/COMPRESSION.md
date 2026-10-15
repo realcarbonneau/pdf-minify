@@ -5,6 +5,11 @@ How every pixel is resampled and encoded, and why. Ruling quotes:
 B10, B16, B25, B36, B37 (superseded), B39, B40, B47, B58, B60, B62, B89, B90 (see
 `issues.md` — the gated log; this page explains the substance).
 
+Primary size comparison (§222): [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md)
+crosses image/predictor encoding with native compression and measures actual
+complete saved PDFs. Component studies linked below explain individual stages;
+they do not replace the integrated matrix or justify estimated combined sizes.
+
 Historical design/benchmark study (§§192–194): [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md)
 specifies one lossless colored JBIG2 stencil per non-white palette entry.
 It shares the current compose-first RGB/nearest-palette path. Its original

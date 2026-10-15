@@ -117,6 +117,17 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   plain counterpart using complete PDF bytes. Preserve both wins and losses;
   do not assert universal growth. No benchmark variant or product behavior
   changes merely to simplify presentation.
+- §221: highlight the smallest complete-PDF size in each same-input bitmap
+  comparison row using Markdown bold, including ties. Do not compare unrelated
+  inputs or mix timing/quality fields into the minimum; reader-support caveats
+  remain independent of the size highlighting.
+- §222: the primary compression comparison is an integrated matrix of actual
+  complete saved PDFs across image/predictor and native-stream policies, not
+  separate image/native savings estimates. Report final file bytes only as
+  the optimization metric; no timing rankings or payload-size substitutes.
+  Keep exact recipe/fidelity and reader requirements explicit, retain all
+  measured pairs and bold tied row minima. Separate component studies are
+  supporting diagnostics, not evidence for unmeasured combined outputs.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image
