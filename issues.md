@@ -1221,3 +1221,85 @@ partial-file cleanup. A future repair needs an actual native-callback plus
 process-pool cancellation regression, not a mocked Python-only exception.
 Keep OPEN; the green compression suite does not establish coverage or repair
 of this shutdown path.
+
+## B108 — OPEN — colored-stencil embedding clips fractional-page edge pixels (worker benchmark finding)
+
+Observed 2026-10-15 while extending designer §223's representative size
+analysis, not a designer-confirmed UI report. On page 2 of the complete
+`examples/scan-jfk-poor-copies.pdf`, the 150dpi/five-color preparation has
+pixel-exact decoded palette samples/masks, and the standalone colored canvas
+passes its native-resolution test. After embedding that canvas as nested
+page Forms, the actual page rendering loses non-white samples on the rightmost
+column relative to the identical Indexed-Flate canvas: 140 pixels at 72dpi,
+165 at 150dpi, all replaced by white. Page bounds are fractional
+606.719970703125 × 789.5999755859375 pt; no rotation is involved.
+
+Reproducer/evidence: the `flate-plain.pdf` and rejected `jbig2.pdf` under
+`.tmp/integrated-compression/representative-20261015/prepared-bitmaps/scan-jfk-poor-copies.indexed.150dpi.5colors/`.
+Compare both pages through `core.display.DisplayPage` at 72/150dpi; on page 2
+the 150dpi difference lies entirely at x=1263 of 1264 pixels. Encoded masks
+and reconstructed palette samples pass; the discrepancy appears at the
+whole-page Form embedding/clipping boundary, not in JBIG2 lossless decoding.
+
+The representative runner must report rejected cells as FAILED with no size
+or minimum ranking and continue verified independent cases. Do not loosen
+pixel equality, change the representative scan, remove the edge from the
+test or count the rejected file as a compression success. No product/display
+fix is implemented here. A repair needs a fractional-page edge regression
+and exact whole-page checks for both production and benchmark assemblers;
+the standalone stencil test alone is insufficient. Scope: TODO §226 and
+`docs/INTEGRATED_COMPRESSION.md`. Keep OPEN.
+
+## B109 — OPEN — image-layer reconstruction introduces unpositioned ActualText (worker benchmark finding)
+
+Observed 2026-10-15 on the complete eight-page photo-rich repository input
+`examples/news-crater-lake-2026.pdf` while building designer §223's five-class
+comparison. Page 1 extracts 1,224 visible words and renders without diagnostics
+in the original. Its reconstructed indexed and production JPEG preparations
+extract the same visible word count but introduce MuPDF's `ActualText with no
+position. Text may be lost or mispositioned.` warning (six repeats on page 1).
+Thus this is not evidence of visible-word loss, but native/tagged-content
+diagnostics are no longer preserved. The failure appears before changing the
+final native compressor; it is not a Flate/Brotli/JBIG2 decoder failure.
+
+Evidence is the rejected `flate-plain.pdf` in
+`.tmp/integrated-compression/representative-20261015-v2/prepared-bitmaps/news-crater-lake-2026.indexed.150dpi.5colors/`
+and `production/prepared/news-crater-lake-2026.jpeg-q50/base.pdf` under that
+same study root. Compare original and derived `get_text('words')` plus
+`DisplayPage` at 72dpi, draining/reporting MuPDF diagnostics separately.
+
+Root-cause direction, not a product fix: review how image removal/reassembly
+handles tagged/ActualText spans and their positioning. Do not suppress the
+warning merely because a visible-page comparison passes. A final save that
+perfectly preserves an already-invalid preparation does not validate that
+preparation. The overview now checks new source-to-preparation diagnostics
+even for reused production JPEG/JPX outputs; affected recipes are marked
+PREP FAILED with no size ranking. Preserve-images and deliberate FFPR are
+validated independently. No original input is replaced to hide the case.
+See TODO §226 and `docs/INTEGRATED_COMPRESSION.md`. Keep OPEN.
+
+## B110 — OPEN — native overlay retains original color photos over the BW canvas (worker benchmark finding)
+
+Observed 2026-10-15 on `examples/news-crater-lake-2026.pdf` in designer §223's
+representative study. The BW-image preparation fails the one-final-canvas
+invariant on page 1. This is not just stale unused resource counting:
+`get_image_info(xrefs=True)` reports original color photographs actually
+painted above the new 3534 × 5250, 1-bit DeviceGray canvas. `get_images(full=True)`
+also exposes six retained 8-bit ICCBased DCT image streams, including the
+1660 × 568 photograph (112,094 bytes), plus further painted inline images.
+Thus the candidate is not an equivalent processed BW document and its size
+must not be ranked against the other BW codecs.
+
+Evidence: `flate-plain.pdf` under
+`.tmp/integrated-compression/representative-20261015-v3/prepared-bitmaps/news-crater-lake-2026.bw-images.300dpi.otsu-180/`.
+Inspect page 1 with both image APIs, distinguishing painted occurrences from
+resource entries; the original photos have page positions on top of the
+full-page BW canvas. This path uses the shared `_assemble_layers` compositor.
+The observation does not establish whether B109 has the same root cause.
+
+Review nested Form/inline-image filtering and native-layer assembly; do not
+merely relax image-count assertions or store the duplicate color artwork.
+Preserve genuine native text/vectors while removing all replaced bitmap
+artwork. No product fix or designer acceptance is claimed. The shared BW
+preparation is marked PREP FAILED; its dependent codecs are unmeasured, not
+eight independently failed encoders. Scope: TODO §226. Keep OPEN.

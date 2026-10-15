@@ -137,6 +137,22 @@ separate payload savings to predict an unmeasured cell. Keep fixed-pixel
 comparisons distinct from different DPI, palette, threshold or lossy recipes.
 The older isolated studies remain supporting methodology/evidence only.
 
+Designer §223:
+> Why does your table have columns like Z/B, etc?  We agreed that those are not realistic?  Same for F/Z.  These are useless.  Have one table with all the algo combos as rows and choose a 5 typical types of pdfs that cover the major styles.   Then we will have other table that goes into more details for specific scenarios, like color photos, scanned BW docs, mix images text, etc.  There are only a few major classes of pdfs that are load bearing to pdf compression algorithm analysis, no?
+
+The primary integrated matrix has realistic algorithm combinations as rows
+and five representative complete PDFs as columns. Use descriptive names.
+For packed pixels, use the same general compressor for images and native
+streams, not mixed general-codec pairs. Specialized image codecs retain
+their meaningful optimized-Flate/Brotli native alternatives. Classic Flate
+remains a labeled reference, not another recommended product choice. Keep
+page handling/fidelity explicit, with focused scenario tables for palette,
+DPI, threshold, photo, scan and mixed-content detail. These five classes are
+a useful benchmark basis, not an exhaustive PDF taxonomy or reader certificate.
+This supersedes §222's exhaustive cross-product presentation; its actual
+complete-file metric and strict output verification remain unchanged. It
+does not migrate recipes or implement the proposed compression controls.
+
 ### Compression combinations: documentation and UI review (§§210/211)
 
 Designer §211:

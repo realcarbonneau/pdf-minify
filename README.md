@@ -102,7 +102,7 @@ platforms and installers are not yet certified or built.
 - [docs/TODO.md](docs/TODO.md) — numbered project requirements and pending engineering work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
-- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — primary analysis: actual complete-PDF sizes across image/predictor and native compression combinations.
+- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — realistic algorithm-combination rows across five representative PDFs, then focused scenario tables; actual complete-file bytes only.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
 - [Bitmap component controls](docs/IMAGE_STREAM_COMPRESSION.md#results) — supporting equal-pixel indexed/BW study with native compression fixed.
 - `docs/NATIVE_STREAM_COMPRESSION.md` — supporting native-stream controls with image bytes fixed, plus reader limits.

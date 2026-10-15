@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 226. Routine execution requests are not TODOs (§218).
+new TODO ID is 227. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -1995,8 +1995,43 @@ Actual complete-file bytes only; frozen image/font inputs, exact native/image/
 page readback, controlled IDs, validated resume and retained provenance/hashes.
 The shared saver can skip re-subsetting already-prepared fonts after an
 eight-byte checksum rewrite was caught; normal product behavior is unchanged.
-The primary Markdown matrix is in `docs/INTEGRATED_COMPRESSION.md`;
-component docs/README point there. Independent audit verifies all 549
-cells/files and tied bold minima.
+The original matrix's 549 cells/files and tied bold minima were independently
+verified. Its exhaustive publication layout is superseded by designer §223 /
+TODO §226; the actual artifacts remain archived diagnostic evidence. The
+primary Markdown analysis remains `docs/INTEGRATED_COMPRESSION.md`.
 Fourteen focused tests and fresh full suite **474 passed**. No benchmark
 timings, GUI codec/default change, desktop launch or issue acceptance claimed.
+
+## 226 — OPEN (designer §223: representative, realistic integrated size tables)
+Replace the exhaustive image/native cross-product presentation with realistic
+algorithm combinations as rows and five representative complete repository
+PDFs as columns: native text/vectors, scanned BW text, color photography,
+flat-color artwork and mixed text/images. Use explicit combination names,
+not slash-code headings. Packed pixels and native streams use the same
+general compressor; exclude mixed Flate/Zopfli/Brotli general-codec pairs.
+Retain meaningful specialized-image + native-compressor alternatives and
+classic Flate only as a comparison reference. Keep fidelity/FFPR explicit,
+include plain/predicted comparisons, and put palette/DPI/threshold and other
+scenario detail after the overview. Measure missing applicable cells as real
+complete PDFs, reuse verified prior outputs, and never infer combined sizes.
+This changes benchmark selection/presentation, not saved recipe semantics,
+GUI choices or product defaults. See `docs/INTEGRATED_COMPRESSION.md`.
+
+Layout/measurement work implemented: `tools/bench_compression_overview.py`
+selects 32 realistic rows over five actual repository inputs and emits
+Markdown/JSON. The main overview has 114 verified complete-file sizes
+(30 new, 84 reused), two rejected scan candidates and 22 dependent photo
+cells blocked by shared preparation, plus 22 explicitly inapplicable
+image-free cells. Focused tables cover photos, palette/DPI, mixed content,
+scan material, thresholds and native-heavy files; all published tables
+reference 195 distinct actual PDFs, independently audited. Twenty focused
+selection/hash/format/rejection tests and the final full suite **494 passed**.
+
+Keep OPEN for valid numeric coverage: B108 clips colored-stencil page edges;
+B109 adds unpositioned ActualText diagnostics to reconstructed photo layers;
+B110 retains original color photos above a BW canvas. FAILED/PREP FAILED
+are not zero-size winners or independent downstream codec failures. No
+product fix, recipe/default/UI change or designer acceptance is claimed.
+Repairing these underlying processing defects is separate implementation
+scope; the table layout and available verified data are delivered without
+claiming the missing comparisons succeeded.

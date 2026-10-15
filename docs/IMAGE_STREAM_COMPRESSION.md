@@ -1,7 +1,8 @@
 # Bitmap PDF compression — size-only paired benchmarks
 
 Supporting component study: native compression is fixed in this document.
-The primary image × native final-file comparison is
+The primary final-file comparison uses realistic combination rows over five
+representative PDFs, followed by focused scenarios (§223):
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
 Designer §§208/209/220, 2026-10-15 (America/New_York); TODO §§212/223.

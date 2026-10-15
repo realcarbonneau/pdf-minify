@@ -929,3 +929,6 @@ Superseded by §220: retain the paired predictor columns in the main tables.
 
 ## 222 — integrated algorithm-combination matrix of final complete-PDF sizes (verbatim, 2026-10-15)
 > where is the matrix comparing all algo combos file sizes on complete files, your analysis seems scattered.  We only care about the final file size, this is integrated compression analysis.
+
+## 223 — realistic combination rows over five representative PDF classes (verbatim, 2026-10-15)
+> Why does your table have columns like Z/B, etc?  We agreed that those are not realistic?  Same for F/Z.  These are useless.  Have one table with all the algo combos as rows and choose a 5 typical types of pdfs that cover the major styles.   Then we will have other table that goes into more details for specific scenarios, like color photos, scanned BW docs, mix images text, etc.  There are only a few major classes of pdfs that are load bearing to pdf compression algorithm analysis, no?

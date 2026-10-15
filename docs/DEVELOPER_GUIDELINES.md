@@ -125,9 +125,24 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   complete saved PDFs across image/predictor and native-stream policies, not
   separate image/native savings estimates. Report final file bytes only as
   the optimization metric; no timing rankings or payload-size substitutes.
-  Keep exact recipe/fidelity and reader requirements explicit, retain all
-  measured pairs and bold tied row minima. Separate component studies are
-  supporting diagnostics, not evidence for unmeasured combined outputs.
+  Keep exact recipe/fidelity and reader requirements explicit. Separate
+  component studies are supporting diagnostics, not evidence for unmeasured
+  combined outputs.
+- §223: present realistic combinations as rows over five representative
+  complete-PDF classes, with descriptive labels and focused scenario tables.
+  Packed-image/native policies share their general compressor; omit mixed
+  general-codec pairings from the published analysis. Keep specialized image
+  codecs' meaningful native alternatives, a classic-Flate reference and
+  plain/predicted comparisons. Bold minima within the SAME input and fidelity
+  group, not across unrelated PDF columns after transposing. Existing raw
+  cross-product artifacts remain evidence, not product recommendations.
+  This is benchmark scope/presentation, not authority to migrate saved mixed
+  recipes, implement new controls or change product defaults.
+  Reject new source-to-preparation diagnostics before accepting a frozen
+  production baseline. Report a bad candidate as FAILED and a rejected
+  shared preparation as PREP FAILED, with no size/minimum; the latter does
+  not imply every dependent codec independently failed. Preserve valid
+  independent results and expose open processing defects (B108–B110).
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

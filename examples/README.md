@@ -39,7 +39,7 @@ Fetch/validate: `python3 tools/corpus/fetch_and_validate.py` →
 | `scan-naca-tm972.pdf` | 11 | 374,461 | Aged typewriting, annotations, diagrams | Flate-1bit |
 | `scan-naca-tm997.pdf` | 23 | 787,836 | Formulas, weak print, noise, graphics | Flate-1bit |
 | `scan-naca-formulas.pdf` | 7 | 257,739 | Heavy type, math symbols, small marks | Flate-1bit |
-| `images.pdf` | 1 | 1,494,439 | Photo-heavy + text (pre-corpus) | JPEG |
+| `images.pdf` | 1 | 1,494,439 | Raster logos/artwork with gradients + tiny text (pre-corpus) | JPEG |
 | `issue1905.pdf` | 1 | 918,339 | Mixed 8 images + text (pre-corpus) | JPEG |
 | `issue13520.pdf` | 1 | 754,579 | Tiny vector snippet (pre-corpus) | vector |
 | `bug1721218_reduced.pdf` | 1 | 825,329 | 3522 vector drawings (pre-corpus) | vector |

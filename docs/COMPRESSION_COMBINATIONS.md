@@ -2,7 +2,8 @@
 
 This is the capability/UI design table, not a measured file-size matrix.
 Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) for the primary
-comparison of actual complete saved PDFs across image/native combinations.
+comparison of actual complete saved PDFs: realistic combinations as rows
+over five representative PDF classes, followed by focused scenarios (§223).
 
 Design review requested by designer §§210–212, followed by the opinionated
 encoding ruling §213, 2026-10-15 (America/New_York). The best-encoding/reader-
@@ -83,12 +84,13 @@ lossless additions from that review remain suggestions, not approved features.
 
 ## Valid combinations versus useful UI choices
 
-- Brotli-native + Flate-image is valid PDF, not corrupt or double-compressed:
-  the codecs operate on different streams. The proposed simplified UI would
-  omit this independent pairing for newly chosen packed-image policies and
-  use the same general compressor for pixels and native streams. That is a
-  product simplification, not a format restriction or proof that Brotli always
-  wins. Do not silently reinterpret an existing saved mixed recipe.
+- Mixed general codecs on packed pixels versus native streams are excluded
+  from the published algorithm analysis (§223): use one shared optimized
+  Flate or Brotli policy for both. Such mixed-stream PDFs are technically
+  valid, but format validity is not the agreed test-menu scope. Historical
+  cross-product outputs remain raw diagnostic evidence, not recommendations.
+  Do not silently reinterpret an existing saved mixed recipe; selector and
+  migration work remains separate from this documentation/benchmark ruling.
 - Brotli-native + JBIG2, JPEG or JPEG2000 is meaningful when native content is
   retained. Each specialized image codec has its own job; general compression
   does not wrap its already encoded image payload. The same holds for native

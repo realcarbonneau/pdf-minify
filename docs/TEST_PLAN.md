@@ -2,13 +2,47 @@
 
 ## Current regression verification — 2026-10-15
 
-Fresh full `./test.sh` run: **474 passed**, exit 0 / FULL SUITE GREEN.
+Fresh full `./test.sh` run: **494 passed**, exit 0 / FULL SUITE GREEN.
 Ran at low priority with numerical thread limits; this is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §218; this suite does not
 certify that unimplemented change.
 
-## Integrated complete-file compression matrix (§222)
+## Representative integrated overview (§223)
+
+`tests/test_compression_overview.py`: 20 cases verify exactly five distinct
+repository inputs and their actual native/scan/photo/artwork/mixed structure,
+32 realistic combination rows, 138 applicable cells and 22 inapplicable
+image-free cells. Packed pixels/native policies always use the same general
+compressor; FFPR + JBIG2 has one residual-stream row. Classic Flate is marked
+reference. Descriptive transposed tables bold ties only within the same
+document and fidelity group; missing measurements are errors, not zero sizes.
+
+Source/preparation/output hashes, actual bytes and exact-verification flags
+gate reuse without re-encoding. Explicit interrupted-study imports validate
+the frozen implementation; changing source/provenance rejects reuse. A
+pixel-invalid candidate is reported FAILED without a size/minimum and
+does not hide independent valid variants. A rejected shared preparation is
+reported PREP FAILED, not as independently failed downstream codecs. New
+source-to-preparation diagnostics reject invalid production JPEG/JPX baselines
+even when later saves/imports perfectly preserve them. These are reporting
+and validation checks, not repairs of the open processing defects B108–B110.
+
+The runner reuses the original 14 strict integrated-encoder regressions
+below. Full suite after the final runner/failure-reporting changes:
+**494 passed**, exit 0 / FULL SUITE GREEN. No GUI/codecs/defaults changed;
+no desktop launch performed. Current published evidence and its exact counts
+are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
+Completed representative run: 138 applicable dispositions, **114 valid final
+PDFs / 24 rejected or preparation-blocked cells**, plus 22 inapplicable
+image-free cells. Thirty new valid outputs and 84 verified prior outputs;
+focused tables bring the publication to 195 distinct actual PDFs. All
+published values/minima and saved hashes are independently audited. B108
+accounts for two rejected scan candidates; B109/B110 block 22 dependent
+photo recipes. Those failures remain explicit, not measured codec losses.
+
+## Original integrated cross-product verification (§222; historical scope)
 
 `tests/test_integrated_compression_bench.py`: 14 focused tests cover all 21
 bitmap/native combinations on actual multi-page color/BW/FFPR documents,
@@ -25,10 +59,12 @@ product calls retain the unchanged default of subsetting once.
 The full integrated corpus passes: **51 recipes, 549 actual PDFs, 11 whole
 inputs, 1,980 candidate pages**, all-page no-AA checks at 72dpi/recipe DPI.
 Every final byte count/hash, source/prepared artifact hash, page count,
-published matrix cell and tied bold minimum was independently checked.
+then-published matrix cell and tied bold minimum was independently checked.
 The first rejected font-variant output is excluded, not counted as a success.
-The primary result is [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md);
-older component studies are supporting evidence, not estimated cross-products.
+§223 replaces that publication layout with realistic combination rows over
+five representative PDFs and focused scenario tables in
+[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). The original 549
+artifacts remain archived diagnostic evidence, not a recommended menu.
 Fresh complete suite: **474 passed**, exit 0 / FULL SUITE GREEN. No desktop
 launch or product codec/default change; no designer issue acceptance implied.
 
