@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "created": "2026-10-14",
+  "families": {
+    "N": {
+      "name": "Nuvola",
+      "package": "nuvola-icon-theme",
+      "version": "15.08.3-2",
+      "license": "LGPL-2.1-or-later",
+      "copyright": "2003-2004 David Vignoni",
+      "source": "https://archive.debian.org/debian/pool/main/k/kdeartwork/nuvola-icon-theme_15.08.3-2_all.deb",
+      "package_sha256": "183322550431541be70766f5d335ca81a6f791c1d1591e93854c620309446a98",
+      "notice": "COPYRIGHT.Nuvola"
+    },
+    "O": {
+      "name": "Oxygen",
+      "package": "oxygen-icon-theme",
+      "version": "5:6.1.0+dfsg-2",
+      "license": "LGPL-3.0-or-later",
+      "source": "https://invent.kde.org/frameworks/oxygen-icons",
+      "notice": "COPYRIGHT.Oxygen"
+    },
+    "G": {
+      "name": "GNOME Classic",
+      "package": "gnome-icon-theme",
+      "version": "3.12.0-6",
+      "license": "GPL-2.0-or-later",
+      "source": "https://download.gnome.org/sources/gnome-icon-theme/",
+      "notice": "COPYRIGHT.GNOME"
+    },
+    "B": {
+      "name": "Breeze",
+      "package": "breeze-icon-theme",
+      "version": "4:5.116.0-1",
+      "license": "LGPL-3.0-or-later",
+      "source": "https://invent.kde.org/frameworks/breeze-icons",
+      "resource": "../breeze/manifest.json",
+      "notice": "../breeze/COPYRIGHT"
+    }
+  },
+  "resources": "resources.json",
+  "encoding": "Original unmodified PNG bytes, losslessly base64-encoded; decoded only in memory"
+}

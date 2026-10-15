@@ -626,8 +626,291 @@
 ## 117 — panel slider wrong, want draggable divider (verbatim, 2026-10-13)
 > and the panel width slider is completely wrong, the divider should be adjustable, like the previous preview divider.
 
+## 118 — squeezed panel must scroll horizontally (verbatim, 2026-10-13)
+> If the right panel becomes too small for it's content, it must have a horizontal scroll bar
+
+## 119 — raster-vs-text sizes + user chooses (verbatim, 2026-10-13)
+> Why would ful page rasterization be much smaller than with it off, this is wrong, text charaters take less space than the equivalent in bitmap.
+> I don't follow your answer, there must be wrong, text always takes less space as each character will be much smaller than a bitmap of the character. Regardless, follow my prior instructions, the user can choose, I did not ask you to benchmark it.
+
+## 120 — cursor rename icon + icon-only filter buttons (verbatim, 2026-10-13)
+> isn't there a standard rename icon that looks like a cursor with a letter or two? Also, remove the text on the filter buttons, rename, copy, save, and just keep the icon and tooltips.
+
+## 121 — mixed sizes + zoomed preview text (verbatim, 2026-10-13)
+> Explain why the rasterized BW filter is much smaller than the one that keeps text, this seems incorrect. Also, when I zoom in on the non-full-image-rasterized preview, the text does NOT look like the original, this is also incorrect. Are you keeping the text and rasterizing the whole image also? I tested on the images.pdf. You can do benchmarking for this issue and do in depth analysis, you can create an MD doc specifically for this, since you seem to have alot of trouble getting this to work. Document your notes, benchmarks, failures and successes please. Cross ref with issues and other relevant docs
+
+## 122 — single path: save temp, preview/minis/amounts read it back (verbatim, 2026-10-13)
+> The preview need to show the saved file, DO NOT have multiple paths, this is the root cause of alot of your failures!! One single path, process the file, save temp, display temp file in preview, minis come from save temp files once they are processed. This is an important design ruling, please put this in the design under architecture and flow. Do you follow this flow? Do you understand why this is robust and safe?
+
+## 123 — OS temp dir via Qt + persistence/temp docs (verbatim, 2026-10-13)
+> The temp dir for the app should be the standard temp dir for the os, for linux it's /tmp/ I think, but the framework (qt?) should be able to provide this information, right? It would be different per OS, and this is what I want. Please review and do your research and correct. This is also a design ruling and an issue, please document accordingly. Also, make a persistence and temp work dir docs and cross reference accordingly.
+
+## 124 — elided pane titles with hover text (verbatim, 2026-10-13)
+> When the top title above each preview goes beyond the available width, put elipses and hover over full text. Add this as a design ruling.
+
+## 125 — rulings into relevant docs + UI layout doc (verbatim, 2026-10-13)
+> You can move the relevant design rulings to their relevant docs. You can create a main ui layout doc also, rename the file as you feel is best.
+
+## 126 — mixed was never specified: separate option doc, do not implement (verbatim, 2026-10-13)
+> What is a mixed path? I never specified this and it's not indicated as an option. is that to take all the BW text and make a JBIG2 layer in additional to the images? Put this as a new separate option with it's own doc, for now, this should not be implemented, as you can see, you made a mess of this, and it just causes confusion. I never asked for this.
+
+## 127 — FFPR is optimize-images vs full-page-image (verbatim, 2026-10-13)
+> No, FFPR is not a mixed path. The basic decision is to optimize existing images, or the full page into a single image. This is the basic functionality. I don't know what your mixed path was, but you were saying something about colors in a BW and I could see the letters being rasterized even when the FFPR was OFF, this was your fail.
+
+## 128 — DnD strip order + inline control rows (verbatim, 2026-10-13)
+> Again, how is it possible that FFPR is 10x smaller than without. Explain to me. I made an identical filter with both variations. Also, add a design rulings: I want the filters to be DnD orderable in the bottom list of minis and the dropdown follows the same order and the processing follows the same order, except for the one currently selected which is always first priority regardless of ordering. Also, put Strategy, dpi and page size on the same row/line as the lables please.
+
+## 129 — DPI applies to every image transform (verbatim, 2026-10-13)
+> OMG, why are you not respecting the DPI? How is that not clear??? DPI apply to ALL image transformations on the page, even if smaller res, they get upsized DPI on their original color pallette, I think Laconz something like that is considered the best, please review notes, if we don't have notes on this, we need to do some research. The design flow is all images are forced to the setting DPI in their original image space, then the transformations are applied (eg BW, algo, jpg compression, etc). Same recipe for FFPR. Do you follow? Please document that and create an compression algorithm page for these rules, flows and benchmarks, also note failures, issues and TODOs on this document and cross reference
+
+## 130 — combos fit largest item + issues onto topic pages (verbatim, 2026-10-13)
+> Also, a UI design ruling, the dropdowns in the right pane should be sized to the largest item, if items don't fit, they get elipses at the end. Also add as an issue and fix. I think we have enough issues to now start putting the issues on the relevant topic doc pages, please do this.
+
+## 131 — sizes move on FFPR click + DnD/highlight still broken (verbatim, 2026-10-13)
+> DnD does not work, highlight is not fixed. Other issues: When I click on a filter mini that has FFPR, the size of other filters changes, obviously this is completely wrong and you have problems in your architecture. This shows you have spaghetti code.
+
+## 132 — DnD still dead (verbatim, 2026-10-13)
+> Again, DnD not working. This should be very basic ui functionality, either you are doing something wrong or we are not understanding each other.
+
+## 133 — filter sequence numbers (verbatim, 2026-10-13)
+> Put the sequence number in front of the filter, eg "1. ", "2. ", both in the minis and in the dropdown.
+
+## 134 — full theme highlight + standard drop line (verbatim, 2026-10-13)
+> Minis should be fully highlighted with light blue with the dark blue (both per theme deifnition, not hardcoded), for the whole area, including the text below them. Also, why is the DnD bar and hollow rectangle?? That certainly doesn't follow modern UI best practices, I have never seen that. How does the default behavior end up looking like that?
+
+## 135 — closest divider snap (verbatim, ruled 2026-10-13 between §§128/132, logged late)
+> No, that really is not working properly. First, I don't see any highlight drop line, second, it only changes the cursor when exactly over the divider, that is also incorrect, as anywhere should automatically choose the closest divider. Why are you not finding this as standard UI patterns within the framework? Do research, search the internet, this doesn't make sense.
+
+## 136 — current version worse, restate the pattern (verbatim, 2026-10-13)
+> No, this version is much worse! It lost the closest DnD snap, and lost the visual vertical bar indicator. Also, the highlight is just wrong. Please review all my requested related to this, I have always asked for the same thing, summarize them all and tell me what you think that means as a UI pattern, short, concise, numbered list in flow from the moment before a user clicks on a minis to after the final drop.
+
+## 138 — light-blue overlay, current mess itemized (verbatim, 2026-10-13, ruled before §137, logged late)
+> No, the whole mini should have a light blue highlight overlay, this is simple. what i see is a light blue box within a black rectangle outline and a black horizontal divider bar with light blue text color and a dark blue underline, just a total mess, nothing like what I requested.
+
+## 137 — screenshot canon, never program blind (verbatim, 2026-10-13)
+> Add canon instructions that you have to take screenshots (in a virtual frambuffer, same for the tests) and view the formats, layouts and other work you do to see if they make visual sense and follow modern best practices, or else you are just programming blind for GUI work!
+
+## 139 — highlight approved + auto suite + drop bar missing (verbatim, 2026-10-13)
+> Ok, this highlight is good. you can document and harden the test cases for this. Also make a full suite of test cases that run automatically, so you don't have to run each one at a time. Also, next issue, the DnD does NOT show the drop indicator vertical bar, this is wrong, I already defined this many times.
+
+## 140 — drop Original from the filter dropdown (verbatim, 2026-10-13)
+> Remove the "Original" option from the filter dropdown, that is NOT an option, it is the default for the left side preview, always.
+
+## 141 — drag ghost needs true uniform transparency (verbatim, 2026-10-13)
+> Also, typical DnD should have some transparency, what is modern GUI best ptractices?
+>
+> NO! That is not correct, the whole ghost should have the same transparency percentage. What you did is incorrect, with some parts being fully transparent, and other full opaque and I don't know what oyu did with letters, but that is definately incorrect and not modern best practices. Did you even look at the transparency render during a DnD ghost operation???
+>
+> tell me what you did for transparency, because it just doesn't work
+
+## 142 — ghost is the selected blue mini at about 50% (verbatim, 2026-10-13)
+> The ghost should be blue exactly as it is when I click on it to start the DnD, but probably 50% when over white, because of transparency, or some similar strategy. Follow modern best practices for GUI, the previous worker was not skilled and did mediocre work, I don't trust it's work.
+
+## 143 — blue rectangle is not a recognizable mini (verbatim, 2026-10-13)
+> No, not good, the ghost is just a light blue rectangle, not the highlighted blue mini, this is a fail, reread my requests and design rulings, this is simple and obvious, think of what a GUI user expects!
+
+## 144 — stronger ghost + drop from any height (verbatim, 2026-10-13)
+> The DnD is good, but a little light, try 65%? Or what is modern best practices for transparency in modern GUI?  Also, let the DnD go outside of the mini strip, same transparency, but snap the drop to the nearest vertical drop point regardless of where it is vertically.
+
+## 145 — remove ghost bottom bar by fixing strip design (verbatim, 2026-10-13)
+> There is a weird transparent white bar across the bottom of the ghost, it comes from behind the bottom scrollbar I think.  The previous worker had alot of trouble with a similar blue selection bar below it before and a vertical scrollbar that was incorrect.  I think the previous worker did alot of hacks and did not follow modern best practices for QT and GUI, please review to solve the root causes, and not just patch onto of bad code and bad design.  You can review the docs, my rulings, issues, etc for more context.
+
+## 146 — ghost at 75% opacity (verbatim, 2026-10-13)
+> Also, change the transparency to 75% for the DnD ghost please.
+
+## 147 — ghost explicitly confirmed; dated acceptance (verbatim, 2026-10-13)
+> Ok, this is good, you can mark these issues fixed, confirmed by me.  I don't know if the worker was self-marking issues fixed without my confirmation, but try to have a marking that indicates that I explicitly confirmed it fixed and the date.  There are still other DnD issues, so mark this ghost as fixed.   Is transparency at 75% now also?
+
+## 148 — dropped minis must renumber immediately (verbatim, 2026-10-13)
+> When I DnD a mini, the dropped numbers don't renumber immediately, only if there is some reprocessing or miss processing that gets triggered, this is wrong and bad design, please review for the root cause and fix the design properly.
+
+## 149 — renumbering confirmed; real artifacts and unsaved filter lifecycle (verbatim, 2026-10-13)
+> Ok, this renumbering issue seems resolved, you can document my explicit confirmation.  Next issue, this also seems like a design implementation issue, please find the root cause.  Canon design is that all filters be run for real and the previews come from the filtered files, and these files have the true final size, not an approximation, please make sure this is clear canon design ruling in the proper dev docs.  When I zoom in/out, the preview and minis update live, this is good.  However, when I click on a mini that has not been clicked yet, I see it doing a "Rendering preview..." processing.  This is obviously wrong flow because this is already fully processed to have the mini previews that work.  So something is fundamentally wrong.  There should be no reprocessing EXCEPT for changes to the filter.  And there are two types of changes to the filter, the first is live changes which should update the processing live with a debounce and mark the filter as changed with a star * (per standard GUI conventions, right?).  However, if the chosen filter is changed without saving, there should be a popup for discard/save/save-as (aka save copy, choose best modern term).  If discard, then the previous file is kept (and the temp new live changes file is deleted), inverse if save, save-as keeps both of course.  These are multiple design runlings, please document in the correct places, also document the issues and work on them.
+
+## 150 — collect related rulings and audit contradictions (verbatim, 2026-10-13)
+> review and collect all my similar design ruling that covers this and compile into the correct documents and review for and contradictions and incoherences.  I had to repeat this and related designs many times and the weak worker was still failing, so I expect other problems also.
+
+## 151 — check recorded temp-file location (verbatim, 2026-10-13)
+> where are the temp files stored?  I previously ruled, but I am double-checking to see what the prior weak worker recorded.
+
+## 152 — identify temp sessions by process ID (verbatim, 2026-10-13)
+> So the temp dir should be in a dir with the process id number?  Is this possible?
+
+## 153 — PID ownership without invented session retention (verbatim, 2026-10-13)
+> Why keep all sessions?  That is not what I asked for, also, two live applications cannot share a PID, or yes?  Why did you invent something beyond my request and design ruling?
+
+## 154 — stable filter identity versus changing display number (verbatim, 2026-10-13)
+> how do you identify the unique filter name, if the number prefix can change, you use the core name?  Ref: /tmp/pdf-minimalist/saves/<PID>/filter-…/filtered.pdf
+
+## 155 — unique internal UUIDs and UUID-named filter directories (verbatim, 2026-10-13)
+> you should give the filter a UUID and never permit two filters to have the same UUID, check when loading, in case someone copy/paste filters.  These UUIDs are only for internal use, name tis dirs with the UUID.  I think this is modern best practices, no?  Python has UUID generation, not tied to the network card?  Or just make a random UUID generator, if python does not have.
+
+## 156 — reordered mini clicks flicker wrong names (verbatim, 2026-10-13)
+> New issue, everytime I click on the minis, after reordering them, the last ones seems to flicker old names, for the current layout, the flicker of other wrong layout names starts as of filter number 5.  Regardless, this is another clear spaghetti code symptom from the weak worker.  Please review carefully and fix the code to address the root cause in the code please!
+
+## 157 — repeated request for reordered-mini root fix (verbatim, 2026-10-13)
+> New issue, everytime I click on the minis, after reordering them, the last ones seems to flicker old names, for the current layout, the flicker of other wrong layout names starts as of filter number 5.  Regardless, this is another clear spaghetti code symptom from the weak worker.  Please review carefully and fix the code to address the root cause in the code please!
+
+## 158 — resume ongoing work (verbatim, 2026-10-13)
+> resume
+
+## 159 — reordered names confirmed; equal mini padding and darker background (verbatim, 2026-10-14)
+> Ok, seems good, you can mark this as fixed.  Next issue.  Your previous fix to the mini hightlight and vertical scroll added back the white space gap at the bottom of the minis strip.  I want the same gap as at the top of the minis.  Also, the background of the minis should be a bit darker so that I can see the difference between the white mini page outline and the background.
+
+## 160 — explicit discard button wording (verbatim, 2026-10-14)
+> Change "Close without saving" to "Discard Changes"
+
+## 161 — cancel unsaved mini switch keeps the edited filter (verbatim, 2026-10-14)
+> Also, after clicking another filter in the minis, if I escape the "Unsaved filter changes", the filter selection changed, but nothing was saved, nor discarded, this is wrong.  Cancel should remain on the edited fiter.
+
+## 162 — revert changes icon beside dropdown (verbatim, 2026-10-14)
+> Also, add a revert changes igon beside the dropdown, the typical counter-clockwise arrow, right?
+
+## 163 — run the updated app (verbatim, 2026-10-14)
+> run
+
+## 164 — center the actual page group when zooming out (verbatim, 2026-10-14)
+> When I zoom in, what happens incorrectly is that sorry, when I zoom out, what happens incorrectly is that since the pages get smaller and smaller and they're supposed to be tiled one beside each other, going from left to right row by row, the page gets left aligned when it should be centered.When I zoom in, what happens incorrectly is that sorry, when I zoom out, what happens incorrectly is that since the pages get smaller and smaller and they're supposed to be tiled one beside each other, going from left to right row by row, the page gets left aligned when it should be centered. However, it does stay vertically centered, which is odd. It should stay both vertically centered and horizontally centered when there's no other pages, when there's one page. If there's two pages, then the layout of two pages should be horizontally centered, etcetera. It should not just go off to the left as if it had other pages when it doesn't.
+
+## 165 — preview/original centering discrepancy (verbatim, 2026-10-14)
+> Also, oddly, the preview seems to center correctly, but not the original.
+
+## 166 — slow repeated layout adjustment after shrinking the window (verbatim, 2026-10-14)
+> Something very strange happens when I go from maximize, so the screen is wide, lots of place for everything,
+>   to a much smaller screen. I think because the right panel is compressed or cannot show the whole panel
+>   width, then it slowly, maybe three ticks per second or a tick per second, uh, kind of adjusts to both
+>   adjusting the middle divider between the, the preview and the original, and the divider of the um, side
+>   panel. So when I go from full screen to, let's say, a half screen to the left side or even smaller, then I
+>   see this strange uh, readjustment uh, iteration that lasts uh, 5 to 10 seconds and then stabilizes.
+
+## 167 — explicit confirmation of the resize/layout feedback fix (verbatim, 2026-10-14)
+> Ok, this is confirmed fixed, thank you.
+
+## 168 — BW image-layer composition, preserved text, FFPR and benchmarks (verbatim, 2026-10-14)
+> The next issue is more complicated to describe and to analyze. It relates to the forceful page rasterization
+>   and also optimization of the PDFs. So when I choose black and white and there's some images and some text,
+>   obviously if we convert the images to black and white and we keep the text, the file should be smaller than
+>   when we rasterize the full file because text is much more compressed when it's actually text versus when
+>   it's pixels, right? So this doesn't happen, and the best example is the simple images.pdf, I believe it is.
+>   So there's one mode that is FFPR, which is full page rasterization, and it is much smaller than the mode
+>   with images. This doesn't make sense. What should be happening is that the images themselves are reduced,
+>   uh, compressed based on whatever the algorithm is. So for example, if we're doing black and white and then
+>   GBIG2, GBIG2, And the images overlap. Of course, we only want to have one final set of images in the PDF,
+>   meaning that I don't know how you suggested, but either we um, make one image that covers it all with some
+>   blank spaces, or we cut out corner the, the areas of overlap from the other image and put it white. Um, and
+>   then, I, well, I think we can just cover the area with the images. Uh, the full rectangle, even the full
+>   rectangle of the page, it doesn't matter because the black and white compression will apply. Uh, this is
+>   without the text, of course, and then the text is um, kept separate. So I don't know what's happening now,
+>   but obviously that's not working. If it's um, text over images, then PDF should keep this layer uh, keep
+>   these layers. So we do the PDF, sorry, we do the images uh, black and white, for example, and then compress
+>   and then just put the text back on top. If it's put full page rasterization, then the whole thing is
+>   converted to images. So tell me if you follow this, and if it makes sense, then proceed with this fix and do
+>   the proper benchmarking to make sure that the compression algorithms are working correctly. It could be
+>   that the weak worker did a mess of this, and it has to be redesigned or restructured.
+
+## 169 — preserve native text rather than glyph-shaped masks (verbatim, 2026-10-14)
+> You don't need to keep masks that follow the text, can't you just overlay the texts, as they were before?  Or the texts already have complex transparencies?  I think that text should already be describing their background colod and transparency and foreground color and what layer they are on, in front or behind the image.  But not complex transparency outlines, no?
+
+## 170 — retain vector diagrams; text/vector compression options (verbatim, 2026-10-14)
+> Vector diagrams remain, these are rarely taking alot of space.  Most waste is images.  Also, is the test and vector graphics compressed within a pdf?  Are there compression options?
+
+## 171 — simple image canvas and native overlays; FFPR for fidelity (verbatim, 2026-10-14)
+> Why is this complicated?  The PDF always must have a clear and explicit flattening sequence to display the document.   Why can't we just keep everything bitmaps as a big image and overlay the text.  If this doesn't look nice, then the user can choose FFPR options, or we can add further filter profile options.  Choose a simple strategy that will help reduce the size of the file.  Ideally keeping text and images clearly separate.
+
+## 172 — FFPR preview introduces grey antialiased bitmap edges (verbatim, 2026-10-14)
+> Why when I zoom into a supposedly BW filter images with FFPR, do I still see antialiasing? I see shades of grey on the edges of both images and texts.  This is absolutely wrong, obviously.
+
+## 173 — exact original/filter display; AA only for native text/vectors (verbatim, 2026-10-14)
+> Previews of original and filters must be exact! No additional filtering, smoothing, etc.    AA can be used on text and vector images of course, but never on anything converted to bitmaps.
+
+## 174 — native geometry refines on zoom; AA can be disabled (verbatim, 2026-10-14)
+> you can leave fonts and vectors without AA, just show their higher precision shapes when I zoom in so I can see the diff between what is bitmap and vector.
+
+## 175 — prefer precise display with all AA/smoothing disabled (verbatim, 2026-10-14)
+> In otherwises, if it's simpler to drop all AA and smoothing for display, that is ok, I rather precise exat rendering regardless.  So this might be the best solutions overall and addresses the root cuase of the problem.
+
+## 176 — certify current platform and document cross-platform packaging (verbatim, 2026-10-14)
+> Also, document the current platform as the certerfied and create a document for packaging, meaning if any packages are required to make this work on multiple platforms, you can follow the taskcoach project which is also on github and in a sister dir here.
+
+## 177 — unexpected dark outside border in color output (verbatim, 2026-10-14)
+> Why is the color version showing some sort of black/dark border around the outside, when there is no such pattern on the original?
+
+## 178 — editable numeric values and spinner controls beside sliders (verbatim, 2026-10-14)
+> Also, make the sliders with a number that can be edited and a spinner or something similar, what is modern best practices for designs of such inputs?
+
+## 179 — fix both controls and the color defect; clarify original image representation (verbatim, 2026-10-14)
+> Fix both, but I don't understand how that can happen, is the image not as I see it in the original?
+
+## 180 — flatten full-color content before resizing and filter transforms (verbatim, 2026-10-14)
+> It should always render flattened first, why is it not doing this?  this should be simple.  Can your render everything without the text, full color, then upscale, then apply the transforms.  I already ruled that this was the flow, but the prior weak worker probably messed this up.
+
+## 181 — clarify whether the Firefox artwork is bitmap or vector (verbatim, 2026-10-14)
+> I guess you are asking me because there is bitmap mixed with vectors?  Is the firefox logo a vector image or bitmap or a mix?
+
+## 182 — determine resize/filter order for the flattened image layer (verbatim, 2026-10-14)
+> Ok, so what is the problem, take the flattened image layer, upscale if required in the full color palette, then apply filters to original scale + upscaled, then downscale, or should we scale first to the target DPI, then apply filters?
+
+## 183 — nearest-color palette mapping and one global edit debounce (verbatim, 2026-10-14)
+> In the low color versions, colors are getting incorrectly converted to white instead of their closest colors. Also, when using the spinner, after a debounce, a rerender should be triggered, same for the sliders or any other change.  We should have one global debouce for this.  What do you suggest as a debounce time?
+
+## 184 — explicit confirmation of improved palette output; request for root cause (verbatim, 2026-10-14)
+> yes, much better, what was the problem?
+
+## 185 — native full-width mini progress bars with an opaque white backing (verbatim, 2026-10-14)
+> I want the minis progress bars to follow the same style as the default progress bar and to span the full width of the minis reserved width (larger than the mini image) and also to have an opaque white background behind to make the progress bars visible.  Follow modern GUI best practices.
+
+## 186 — resume the mini progress-bar work (verbatim, 2026-10-14)
+> resume
+
+## 187 — retain visible mini highlight around progress overlays (verbatim, 2026-10-14)
+> Obviously you need to have some padding between the progress bar and the edge of the minis to permit some highlight to show.  What is the common padding we are using?  I see a bit of padding above and below.
+
+## 188 — remove minis title and unify main-region spacing (verbatim, 2026-10-14)
+> Also, remove the title for the minis and remove the extra space between the previews and the minis same for the right panel.  Have the same padding for the whole line.  Also, have the same side padding.  Everything is different now and staggered and looks like a mess, poor design and poor modularization.
+
+## 189 — Save As must select its new filter; explain app closure (verbatim, 2026-10-14)
+> I just did a change, then click mini elsewhere, then save as, but the selection did not move to the new sav-as filter, this is incorrect.   Modern GUI design would expect this.  Review anywhere this pattern would apply.  Also, I think the all just crashed, or you killed it?
+
+## 190 — taller mini progress bars and larger percentages without white padding (verbatim, 2026-10-14)
+> Make the progress bar a bit fatter (more height) by 50% more and remove the white padding, this will help make it more visible, also, increase the percentage character size accordingly.
+
+## 191 — center progress in the complete mini frame (verbatim, 2026-10-14)
+> And center it within the whole box of the mini, not just the image part.  Centered within the frame height of the mini.
+
+## 192 — confirm mini progress, title the configuration block, design layered-color JBIG2 (verbatim, 2026-10-14)
+> Ok, this is good.  Next issue, above the right pane, put a text "parameters" or Configuration, or something like this.  This will make all three blocks follow the same pattern.  After, the next issue is to design an low color count pallete compression model with multiple JBIG2 with each a color, so 4 colors +while would be 4 JBIG2 overlaid, do you follow this plan?  Can you do this?
+
+## 193 — layered-color JBIG2 scope: design and benchmarks before integration (verbatim, 2026-10-14)
+> Design and benchmark first
+
+## 194 — dedicated cross-referenced developer document for layered-color JBIG2 (verbatim, 2026-10-14)
+> create a new dev document for this and cross reference and document your design and benchmarks
+
+## 195 — remove redundant working labels (verbatim, 2026-10-14)
+> Also, drop the "working..." label, it's obvious it's working by the progress bar...
+
+## 196 — question whether odd revert/rename glyphs are standard icons (verbatim, 2026-10-14)
+> Those icons look odd, in particular the undo and rename, are those standard icons? Standard KDE or nuvola?
+
+## 197 — approve desktop-theme icons with one standard fallback set (verbatim, 2026-10-14)
+> ok, as you suggest.
+
+## 198 — reduce the previous progress-bar enlargement (verbatim, 2026-10-14)
+> I previously asked to increase the progress bar by 50%, I want to change that to only 25% of it's original size.
+
+## 199 — clarify progress-bar scale (verbatim, 2026-10-14)
+Clarification question: should the mini bar be 25% larger (1.25×), or one-quarter (0.25×), of its original size? Selected answer:
+> 25% larger — 1.25× original
+
+## 200 — reject the current icons and request an icon lab with choice codes (verbatim, 2026-10-14)
+> I don't like those icons, make an icon lab menu item with a window with various options and codes for each so I can tell you my choices.  use icons from nuvola, oxygen and other similar libraries.
+
+## 201 — checkpoint current work to GitHub, then continue (verbatim, 2026-10-14)
+> commit your current and push to github, then continue working
+
 ## Corrections log (outside the quotes, for the record)
 - "JDIC2" → designer confirmed: JBIG2.
+- §168 "GBIG2" is interpreted as JBIG2; the original spelling above is untouched.
 - "jpg XL" → dropped per designer ("lok, no jxl"): JXL can't be embedded in PDFs today.
 - "optmized" → optimized. "targetting" → targeting. "remeber" → remember. "lok" → ok. "alot" → a lot.
   (Originals above untouched.)

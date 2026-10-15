@@ -594,11 +594,10 @@ See: `pdf_minimalist/ui_qt/app.py` (`_refresh_details`).
 
 ## 84 — DONE
 ~~your buttons are not fixed~~
-Stub: root cause was desktop-theme roulette — magnifiers now drawn in code
-(`_zoom_icon`: circle + handle + ±, window-text color, crisp at 16px),
-identical on every desktop, words kept alongside. New test asserts real
-pixmaps. Verified: suite green + rendered icons inspected.
-See: `pdf_minimalist/ui_qt/app.py` (`_zoom_icon`).
+Stub: the earlier custom-magnifier workaround is superseded by §201 / designer
+§197: standard theme icons plus bundled Breeze SVG fallbacks keep zoom
+available without custom artwork. Words and 16px logical sizes remain.
+See: `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`.
 
 ## 56 — DONE
 ~~I also thought that there was a better jpeg compression algo that was widely
@@ -1089,3 +1088,825 @@ now sit in a real draggable QSplitter (`panel_split`, non-collapsible).
 §107 untouched: nothing splits the two panes themselves — they stay locked
 equal inside their own half.
 See: `pdf_minimalist/ui_qt/app.py` (`panel_split`).
+
+## 118 — DONE
+~~If the right panel becomes too small for it's content, it must have a
+horizontal scroll bar~~
+Stub: one-line policy flip — `panelScroll` went from `ScrollBarAlwaysOff`
+to `ScrollBarAsNeeded`, so dragging the divider below content width scrolls
+instead of clipping. Pinned in the divider test.
+See: `pdf_minimalist/ui_qt/app.py` (`panelScroll`).
+
+## 120 — DONE
+~~isn't there a standard rename icon that looks like a cursor with a letter
+or two? Also, remove the text on the filter buttons, rename, copy, save,
+and just keep the icon and tooltips.~~
+Stub: icon-only filter buttons and tooltips remain. The earlier custom
+I-beam/floppy implementation misread the STANDARD-icon request; its claim
+that custom artwork was the exact requested look was incorrect. §201 /
+designer §197 replaces it with native-theme icons and stock Breeze fallbacks.
+See: `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`, issue B102.
+
+## 121 — DONE (analysis delivered; later rulings §§126/127/149 settle the flow)
+Historical mixed-vs-forced measurements and preview discrepancy remain in
+`docs/MIXED_MODE_ANALYSIS.md`, explicitly marked superseded. The former
+"ruling needed" state is no longer current: §127 defines OFF/ON behavior,
+and §§122/149 require observing actual saved PDFs, including text and masks.
+Implementation repair and verification are tracked in §§150–156 below.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/MIXED_MODE_ANALYSIS.md`.
+
+## 122 — DONE (implemented; awaiting designer confirmation)
+Single real-file flow implemented in §§150–152: real saver → completed PDF →
+prepared preview/mini pixels and exact whole-file size → byte-copy export.
+The two previously stated design interactions were settled by §127 and
+reiterated by §149, not outstanding requests for a new ruling. Old split
+transformation/estimate jobs and two-entry preview cache are removed.
+See: `docs/ARCHITECTURE.md`, `docs/FILTER_LIFECYCLE.md`, issue B53 (OPEN).
+
+## 123 — DONE
+App scratch moved to the OS temp dir via Qt (`QStandardPaths.TempLocation`
+— /tmp Linux, GetTempPath Windows, $TMPDIR macOS; verified live: `/tmp`).
+New `ui_qt/paths.py` (`app_temp_dir`, `sweep_stale_temps` at startup);
+`run.sh` log follows `TMPDIR`; single-path saver temps reserved under
+`<os-temp>/pdf-minimalist/saves/`. New `docs/PERSISTENCE_AND_TEMP.md`
+(temp vs QSettings persistence vs repo `./.tmp/` dev artifacts) cross-ref'd
+from ARCHITECTURE, DESIGN, issues B54. `core/` stays Qt-free (workdir args).
+See: `pdf_minimalist/ui_qt/paths.py`, `docs/PERSISTENCE_AND_TEMP.md`.
+
+## 124 — DONE
+Pane headers elide past the available width with the full text on hover
+(QLabel can't elide itself: full text kept in a `fullText` property +
+tooltip, re-elided in `resizeEvent`). Pinned by a mechanism test (layout
+minimums hold real windows open — no squeeze to test against).
+See: `pdf_minimalist/ui_qt/app.py` (`_set_header`, `_elide_headers`).
+
+## 125 — DONE
+New `docs/UI_LAYOUT.md`: four regions, sizing/divider/strip/header rules
+with a §-indexed ruling list. Layout rulings moved out of scattered notes
+into it; `DESIGN.md` stale render paragraph replaced with pointers (topical
+docs rule on disagreement); `ARCHITECTURE.md` gained a background-jobs
+section (marked where §122 is still target, not implementation).
+VERBATIM quotes and TODO history untouched by design.
+See: `docs/UI_LAYOUT.md`.
+
+## 126 — DONE
+Mixed path removed from the product (was never specified): `process_file`
+lost `force_raster` + the `insert_pdf` branch; the FFPR checkbox, recipe
+flags, estimator mixed branch and all toggle tests are gone — every BW page
+flattens, always. Proposal parked unimplemented in `docs/MIXED_MODE_OPTION.md`
+(vector pass-through vs JBIG2-text-layer semantics). Docs swept (DESIGN,
+UI_LAYOUT, ARCHITECTURE interactions, ANALYSIS banner). Stale QSettings
+`force_raster` keys are ignored, never read.
+See: `docs/MIXED_MODE_OPTION.md`.
+
+## 127 — DONE (FFPR restored with defined OFF semantics)
+FFPR is basic functionality, not a mixed path: ON = whole page into one
+image; OFF = text stays vector, embedded images optimized in place as
+1-bit (never color JPEGs in a BW output). Restored checkbox, recipe flags,
+specs and per-pid force keys (active follows UI, rest recipes — toggle
+re-renders exactly one filter). OFF preview/minis composite crisp text
+with thresholded image rects via one shared helper; OFF estimator counts
+1-bit payloads + kept masks (the old SMask blind spot is gone on this
+path). Fixed two own bugs found while building: flate row-stride validation
+and `PAGE_SIZES` transcription. Pinned by save/preview/key/toggle tests.
+See: `pdf_minimalist/core/pipeline.py` (`image_1bit_payload`).
+
+## 128 — DONE
+Strip minis DnD-reorderable with STANDARD framework machinery
+(`InternalMove`: native shadow pixmap; custom QDrag retired — wrong QtGui
+import killed every drag, viewport acceptance fought `setMovement`).
+Research (Qt docs/forum/source): IconMode drop resolution is grid-cell
+based with no nearest-gap indicator, so the view accepts everywhere and
+WE paint the placeholder via `QRubberBand` at the nearest divider (gap
+math + band + drop all pinned headless via synthetic DnD events).
+SingleSelection (delegate strips all visuals) + `moveRow`-pinned rowsMoved
+sync. Dropdown rebuilt to match, order persisted;
+dispatch submits strip order with the selected filter first
+(`_ordered_pids`). Copies still land at the end, selected. Strategy/DPI/
+page-size sit inline with their labels (label left, control fills).
+Pinned by reorder-sync and row-alignment tests. Also fixed: strip→combo
+mapping by id — PRESETS-index desynced after reorder and ping-ponged the
+two chosen-handlers into a recursion crash (suite segfault).
+See: `pdf_minimalist/ui_qt/app.py` (`_restrip_ordered`).
+
+## 129 — DONE
+DPI forced on every save transform (§129): displayed-inches × setting-DPI
+via one Lanczos choke point (`force_to_dpi`, original space, up and down);
+FFPR recipe unchanged (page already renders at DPI). Color plan lost its
+downscale-only cap + 11-inch heuristic; `jpx_encode` gained `presized` (no
+double-scale); estimators replay with display sizes + resized-mask counting;
+OFF/mini composite mirrors DPI-first per region. Research: Lanczos already
+standard, now enforced. New `docs/COMPRESSION.md` (rules/flows/benchmarks/
+failures/issues/TODOs). Pinned by plan-upscale + save-dims tests.
+See: `docs/COMPRESSION.md`.
+
+## 130 — DONE
+Right-pane dropdowns sized to the largest item (`_fit_combo`, tooltip
+carries full text); verified Qt clips narrow closed displays without
+ellipsis, so the minimum width carries the fit. Issues distributed onto
+topic pages (lists in each doc; `issues.md` stays the gated log).
+See: `docs/UI_LAYOUT.md`.
+
+## 131 — DONE (click churn was the shared-DPI estimate key)
+Clicking a mini re-seeded the combo and every other BW amount recomputed
+at the new DPI — estimates used the combo DPI for ALL filters while color
+already did active-UI/rest-recipe. Fixed the same way: per-pid estimate
+DPI (`_pid_dpi`, frozen as `dpi_by_pid` on each job like force); a preset
+switch now recomputes nothing but the preview. Pinned by a click-stability
+test. Process note: the "relaunch" one round used pkill with a pattern
+that silently missed — kill by PID and verify old-gone/new-pid since.
+See: `pdf_minimalist/ui_qt/app.py` (`_pid_dpi`).
+
+## 133 — DONE
+Sequence numbers in front of filters (`_strip_label`: `N. label` from the
+live strip order) in both minis captions and dropdown; reorder renumbers.
+Pinned by a numbering test.
+See: `pdf_minimalist/ui_qt/app.py` (`_strip_label`).
+Follow-up §148/B73: that test covered helper/combo strings only and missed
+stale numbers baked into mini icons. Position-dependent text now belongs to
+the shared delegate; actual first-paint caption pixels are regression-tested.
+
+## 134 — DONE
+Full theme highlight on the selected mini (§134): delegate passes
+Selected through (focus/hover washes still stripped); our ring retired;
+icon ground transparent so the style paints the whole area incl. caption;
+caption ink = HighlightedText/WindowText from the palette. DnD visuals
+back to stock: rubber band deleted (it drew the hollow rect), style draws
+the insertion line; movement must stay off Static or the framework won't
+start drags. Pinned by config + transparency tests.
+Follow-up §136: all baked chrome removed (box border, divider line were
+the "black outline/bar"); icon sized to the full hint (a 10px mismatch
+band painted solid Highlight = the "dark blue underline"); caption ink
+back to WindowText everywhere (HighlightedText rendered pale-on-pale).
+Follow-up: the style painted selection only over the photo (caption left
+white) plus its own accent line — so Selected never reaches the style now;
+the delegate paints the theme wash over the whole rect itself (1:1
+verified: full coverage, dark readable caption, zero chrome).
+Follow-up 2: the top white gap was IconMode's spacing inset (spacing is
+now 0, separation lives in the icon canvas) and a stale film-h height rule
+was stomping the fixed height; wheel events drive the horizontal bar so
+vertical scroll is structurally impossible, not just hidden.
+Follow-up 3: the last caption line clipped under taller native
+scrollbars — caption block condensed to end at y=158 (1:1 verified).
+See: `pdf_minimalist/ui_qt/app.py` (`_StripDelegate`).
+
+## 137 — DONE
+Screenshot canon in `docs/DEVELOPER_GUIDELINES.md` (§5b): offscreen shots
+(same virtual framebuffer as tests) captured AND viewed after every
+UI-visible change, with a review checklist (layout vs UI_LAYOUT, text
+readability, spacing/alignment, theme states, drag affordances, previous-
+shot regression compare); tests + shots cover each other's blind spots.
+See: `docs/DEVELOPER_GUIDELINES.md`.
+
+## 139 — DONE
+Highlight approved as built (own wash + WindowText captions). Hardened:
+wash-coverage test (selected paint tints the whole rect), transparency
+test, caption-clip test. Auto suite confirmed: `./test.sh` runs all 78
+headless (README + §59). Drop bar rebuilt: solid theme overlay bar at the
+nearest gap (rubber-band hollow rect retired); Qt draws no nearest-gap
+line in IconMode (researched). Pinned by gap/bar/drop tests.
+Drag ghost (§139 follow-up): manual press-threshold QDrag with the mini
+at 0.65 opacity + grab-point hotspot (modern best practice — content under
+the cursor stays readable); standard model mime so the framework drop,
+rowsMoved sync and selection all behave. Pinned by a translucency test.
+Ghost fix: composite onto the opaque theme ground FIRST, then fade —
+fading the raw icon left transparent holes and uneven letters. Uniform
+alpha asserted (max-min ≤ 2). Native partial-alpha drag windows are opaque
+on the non-composited X11 desktop, so the live ghost is software-blended
+once inside the strip viewport; the native drag pixmap is suppressed.
+No checkerboard/1-bit alpha: background, image, and letters all use 65%.
+See: `pdf_minimalist/ui_qt/app.py` (`_StripList`).
+
+## 140 — DONE
+Original removed from the filter dropdown (§140): it is not an option,
+it is always the left preview. Dropdown lists real filters in strip order
+only; default selection by id. Pinned by combo-content tests.
+See: `pdf_minimalist/ui_qt/app.py` (`_rebuild_preset_combo`).
+
+## 141 — SUPERSEDED BY §142
+Drag ghost transparency corrected after the native implementation failed
+on the live non-composited X11 desktop. The rejected checkerboard fallback
+(alternating fully clear/opaque pixels) is gone. One opaque mini canvas is
+software-blended at 65% inside the strip viewport, so its background,
+thumbnail, and every caption glyph share the exact same opacity. Qt's
+native drag window is suppressed; model mime, insertion bar, and drop path
+remain unchanged. Pinned by uniform-alpha and live-composite render tests;
+captured output viewed; full suite 79/79.
+See: `pdf_minimalist/ui_qt/app.py` (`_StripList.paintEvent`).
+
+## 142 — DONE — DESIGNER CONFIRMED (2026-10-13, §147)
+Ghost content corrected: at drag threshold the code now synchronously
+captures the ACTUAL selected mini pixels from the viewport — no second
+delegate/style reconstruction — then software-composites that bitmap once
+at 50%. This guarantees the theme-blue selection, thumbnail, caption,
+progress text, and whitespace are the same pixels the user just clicked.
+No hardcoded blue and no per-part opacity; the independent insertion bar
+remains fully opaque. Render test compares the capture pixel-for-pixel with
+the visible selection, then checks uniform alpha and actual 50/50 RGB
+composition over the destination. Real X11 drag capture then found two
+live-only faults the helper missed: deferred repaints vanished inside the
+native drag loop, and a coalesced first move made the current cursor point
+the hotspot (pinning the ghost over its source). The overlay now repaints
+synchronously and anchors at the original mouse-down point; a real xdotool
+drag under Xvfb is the acceptance check.
+Current design supersedes the clipped viewport capture: shared delegate
+rendering (§145), uniform 75% opacity (§146). Ghost accepted in §147.
+See: `pdf_minimalist/ui_qt/app.py` (`_drag_base_pixmap`).
+
+## 143 — DONE — DESIGNER CONFIRMED (2026-10-13, §§144/147)
+The blue-rectangle failure was reproduced with a real X11 drag, not the
+paint helper. Root causes: update() was deferred away inside QDrag's nested
+loop, and the hotspot used a coalesced move event instead of mouse-down,
+which pinned the supposed ghost over its source. Fixed with synchronous
+viewport painting, the original grab-point hotspot, and a literal capture
+of the selected source pixels. Real xdotool/Xvfb drag screenshot now shows
+the blue mini's thumbnail and all caption lines moving at 50%, beside the
+fully opaque insertion bar. Full suite 79/79.
+See: `/tmp/pdf-minimalist-real-drag.png`.
+
+## 144 — DONE (ghost DESIGNER CONFIRMED 2026-10-13; drop behavior unconfirmed)
+~~The DnD is good, but a little light, try 65%? Or what is modern best practices for transparency in modern GUI?  Also, let the DnD go outside of the mini strip, same transparency, but snap the drop to the nearest vertical drop point regardless of where it is vertically.~~
+Complete selected-mini ghost now blends at 65% in a window-level overlay;
+native filter drags are accepted across the window, and pointer X alone
+chooses the nearest insertion divider. Bar stays opaque and above the
+ghost. Corrected first-divider snapping and Qt's pre-removal destination
+index so the filter lands exactly at the marked gap and stays selected.
+Full suite 80/80; native X11 smoke passes strip/preview/controls/below-strip
+drops and Escape, with actual 65% pixel blending checked and images viewed.
+Added a reusable smoke harness; launcher propagates the app's real exit
+status and logs `APP_EXIT` for retained supervision. Restart follows §62.
+See: `docs/UI_LAYOUT.md`, `tools/drag_smoke.py`.
+
+§147 confirms only the ghost, now at 75% (§146). Other DnD behavior remains
+confirmation-gated; B71 stays OPEN for its unconfirmed drop-behavior scope.
+
+## 145 — DONE — DESIGNER CONFIRMED (2026-10-13, §147)
+~~There is a weird transparent white bar across the bottom of the ghost, it comes from behind the bottom scrollbar I think.  The previous worker had alot of trouble with a similar blue selection bar below it before and a vertical scrollbar that was incorrect.  I think the previous worker did alot of hacks and did not follow modern best practices for QT and GUI, please review to solve the root causes, and not just patch onto of bad code and bad design.  You can review the docs, my rulings, issues, etc for more context.~~
+Root cause: 178px cell in a 168px viewport, hidden 10px vertical scroll
+range, and a clipped screenshot padded with white. Retired both 184px
+height setters, clipping-based capture, stock icon/text layout over the
+full-cell canvas, mutation of the supplied paint option, and show-time
+drop-acceptance repair. The view owns one static non-wrapping grid; Qt's
+viewportSizeHint/sizeHint reserves frame and scrollbar space. One shared
+delegate paints displayed cells and complete selected drag snapshots.
+Bottom-edge and partial-scroll checks pass; tested 14/16/30px scrollbars,
+81 tests, and native drags at 100%/200% scaling. Opacity updated by §146.
+See: `docs/UI_LAYOUT.md`, `tools/drag_smoke.py`.
+
+## 146 — DONE — DESIGNER CONFIRMED (2026-10-13, §147)
+~~Also, change the transparency to 75% for the DnD ghost please.~~
+Whole selected-mini ghost now uses uniform 75% opacity (25% background
+shows through), preserving window-wide drop snap and the §145 geometry
+fix. Actual pixel-blend checks and all five native drag scenarios pass at
+100% and 200% display scaling. Full suite 81/81; restart per §62.
+See: `docs/UI_LAYOUT.md`, `pdf_minimalist/ui_qt/app.py`.
+
+## 147 — DONE
+~~Ok, this is good, you can mark these issues fixed, confirmed by me.  I don't know if the worker was self-marking issues fixed without my confirmation, but try to have a marking that indicates that I explicitly confirmed it fixed and the date.  There are still other DnD issues, so mark this ghost as fixed.   Is transparency at 75% now also?~~
+Ghost issues B68/B69/B70/B72 explicitly marked DESIGNER CONFIRMED on
+2026-10-13 (America/New_York), citing §147. B71's ghost appearance is accepted
+but its broader drop behavior remains OPEN, as do other DnD issues. Canon
+now distinguishes implementation completion from dated designer acceptance.
+Verified ghost constant: 0.75 opacity, not 75% background transparency.
+See: `issues.md`, `docs/DEVELOPER_GUIDELINES.md`, `docs/UI_LAYOUT.md`.
+
+## 148 — DONE — DESIGNER CONFIRMED (2026-10-13, §149)
+~~When I DnD a mini, the dropped numbers don't renumber immediately, only if there is some reprocessing or miss processing that gets triggered, this is wrong and bad design, please review for the root cause and fix the design properly.~~
+Root cause: the numbered caption is baked into a cached icon; `rowsMoved`
+updates order and combo only. The old numbering test checked strings, not
+rendered captions. Removed positional text from cached icons; the shared Qt
+delegate now formats the caption from the live model row on every paint.
+The model keeps the unnumbered name, and dropdown uses the same formatter.
+Removed the redundant selection-triggered icon rebuild (the delegate already
+paints selection). Before-fix pixel tests reproduced stale numbers; after-fix
+tests pass for ready/pending/queued content and forward/backward/no-op drops
+with content refreshes forbidden. Cached images, amounts, progress, and worker
+state stay unchanged. Full suite: 84 passed; native X11 gestures at 100% and
+200% verify normal post-drop window pixels, exact landing/selection, and the
+unchanged 75% ghost. Captured layouts and post-drop strips actually viewed.
+The first 200% run was interrupted (status 143); the full rerun passed all five
+scenarios. Explicit designer confirmation in §149 on 2026-10-13; B73 closed.
+Restart per §62: Quit the verified old window, confirmed its entire process
+group exited, relaunched under retained supervision; window shown at 20:12:18
+and preview applied at 20:12:20 on 2026-10-13 (America/New_York).
+See: `issues.md` B73, `docs/UI_LAYOUT.md`, `tests/test_minis.py`,
+`tools/drag_smoke.py`, `.tmp/drag-drop-strip-strip.png`.
+
+## 149 — DONE — DESIGNER CONFIRMED (2026-10-13)
+~~Ok, this renumbering issue seems resolved, you can document my explicit confirmation.~~
+Recorded the designer's explicit acceptance of B73/§148, dated 2026-10-13
+(America/New_York); remaining issues in the same comment are tracked below.
+See: `docs/DESIGNER_VERBATIM.md` §149, `issues.md` B73.
+
+## 150 — DONE (designer §149; awaiting designer confirmation)
+~~All filters must run the real saver, once per input/effective filter spec. Preview, minis, exact full-document byte size, and exported PDF must consume that same completed filtered file. Selecting an unvisited mini, zoom/pan, page changes, or DnD reorder must not rerun filtering. Remove split preview, mini, and estimator paths rather than hide their processing messages.~~
+`save_with_spec` produces the actual PDF; `ArtifactStore` retains its exact
+size and prepared disk-backed pages. First visits and all view/order changes
+dispatch zero filtering jobs. Export copies the same bytes. Full suite 124/124;
+real lifecycle smoke and viewed main/stacked/dirty/modal/native captures pass.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/ARCHITECTURE.md`, issues B74/B75 (OPEN).
+
+## 151 — DONE (designer §149; awaiting designer confirmation)
+~~Separate saved recipes/artifacts from debounced live drafts. Mark changed filters with *; process only the edited filter after debounce. Reverting to the saved recipe clears dirty state and reuses its kept artifact. Programmatic control loading must not count as an edit or trigger processing.~~
+Saved/draft recipe ownership, full effective keys, 200ms debounce, dirty
+mini/dropdown/header/window state, blocked control-load signals, and instant
+saved-value reuse are implemented and regression-tested.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/UI_LAYOUT.md`, issue B76 (OPEN).
+
+## 152 — DONE (designer §149; awaiting designer confirmation)
+~~Before leaving an unsaved filter, offer Save / Save As… / Discard / Cancel. Discard keeps the saved artifact and removes the draft; Save promotes the draft and removes the obsolete saved artifact; Save As… creates a named filter and retains both results. Cancellation leaves selection/draft intact. Respect shared references and in-flight workers when retiring temp artifacts.~~
+The actual Qt decision dialog and naming cancellation preserve state. Save
+promotes without reprocessing; Discard safely retires only the draft; Save As
+keeps the old saved file and materializes the new filter's files without
+filtering again. Pending completions/export/copy references are protected.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/PERSISTENCE_AND_TEMP.md`, B77 (OPEN).
+
+## 153 — DONE (designer §150: related-canon audit)
+~~review and collect all my similar design ruling that covers this and compile into the correct documents and review for and contradictions and incoherences.  I had to repeat this and related designs many times and the weak worker was still failing, so I expect other problems also.~~
+Consolidated ruling/topic index and 13-item implementation/contradiction
+audit in `FILTER_LIFECYCLE.md`; topical docs aligned and obsolete Tk/estimate
+briefs marked historical. Found and repaired live-temp deletion, corrupt
+encoded streams/Zopfli wrappers, and queue-order races besides the split flow.
+Remaining exact-DPI policy exceptions remain visible under existing B60.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/COMPRESSION.md`, issues B74–B80.
+
+## 154 — DONE (designer §151: recorded temp location)
+~~where are the temp files stored?  I previously ruled, but I am double-checking to see what the prior weak worker recorded.~~
+Qt reports `/tmp` here. §123 and `PERSISTENCE_AND_TEMP.md` record OS temp via
+Qt, with `/tmp/pdf-minimalist/saves/` for runtime filtered PDFs and repo `.tmp/`
+for developer artifacts only. The previous implementation reserved that location
+but did not actually produce canonical preview PDFs. The new store uses private
+PID/UUID/recipe directories there; see TODO §§150–160.
+
+## 155 — DONE (canon audit §150; awaiting designer confirmation)
+~~Fix B78: startup sweeper removes fresh empty directories belonging to another running app. Protect process-owned artifacts with a held Qt process lock; skip live processes and fresh empty directories. Test simultaneous processes, expired unlocked data, and worker completion/cleanup.~~
+One locked PID directory protects generated files until all workers/exporters
+finish. Age-gated stale sweeping preserves active and fresh directories;
+normal exit removes generated files and the empty PID directory. Tests
+isolate their roots rather than adding production session layers.
+See: `docs/PERSISTENCE_AND_TEMP.md`, issue B78 (OPEN).
+
+## 156 — DONE (canon audit §150; awaiting designer confirmation)
+~~Fix B79: automatic compression can wrap already encoded JPEG/JPX/JBIG2/Flate streams, while explicit Filter metadata describes the unwrapped codec. Disable automatic compression for pre-encoded payloads and test actual decoded images/pixels in the saved PDF. Reject corrupt readback rather than displaying blank imagery and calling it a valid preview.~~
+Pre-encoded updates use `compress=False`; Zopfli explicitly uses validated
+zlib-wrapped Deflate with a zlib-9 fallback. Real saved-image/page readback
+tests cover all codecs and invalid output. Sparse JBIG2 now genuinely decodes;
+the fallback test injects an invalid stream instead of pinning the wrapper bug.
+See: `docs/COMPRESSION.md`, issue B79 (OPEN).
+
+## 157 — DONE (designer §152: PID-owned temp directory)
+~~So the temp dir should be in a dir with the process id number?  Is this possible?~~
+Runtime filtered files live under `<os-temp>/pdf-minimalist/saves/<GUI-PID>/`,
+protected by a process lock. No additional session directory (§153); filter
+directories are named with persistent UUIDs (§155).
+See: `docs/PERSISTENCE_AND_TEMP.md`, issue B78 (OPEN).
+
+## 158 — DONE (designer §153: remove unrequested session layer)
+~~Why keep all sessions?  That is not what I asked for, also, two live applications cannot share a PID, or yes?  Why did you invent something beyond my request and design ruling?~~
+Removed the worker-added session suffix/history layer: one GUI process owns
+one PID directory. Its generated files and empty PID directory are removed
+on normal exit. Live processes in one PID namespace have distinct PIDs;
+automated tests get isolated temp roots, not expanded production semantics.
+See: `docs/PERSISTENCE_AND_TEMP.md`, issue B78 (OPEN).
+
+## 159 — DONE (designer §154: stable identity; refined by §155)
+~~how do you identify the unique filter name, if the number prefix can change, you use the core name?  Ref: /tmp/pdf-minimalist/saves/<PID>/filter-…/filtered.pdf~~
+The original answer described legacy slug IDs and opaque generated folders.
+§155 refines canon to a persistent internal UUID with UUID-named directories;
+names and position-dependent numbers remain presentation only.
+See: `docs/FILTER_LIFECYCLE.md`, `docs/PERSISTENCE_AND_TEMP.md`.
+
+## 160 — DONE (designer §155; awaiting designer confirmation)
+~~you should give the filter a UUID and never permit two filters to have the same UUID, check when loading, in case someone copy/paste filters.  These UUIDs are only for internal use, name tis dirs with the UUID.  I think this is modern best practices, no?  Python has UUID generation, not tied to the network card?  Or just make a random UUID generator, if python does not have.~~
+Python `uuid.uuid4()` supplies random non-MAC IDs. Built-in UUIDs persist;
+load normalizes/repairs missing, invalid, duplicate UUIDs and pasted duplicate
+aliases without losing filters, and persists migration. Save As gets a new
+checked UUID; rename/reorder/edit/Save preserve it. Files live under the PID
+and owning UUID, with referenced saved/live recipe children, not history.
+Background file materialization reuses prepared output without filtering.
+Full suite 124 passed, including identity/collision/load/reload/path/copy cases.
+See: `docs/PERSISTENCE_AND_TEMP.md`, `docs/FILTER_LIFECYCLE.md`, B80 (OPEN).
+
+## 161 — DONE — DESIGNER CONFIRMED (2026-10-14, §159)
+~~New issue, everytime I click on the minis, after reordering them, the last ones seems to flicker old names, for the current layout, the flicker of other wrong layout names starts as of filter number 5.  Regardless, this is another clear spaghetti code symptom from the weak worker.  Please review carefully and fix the code to address the root cause in the code please!~~
+Root: two drag controllers left Qt's pressed/DraggingState armed; its later
+default drag could remove a row after the custom move. A separate mutable
+order list then updated wrong/missing items. Before-fix event test reproduces
+the armed state; one Qt startDrag override, UUID-only MIME, model-derived
+order, UUID item lookup, and deduplicated startup ordering repair ownership.
+No missing-item guard, forced content refresh, or filter processing workaround.
+Full suite 131 passed. Expanded native 11-filter runs at 100%/200% check eight
+gestures, row/UUID preservation, normal caption pixels, and 33 later mini clicks
+per scale with no filtering/replaced artifacts. Captures actually viewed.
+The first expanded smoke hit xdotool --sync's same-position wait; the harness
+was corrected and full reruns passed. 75% ghost remains unchanged. B81 explicitly
+confirmed in §159 on 2026-10-14 (America/New_York).
+See: `issues.md` B81, `docs/UI_LAYOUT.md`, `docs/FILTER_LIFECYCLE.md`.
+
+## 162 — DONE (designer §158: resume)
+~~resume~~
+Resumed §161, implemented and verified the root fix, and followed stop/restart
+canon: verified the old PID 1544088/window owner, graceful Quit, retained
+APP_EXIT status=0, and empty old supervisor/worker process group before relaunch.
+New PID 1868470/window shown at 10:36:26 and real-file preview applied at
+10:36:28 on 2026-10-14; retained session remains running during designer review.
+
+## 163 — DONE (designer §159: confirm reordered-name fix)
+~~Ok, seems good, you can mark this as fixed.~~
+B81/§161 marked FIXED — DESIGNER CONFIRMED — 2026-10-14, citing §159;
+only this acceptance is closed. The new spacing/background requests follow.
+See: `issues.md`, `docs/DESIGNER_VERBATIM.md` §159.
+
+## 164 — DONE (designer §159: equal top and bottom mini gaps)
+~~Your previous fix to the mini hightlight and vertical scroll added back the white space gap at the bottom of the minis strip.  I want the same gap as at the top of the minis.~~
+Stub: shared 4px padding; last caption end + padding derives a 162px cell,
+replacing the old 178px/20px bottom gap. Qt still reserves its native scrollbar
+separately. Full captions, complete ghost, zero vertical range, and 14/16/30px
+scrollbar-style cases retained. Full suite 134 passed; native 100%/200% drags
+and 33 post-reorder clicks each passed, captures viewed. B82 remains OPEN
+awaiting explicit designer acceptance.
+See: `docs/UI_LAYOUT.md`, issue B82.
+
+Desktop restart verified on 2026-10-14: old PID 1868470 exited status 0,
+worker group gone; new PID 1888820 under retained supervisor session 9036.
+Window shown 11:28:41, real-file preview applied 11:28:43; supervision
+polled still running after all 11 filters completed.
+
+## 165 — DONE (designer §159: darker mini background)
+~~Also, the background of the minis should be a bit darker so that I can see the difference between the white mini page outline and the background.~~
+Stub: strip-only Base = theme Window.darker(105), including palette changes
+and all color groups. Native Window was nearly white, so unshaded Window
+was visually too subtle. Shared display/ghost ground, unchanged blue wash
+and uniform 75% ghost; no border or other-pane palette change. Light/dark
+regressions and full suite 134 passed; native 100%/200% passed, captures
+viewed. B83 remains OPEN awaiting explicit designer acceptance.
+See: `docs/UI_LAYOUT.md`, issue B83.
+
+## 166 — DONE (designer §160: Discard Changes button wording)
+~~Change "Close without saving" to "Discard Changes"~~
+Stub: explicit text on the standard Qt Discard button, retaining destructive
+role and Cancel escape action. Native theme no longer substitutes close-only
+wording. Full suite 150 passed; offscreen/native 100%/200% dialogs captured
+and actually viewed. B84 remains OPEN pending explicit designer acceptance.
+See: `docs/FILTER_LIFECYCLE.md`, issue B84.
+
+## 167 — DONE (designer §161: canceled mini switch stays edited)
+~~Also, after clicking another filter in the minis, if I escape the "Unsaved filter changes", the filter selection changed, but nothing was saved, nor discarded, this is wrong.  Cancel should remain on the edited fiter.~~
+Stub: reproduced real Escape/Cancel/close leaving the correct current filter
+but the wrong highlight. Qt changes current before selection; keyboard can
+select twice. Block only view notifications during the whole native input
+handler, then notify one shared switch controller once. No timer rollback or
+replacement drag controller. Full suite 150 passed, including repeated mouse,
+keyboard and post-reorder real modals and every Save/Discard/Save As/Cancel
+decision through both inputs. Native 100%/200% dirty mini Escape and retained
+selection/files passed; captures viewed. B85 remains OPEN pending acceptance.
+See: `docs/FILTER_LIFECYCLE.md`, issue B85.
+
+## 168 — DONE (designer §162: revert changes icon)
+~~Also, add a revert changes igon beside the dropdown, the typical counter-clockwise arrow, right?~~
+Stub: Revert Changes immediately beside dropdown, with tooltip/accessibility
+name, enabled only for the active draft. The original custom arrow is
+superseded by §201 / designer §197's standard document-revert icon policy.
+Uses existing Discard ownership: restore saved prepared result/controls,
+clear `*`, keep selection/other filters, no processing. Ready/debounced/pending
+reverts pass in full suite 150; native 100%/200% clicks and captures viewed.
+B86 remains OPEN pending explicit designer acceptance.
+See: `docs/UI_LAYOUT.md`, `docs/FILTER_LIFECYCLE.md`, issue B86.
+
+Initial handoff/restart block (2026-10-14, resolved in §169): supervisor session 9036 ended status 143,
+but desktop read-only checks proved detached old GUI PID 1888820 and PGID
+1888816 still alive. Verified main window 56623111 was sent graceful Ctrl+Q;
+verified dialog 56623244 is "Unsaved filter changes" and needs the designer's
+Save/Discard choice. Do not discard/save their live edits automatically, kill
+that GUI, or launch a second copy. After their choice, verify the old entire
+group exited, launch `setsid --wait ./run.sh`, record GUI PID/PGID + session,
+and confirm/poll the new window/real-file preview before handing off.
+
+## 169 — DONE (designer §163: run updated app)
+~~run~~
+Stub: verified old GUI 1888820 and entire group 1888816 were gone without
+choosing Save/Discard for the designer. Launched the already-tested build:
+new GUI PID 1946638, PGID/SID 1946634, retained execution session 27115.
+Window shown 13:46:42; real-file preview applied 13:46:44; all 11 artifacts
+ready 13:46:47 (2026-10-14 America/New_York). Desktop process ownership and
+supervisor live poll verified; subsequent real selections/edit/Revert logged
+without tracebacks. B84–B86 remain unconfirmed; a run request is not acceptance.
+See: `docs/DEVELOPER_GUIDELINES.md`, TODO §§166–168.
+
+## 170 — DONE (designer §164: center actual pages on zoom-out)
+~~Center actual one/two/multi-page groups on zoom-out, retaining row-major autowrap.~~
+Stub: cap columns by real page count, use the transformed scene-unit stride
+without a trailing gap, and reserve scrollbars against the prospective grid
+rather than the old layout. Accurate occupied bounds let native Qt centering
+work; no padding/translation or forced pan reset. Full suite 166 passed;
+real one/two/seven-page and stacked captures viewed, including 1:1 panes/minis.
+The full repeated original comment is preserved in §164. B87 remains OPEN
+pending explicit designer acceptance.
+See: `docs/UI_LAYOUT.md`, `docs/DESIGN.md`, issue B87.
+
+## 171 — DONE (designer §165: preview/original centering discrepancy)
+~~Also, oddly, the preview seems to center correctly, but not the original.~~
+Stub: original, preview and mini framing use one baseline-owned occupied grid.
+Peer zoom reflows page geometry before copying scroll offsets; transaction
+guards prevent intermediate propagation. Resize propagates layout too; a
+geometry signature skips per-page repositioning during ordinary pan. Full
+suite 166 passed, including either-pane zoom, resize, exact-fit boundaries,
+centering and real-file selection/view changes with processing forbidden.
+Desktop old GUI 1946638/PGID 1946634 exited status 0 and its entire group was
+verified gone. New GUI 1984881/PGID 1984877, retained session 69351: window
+shown 14:27:05, real preview applied 14:27:07, all 11 artifacts ready 14:27:09
+(2026-10-14 America/New_York); visible desktop window and live poll verified.
+B87 remains OPEN until explicit designer confirmation.
+See: `docs/UI_LAYOUT.md`, issue B87, TODO §170.
+
+## 172 — DONE — DESIGNER CONFIRMED — 2026-10-14 (designer §§166/167: slow resize/layout feedback)
+~~Fix repeated divider adjustments for several seconds after shrinking a wide window.~~
+Stub: reproduced 23 delayed header-driven size changes over about four
+seconds. Full-content PaneHeader paints elision without changing text or
+horizontal layout hints; view timers no longer refresh metadata. Qt keeps
+panes equal and respects the draggable control-panel divider/overflow.
+Full suite 170 passed; actual 12-page resize/squeeze captures at 100%/200%
+were viewed, with geometry stable after 23/49ms and one normal mini refresh.
+Explicit acceptance is preserved in §167 and scoped to B88.
+See: `docs/UI_LAYOUT.md`, issue B88.
+
+## 173 — DONE — DESIGNER CONFIRMED — 2026-10-14 (designer §167: record resize fix confirmation)
+~~Ok, this is confirmed fixed, thank you.~~
+Stub: B88 explicitly marked FIXED — DESIGNER CONFIRMED — 2026-10-14 using the
+designer's local date. Other unconfirmed issues retain their prior status.
+See: `docs/DESIGNER_VERBATIM.md` §167, issue B88, TODO §172.
+
+## 174 — DONE (implementation; designer acceptance pending)
+~~BW image-layer composition and actual saved-file benchmarking (§168).~~
+Stub: `core/image_layers.py` implements the §171 single-canvas/native-overlay
+policy. Actual images.pdf/corpus bytes, stream accounting, timing, text/vector
+retention and independent Poppler readback are recorded in `COMPRESSION.md`.
+At 300dpi/Otsu OFF fell from 79,750 to 10,397B; FFPR is 4,093B. Native font/
+content/container cost explains why retained text is not always smaller.
+See: `docs/DESIGNER_VERBATIM.md` §168, issue B89, TODO §178.
+
+## 175 — DONE (implementation; designer acceptance pending)
+~~Fix FFPR multi-page image aliasing found during the §168 audit.~~
+Stub: `_place_bw` owns each real encoded XObject before placement; no shared
+placeholder mutation. Distinct-page regressions cover JBIG2 and PNG fallback;
+the actual benchmark verifies all 60 FFPR page results pixel-for-pixel.
+See: `docs/COMPRESSION.md`, issue B90, `tests/test_pipeline.py`.
+
+## 176 — DONE (implementation; designer acceptance pending)
+~~Keep original native text, without invented glyph masks (§169).~~
+Stub: native operators/fonts/geometry/color/opacity retained, including real
+clip-only text. §171 supersedes exact cross-image ordering with the native
+overlay policy. No rasterized text plus duplicate selectable layer.
+See: `docs/COMPRESSION.md`, issue B89, `tests/test_image_layers.py`.
+
+## 177 — DONE (implementation; designer acceptance pending)
+~~Retain vector diagrams and document PDF text/vector compression (§170).~~
+Stub: native vectors retained; shared optimized saver deflates native content
+and font streams, subsets eligible fonts, deduplicates and uses object streams.
+Native rendering regressions and stream accounting distinguish lossless native
+compression from image thresholding/FFPR. See `docs/COMPRESSION.md`, B89.
+
+## 178 — DONE (implementation; designer acceptance pending)
+~~Simplify to one BW image canvas with native overlays (§171).~~
+Stub: image operations combine on white; opaque page backdrops stay beneath
+the canvas; native text/vector artwork goes above. Original per-image masks
+are not kept in the output. The unshipped ordered-run/mask-heavy architecture
+was removed; FFPR is the existing flattened-fidelity alternative.
+See: `docs/COMPRESSION.md`, issue B89, TODO §§174/176/177.
+
+## 179 — DONE (implementation; designer acceptance pending)
+~~Exact original/filter display with no extra bitmap smoothing (§§172/173).~~
+Stub: `core/display.py` disables decoder averaging, image interpolation and
+AA; prepared pages/minis and Qt display no longer smooth bitmap samples.
+Actual FFPR viewport pixels remain 0/255 across low/high/fractional zoom and
+normal/2× display scale; real color/opacity remains. No view threshold or
+filter jobs. See `docs/UI_LAYOUT.md`, `tests/test_exact_display.py`, B91.
+
+## 180 — DONE (implementation; designer acceptance pending)
+~~Disable all PDF-content AA and show native precision on zoom (§§174/175).~~
+Stub: both panes redraw the actual PDF on the device pixel grid, clipped to
+exposed regions, with bounded display-list/tile caches. Native geometry is
+not an enlarged 150dpi raster. Parent-window/individual-pane pixels agree;
+shown draft files remain owned until their PDF handles are released.
+Full suite 203 passed; 16 exact-display cases also pass at 2× scale.
+See: `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`, B91, TODO §179.
+
+## 181 — DONE (designer §176: platform certificate and packaging documentation)
+~~Document the certified current platform and multi-platform packaging.~~
+Stub: `docs/PLATFORMS.md` certifies the verified Debian 13 x86-64 LXDE/X11
+source runtime with actual library versions and dated test/launch evidence.
+`docs/PACKAGING.md` follows the reviewed sibling/upstream Task Coach patterns,
+adapts them for Qt/PyMuPDF, distinguishes runtime/build/validation dependencies
+and documents target-specific tools, missing integration and release gates.
+Other platforms/installers remain uncertified. No tools installed or releases
+built/published. Designer acceptance of issues is separate from certification.
+
+## 182 — DONE (diagnosis requested in designer §177)
+~~Explain the added dark border around color images.~~
+Stub: live images.pdf color artifacts reproduce a dark image-edge halo. The
+color saver resizes/re-encodes RGB independently of the separate PDF soft mask;
+transparent source pixels contain black RGB, which bleeds into visible edge
+colors during unassociated Lanczos resampling. JPEG can worsen that fringe.
+The alleged alpha skip does not detect separate `/SMask` images. B92 remains
+OPEN pending designer confirmation; the subsequently authorized processing
+repair is implemented under §184, not part of the original diagnosis.
+See: issue B92, `docs/COMPRESSION.md`, verbatim §§177/179/180/182.
+
+## 183 — DONE (designer §178: editable numbers/spinners beside sliders)
+~~Pair Threshold/Colors sliders with editable numbers and native spin arrows.~~
+Stub: `ui_qt/numeric.py` shares one bounded value between QSlider/QSpinBox,
+with step-1 arrows, live typing, blocked recipe loads and native size/theme/
+accessibility. Existing debounce/dirty/revert behavior stays authoritative.
+Five numeric tests (also 2×) and real typed-edit lifecycle case pass. Whole/1:1
+shots and normal/2× narrow-panel smoke were viewed; full suite 229 passed.
+See: `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`; restarted build in `PLATFORMS.md`.
+
+## 184 — DONE (designer §§179/180/182: composite first, then one DPI resize)
+~~Fix B92 using full-color composition before one DPI resize and filtering.~~
+Stub: shared `core/canvas.py`/`image_layers.py` preparation composes original
+imagery/masks, resizes ONCE in full color, then applies BW or color transforms.
+Native text/vectors remain; color uses actual flat backdrops, BW its white
+canvas. Removed the old per-image color planner and BW RGB/mask resize stage.
+Disk-backed source tiles feed one global resize (no tile seams); scratch
+cleanup is tested. Real saver/readback/export ownership is unchanged.
+Twenty canvas regressions, 229 full-suite tests, real saved-PDF benchmarks,
+58 independent image-page decodes and viewed GUI/HiDPI smokes pass.
+Updated supervised GUI restarted; B92 remains OPEN for designer acceptance.
+See: `docs/COMPRESSION.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`, issue B92.
+
+## 185 — DONE (designer §§181/182: artwork type and resize/filter order)
+~~Explain the Firefox representation and choose the scale/filter order.~~
+Stub: Firefox is a bitmap plus opacity mask; native PDF text/vector artwork
+is separate. Use full-color composition, one final-DPI resize, then filters
+and encoding; no original+upscaled duplicate processing or post-threshold/
+post-palette resizing. See `docs/COMPRESSION.md`, TODO §184 for implementation.
+
+## 186 — DONE — DESIGNER CONFIRMED 2026-10-14 (designer §§183/184)
+~~Repair low-color artwork mapped to white instead of its closest color.~~
+Stub: replace fast-octree default-bin mapping with representative palette
+fitting and exact full-resolution nearest-RGB assignment; retain real white
+and exact few colors. Shared helper, no dithering or preview-only transform.
+Eleven palette regressions, actual saved-PDF decoding and viewed low-color
+captures pass. Designer explicitly confirms the improvement in §184.
+See: B93, `docs/COMPRESSION.md`, `docs/TEST_PLAN.md`.
+
+## 187 — DONE (designer §183: one global filter-edit debounce)
+~~Unify every filter control under one trailing debounce and recommend a time.~~
+Stub: existing single edit path now uses the recommended 300ms precise timer.
+Every recipe input restarts it; controls/dirty marker stay immediate, completed
+identical files remain reusable and view-only framing never runs filters.
+Four lifecycle regressions plus a real-file mixed-spinner/slider/typing smoke
+verify one final recipe and preview publication. Full suite 244 passed.
+Restart recorded in `PLATFORMS.md`; B94 remains unconfirmed by the designer.
+
+## 188 — DONE (designer §184: palette confirmation and root-cause explanation)
+~~Record explicit confirmation and explain the palette defect.~~
+Stub: B93 records the designer's verbatim acceptance and local date, limited
+to the low-color improvement. Explain missing octree lookup buckets/default
+white, insufficient nearest-color validation, improved palette fitting and
+full-resolution assignment. See `docs/COMPRESSION.md`, B93 and verbatim §184.
+
+## 189 — DONE (designer §§185/186: native full-width mini progress overlays)
+~~Match the default progress style, span the full reserved mini width and
+provide an opaque white backing.~~
+Stub: shared delegate paints the native Qt control over the selection wash,
+150px wide with native height and a white backing; model progress is separate
+from cached content. Completion removes the overlay, strip geometry and the
+uniform 75% ghost stay unchanged. Full suite 272 passed; 28 new pixel/behavior
+cases also pass at 2×. Both-scale screenshots actually viewed; native DnD
+passes at 100%/200%. App stopped/group verified/restarted under supervision.
+See `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`, B95.
+Initial stage complete; final refined B95 appearance was subsequently
+DESIGNER CONFIRMED 2026-10-14 (§192, TODO §§190/193–195).
+
+## 190 — DONE (designer §187: progress overlay inset leaves highlight visible)
+~~Inset the progress bar and backing by the shared mini padding.~~
+Stub: STRIP_PADDING=UI_PADDING=4 leaves a 142px overlay in the 150px cell and
+visible selected highlight. §§190/191 later replace native height, image-area
+centering and 2px white padding with enlarged full-frame-centered progress.
+Thirty-two final progress cases pass at 100%/2×; captures viewed, native 100%
+DnD passes. See `docs/UI_LAYOUT.md`, TODO §§193–195 and B95's confirmation.
+
+## 191 — DONE (designer §188: title-free strip and one main-region spacing policy)
+~~Remove the minis title and unify all main-region outer insets/gutters.~~
+Stub: shared UI_PADDING=4, zero-margin PreviewPair/PaneBlock, root-owned
+insets, aligned frame sides/bottoms and no title/placeholder row. Both-scale
+geometry/resize checks and native 100% DnD pass; screenshots viewed, full suite
+319 passed, app normally restarted. See `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`.
+B96 stays OPEN pending designer acceptance; §192 adds the matching panel header.
+
+## 192 — DONE (designer §189: Save As selects the newly created filter)
+~~Select the new Save As copy and audit equivalent dirty-resolution paths.~~
+Stub: explicit immutable resolution destination and one activation commit for
+mini/dropdown/keyboard, direct Save As, open/close and canceled naming. Both
+files stay owned; existing/pending work is reused. Matrix and real nested-
+dialog smoke pass, actual captures viewed, full suite 319 passed. The earlier
+GUI2305839 was normally closed by the worker for the canon restart, APP_EXIT=0
+and PGID2305835 verified gone; not a crash. See `docs/FILTER_LIFECYCLE.md`,
+`docs/PLATFORMS.md` and B97 (still OPEN for designer acceptance).
+
+## 193 — DONE (designer §190: 50% taller mini bars and percentage text, no white padding)
+~~Enlarge native mini bars and percentages by 50%; remove extra white padding.~~
+Stub: 1.5× native size-hint height and point/pixel font, backing EXACTLY within
+the bar, shared 4px side inset unchanged. Native style/true work/completion,
+150×162 cell and uniform 75% ghost retained. Final 32 cases pass at both
+scales with exact native pixels; real/fixture screenshots viewed. App normally
+stopped/group verified/relaunched. See `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
+B95 FIXED — DESIGNER CONFIRMED — 2026-10-14 (§192); no broader acceptance.
+
+## 194 — DONE (designer §191: center progress within the entire mini cell)
+~~Center progress vertically in the whole mini frame, not just its page image.~~
+Stub: delegate uses the full actual cell height/origin for viewport and drag
+source. Geometry cases cover shifted/negative origins and short/normal/tall
+frames; both scales pass with unchanged cell height and no new whitespace.
+See `docs/UI_LAYOUT.md`, `tests/test_minis.py` and B95's §192 confirmation.
+
+## 195 — DONE (designer §192: explicit acceptance of mini progress appearance)
+~~Record the designer's confirmation of the completed mini progress changes.~~
+Stub: B95 FIXED — DESIGNER CONFIRMED — 2026-10-14 (America/New_York), scoped
+to native styling, highlight inset, enlarged bar/text, no white padding and
+full-frame centering. §192's "Ok, this is good." does not confirm B96/B97 or
+unrelated DnD issues. Exact full message is preserved in the verbatim log.
+
+## 196 — DONE (designer §192: configuration heading matches the preview blocks)
+~~Add a Configuration heading above the right panel, matching the previews.~~
+Stub: all three regions reuse PaneHeader and zero-margin PaneBlock, with 4px
+spacing and aligned header/frame tops and bottoms. Both-scale geometry/resize
+checks pass (last settling 0.099s/0.182s); full/1:1 captures viewed, full suite
+319 passed and final app restarted. See `docs/UI_LAYOUT.md`, B98 (unconfirmed).
+
+## 197 — DONE (designer §192: low-color palette as colored JBIG2 stencils)
+~~Design and benchmark one colored lossless JBIG2 stencil per non-white color.~~
+Stub: `tools/layered_color_jbig2.py` reuses native composition, one palette map,
+native artwork and final PDF optimization. Opaque white base, disjoint masks,
+exact palette-byte paint colors and matching physical page transforms.
+18 cases / 34 page pairs / 107 masks decode exactly; 13 prototype tests pass.
+Wins AND regressions, viewer sampling caveats and two existing production
+encoder findings documented. No production codec/default changed (§193).
+See `docs/LAYERED_COLOR_JBIG2.md` and issues B99/B100 (audit findings only).
+
+## 198 — DONE (designer §§193/194: dedicated layered-JBIG2 design/benchmark document)
+~~Create and cross-reference the layered-JBIG2 developer design/benchmark document.~~
+Stub: `docs/LAYERED_COLOR_JBIG2.md` records the model, references, prototype
+boundary, reproducible commands, all 18 whole-PDF size rows, timed stages,
+exact decoder checks, Poppler display/source-warning limits and next decisions.
+Linked from overview, design, architecture, compression and test plan. Inputs
+and production filters unchanged. Verification is not designer acceptance.
+
+## 199 — DONE (designer §195: remove redundant working labels)
+~~Remove the redundant mini working placeholders; progress already shows activity.~~
+Stub: no pending image/amount or header sizing phrase; missing metadata stays
+blank and completed image/bytes stay visible during edits. Eight new cases
+cover cached/missing results at 0/37/99/100%, transparent empty slots and no
+processing. Combined 46-case subset passes at 100%/2×; actual queued/live/
+complete captures viewed, full suite 319 passed, app restarted. Errors and
+actionable status messages retained. See `docs/UI_LAYOUT.md`, B101 (unconfirmed).
+
+## 200 — DONE (designer §196: establish icon provenance)
+~~Check whether the odd revert/rename icons are standard KDE/Nuvola assets.~~
+Stub: both were custom QPainter drawings, unlike theme-first Copy/Save.
+The rename comment misread §120's request for a STANDARD cursor/letters icon
+as a request for custom drawing. Reported without changing the app; §197
+then approves consistent theme icons with one coherent standard fallback set.
+
+## 201 — DONE (designer §197: consistent native-theme icons with a standard fallback)
+~~Use consistent desktop-theme icons and one standard portable fallback set.~~
+Stub: one provider/binder serves filter actions, zoom, export/stop and the
+button lab. Desktop names win; bundled stock Breeze light/dark 16/22px SVGs
+provide the fallback, matched to actual control/toolbar palettes. Provenance,
+checksums, licenses and packaging/plugin gates recorded. Full suite 339
+passed; 33 focused cases also pass at 2×; real/fallback light/dark full windows
+and 1:1 enabled/disabled controls viewed at both scales. Normal stop/group
+verification and restart completed. B102 remains OPEN for designer acceptance.
+See `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`.
+
+## 202 — DONE (designer §§198/199: mini progress enlargement is 25%, not 50%)
+~~Use 25%-larger mini bars, instead of the previous 50% enlargement.~~
+Stub: one shared 1.25× factor scales original native height and percentage
+font; reserved width, 4px insets, exact backing and full-frame centering are
+unchanged, as is the aggregate status bar. Forty independent native-widget
+progress checks pass at 100%/2×; queued/live/complete full windows, 1:1 strips,
+default bars and selected/75% ghost sources were viewed at both scales.
+Full suite 339 passed in 68.67s; previous app exited normally and its group
+was verified gone before final relaunch. B103 remains OPEN for designer
+acceptance. See `docs/UI_LAYOUT.md`, `docs/TEST_PLAN.md`, `docs/PLATFORMS.md`.
+
+## 203 — OPEN (designer §200: coded icon lab, including Nuvola and Oxygen)
+Add a direct View → Icon Lab… menu item opening a resizable modeless comparison
+window. Show genuine stock Nuvola, Oxygen, GNOME Classic and Breeze choices
+for Revert, Rename, Save As/Copy, Save, Stop and Zoom, including useful alternate
+glyphs. Label every choice with a permanent family/action/variant code and
+source name, native app-size and enlarged/disabled previews. Let the designer
+pick per action and copy the codes as a reply; never apply choices, run PDF
+processing or change settings/selection. Reuse one window per app. Bundle only
+the licensed subset with exact source/hash provenance; no system-theme fallback
+may silently substitute another family. Capture/view at normal/2×, run full
+suite and perform the required verified restart. Current icons are rejected,
+not designer-confirmed fixed. See `docs/ICON_LAB.md`, B102/B104.
+
+## 204 — OPEN (designer §201: checkpoint and push, then continue)
+Commit the current project implementation/docs/tests and licensed in-progress
+Icon Lab catalog assets to the existing main/origin GitHub remote. Exclude the
+raw exported session and ignored temporary/runtime files. Push a normal
+checkpoint (no force), verify the remote hash, then resume TODO §203 without
+claiming the not-yet-built lab UI is complete or designer-confirmed.

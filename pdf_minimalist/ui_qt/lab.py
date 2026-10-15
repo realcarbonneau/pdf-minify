@@ -9,7 +9,9 @@ from PySide6.QtWidgets import (
     QToolBar, QStyleFactory,
 )
 from PySide6.QtCore import Qt, QTimer, QSize
-from PySide6.QtGui import QAction, QIcon
+from PySide6.QtGui import QAction
+
+from .icons import ActionIcons
 
 
 def _bar(minimum=0, maximum=100, text_visible=True, centered=False,
@@ -75,6 +77,7 @@ class ButtonsLab(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Widget lab — buttons")
+        self._action_icons = ActionIcons(self)
         self.resize(460, 380)
         box = QVBoxLayout(self)
         box.addWidget(QLabel("Live variants — pick the row style:"))
@@ -92,7 +95,8 @@ class ButtonsLab(QDialog):
         bar.layout().setContentsMargins(0, 0, 0, 0)
         for name, word, tip in (("zoom-out", "Out", "Zoom out"),
                                 ("zoom-in", "In", "Zoom in")):
-            a = QAction(QIcon.fromTheme(name), word, self)
+            a = QAction(word, self)
+            self._action_icons.bind(a, name, context=bar)
             a.setToolTip(tip)
             bar.addAction(a)
         box.addWidget(bar)
@@ -102,7 +106,8 @@ class ButtonsLab(QDialog):
         bar2 = QToolBar()
         bar2.setIconSize(QSize(16, 16))
         for name, tip in (("zoom-out", "Zoom out"), ("zoom-in", "Zoom in")):
-            b = bar2.addAction(QIcon.fromTheme(name), "")
+            b = bar2.addAction("")
+            self._action_icons.bind(b, name, context=bar2)
             b.setToolTip(tip)
             btn = bar2.widgetForAction(b)
             if btn is not None:

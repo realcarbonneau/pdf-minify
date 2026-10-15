@@ -1,7 +1,7 @@
 """Per-page + whole-file BW pipeline with per-page cancel checks.
 
-Defaults per designer brief: force full-page raster, 300 dpi, US Letter (8.5x11).
-All three are overridable (main-screen options, per-preset, per-page).
+GUI defaults preserve text and original page size (§§74/103/127), with one
+explicit full-page BW example. All processing goes through save_with_spec.
 """
 import fitz
 import numpy as np
@@ -14,12 +14,15 @@ import subprocess
 import tempfile
 import zlib
 from functools import wraps
+from contextvars import ContextVar
 
 from .cancel import CancelToken
 from .pdf_io import CancelledError, render_gray, FITZ_LOCK
 from . import threshold as T
+from .image_layers import compose_page_images, compose_color_page
 
 log = logging.getLogger("pdf_minimalist")
+_ENCODE_WORKDIR = ContextVar("encoder_workdir", default=None)
 
 # points (1/72 in). Letter = 8.5x11in, A4 = 210x297mm.
 PAGE_SIZES = {
@@ -54,7 +57,7 @@ def absurd_pages(rects) -> list:
 
 
 def _fitz_locked(fn):
-    """Serialize whole save jobs against preview workers (MuPDF aborts)."""
+    """Serialize MuPDF use within one process; GUI jobs use spawn processes."""
     @wraps(fn)
     def inner(*a, **k):
         with FITZ_LOCK:
@@ -102,7 +105,8 @@ def bw_page_jbig2(gray: np.ndarray, strategy: str = "otsu", t: int = 180,
         return None
     bw = _threshold(gray, strategy, t)
     h, w = bw.shape[:2]
-    fd, pbm = tempfile.mkstemp(suffix=".pbm")
+    fd, pbm = tempfile.mkstemp(prefix="encode-jbig2-", suffix=".pbm",
+                              dir=_ENCODE_WORKDIR.get())
     try:
         with os.fdopen(fd, "wb") as f:
             f.write(f"P4\n{w} {h}\n".encode())
@@ -126,12 +130,10 @@ def bw_page_jbig2(gray: np.ndarray, strategy: str = "otsu", t: int = 180,
 def bw_page_payload(gray: np.ndarray, strategy: str = "otsu", t: int = 180) -> tuple[bytes, str]:
     """Real save payload for one BW page: (bytes, "jbig2" | "png").
 
-    JBIG2 wins only when the bytes test-decode pixel-exact in our own
-    renderer: some small/sparse jbig2enc streams are valid JBIG2 (jbig2dec
-    accepts them) yet MuPDF — the engine behind our previews and many
-    viewers — cannot complete them and paints black. Shipping those would
-    corrupt the document, so they fall back to 1-bit PNG. Estimator and saver
-    share this function, so caption amounts always equal embedded bytes.
+    JBIG2 wins only when the bytes test-decode pixel-exact in our renderer;
+    otherwise use 1-bit PNG. The former sparse-stream failure was caused by
+    a corrupt PDF wrapper (B79), not proof of an encoder defect. GUI captions
+    measure the complete saved PDF, never sums of these payloads.
     """
     jb2 = bw_page_jbig2(gray, strategy, t)
     if jb2 is not None:
@@ -171,18 +173,23 @@ def _fit_rect(src_w: float, src_h: float, dst_w: float, dst_h: float) -> fitz.Re
     return fitz.Rect(x0, y0, x0 + w, y0 + h)
 
 
-def jpx_encode(arr: np.ndarray, dpi_cap: int, rate: int = 192,
-               lossless: bool = False) -> bytes:
+def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: int = 192,
+               lossless: bool = False, presized: bool = False) -> bytes:
     """RGB array -> JPEG2000 bytes at the cap rule (designer §56).
 
-    Shared by previews, estimates and saving so all three agree. Lossless
+    Used by the real saver; previews read its resulting PDF. Lossless
     (`§100`, reversible 5/3) when asked; otherwise the given rate.
+    presized=True skips the legacy downscale (designer §129: the caller
+    already forced exact DPI — never scale twice).
     """
     h, w = arr.shape[:2]
-    scale = min(1.0, (dpi_cap * 11) / max(w, h))
     img = Image.fromarray(arr)
-    if scale < 1.0:
-        img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+    if not presized:
+        if dpi_cap is None:
+            raise ValueError("DPI is required unless the canvas is already sized")
+        scale = min(1.0, (dpi_cap * 11) / max(w, h))
+        if scale < 1.0:
+            img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     buf = io.BytesIO()
     if lossless:
         img.save(buf, "JPEG2000", quality_mode="lossless")
@@ -237,24 +244,28 @@ def zopfli_binary() -> str | None:
 
 
 def deflate_best(data: bytes) -> bytes:
-    """Strongest Deflate both saver and estimator agree on (designer §80).
+    """Validated zlib-wrapped Deflate for PDF /FlateDecode (designer §80).
 
     zopfli wins ~6% over zlib-9 but costs 60x time, so it applies only below
-    100KB (fast either way); above that zlib-9. Same rule everywhere keeps
-    caption amounts equal to saved bytes.
+    100KB (fast either way); above that zlib-9. Zopfli's default gzip wrapper
+    is NOT a PDF Flate stream. Roundtrip validation rejects wrong containers.
     """
     if len(data) <= 100_000 and zopfli_binary() is not None:
-        fd, tmp = tempfile.mkstemp()
+        fd, tmp = tempfile.mkstemp(prefix="encode-zopfli-", dir=_ENCODE_WORKDIR.get())
         try:
             with os.fdopen(fd, "wb") as f:
                 f.write(data)
             try:
-                r = subprocess.run(["zopfli", "-c", tmp], capture_output=True,
+                r = subprocess.run(["zopfli", "--zlib", "-c", tmp], capture_output=True,
                                    timeout=120)
             except (OSError, subprocess.TimeoutExpired):
                 return zlib.compress(data, 9)
             if r.returncode == 0 and r.stdout:
-                return bytes(r.stdout)
+                try:
+                    if zlib.decompress(r.stdout) == data:
+                        return bytes(r.stdout)
+                except zlib.error:
+                    pass
         finally:
             try:
                 os.unlink(tmp)
@@ -271,9 +282,7 @@ def indexed_parts(img: "Image.Image", colors: int) -> dict:
     dims for a true Indexed color space — typically 10x smaller than the
     RGB-Flate equivalent on flat graphics.
     """
-    rgb = img.convert("RGB")
-    q = rgb.quantize(colors=max(2, min(256, int(colors))),
-                     method=quantize_method(), dither=Image.NONE)
+    q = _quantize_palette(img, colors)
     idx = np.asarray(q)
     used, inv = np.unique(idx, return_inverse=True)
     n = len(used)
@@ -300,14 +309,55 @@ def indexed_flate_candidate(img: "Image.Image") -> dict | None:
 
 
 def quantize_method() -> int:
-    """Best available palette algorithm (designer §67 benchmark).
+    """Coverage initialization for the shared palette fitter (§183).
 
-    FASTOCTREE no-dither beat MEDIANCUT on every corpus image; pngquant wins
-    on tiny flat graphics but times out on photos, so it stays out of the
-    automatic path. Dithering is always OFF: it adds noise that deflates
-    worse — the opposite of the goal.
+    FASTOCTREE's bucket mapping sends unrepresented buckets to index zero
+    instead of the nearest palette color. A smaller wrong image is no win.
+    Median-cut alone wastes low-color slots on near-white page background.
+    Fit representative colors, then assign ALL pixels by exact RGB distance.
     """
-    return Image.FASTOCTREE
+    return Image.MAXCOVERAGE
+
+
+def _quantize_palette(img, colors):
+    """ONE quantization path for embedded Indexed and headless RGB helpers."""
+    rgb = img.convert("RGB")
+    limit = max(2, min(256, int(colors)))
+    exact = rgb.getcolors(maxcolors=limit)
+    if exact is not None:
+        palette = np.array(sorted(color for _, color in exact), dtype=np.uint8)
+    else:
+        scale = min(1.0, 512 / max(rgb.size))
+        fit = rgb.resize((max(1, round(rgb.width*scale)),
+                          max(1, round(rgb.height*scale))), Image.Resampling.NEAREST)
+        fitted = fit.quantize(colors=limit, method=quantize_method(), kmeans=1,
+                              dither=Image.Dither.NONE)
+        used = sorted(index for _, index in fitted.getcolors())
+        palette = np.asarray(fitted.getpalette(), dtype=np.uint8).reshape(-1, 3)[used].copy()
+        if np.any(np.all(np.asarray(fit) == 255, axis=2)):
+            near_white = ((palette.astype(np.int32) - 255)**2).sum(1).argmin()
+            palette[near_white] = 255
+    source = np.asarray(rgb).reshape(-1, 3)
+    indices = np.empty(len(source), dtype=np.uint8)
+    p = palette.astype(np.int32)
+    norms = (p*p).sum(1, dtype=np.int32)
+    # At most 8192×256 int32 pair scores (8MiB), not a whole-page distance
+    # tensor. The omitted source norm is constant within each argmin row.
+    palette_keys = (p[:, 0] << 16) | (p[:, 1] << 8) | p[:, 2]
+    for start in range(0, len(source), 8192):
+        block = source[start:start+8192].astype(np.int32)
+        if exact is not None:
+            keys = (block[:, 0] << 16) | (block[:, 1] << 8) | block[:, 2]
+            chosen = np.searchsorted(palette_keys, keys)
+        else:
+            distances = block @ p.T
+            distances *= -2
+            distances += norms
+            chosen = distances.argmin(1)
+        indices[start:start+len(block)] = chosen
+    result = Image.frombytes("P", rgb.size, indices.tobytes())
+    result.putpalette(palette.tobytes())
+    return result
 
 
 def indexed_rgb(arr: np.ndarray, colors: int) -> np.ndarray:
@@ -315,26 +365,12 @@ def indexed_rgb(arr: np.ndarray, colors: int) -> np.ndarray:
 
     Automatic algorithm (`quantize_method`), never dithered.
     """
-    img = Image.fromarray(np.asarray(arr)).convert("RGB")
-    pal = img.quantize(colors=max(2, min(256, int(colors))),
-                       method=quantize_method(), dither=Image.NONE).convert("RGB")
-    return np.asarray(pal)
-
-
-def indexed_rgb(arr: np.ndarray, colors: int) -> np.ndarray:
-    """RGB array -> palette-reduced RGB array (designer §67: minis/previews).
-
-    Automatic algorithm (`quantize_method`), never dithered.
-    """
-    img = Image.fromarray(np.asarray(arr)).convert("RGB")
-    pal = img.quantize(colors=max(2, min(256, int(colors))),
-                       method=quantize_method(), dither=Image.NONE).convert("RGB")
-    return np.asarray(pal)
+    return np.asarray(_quantize_palette(Image.fromarray(np.asarray(arr)), colors).convert("RGB"))
 
 
 def _place_indexed(doc: "fitz.Document", xref: int, parts: dict):
     """Embed true Indexed parts: Flate index stream + inline hex palette."""
-    doc.update_stream(xref, parts["stream"])
+    doc.update_stream(xref, parts["stream"], compress=False)
     doc.xref_set_key(xref, "Filter", "/FlateDecode")
     doc.xref_set_key(xref, "Width", str(parts["w"]))
     doc.xref_set_key(xref, "Height", str(parts["h"]))
@@ -350,61 +386,53 @@ def _place_indexed(doc: "fitz.Document", xref: int, parts: dict):
         pass
 
 
-def color_stream_plan(image_bytes: bytes, w: int, h: int, bpc: int | None,
-                      dpi_cap: int, jpeg_q: int = 45,
-                      codec: str = "jpeg", rate: int = 192, colors: int = 64,
-                      lossless: bool = False):
-    """Decide one embedded image's fate (designer §§57/67/80).
+def color_canvas_payload(img, codec="jpeg", jpeg_q=45, rate=192,
+                         colors=64, lossless=False):
+    """Transform an ALREADY flattened, final-DPI RGB canvas (§§180/182).
 
-    Best tool wins per image: the codec re-encode (baseline JPEG, or JPEG2000
-    when requested), the forced palette reduction when the `indexed` codec is
-    selected (slider-count colors), plus, for images with at most 256 distinct
-    colors, a lossless true-Indexed version. Indexed storage beats RGB-Flate
-    ~10x on flat graphics (benchmarked). Returns None to keep the original
-    stream, else a dict {filter, stream, w, h, indexed} with indexed=None
-    unless true-Indexed won. Saver and estimator share it, so captions equal
-    saved bytes.
+    No per-image alpha guard, size skip or keep-original branch. The chosen
+    filter runs on the actual composite. Lossless Indexed may beat a lossy
+    codec for genuinely few-color canvases; forced Indexed always quantizes.
     """
-    if bpc == 1:
-        return None
-    if max(w, h) < 200:
-        return None
-    try:
-        img = Image.open(io.BytesIO(image_bytes))
-    except Exception:
-        return None
-    if img.mode in ("RGBA", "LA", "PA"):
-        return None
-    img = img.convert("RGB")
-    scale = min(1.0, (dpi_cap * 11) / max(w, h))
-    if scale < 1.0:
-        img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
+    if img.mode != "RGB":
+        raise ValueError("Color transforms require a flattened RGB canvas")
     iw, ih = img.width, img.height
     if codec == "indexed":
         parts = indexed_parts(img, colors)
-        total = len(parts["stream"]) + len(parts["palette"])
-        if total >= len(image_bytes):
-            return None
         return {"filter": "/FlateDecode", "stream": parts["stream"],
                 "w": iw, "h": ih, "indexed": parts}
     if codec == "jpx":
-        cands = [(jpx_encode(np.asarray(img), dpi_cap, rate, lossless), "/JPXDecode", None)]
-    else:
+        cands = [(jpx_encode(np.asarray(img), None, rate, lossless,
+                             presized=True), "/JPXDecode", None)]
+    elif codec == "jpeg":
         buf = io.BytesIO()
         img.save(buf, "JPEG", quality=jpeg_q, optimize=True)
         cands = [(buf.getvalue(), "/DCTDecode", None)]
+    else:
+        raise ValueError(f"Unknown color codec: {codec}")
     auto = indexed_flate_candidate(img)
     if auto is not None:
         cands.append((auto["stream"], "/FlateDecode", auto))
     best = None
     for data, filtr, parts in cands:
         total = len(data) + (len(parts["palette"]) if parts else 0)
-        if total < len(image_bytes) and (best is None or total < best[0]):
+        if best is None or total < best[0]:
             best = (total, data, filtr, parts)
-    if best is None:
-        return None
     _total, data, filtr, parts = best
     return {"filter": filtr, "stream": data, "w": iw, "h": ih, "indexed": parts}
+
+
+def _place_color(out, page, rect, payload):
+    """Fresh opaque composite XObject; never retain source masks/Decode keys."""
+    xref = out.get_new_xref()
+    out.update_object(xref, f"<< /Type /XObject /Subtype /Image /Width {payload['w']} "
+                      f"/Height {payload['h']} /ColorSpace /DeviceRGB /BitsPerComponent 8 >>")
+    if payload["indexed"] is not None:
+        _place_indexed(out, xref, payload["indexed"])
+    else:
+        out.update_stream(xref, payload["stream"], compress=False)
+        out.xref_set_key(xref, "Filter", payload["filter"])
+    page.insert_image(rect, xref=xref, overlay=True, keep_proportion=False)
 
 
 def _tiny_png() -> bytes:
@@ -417,44 +445,57 @@ def _tiny_png() -> bytes:
     return buf.getvalue()
 
 
-_TINY = _tiny_png()
-
-
 def _place_bw(out: "fitz.Document", page: "fitz.Page", rect: fitz.Rect,
-              payload: bytes, codec: str, w: int, h: int):
-    """Embed one BW page image: JBIG2Decode XObject, or plain PNG fallback."""
+              payload: bytes, codec: str, w: int, h: int, *, overlay=True):
+    """Place an independently owned encoded image, never a mutable placeholder.
+
+    insert_image deduplicates identical input streams. Mutating a reused tiny
+    placeholder therefore changes every earlier page (B90). Allocate the real
+    JBIG2 XObject first; deduplication at final save can safely merge only truly
+    identical payloads. Return the actual placed xref.
+    """
     if codec == "png":
-        page.insert_image(rect, stream=payload)
-        return
-    page.insert_image(rect, stream=_TINY)
-    imgs = page.get_images(full=True)
-    if not imgs:
-        raise ValueError("placeholder image xref missing")
-    xref = imgs[-1][0]
-    out.update_stream(xref, payload)
-    out.xref_set_key(xref, "Filter", "/JBIG2Decode")
-    out.xref_set_key(xref, "Width", str(w))
-    out.xref_set_key(xref, "Height", str(h))
-    out.xref_set_key(xref, "ColorSpace", "/DeviceGray")
-    out.xref_set_key(xref, "BitsPerComponent", "1")
-    for k in ("DecodeParms", "Interpolate"):
-        try:
-            out.xref_set_key(xref, k, "null")
-        except Exception:
-            pass
+        with Image.open(io.BytesIO(payload)) as image:
+            if image.mode != "1" or image.size != (w, h):
+                raise ValueError("BW fallback must be a correctly sized 1-bit PNG")
+            payload = zlib.compress(image.tobytes(), 9)
+        filtr = "/FlateDecode"
+    elif codec == "jbig2":
+        filtr = "/JBIG2Decode"
+    else:
+        raise ValueError(f"unsupported BW image codec: {codec}")
+    xref = out.get_new_xref()
+    out.update_object(xref, f"<< /Type /XObject /Subtype /Image /Width {w} "
+                      f"/Height {h} /ColorSpace /DeviceGray "
+                      "/BitsPerComponent 1 >>")
+    out.update_stream(xref, payload, compress=False)
+    out.xref_set_key(xref, "Filter", filtr)
+    return page.insert_image(rect, xref=xref, overlay=overlay,
+                             keep_proportion=False)
 
 
 @_fitz_locked
+def force_to_dpi(img, target_w: int, target_h: int):
+    """Resample a PIL image to exact dims with Lanczos (designer §129).
+
+    The canvas calls this in full color BEFORE gray/threshold or palette
+    reduction (§§180/182); original samples/masks are already composed.
+    Same size in → same object back (no-op, not a copy roundtrip).
+    """
+    if (img.width, img.height) == (target_w, target_h):
+        return img
+    return img.resize((max(1, target_w), max(1, target_h)), Image.Resampling.LANCZOS)
+
+
 def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 180,
                  dpi: int = 300, token: CancelToken | None = None,
                  progress=None, per_page: dict | None = None,
                  page_size: str = DEFAULT_PAGE_SIZE, force_raster: bool = True):
-    """Rasterize each page to 1-bit and rebuild PDF. Overwrites nothing in place.
+    """BW save with two honest modes (designer §127).
 
-    dpi: render resolution (default 300). page_size: "letter" | "a4" | "original".
-    force_raster: True flattens every page to one image; False keeps pages
-      carrying extractable text as text while still compressing their images
-      (mixed mode, designer §103 — JPEG q45 at 150dpi for those images).
+    force_raster=True: every page flattened to one 1-bit image.
+    force_raster=False: ONE combined image canvas below original native
+      text/vector artwork (§171); plain white page backgrounds stay below.
     per_page: {pageno: {"strategy"/"t"/"dpi"/"page_size"}} overrides.
     progress(pageno, total) called per page.
     Raises CancelledError on ESC. Deletes partial output on cancel (caller should unlink).
@@ -465,8 +506,7 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
     per_page = per_page or {}
     src = fitz.open(in_path)
     out = fitz.open()
-    n_jbig2 = n_png = n_pass = 0
-    done: set[int] = set()
+    n_jbig2 = n_png = n_img = 0
     try:
         for i in range(src.page_count):
             if token.cancelled:
@@ -476,13 +516,14 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
             tt = ov.get("t", t)
             dd = ov.get("dpi", dpi)
             ps = ov.get("page_size", page_size)
-            if not force_raster and src[i].get_text().strip():
-                # Mixed mode (designer §103): text pages pass through with
-                # text intact, but their embedded images still compress.
+            if not force_raster:
+                # §171: ONE image canvas + original native overlay.
                 out.insert_pdf(src, from_page=i, to_page=i)
-                n_pass += 1
-                _recompress_images(out, [out.page_count - 1], 150, 45,
-                                   "jpeg", 192, 64, False, token, done)
+                composed = compose_page_images(out, out.page_count - 1, strat,
+                                               tt, dd, token, bw_page_payload,
+                                               _place_bw, force_to_dpi,
+                                               directory=_ENCODE_WORKDIR.get())
+                n_img += composed
                 if progress:
                     progress(i + 1, src.page_count)
                 continue
@@ -512,12 +553,19 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
                           payload, codec, gray.shape[1], gray.shape[0])
             if progress:
                 progress(i + 1, src.page_count)
-        out.save(out_path, garbage=4, deflate=True, use_objstms=True)
-        log.info("saved %s: BW pages JBIG2=%d PNG-fallback=%d text-passthrough=%d",
-                 out_path, n_jbig2, n_png, n_pass)
+        _save_optimized_pdf(out, out_path)
+        log.info("saved %s: BW pages JBIG2=%d PNG-fallback=%d images-1bit=%d",
+                 out_path, n_jbig2, n_png, n_img)
     finally:
         out.close()
         src.close()
+
+
+def _save_optimized_pdf(doc: "fitz.Document", out_path: str):
+    """Lossless native glyph/content/container optimization, shared by modes."""
+    doc.subset_fonts()
+    doc.save(out_path, garbage=4, deflate=True, deflate_fonts=True,
+             use_objstms=True, compression_effort=100)
 
 
 @_fitz_locked
@@ -525,7 +573,7 @@ def gc_copy(in_path: str, out_path: str):
     """Passthrough: garbage-collect + deflate, no pixel changes (Original preset)."""
     doc = fitz.open(in_path)
     try:
-        doc.save(out_path, garbage=4, deflate=True, use_objstms=True)
+        _save_optimized_pdf(doc, out_path)
     finally:
         doc.close()
 
@@ -535,76 +583,65 @@ def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int
                     token: CancelToken | None = None, progress=None,
                     codec: str = "jpeg", rate: int = 192, colors: int = 64,
                     lossless: bool = False):
-    """Color path: downsample oversized embedded images + re-encode.
+    """Color: native full-color composition → final DPI → transform/encode.
 
-    Designer §57: best tools win per image. Candidates per stream are the
-    codec re-encode (JPEG baseline, or JPEG2000 when requested) plus, for
-    images with at most 256 distinct colors, a lossless palette-quantized
-    Flate version. Only a strictly smaller stream replaces the original.
-    Skips 1-bit images (BW path owns those), transparency masks, and images
-    with alpha. Never rasterizes pages, so text/vectors survive.
+    One opaque canvas per image-bearing page, with native text/vectors above.
+    No individual image rewrite or source opacity masks in the output (§180).
     Raises CancelledError on ESC.
     """
     token = token or CancelToken()
     doc = fitz.open(in_path)
-    done: set[int] = set()
     try:
         total = doc.page_count
         for pno in range(total):
             if token.cancelled:
                 raise CancelledError()
-            _recompress_images(doc, [pno], dpi_cap, jpeg_q, codec, rate,
-                               colors, lossless, token, done)
+            compose_color_page(doc, pno, dpi_cap, token,
+                               lambda rgb: color_canvas_payload(rgb, codec, jpeg_q,
+                                                                rate, colors, lossless),
+                               _place_color, force_to_dpi, directory=_ENCODE_WORKDIR.get())
             if progress:
                 progress(pno + 1, total)
-        doc.save(out_path, garbage=4, deflate=True, use_objstms=True)
+        _save_optimized_pdf(doc, out_path)
     finally:
         doc.close()
 
 
-def _recompress_images(doc: "fitz.Document", pages: list, dpi_cap: int,
-                       jpeg_q: int, codec: str, rate: int, colors: int,
-                       lossless: bool, token, done: set):
-    """Re-encode embedded images on the given pages, in place.
+def save_with_spec(in_path: str, out_path: str, spec: dict,
+                   token: CancelToken | None = None, progress=None,
+                   workdir: str | None = None):
+    """The ONLY filter-to-PDF entry point (§§122/149); UI reads this file back.
 
-    Shared by the color saver (all pages) and the BW mixed mode (copied text
-    pages keep their text while their images still compress — designer §103).
-    `done` dedupes xrefs shared across pages. Raises CancelledError on ESC.
+    The same recipe includes every effective parameter, including palette
+    count, JPEG quality, JPX rate/lossless, and forced BW page size.
     """
-    for pno in pages:
-        if token.cancelled:
-            raise CancelledError()
-        entries = doc[pno].get_images(full=True)
-        masks = {e[1] for e in entries if e[1]}
-        for e in entries:
-            if token.cancelled:
-                raise CancelledError()
-            xref = e[0]
-            if xref in done or xref in masks:
-                continue
-            done.add(xref)
-            try:
-                info = doc.extract_image(xref)
-            except Exception:
-                continue
-            plan = color_stream_plan(
-                info["image"], info["width"], info["height"],
-                info.get("bpc"), dpi_cap, jpeg_q, codec, rate, colors,
-                lossless)
-            if plan is None:
-                continue
-            if plan["indexed"] is not None:
-                _place_indexed(doc, xref, plan["indexed"])
-                continue
-            doc.update_stream(xref, plan["stream"])
-            doc.xref_set_key(xref, "Filter", plan["filter"])
-            doc.xref_set_key(xref, "Width", str(plan["w"]))
-            doc.xref_set_key(xref, "Height", str(plan["h"]))
-            doc.xref_set_key(xref, "ColorSpace", "/DeviceRGB")
-            doc.xref_set_key(xref, "BitsPerComponent", "8")
-            try:
-                cur = doc.xref_get_key(xref, "DecodeParms")
-                if cur[0] != "null":
-                    doc.xref_set_key(xref, "DecodeParms", "null")
-            except Exception:
-                pass
+    context = _ENCODE_WORKDIR.set(workdir)
+    try:
+        return _save_recipe(in_path, out_path, spec, token, progress)
+    finally:
+        _ENCODE_WORKDIR.reset(context)
+
+
+def _save_recipe(in_path, out_path, spec, token, progress):
+    token = token or CancelToken()
+    if token.cancelled:
+        raise CancelledError()
+    mode = spec["mode"]
+    if mode == "bw":
+        process_file(in_path, out_path, strategy=spec.get("strategy", "otsu"),
+                     t=spec.get("t", 180), dpi=spec.get("dpi", DEFAULT_DPI),
+                     token=token, progress=progress,
+                     page_size=spec.get("page_size", DEFAULT_PAGE_SIZE),
+                     force_raster=spec.get("force_raster", False))
+    elif mode in ("color", "jpx", "indexed"):
+        recompress_file(in_path, out_path, dpi_cap=spec.get("dpi_cap", 150),
+                        jpeg_q=spec.get("jpeg_q", 50), token=token, progress=progress,
+                        codec={"color": "jpeg", "jpx": "jpx", "indexed": "indexed"}[mode],
+                        rate=spec.get("rate", 192), colors=spec.get("colors", 64),
+                        lossless=spec.get("lossless", False))
+    elif mode == "passthrough":
+        gc_copy(in_path, out_path)
+    else:
+        raise ValueError(f"Unknown filter mode: {mode}")
+    if token.cancelled:
+        raise CancelledError()

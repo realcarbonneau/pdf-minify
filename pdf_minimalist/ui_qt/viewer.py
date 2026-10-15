@@ -1,11 +1,115 @@
-"""Smooth pan/zoom page viewer: wheel=scroll, ctrl+wheel=zoom to cursor, drag=pan.
+"""Exact PDF pan/zoom viewer: wheel=scroll, ctrl+wheel=zoom, drag=pan.
 
 Designer ruling: all panes stay synced — zoom/pan in either pane mirrors to
 its peers (used for the original/preview pair).
 """
-from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem
-from PySide6.QtCore import Qt, QPoint, QPointF
+from collections import OrderedDict
+
+import pymupdf as fitz
+from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QGraphicsItem, QStyle
+from PySide6.QtCore import Qt, QPoint, QPointF, QRectF
 from PySide6.QtGui import QPixmap, QImage, QPainter, QTransform
+
+from ..core.display import DisplayPage
+from ..core.pdf_io import FITZ_LOCK
+
+
+class _PdfSource:
+    """Read-only native source with bounded page-list/device-tile caches.
+
+    Qt requests only exposed items/regions. No whole-document high-DPI raster,
+    filtering, worker submission, file writes or re-thresholding on zoom.
+    """
+
+    MAX_PAGES = 8
+    MAX_TILES = 8
+    MAX_TILE_BYTES = 32 * 1024 * 1024
+
+    def __init__(self, path):
+        self.path = str(path)
+        with FITZ_LOCK:
+            self.doc = fitz.open(path)
+            self.rects = [fitz.Rect(page.rect) for page in self.doc]
+        self._pages = OrderedDict()
+        self._tiles = OrderedDict()
+        self._tile_bytes = 0
+
+    def tile(self, index, matrix, clip):
+        key = (index, tuple(matrix), tuple(clip))
+        cached = self._tiles.get(key)
+        if cached is not None:
+            self._tiles.move_to_end(key)
+            return cached
+        page = self._pages.get(index)
+        if page is None:
+            with FITZ_LOCK:
+                page = DisplayPage(self.doc[index])
+            self._pages[index] = page
+            while len(self._pages) > self.MAX_PAGES:
+                self._pages.popitem(last=False)
+        self._pages.move_to_end(index)
+        pix = page.render(matrix, clip)
+        image = QImage(pix.samples, pix.width, pix.height, pix.stride,
+                       QImage.Format_RGB888).copy()
+        result = (pix.x, pix.y, image)
+        self._tiles[key] = result
+        self._tile_bytes += image.sizeInBytes()
+        while (len(self._tiles) > self.MAX_TILES or
+               self._tile_bytes > self.MAX_TILE_BYTES):
+            _, (_, _, old) = self._tiles.popitem(last=False)
+            self._tile_bytes -= old.sizeInBytes()
+        return result
+
+    def close(self):
+        self._tiles.clear()
+        self._tile_bytes = 0
+        self._pages.clear()
+        if self.doc is not None:
+            with FITZ_LOCK:
+                self.doc.close()
+            self.doc = None
+
+
+class _PdfPageItem(QGraphicsPixmapItem):
+    """Stable prepared-page bounds; native content at actual device pixels."""
+
+    def __init__(self, pixmap, source, index):
+        super().__init__(pixmap)
+        self.source, self.index = source, index
+        self.setTransformationMode(Qt.FastTransformation)
+        self.setFlag(QGraphicsItem.ItemUsesExtendedStyleOption, True)
+
+    def paint(self, painter, option, widget=None):
+        if self.source.doc is None:
+            return
+        bounds = self.boundingRect()
+        exposed = option.exposedRect.intersected(bounds)
+        if exposed.isEmpty():
+            return
+        rect = self.source.rects[self.index]
+        px, py = bounds.width() / rect.width, bounds.height() / rect.height
+        transform = painter.deviceTransform()
+        matrix = fitz.Matrix(px * transform.m11(), 0, 0,
+                             py * transform.m22(), transform.dx(), transform.dy())
+        clip = fitz.Rect(exposed.left() / px, exposed.top() / py,
+                         exposed.right() / px, exposed.bottom() / py)
+        x, y, image = self.source.tile(self.index, matrix, clip)
+        # Already rendered on the actual device grid, including fractional
+        # page placement and HiDPI. Do not scale it a second time through the
+        # view's world transform (or lose native shape precision on zoom).
+        painter.save()
+        painter.resetTransform()
+        # Resetting the world transform does not remove Qt's system/device
+        # translation (e.g. a viewport painted into a parent-window capture).
+        # Invert the remaining device mapping, not just its HiDPI scale.
+        inverse, valid = painter.deviceTransform().inverted()
+        if not valid:
+            painter.restore()
+            return
+        painter.setRenderHint(QPainter.SmoothPixmapTransform, False)
+        painter.setRenderHint(QPainter.Antialiasing, False)
+        painter.drawImage(inverse.mapRect(QRectF(x, y, image.width(), image.height())), image)
+        painter.restore()
 
 
 class PdfGraphicsView(QGraphicsView):
@@ -18,7 +122,7 @@ class PdfGraphicsView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self.setResizeAnchor(QGraphicsView.AnchorUnderMouse)
         self.setDragMode(QGraphicsView.ScrollHandDrag)
-        self.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        self.setRenderHint(QPainter.SmoothPixmapTransform, False)
         self._zoom = 1.0
         self._peers: list["PdfGraphicsView"] = []
         self._syncing = False
@@ -74,8 +178,8 @@ class PdfGraphicsView(QGraphicsView):
 class ContinuousDocView(QGraphicsView):
     """All pages, one continuous scroller: vertical flow, gap, autowrap grid.
 
-    Zooming out reflows to as many columns as fit the window width
-    (designer ruling §26). Peer-linked zoom/scroll like PdfGraphicsView.
+    Zooming out reflows to as many occupied columns as fit the window width
+    (§§26/164). Peers share the baseline grid and zoom/scroll (§§101/165).
     """
 
     GAP = 24
@@ -85,10 +189,12 @@ class ContinuousDocView(QGraphicsView):
         self._scene = QGraphicsScene(self)
         self.setScene(self._scene)
         self.setDragMode(QGraphicsView.ScrollHandDrag)
-        self.setRenderHint(QPainter.SmoothPixmapTransform, True)
+        self.setRenderHint(QPainter.SmoothPixmapTransform, False)
         self.setTransformationAnchor(QGraphicsView.AnchorUnderMouse)
         self._base: list[QPixmap] = []
+        self._pdf_source = None
         self._items: list[QGraphicsPixmapItem] = []
+        self._layout_grid = None
         self._zoom = 1.0
         self._did_fit = False
         self._peers: list["ContinuousDocView"] = []
@@ -119,12 +225,27 @@ class ContinuousDocView(QGraphicsView):
             return self._items[i].pos()
         return QPointF(0, 0)
 
-    def set_pages(self, images: list[QImage]):
+    def clear_pdf_source(self):
+        """Release open PDF handles before artifact retirement/window close."""
+        if self._pdf_source is not None:
+            self._pdf_source.close()
+            self._pdf_source = None
+
+    def set_pages(self, images: list[QImage], pdf_path=None):
+        source = _PdfSource(pdf_path) if pdf_path is not None else None
+        if source is not None and len(source.rects) != len(images):
+            source.close()
+            raise ValueError("Prepared pages and actual PDF must match")
         self._scene.clear()
+        self.clear_pdf_source()
+        self._pdf_source = source
         self._base = [QPixmap.fromImage(im) for im in images]
         self._items = []
-        for pm in self._base:
-            it = QGraphicsPixmapItem(pm)
+        self._layout_grid = None
+        for i, pm in enumerate(self._base):
+            it = (_PdfPageItem(pm, source, i) if source is not None
+                  else QGraphicsPixmapItem(pm))
+            it.setTransformationMode(Qt.FastTransformation)
             self._scene.addItem(it)
             self._items.append(it)
         self._zoom = 1.0
@@ -154,20 +275,47 @@ class ContinuousDocView(QGraphicsView):
         return self._page_h()
 
     def _gcols(self) -> int:
-        vw = max(1, self.viewport().width())
-        slot = self._gw() * self._zoom + self.GAP
-        return max(1, int(vw / slot)) if slot > 0 else 1
+        src = self.layout_from
+        grid = src if src is not None and src._base else self
+        available = grid.maximumViewportSize()
+        vw, vh = max(1, available.width()), max(1, available.height())
+        # Placement uses scene-unit gaps, transformed along with the pages.
+        # The last column has no trailing gap. Never reserve nonexistent pages:
+        # AlignCenter must center the occupied grid, not empty column capacity.
+        slot = (self._gw() + self.GAP) * self._zoom
+        count = max(1, grid.page_count)
+
+        def columns(width):
+            capacity = max(1, int((width + self.GAP * self._zoom) / slot)) if slot > 0 else 1
+            return min(count, capacity)
+
+        cols = columns(vw)
+        # Decide against the proposed grid, not the old scrollbar visibility:
+        # wrapping can remove the vertical bar and make another column fit.
+        extent = grid.style().pixelMetric(QStyle.PM_ScrollBarExtent, None, grid)
+        if grid.style().styleHint(QStyle.SH_ScrollView_FrameOnlyAroundContents, None, grid):
+            extent += 2 * grid.frameWidth()
+        if grid.horizontalScrollBarPolicy() == Qt.ScrollBarAsNeeded and self._gw() * self._zoom > vw:
+            vh -= extent
+        rows = (count + cols - 1) // cols
+        height = (rows * (self._gh() + self.GAP) - self.GAP) * self._zoom
+        if grid.verticalScrollBarPolicy() == Qt.ScrollBarAsNeeded and height > vh:
+            cols = columns(max(1, vw - extent))
+        return cols
 
     def cols(self) -> int:
-        vw = max(1, self.viewport().width())
-        slot = self._page_w() * self._zoom + self.GAP
-        return max(1, int(vw / slot)) if slot > 0 else 1
+        """The same occupied grid used for page placement and mini framing."""
+        return self._gcols()
 
     def relayout(self):
         if not self._items:
             return
         cols = self._gcols()
         pw, ph = self._gw(), self._gh()
+        grid = (cols, pw, ph, len(self._items))
+        if grid == self._layout_grid:
+            return  # Ordinary peer pan needs no page-geometry work.
+        self._layout_grid = grid
         for i, it in enumerate(self._items):
             r, c = divmod(i, cols)
             it.setPos(c * (pw + self.GAP), r * (ph + self.GAP))
@@ -183,22 +331,26 @@ class ContinuousDocView(QGraphicsView):
         if src is not None and src._base:
             # Mirrored pane: take the sibling's zoom, never compute our own —
             # zoom must never reset from layout differences (§101).
-            self._zoom = src._zoom
-            self.setTransform(QTransform().scale(self._zoom, self._zoom))
-            self.relayout()
-            self._push()
+            self._apply_zoom(src._zoom)
             return
         if self._page_w():
             vw = max(1, self.viewport().width())
-            self._zoom = max(0.05, vw / (self._page_w() + self.GAP))
-            self.setTransform(QTransform().scale(self._zoom, self._zoom))
-        self.relayout()
-        self._push()
+            self._apply_zoom(max(0.05, vw / (self._page_w() + self.GAP)))
 
     def set_zoom(self, z: float):
-        self._zoom = min(4.0, max(0.05, z))
-        self.setTransform(QTransform().scale(self._zoom, self._zoom))
-        self.relayout()
+        self._apply_zoom(min(4.0, max(0.05, z)))
+
+    def _apply_zoom(self, z: float):
+        syncing = self._syncing
+        self._syncing = True
+        try:
+            self._zoom = z
+            self.setTransform(QTransform().scale(z, z))
+            self.relayout()
+        finally:
+            self._syncing = syncing
+        # Scrollbar signals during transform/reflow must not mirror half of a
+        # zoom transaction (new camera with old page geometry) to the peer.
         self._push()
 
     def wheelEvent(self, e):
@@ -212,8 +364,12 @@ class ContinuousDocView(QGraphicsView):
     def _push(self):
         if self._syncing:
             return
-        for p in self._peers:
-            p._pull(self)
+        self._syncing = True
+        try:
+            for p in self._peers:
+                p._pull(self)
+        finally:
+            self._syncing = False
         self._notify_changed()
 
     def _notify_changed(self):
@@ -221,14 +377,16 @@ class ContinuousDocView(QGraphicsView):
             self.changed()
 
     def _pull(self, src: "ContinuousDocView"):
+        syncing = self._syncing
         self._syncing = True
         try:
-            self.setTransform(src.transform())
             self._zoom = src._zoom
+            self.setTransform(src.transform())
+            self.relayout()
             self.horizontalScrollBar().setValue(src.horizontalScrollBar().value())
             self.verticalScrollBar().setValue(src.verticalScrollBar().value())
         finally:
-            self._syncing = False
+            self._syncing = syncing
         # §92: a synced zoom (Ctrl+wheel on the peer pane) changes this view
         # without touching its own scrollbars — notify so the trailing
         # reframe debounce still sees the last view change.
@@ -270,3 +428,4 @@ class ContinuousDocView(QGraphicsView):
             self.fit_width()
         else:
             self.relayout()
+            self._push()

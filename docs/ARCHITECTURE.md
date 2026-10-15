@@ -20,7 +20,8 @@ sudo apt install python3-pymupdf python3-pil python3-numpy \
 pip install -r requirements.txt  # into local ./.venv (PySide6, pymupdf, Pillow, numpy)
 ```
 - `PyMuPDF (fitz)` — open/render/replace images, `rewrite_images`, save with
-  `garbage/deflate/use_objstms`. Version in trixie: 1.25.4 (good enough).
+  `garbage/deflate/use_objstms`. The local requirement is >=1.28.2 for the
+  verified native filter bindings; Debian's older system build is not used.
 - `Pillow` — JPEG encode, 1-bit PNG payloads, numpy↔QImage preview bridge.
 - `numpy` — threshold math without OpenCV. OpenCV used only if present.
 - `jbig2` (external system package) — the BW encoder: per-page streams via
@@ -34,10 +35,15 @@ pdf-minimalist/
       cancel.py       # shared CancelToken (threading.Event + kill list)
       threshold.py    # simple / otsu / adaptive / sauvola, pure numpy
       pdf_io.py       # open, page count, gray render, save with gc
+      display.py      # exact read-only native PDF display, no AA/interpolation
       pipeline.py     # BW full-page raster + color JPEG recompress + gc copy
       presets.py      # 8 opinionated presets, view modes, apply helpers
     ui_qt/            # Qt GUI only
       app.py          # DnD, pages, presets, main panes, save worker, ESC
+      layout.py       # shared 4px token, PaneBlock headers/content, equal/stacked PreviewPair
+      headers.py      # metadata elides on paint, never drives splitter widths
+      icons.py        # one named-theme action provider, stock Breeze SVG fallback (§197)
+      assets/breeze/  # 16/22px light/dark icons with provenance and licenses
       viewer.py       # QGraphicsView: wheel=scroll, ctrl+wheel=zoom, drag-pan, peer-synced
     __main__.py       # CLI: [pdf] [--debug]
   tests/  (see TEST_PLAN.md)
@@ -45,31 +51,190 @@ pdf-minimalist/
   docs/               # all analysis + rulings docs
 ```
 
-## Threading & ESC cancel design
-- One `QThread` Worker per save job; `CancelToken.event: threading.Event`.
-  Pipeline checks `event.is_set()` after each page render, each image encode,
-  each save step.
-- Subprocesses launched via `Popen` stored in token; `cancel()` kills them.
-- GUI: `<Escape>` bound at top level + Cancel button → `token.cancel()`.
-  Worker polls, aborts, posts "Cancelled" status, deletes partial output.
-- Preview renders also cancellable: debounce slider (150ms), kill stale render.
-- Requirement: ESC → UI responsive again in <200ms, no zombie `jbig2enc`.
+## Background jobs (designer rulings §§37/43/44/47/48/51/89/90/95)
 
-## Data flow (BW mode)
+Heavy work runs in spawn-context worker PROCESSES (half-core cap), managed
+by thin QThreads that only forward key-addressed results — threads proved
+fatal for compute (bare aborts inside numpy with Qt signals in play).
+Process-once (§§44/122/149): on file open, queue every saved filter (selected
+first, then strip order). Each immutable effective recipe owns one real saved
+PDF, exact file size, and prepared page data used by both views. Existing work
+is reused even on first selection; scroll, pan, zoom, page turns and strip
+clicks only view/reframe that result. Live recipe changes debounce only the
+edited filter; saved and live artifacts remain separate until an explicit
+Save / Save As… / Discard decision. The old mini-slot/spec-slot architecture
+and two-entry preview cache violated this rule and are superseded, not canon.
+See `FILTER_LIFECYCLE.md`, `UI_LAYOUT.md`, issues B74–B77, TODO §§150–152.
+
+## Threading & ESC cancel design
+
+- Artifact manager QThreads wait on process-pool futures; the GUI never waits
+  synchronously for filtering or whole-document prepared-file readback.
+  Keys address every completion. Native viewport painting (§§174/175) observes
+  bounded exposed regions, caching display lists and device-scale tiles.
+- All live recipe inputs share one trailing 300ms edit debounce (§183,
+  proposed default). Retired results cannot overwrite a newer draft;
+  completed/in-flight files are deleted only after all owners release them.
+- PDF export is a cancellable chunked copy in a QThread. Escape/Cancel stops
+  a running export only (§85); it is not Undo and does not discard filter edits.
+- Closing resolves dirty state, writes per-job cancellation markers, cancels
+  queued futures, and waits asynchronously for running work before deleting
+  process-owned files. Pipeline cancellation is checked between pages/images/stages.
+- Responsiveness remains required. An already running external encoder can
+  take until its bounded subprocess timeout to exit; this repair does not claim
+  sub-200ms encoder termination. Do not destroy its QThread or files meanwhile.
+
+## Data flow — SINGLE PATH (designer rulings §§122/149, locked)
+
+There is exactly ONE way a filter result comes into existence. No parallel
+preview renderer, no mini renderer, no estimator — every past "preview
+wrong / amount wrong" failure came from two implementations of the same idea
+drifting apart. The flow:
+
 ```
-PDF page → fitz.get_pixmap(dpi=300) → numpy gray (0-255)
+input PDF + filter spec
+  → run the REAL saver → <os-temp>/pdf-minimalist/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/filtered.pdf
+     (background, process-once; OS temp via Qt QStandardPaths — /tmp Linux,
+     GetTempPath Windows, $TMPDIR macOS; designer §123, see
+     docs/PERSISTENCE_AND_TEMP.md and ui_qt/paths.py)
+  → preview  = observe THAT temp file at current device/zoom resolution, no AA
+               (prepared 150dpi pages supply stable layout/mini data)
+  → minis    = frame prepared pages from THAT temp file exactly (§48)
+  → amount   = os.path.getsize(THAT temp file)
+  → Save button = copy THAT temp file to the destination
+baseline pane = the input file itself, rendered by the same page renderer
+```
+
+- View geometry (§§101/164/165): the baseline owns page dimensions, page
+  count and available layout area. One column calculation caps capacity by
+  real page count and uses the transformed scene-unit stride with no trailing
+  gap. Prospective row height determines native scrollbar reservation, not
+  the previous grid's scrollbar state. Original, preview and mini framing use
+  this same occupied grid. Peer zoom copies the camera AND reflows geometry
+  before copying scroll positions; scoped synchronization guards prevent
+  intermediate scrollbar signals from propagating half a zoom. A geometry
+  signature avoids repositioning all pages on ordinary pan. Qt AlignCenter
+  owns centering; no artificial padding, translations or forced pan resets.
+- Header sizing (§§124/166): header content is full filter/file metadata,
+  not the current elided fragment. The widget ignores horizontal text size
+  hints and paints the elision at its allocated width. Painting never mutates
+  content/geometry. Filter/file state updates headers; the view-reframe timer
+  does not. This breaks the former loop: elided setText → changing minimum
+  widths → layout/splitter resize → delayed mini reframe → shorter setText.
+- Region composition (§188): the central root owns one shared 4-logical-pixel
+  outer inset and gutter; PaneBlock gives all three regions the same header/
+  content layout; PreviewPair owns its equal/stacked preview
+  layouts with zero nested margins. The panel form owns its single internal
+  inset. The main splitter row and title-free full-width strip share edges;
+  no default-margin wrapper chain, spacer compensation or metadata-driven
+  geometry. STRIP_PADDING aliases the same token for mini/progress margins.
+  Native frame/control interiors remain independent; see `UI_LAYOUT.md`.
+- One saver: spec dict → PDF file (`pipeline.save_with_spec`, shared by the
+  background temp saves and the Save button — same function, same bytes).
+- One renderer: PDF pages → bitmaps (baseline, previews and minis differ
+  only in source file and display scale, never in filter processing path).
+  Filter processing happens once. Disk-backed prepared page buffers supply
+  immediate layout/minis; bounded native viewport readback preserves native
+  geometry as zoom increases (§§172–175). The renderer disables image
+  decoder subsampling as well as interpolation and all PDF-content AA.
+  It never thresholds display pixels or changes files. Native font/vector
+  precision is not limited by the prepared 150dpi raster. UI chrome is
+  unaffected; genuine encoded gray/color/opacity is retained.
+- Filter UUIDs are persistent unique internal identities (§155); load repairs
+  invalid/duplicate UUIDs, and Save As generates a fresh one. UUID-named
+  directories own immutable input/recipe artifacts; copying a prepared result
+  into a new filter does not call the real saver. Names/numbers stay out of
+  recipe identity, and legacy slug aliases are only for settings compatibility.
+- Strip sequence numbers are presentation state (§148), not saver or cached
+  image data. Stable filter identities retain their results across reorders;
+  the shared Qt item delegate draws the numbered name from the current model
+  row. `rowsMoved` synchronizes the dropdown and persistence without processing
+  or rebuilding content. See `UI_LAYOUT.md`, issue B73, and `TODO.md` §148.
+- Reorder identity repair (§§156/157): model order is authoritative; the
+  dropdown and processing sequence derive from it. Caption/content updates
+  bind to stable UUID-bearing items, not mutable position arrays. One Qt
+  `startDrag` override owns native drags and a UUID-only payload; one `moveRow`
+  is the only drop mutation. The old parallel default/manual drag controllers
+  could leave Qt's pressed state armed and delete a source row after moving.
+- Dirty selection transaction (§161): scoped QSignalBlocker suppresses a
+  view's intermediate row notifications while Qt runs normal press/release/
+  key handlers. One selectionSettled notification follows the complete input
+  if state changed. The shared switch controller then resolves the draft;
+  Cancel cannot be overwritten by a still-running native selection step.
+  Programmatic row changes retain their normal final signal. Revert (§162)
+  calls the same safe Discard operation without changing selection or filtering.
+- Temp ownership keys include (filter UUID + file identity + FULL spec inputs): same key =
+  same bytes, guaranteed; missing key = run the saver, never invent.
+- The input file is never touched; a crashed worker leaves at most an
+  orphan temp, never a corrupt document. Stale temps are swept, not trusted.
+
+Why this is robust and safe: preview, minis and amounts are OBSERVATIONS of
+the save output, so they cannot disagree with Save by construction — not by
+test coverage. Container overhead, soft masks, font subsets: included
+automatically, because they are measured, not modeled. Any divergence that
+used to be possible (thresholded preview vs vector-text save, estimated vs
+embedded bytes) becomes structurally impossible: there is no second
+implementation left to diverge.
+
+Historical, superseded by §122 and §§171/180/182: the old per-mode sketches
+below are retained only as history. Both observation flow AND image-layer
+saver internals have changed; do not restore these per-image loops.
+```
+BW internals: PDF page → fitz.get_pixmap(dpi) → numpy gray (0-255)
   → threshold(strategy, T) → 1-bit PIL image
   → encode JBIG2 (test-decoded; 1-bit PNG where undecodable)
-  → replace page with single image xref
-  → save new PDF (garbage=4)
-```
-Color mode:
-```
-for each image xref: extract pix → downsample if >150dpi
-  → re-encode JPEG q=X → replace only if smaller
+  → replace page with single image xref → save new PDF (garbage=4)
+Color internals:
+for each image xref: extract pix → downsample if > dpi_cap
+  → re-encode (JPEG / JPEG2000 / palette-Flate) → replace only if smaller
 → save with gc + deflate
 ```
+
+### Effective BW recipes (§§127/149/168–171)
+
+FFPR ON flattens each page to one 1-bit image; OFF keeps original text/vectors
+and optimizes existing images to 1-bit. §§168–171 require composition
+of overlapping imagery, retaining native text AND vector diagrams, not the old
+per-image mask waste. §171 simplifies the unshipped ordered-run prototype:
+ONE image canvas on white, original native text/vectors above it, plain white
+page-backdrop rectangles below it. MuPDF filters original PDF operators,
+not approximate glyph silhouettes. Exact native/image interleaving is not
+required; FFPR provides the fully flattened appearance. `COMPRESSION.md`
+describes this policy and lossless PDF/font compression.
+This is not the discarded mixed-layer
+proposal. Both modes feed the same saved-file observation flow. Toggle affects
+only the edited filter's draft, never unrelated results.
+
+### Shared image-canvas preparation (§§180/182)
+
+MuPDF filters original paint operators into native backdrops, one image
+canvas and native foreground artwork. `core/canvas.py` composes unmodified
+image samples/opacity at actual source image/mask density using the exact
+native renderer. Bounded tiles fill an anonymous disk-backed RGBX buffer.
+ONE global Lanczos resize sets final DPI before BW gray/threshold or color
+palette/codec transforms; the scratch is artifact-owned and auto-unlinked.
+No per-image RGB/mask rewrite, independent tiled resize or post-filter resize.
+BW retains its white composition backdrop; color includes actual flat page
+backdrops. Native text/vectors, page boxes, links and annotations remain;
+native-only pages do not gain a canvas. FFPR deliberately renders the entire
+page at target DPI instead. All modes still use `save_with_spec` and actual
+saved-file readback; no second GUI filter pipeline.
+
+### Layered-color JBIG2 study (§§192–194)
+
+[LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) records the proposed colored
+1-bit stencil representation and actual full-PDF benchmark/decoder evidence.
+Prototype tooling reuses the existing RGB canvas, nearest-palette map, native
+layer assembler and PDF optimizer; the experiment splits only the final
+quantized bitmap canvas. No production codec, recipe identity, GUI control,
+saved artifact lifecycle or default changes during the study. This is not
+the parked rasterized-text mixed-mode design.
 
 ## Packaging
 - v0.1: `python3 -m pdf_minimalist` from source + `requirements.txt`.
 - Later: `.deb`, AppImage, `pipx`, Windows exe via PyInstaller (same `core/`).
+
+## Issues on this page
+
+B1, B3, B4, B6, B8, B11, B21, B24, B26, B33, B34, B35, B45, B46, B53 — see
+`issues.md` (gated log); substance lives in the sections above.

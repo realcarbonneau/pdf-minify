@@ -1,5 +1,11 @@
 # UX Design — DnD, Visualize, Threshold, ESC
 
+HISTORICAL DRAFT — superseded by designer rulings §§7/9/26/32/44/47/48/55/
+122/127/149. The Tk/page-list/estimate/on-click-render plan below is retained
+only as history, not current guidance. Current Qt layout: `UI_LAYOUT.md`;
+single real-file processing and saved/live edits: `FILTER_LIFECYCLE.md`;
+developer workflow: `DEVELOPER_GUIDELINES.md`.
+
 ## Main window (v0.1, Tkinter)
 ```
 +--------------------------------------------------------------+

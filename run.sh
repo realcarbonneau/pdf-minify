@@ -1,8 +1,11 @@
 #!/bin/bash
-# Local UI launcher for the designer. Stays in this dir; scratch goes to ./.tmp/.
+# Local UI launcher; logs follow the OS temp directory.
 # Usage: ./run.sh [file.pdf] [--debug]
 # No args: the app reopens the last file (§91), else the photo demo.
-set -e
+set -e -o pipefail
+trap 'app_exit_code=$?; printf "APP_EXIT status=%s\n" "$app_exit_code"' EXIT
 cd "$(dirname "$0")"
 mkdir -p .tmp
-./.venv/bin/python -m pdf_minimalist "$@" 2>&1 | tee .tmp/pdf-minimalist.log
+LOGDIR="${TMPDIR:-/tmp}/pdf-minimalist"
+mkdir -p "$LOGDIR" .tmp
+./.venv/bin/python -m pdf_minimalist "$@" 2>&1 | tee "$LOGDIR/pdf-minimalist.log"

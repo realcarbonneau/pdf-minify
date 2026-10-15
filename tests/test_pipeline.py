@@ -2,6 +2,7 @@ import fitz
 import numpy as np
 from PIL import Image
 import io
+import pytest
 from pdf_minimalist.core.pipeline import process_file, recompress_file, gc_copy, PAGE_SIZES
 from pdf_minimalist.core.cancel import CancelToken
 
@@ -53,13 +54,72 @@ def test_original_size(tmp_path):
         assert (round(r.width), round(r.height)) == (400, 400)
 
 
-def test_no_force_passthrough_keeps_text(tmp_path):
+def test_unforced_save_keeps_text_and_1bits_images(tmp_path):
+    """Designer §127: FFPR OFF keeps vector text and replaces every image
+    with a 1-bit version — never a color JPEG in a BW output."""
+    src = str(tmp_path / "in.pdf")
+    out = str(tmp_path / "out.pdf")
+    _make_photo(src)  # photo + "caption keeps text layer"
+    process_file(src, out, strategy="otsu", force_raster=False,
+                 token=CancelToken())
+    with fitz.open(out) as o:
+        assert "caption" in o[0].get_text()  # text kept vector
+        imgs = o[0].get_images(full=True)
+        assert len(imgs) >= 1
+        for e in imgs:
+            assert o.xref_get_key(e[0], "BitsPerComponent") == ("int", "1"), e[0]
+
+
+def test_force_keys_differ_by_force():
+    """Designer §127: forced and unforced are different outputs — preview,
+    mini and amount keys all carry the force."""
+    from pdf_minimalist.ui_qt.app import MainWindow
+    a = {"preset_id": "bw-otsu", "mode": "bw", "dpi": 300,
+         "strategy": "otsu", "t": 180, "force_raster": True}
+    b = dict(a, force_raster=False)
+    assert MainWindow._spec_tuple(a) != MainWindow._spec_tuple(b)
+    from pdf_minimalist.ui_qt.artifacts import ArtifactStore
+    # Preview, mini, and final bytes all share this one real-file identity.
+    uid = "1b81d828-6917-4684-bf1f-ab268ce009a3"
+    assert ArtifactStore.key("f", a, uid) != ArtifactStore.key("f", b, uid)
+
+
+def test_bw_save_flattens_text_pages(tmp_path):
+    """Designer §127: FFPR ON flattens even text pages to one image."""
     src = str(tmp_path / "in.pdf")
     out = str(tmp_path / "out.pdf")
     _make_mixed(src)
-    process_file(src, out, strategy="otsu", force_raster=False, token=CancelToken())
+    process_file(src, out, strategy="otsu", token=CancelToken())
     with fitz.open(out) as o:
-        assert o[0].get_text().strip().startswith("Hello")
+        assert o[0].get_text().strip() == ""  # rasterized, no text layer
+        assert len(o[0].get_images(full=True)) == 1  # one page image
+
+
+@pytest.mark.parametrize("png_fallback", [False, True])
+def test_distinct_forced_pages_keep_their_own_image_payload(tmp_path, monkeypatch, png_fallback):
+    """Different JBIG2 pages must never overwrite one shared placeholder xref."""
+    from pdf_minimalist.core.pipeline import _threshold
+    if png_fallback:
+        monkeypatch.setattr("pdf_minimalist.core.pipeline.bw_page_jbig2", lambda *a, **k: None)
+    source, output = tmp_path / "distinct.pdf", tmp_path / "distinct-bw.pdf"
+    with fitz.open() as doc:
+        for i in range(3):
+            page = doc.new_page(width=144, height=180)
+            page.insert_text((10, 25), f"Page {i + 1}")
+            page.draw_rect(fitz.Rect(10 + i * 25, 50, 30 + i * 25, 150),
+                           color=(0, 0, 0), fill=(0, 0, 0))
+        doc.save(source)
+    process_file(str(source), str(output), strategy="simple", t=180,
+                 dpi=72, force_raster=True)
+    with fitz.open(source) as src, fitz.open(output) as out:
+        assert len({page.get_images()[0][0] for page in out}) == 3
+        for i in range(3):
+            orig = src[i].get_pixmap(dpi=72, colorspace=fitz.csGRAY, alpha=False)
+            saved = out[i].get_pixmap(dpi=72, colorspace=fitz.csGRAY, alpha=False)
+            expect = _threshold(np.frombuffer(orig.samples, dtype=np.uint8).reshape(
+                orig.height, orig.width), "simple", 180)
+            got = np.frombuffer(saved.samples, dtype=np.uint8).reshape(saved.height, saved.width)
+            assert np.array_equal(got, expect), i
 
 
 def test_bad_page_size_rejected(tmp_path):
@@ -153,12 +213,15 @@ def test_jbig2_save_roundtrip(tmp_path):
     assert len(jb2) < len(bw_page_png(g, "otsu"))
 
 
-def test_jbig2_fallback_stays_valid(tmp_path):
-    """Sparse pages MuPDF cannot decode fall back to PNG — still valid ink."""
-    import shutil
-    if shutil.which("jbig2") is None:
-        import pytest
-        pytest.skip("jbig2 binary missing")
+def test_jbig2_fallback_stays_valid(tmp_path, monkeypatch):
+    """A genuinely failed decode falls back to PNG — still valid ink.
+
+    Sparse text previously failed only because encoded JBIG2 got an extra
+    compression wrapper (B79). Inject invalid bytes instead of asserting
+    that repaired, valid encoder output must always use a worse fallback.
+    """
+    from pdf_minimalist.core import pipeline
+    monkeypatch.setattr(pipeline, "bw_page_jbig2", lambda *a, **k: b"invalid JBIG2")
     from pdf_minimalist.core.pdf_io import render_gray
     import fitz as _fz
     from pdf_minimalist.core.pipeline import bw_page_payload
@@ -168,7 +231,7 @@ def test_jbig2_fallback_stays_valid(tmp_path):
     with _fz.open(src) as _d:
         g = render_gray(_d, 0, dpi=300, token=CancelToken())
     _jb2, codec = bw_page_payload(g, "otsu")
-    assert codec == "png"  # this input's JBIG2 fails MuPDF decode
+    assert codec == "png"  # the injected encoder output really fails decode
     process_file(src, out, strategy="otsu", token=CancelToken())
     with fitz.open(out) as o:
         px = o[0].get_pixmap(dpi=100, colorspace=fitz.csGRAY, alpha=False)
@@ -337,28 +400,14 @@ def test_true_indexed_bpc_and_render(tmp_path):
             {(255, 0, 0), (0, 0, 255)}
 
 
-def test_mixed_mode_keeps_text_and_shrinks_images(tmp_path):
-    """Designer §103: force off on text pages keeps text, compresses images."""
+def test_bw_save_photo_page_single_image(tmp_path):
+    """Designer §126: photo pages flatten to one image, smaller than input."""
     src = str(tmp_path / "in.pdf")
     out = str(tmp_path / "out.pdf")
-    _make_photo(src)  # photo + "caption keeps text layer"
+    _make_photo(src)
     n_in = len(open(src, "rb").read())
-    process_file(src, out, strategy="otsu", force_raster=False,
-                 token=CancelToken())
+    process_file(src, out, strategy="otsu", token=CancelToken())
     assert len(open(out, "rb").read()) < n_in
     with fitz.open(out) as o:
         assert o.page_count == 1
-        assert "caption" in o[0].get_text()  # text layer survived
-
-
-def test_force_toggle_changes_nothing_cached():
-    """Designer §§103/105/106/113: the toggle changes save identity but never
-    any cached identity — preview, minis AND amounts are all force-free, so
-    flipping the checkbox dispatches no work and moves no size."""
-    from pdf_minimalist.ui_qt.app import MainWindow
-    a = {"preset_id": "bw-otsu", "mode": "bw", "dpi": 300,
-         "strategy": "otsu", "t": 180, "force_raster": True}
-    b = dict(a, force_raster=False)
-    assert MainWindow._spec_tuple(a) == MainWindow._spec_tuple(b)
-    assert MainWindow._mini_key("f", "bw-otsu") == MainWindow._mini_key("f", "bw-otsu")
-    assert MainWindow._estb_key("f", "bw-otsu", 300) == MainWindow._estb_key("f", "bw-otsu", 300)
+        assert len(o[0].get_images(full=True)) == 1

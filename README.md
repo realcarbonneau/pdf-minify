@@ -8,11 +8,21 @@ What you see is what saving writes.
 
 - **BW pipeline**: threshold → lossless JBIG2 (1-bit PNG where undecodable),
   300dpi default, original page size kept unless you pick Letter/A4.
-- **Color pipeline**: best tool wins per image — baseline JPEG, JPEG2000, or
-  lossless palette Flate for few-color graphics; vectors and text survive.
+  FFPR off combines images into one BW canvas with native text/vector
+  overlays; FFPR on flattens the entire page, preserving its stacked appearance.
+- **Image processing**: compose original imagery/opacity in full color, resize
+  once to final DPI, then threshold or reduce colors/compress. No post-filter
+  resizing; native text/vectors survive unless FFPR is on.
+- **Color pipeline**: one combined image canvas — JPEG, JPEG2000, or palette
+  Flate; few-color lossless candidates compete by actual encoded size.
 - **Honest UI**: original and preview panes stay synced (zoom, pan, scroll);
-  scrolling never recomputes; ESC cancels anything; every size shown is
-  measured encoder output, never a guess.
+  view changes never reprocess filters; ESC cancels an active operation/dialog;
+  both PDF panes display without added AA/smoothing, and native shapes gain
+  precision on zoom. Every size shown is
+  the exact full filtered PDF size, including fonts/masks/overhead, never a guess.
+- **Saved/live filters**: edits debounce with a `*` marker; switching an
+  unsaved filter offers Save, Save As…, Discard, or Cancel. Completed files
+  supply preview, minis, sizes, and PDF export without reprocessing on selection.
 - **Local-first**: Qt6/PySide6 + PyMuPDF, everything Python-side in `./.venv`.
 
 Keywords: pdf optimizer, pdf compressor, reduce pdf size, threshold
@@ -24,15 +34,23 @@ lossless palette flate, pyside6 gui, debian lxde.
 ```bash
 ./setup_local.sh
 ./test.sh              # FULL suite (green before every ship)
-./run.sh [file.pdf] [--debug]   # UI + stdout log, tee'd to .tmp/pdf-minimalist.log
+./run.sh [file.pdf] [--debug]   # UI + stdout log in the OS temp directory
+xvfb-run -a ./.venv/bin/python tools/drag_smoke.py  # native DnD smoke (xdotool)
+QT_QPA_PLATFORM=offscreen ./.venv/bin/python tools/filter_smoke.py  # filter flow smoke
 # no file: reopens the last one. or:
 source .venv/bin/activate
 python -m pdf_minimalist [input.pdf] [--debug]
 ```
 
-Scratch (demos, logs, screenshots) lives in gitignored `./.tmp/`:
+App logs live in `${TMPDIR:-/tmp}/pdf-minimalist/pdf-minimalist.log`.
+Runtime filtered PDFs and encoder scratch live under
+`${TMPDIR:-/tmp}/pdf-minimalist/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/`;
+each process holds a lock so cleanup cannot delete another running app's work.
+Its generated files and empty PID directory are removed on normal exit.
+Development artifacts (demos and screenshots) live in gitignored `./.tmp/`:
 `tools/make_demo.py` builds `.tmp/demo.pdf`, `tools/shot.py` captures
-offscreen review shots into `.tmp/shot-*.png`,
+offscreen review shots into `.tmp/shot-*.png`, `tools/drag_smoke.py` captures
+native drags into `.tmp/drag-*.png`,
 `tools/bench_filters.py` benchmarks every filter across the corpus.
 
 ## Layout
@@ -53,14 +71,24 @@ pdf-minimalist/
 ## System (apt, NOT in this dir)
 
 See `docs/DEPENDENCIES.md` for the full local-vs-system table.
-Minimum: `python3, python3-venv, jbig2, mupdf-tools, poppler-utils`.
-Qt6 system libs already present on most Debian LXDE boxes; pip PySide6
-bundles its own Qt inside `.venv` so it works even without them.
+Source runtime: Python/venv plus `requirements.txt`; `jbig2` supplies the
+intended BW compression profile. `mutool`/`pdfimages` are inspection/validation
+tools, not GUI runtime requirements. PySide6 brings its own Qt libraries but
+still needs compatible OS display/font libraries.
+
+Certified current platform: **Debian 13 x86-64, LXDE/X11**, source/workspace
+runtime (2026-10-14). See [platform/version evidence](docs/PLATFORMS.md) and the
+[multi-platform packaging guide](docs/PACKAGING.md). Windows/macOS/other
+platforms and installers are not yet certified or built.
 
 ## Docs
 
 - `docs/DESIGNER_VERBATIM.md` — every designer ruling, word for word.
 - `docs/DESIGN.md` — behavior and preset catalog.
+- `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
+- `docs/ICONS.md` — native-theme action icons, stock Breeze fallback and provenance.
 - `docs/DEVELOPER_GUIDELINES.md` — workflow (docs lead, full suite green).
+- `docs/PLATFORMS.md` — dated certified runtime, evidence and explicit limits.
+- `docs/PACKAGING.md` — Task Coach-inspired per-platform build/dependency plan.
 - `docs/GITHUB.md` — copy-paste repo description, topics, keywords.
 - `issues.md` — complaint log; items cross only on designer confirmation.

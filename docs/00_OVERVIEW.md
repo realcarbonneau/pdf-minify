@@ -1,5 +1,32 @@
 # pdf-minimalist — Overview & Opinionated Defaults
 
+Current canon is in `DESIGN.md`, `UI_LAYOUT.md`, `ARCHITECTURE.md`,
+`FILTER_LIFECYCLE.md`, and `COMPRESSION.md`. All filters produce real saved
+PDFs in the background; previews/minis read those files, sizes are their exact
+whole-file byte counts, and export copies them. Selection and view changes do
+not process again. Live filter edits debounce and show `*`, with explicit
+Save / Save As… / Discard / Cancel when leaving an unsaved filter (§149).
+
+Exact display (§§172–175) observes the actual PDFs at device/zoom resolution,
+without PDF-content AA, image interpolation or decoder averaging. This is
+read-only rendering, not repeated filtering. Native shapes refine on zoom.
+The dated certified current runtime is in [PLATFORMS.md](PLATFORMS.md);
+Task Coach-inspired cross-platform dependency/build plans are in
+[PACKAGING.md](PACKAGING.md) (§176). Unbuilt targets are not certified.
+
+Action icons (§197) use the desktop theme with a bundled stock Breeze SVG
+fallback, not custom glyphs. Naming, palette handling, licenses and packaging
+requirements are in [ICONS.md](ICONS.md).
+
+The designer's new low-color experiment is documented separately in
+[LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) (§§192–194): one colored
+lossless JBIG2 stencil per non-white palette entry. Design/benchmarks only;
+existing production filters and the single-saver lifecycle are unchanged.
+
+HISTORICAL BRIEF BELOW — original JPEG defaults, DPI-ceiling wording,
+page-list/per-page-control plan, on-click work and size estimates are
+superseded or unimplemented. They are not current developer instructions.
+
 Target first: **LXDE on Debian 13 (trixie), Python 3.13**.
 Goal later: same codebase runs on Windows / macOS / other Linux.
 

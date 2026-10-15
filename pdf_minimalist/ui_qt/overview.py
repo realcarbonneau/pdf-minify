@@ -48,7 +48,7 @@ class OverviewMap(QWidget):
         s, (ox, oy, w, h) = g
         p = QPainter(self)
         p.drawImage(int(ox), int(oy), self._img.scaled(int(w), int(h),
-                                                       Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                                                       Qt.KeepAspectRatio, Qt.FastTransformation))
         if not self._rect.isNull():
             p.setPen(QPen(QColor(200, 30, 30), 2))
             p.drawRect(int(ox + self._rect.x() * s), int(oy + self._rect.y() * s),

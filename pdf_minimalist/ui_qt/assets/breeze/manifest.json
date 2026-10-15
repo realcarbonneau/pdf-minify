@@ -1,0 +1,178 @@
+{
+  "source_package": "breeze-icon-theme",
+  "source_version": "4:5.116.0-1",
+  "upstream": "https://invent.kde.org/frameworks/breeze-icons",
+  "copyright": "2014, Uri Herrera <uri_herrera@nitrux.in>",
+  "license": "LGPL-3.0-or-later",
+  "line_endings": "LF (normalized from installed source; SVG content otherwise unchanged)",
+  "files": [
+    {
+      "path": "light/16/document-revert.svg",
+      "sha256": "67ff67c922c8cb9b40696fc81806310bfddd8d7e24fa1da815594c9f5bd13359",
+      "source": "/usr/share/icons/breeze/actions/16/document-revert.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/document-revert.svg"
+    },
+    {
+      "path": "light/22/document-revert.svg",
+      "sha256": "e2bb170eaae8ce33eba0f2e07abaa3e9d0acf7b615f3060543a8baf85b7f7bd1",
+      "source": "/usr/share/icons/breeze/actions/22/document-revert.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/document-revert.svg"
+    },
+    {
+      "path": "dark/16/document-revert.svg",
+      "sha256": "a92f9c9e6045df108e49bb515859bc74e4dac671b21da976e81294658aaccfab",
+      "source": "/usr/share/icons/breeze-dark/actions/16/document-revert.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/document-revert.svg"
+    },
+    {
+      "path": "dark/22/document-revert.svg",
+      "sha256": "1a0532e6416056e6d74f4d636d3774fa3e549b68fb22d117ff692b7fde6afbd2",
+      "source": "/usr/share/icons/breeze-dark/actions/22/document-revert.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/document-revert.svg"
+    },
+    {
+      "path": "light/16/edit-rename.svg",
+      "sha256": "9316f2934cddccc2f9d74f38ed9b0a129643fc23b2ae52698315d295ae9d629f",
+      "source": "/usr/share/icons/breeze/actions/16/edit-rename.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/document-edit.svg"
+    },
+    {
+      "path": "light/22/edit-rename.svg",
+      "sha256": "8f3ac3c0d886a243f00c19b88e8382c6c88d6bc47fed303e9e1807eb57271406",
+      "source": "/usr/share/icons/breeze/actions/22/edit-rename.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/document-edit.svg"
+    },
+    {
+      "path": "dark/16/edit-rename.svg",
+      "sha256": "7b7919208bae73d19971c30361840ab5afd76fa7c45c9c5c25f575a39f5e1001",
+      "source": "/usr/share/icons/breeze-dark/actions/16/edit-rename.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/document-edit.svg"
+    },
+    {
+      "path": "dark/22/edit-rename.svg",
+      "sha256": "96854f50a3eb27a3b2dfc5479de7dbb9ffe79ebcee744253ebeb099776970c87",
+      "source": "/usr/share/icons/breeze-dark/actions/22/edit-rename.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/document-edit.svg"
+    },
+    {
+      "path": "light/16/edit-copy.svg",
+      "sha256": "bb98c30c61cec7fa9cb357ca1bec207b44750f1bd6b8c6edbe415cec168b9cf6",
+      "source": "/usr/share/icons/breeze/actions/16/edit-copy.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/edit-copy.svg"
+    },
+    {
+      "path": "light/22/edit-copy.svg",
+      "sha256": "374d3358407b7334f85f10be17616482a6a5501ab1beba735c541b263e2bdbde",
+      "source": "/usr/share/icons/breeze/actions/22/edit-copy.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/edit-copy.svg"
+    },
+    {
+      "path": "dark/16/edit-copy.svg",
+      "sha256": "1d4603768261c2807ff243ee7948ec4181071e922570ffcf36d052f1e8c32d7f",
+      "source": "/usr/share/icons/breeze-dark/actions/16/edit-copy.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/edit-copy.svg"
+    },
+    {
+      "path": "dark/22/edit-copy.svg",
+      "sha256": "34f11f3f9452b7d2389599d52540abfb70c2aa074e1119c2777488fc4e7412c1",
+      "source": "/usr/share/icons/breeze-dark/actions/22/edit-copy.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/edit-copy.svg"
+    },
+    {
+      "path": "light/16/document-save.svg",
+      "sha256": "ada592cd7a09421432184627daea2ceec3e9f1a2df4f03601c9731a44a02da10",
+      "source": "/usr/share/icons/breeze/actions/16/document-save.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/document-save.svg"
+    },
+    {
+      "path": "light/22/document-save.svg",
+      "sha256": "a274e976b4fa2142e8db40fd8bc677238fb830c46c68a2c354ad7d3f198dce74",
+      "source": "/usr/share/icons/breeze/actions/22/document-save.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/document-save.svg"
+    },
+    {
+      "path": "dark/16/document-save.svg",
+      "sha256": "1e1734eb878d2a4ea0ae37de3320e51ce3502a478100491b8431899e9d85996a",
+      "source": "/usr/share/icons/breeze-dark/actions/16/document-save.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/document-save.svg"
+    },
+    {
+      "path": "dark/22/document-save.svg",
+      "sha256": "4ddc1bf339cf3fd7e873203ed2f02720af78a9d0c58f2053143f8a818853033e",
+      "source": "/usr/share/icons/breeze-dark/actions/22/document-save.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/document-save.svg"
+    },
+    {
+      "path": "light/16/process-stop.svg",
+      "sha256": "a4024eff217680cc79d0c87c271e1bca84dfde927a7b53ed34178b2d146a92d7",
+      "source": "/usr/share/icons/breeze/actions/16/process-stop.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/process-stop.svg"
+    },
+    {
+      "path": "light/22/process-stop.svg",
+      "sha256": "1574ffc6acbda1be17c802d02591224f50dd083842a467ab65cd96c564e7eaf5",
+      "source": "/usr/share/icons/breeze/actions/22/process-stop.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/process-stop.svg"
+    },
+    {
+      "path": "dark/16/process-stop.svg",
+      "sha256": "9441f8264384b041e70a82b8a07d1cd2b78fc82a70c8b0e2d1ac58508578b1d1",
+      "source": "/usr/share/icons/breeze-dark/actions/16/process-stop.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/process-stop.svg"
+    },
+    {
+      "path": "dark/22/process-stop.svg",
+      "sha256": "fa9c67a5ff97e8cd29e1186b95f402df044cab6fb03f13d87d566a35da5e0f82",
+      "source": "/usr/share/icons/breeze-dark/actions/22/process-stop.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/process-stop.svg"
+    },
+    {
+      "path": "light/16/zoom-in.svg",
+      "sha256": "ce8020682a0932269ce94a275c04cd0835a5dd8c12905c5202c2e3d9de3ceb48",
+      "source": "/usr/share/icons/breeze/actions/16/zoom-in.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/zoom-in.svg"
+    },
+    {
+      "path": "light/22/zoom-in.svg",
+      "sha256": "b2c1c80dcffaae9732a2add1641b698ede07fd9abd4490177967058cf4262bbb",
+      "source": "/usr/share/icons/breeze/actions/22/zoom-in.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/zoom-in.svg"
+    },
+    {
+      "path": "dark/16/zoom-in.svg",
+      "sha256": "bc3159cc6551116193119886484a162f526b06e48b616d714cc188a29eb03e9d",
+      "source": "/usr/share/icons/breeze-dark/actions/16/zoom-in.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/zoom-in.svg"
+    },
+    {
+      "path": "dark/22/zoom-in.svg",
+      "sha256": "c1cb53527ad5cbabdeae9a25d289aa5bf5559737935634bfc81a6ced9c0be2a6",
+      "source": "/usr/share/icons/breeze-dark/actions/22/zoom-in.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/zoom-in.svg"
+    },
+    {
+      "path": "light/16/zoom-out.svg",
+      "sha256": "7f4b28b0bce822344cc81e7844d38579284a66391ceb79f2183aa5ba6bbdbd74",
+      "source": "/usr/share/icons/breeze/actions/16/zoom-out.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/16/zoom-out.svg"
+    },
+    {
+      "path": "light/22/zoom-out.svg",
+      "sha256": "0f218fdb6a6b6dcac410164ad6e4f96bf6ee92b7924ed242d8d4fec141b2f32e",
+      "source": "/usr/share/icons/breeze/actions/22/zoom-out.svg",
+      "resolved_source": "/usr/share/icons/breeze/actions/22/zoom-out.svg"
+    },
+    {
+      "path": "dark/16/zoom-out.svg",
+      "sha256": "47ca8d08b76f94e55b1f5442a70b6484fb2a5fb1e416fa26f9c168418c163cfd",
+      "source": "/usr/share/icons/breeze-dark/actions/16/zoom-out.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/16/zoom-out.svg"
+    },
+    {
+      "path": "dark/22/zoom-out.svg",
+      "sha256": "cfb5a75b1defeda835329d31401f4a0ff126bf831dc7810eaadccf374808a296",
+      "source": "/usr/share/icons/breeze-dark/actions/22/zoom-out.svg",
+      "resolved_source": "/usr/share/icons/breeze-dark/actions/22/zoom-out.svg"
+    }
+  ]
+}
