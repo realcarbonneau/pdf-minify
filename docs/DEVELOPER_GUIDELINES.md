@@ -165,6 +165,13 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   not imply every dependent codec independently failed. Preserve valid
   independent results and expose any processing defects. §224 requests repair
   of B108–B111; worker verification is distinct from designer acceptance.
+- §227: group the primary integrated overview as BW, indexed color / low
+  palettes, then full color, retaining the same five PDF columns and all
+  measured combinations. Put unresampled preserve-images references above
+  the groups, and native-retaining rows before FFPR within each group.
+  Indexed FFPR stays indexed. Preserve every size and existing per-fidelity
+  bold minimum; expected codec strengths do not establish universal winners
+  or authorize codec/default changes. Focused tables remain unchanged.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

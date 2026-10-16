@@ -153,6 +153,24 @@ This supersedes §222's exhaustive cross-product presentation; its actual
 complete-file metric and strict output verification remain unchanged. It
 does not migrate recipes or implement the proposed compression controls.
 
+### Integrated overview output groups (§227)
+
+Designer §227 (verbatim excerpt):
+> In the table "Overview — final complete-file bytes" Make three sections to clarify the analysis, the first will be all BW algorithms, then indexed colors, then full colors algorithms.  It's generally expected that JPBIG2 will be the best for BW, then maybe Brotli or layered JBIG2 for low pallettes, then JPEG, JPG2000 for full color.
+
+Present the primary overview in this order: **BW**, **indexed color / low
+palettes**, then **full color**. Keep the same five PDF columns and every
+measured combination, including classic-Flate references and plain/predicted
+pairs. Place unresampled preserve-images controls above these three groups.
+Within each group, put native-retaining rows before its FFPR rows; indexed
+FFPR belongs to indexed color, not full color. Preserve separate native/FFPR
+and lossy/lossless fidelity minima, including tied bold winners. Expected
+codec strengths guide interpretation, not changes to measurements, automatic
+codec selection or claims of a universal winner. This is a presentation-only
+refinement of §223; focused scenarios and benchmark artifacts remain intact.
+See [the overview](INTEGRATED_COMPRESSION.md#overview--final-complete-file-bytes)
+and TODO §232.
+
 ### Uniform resolution and color FFPR (§§224/225)
 
 Designer §§224/225 supersede the earlier deferred-color-FFPR scope and the

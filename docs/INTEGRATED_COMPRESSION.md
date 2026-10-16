@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–226; TODO §§226–231. This is the primary integrated
+Designer §§210–214/220–227; TODO §§226–232. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16 (America/New_York).
 
@@ -81,49 +81,83 @@ settings; later deliberate DPI edits remain. Shared general-compressor image
 controls and removal of the legacy native Flate menu remain separate work
 (TODO §217); experimental bitmap encodings here do not silently migrate recipes.
 
-## Overview — final complete-file bytes
+## Unresampled reference controls
+
+These controls preserve original image encodings without resampling and
+vary native-stream compression. Original source sizes are listed above;
+these are references, not BW, indexed-color or full-color raster transforms.
 
 | Algorithm combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images |
 |---|---:|---:|---:|---:|---:|
 | Preserve images + Classic Flate (reference) native | 188,447 | 341,697 | 4,641,959 | 1,493,125 | 502,235 |
 | Preserve images + Zopfli-Flate native | 187,455 | **341,696** | 4,574,656 | **1,492,980** | 491,510 |
 | Preserve images + Brotli native | **182,638** | 341,881 | **4,472,657** | 1,493,126 | **483,963** |
-| JPEG q50 + Zopfli-Flate native | — | **3,944,595** | 6,249,832 | **116,165** | 551,040 |
-| JPEG q50 + Brotli native | — | 3,944,852 | **6,148,336** | 116,319 | **543,477** |
-| JPEG2000 lossy r192 + Zopfli-Flate native | — | **1,053,173** | 3,626,722 | **139,048** | 538,500 |
-| JPEG2000 lossy r192 + Brotli native | — | 1,053,430 | **3,525,226** | 139,202 | **530,937** |
-| JPEG2000 lossless + Zopfli-Flate native | — | **26,637,476** | 55,276,886 | **569,743** | 1,816,596 |
-| JPEG2000 lossless + Brotli native | — | 26,637,733 | **55,175,390** | 569,897 | **1,809,033** |
-| Indexed 5 colors + Classic Flate (reference) | — | 1,341,839 | 4,469,850 | 31,951 | 378,057 |
-| Indexed 5 colors + Classic Flate (reference) + PNG prediction | — | 1,879,772 | 5,065,305 | 39,838 | 390,403 |
-| Indexed 5 colors + Zopfli-Flate | — | 1,174,973 | 4,098,298 | 28,999 | 359,021 |
-| Indexed 5 colors + Zopfli-Flate + PNG prediction | — | 1,684,784 | 4,518,574 | 34,617 | 367,014 |
-| Indexed 5 colors + Brotli | — | 1,192,432 | **3,523,561** | 23,219 | **332,124** |
-| Indexed 5 colors + Brotli + PNG prediction | — | 1,625,012 | 4,283,194 | 30,164 | 347,017 |
-| Indexed 5 colors + colored JBIG2 + Zopfli-Flate native | — | **1,099,894** | 4,419,818 | **17,669** | 345,678 |
-| Indexed 5 colors + colored JBIG2 + Brotli native | — | 1,100,131 | 4,318,364 | 17,816 | 338,105 |
+
+## Overview — final complete-file bytes
+
+The same five PDF columns are repeated in three output groups: BW, indexed
+color, then full color (§227). Native-retaining rows precede FFPR rows within
+each group. Bold minima remain separate for native/FFPR and lossy/lossless
+fidelity; grouping does not change any measured bytes or establish a
+universal codec winner. All classic-Flate and plain/predicted comparisons
+are retained.
+
+### 1. Black and white (BW)
+
+| Algorithm combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images |
+|---|---:|---:|---:|---:|---:|
+| BW; keep native + JBIG2 + Zopfli-Flate native | — | **354,089** | 1,769,572 | **9,826** | 308,200 |
+| BW; keep native + JBIG2 + Brotli native | — | 354,346 | **1,668,076** | 9,980 | **300,637** |
 | BW; keep native + Classic Flate (reference) | — | 713,873 | 2,211,586 | 22,466 | 336,563 |
 | BW; keep native + Classic Flate (reference) + PNG prediction | — | 822,666 | 2,260,390 | 23,957 | 338,053 |
 | BW; keep native + Zopfli-Flate | — | 638,993 | 2,067,873 | 20,744 | 323,303 |
 | BW; keep native + Zopfli-Flate + PNG prediction | — | 744,246 | 2,078,249 | 21,330 | 323,722 |
 | BW; keep native + Brotli | — | 585,313 | 1,824,470 | 14,839 | 304,720 |
 | BW; keep native + Brotli + PNG prediction | — | 710,936 | 1,945,111 | 18,023 | 308,773 |
-| BW; keep native + JBIG2 + Zopfli-Flate native | — | **354,089** | 1,769,572 | **9,826** | 308,200 |
-| BW; keep native + JBIG2 + Brotli native | — | 354,346 | **1,668,076** | 9,980 | **300,637** |
+| BW FFPR + JBIG2; optimized residual streams | **297,872** | **350,190** | **1,254,079** | **3,876** | **316,049** |
 | BW FFPR + Classic Flate (reference) | 733,677 | 709,973 | 2,714,039 | 17,679 | 800,867 |
 | BW FFPR + Classic Flate (reference) + PNG prediction | 722,777 | 818,766 | 2,689,224 | 19,271 | 777,268 |
 | BW FFPR + Zopfli-Flate | 688,732 | 635,094 | 2,511,775 | 15,830 | 743,693 |
 | BW FFPR + Zopfli-Flate + PNG prediction | 649,984 | 740,347 | 2,388,759 | 16,489 | 701,446 |
 | BW FFPR + Brotli | 531,399 | 581,338 | 1,970,142 | 9,655 | 574,796 |
 | BW FFPR + Brotli + PNG prediction | 578,653 | 706,961 | 2,288,813 | 13,482 | 625,834 |
-| BW FFPR + JBIG2; optimized residual streams | **297,872** | **350,190** | **1,254,079** | **3,876** | **316,049** |
+
+### 2. Indexed color — low palettes
+
+Five-color bitmap canvases, with native artwork retained first and indexed
+FFPR below. Full-page rasterization does not make indexed output full color.
+
+| Algorithm combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images |
+|---|---:|---:|---:|---:|---:|
+| Indexed 5 colors + colored JBIG2 + Zopfli-Flate native | — | **1,099,894** | 4,419,818 | **17,669** | 345,678 |
+| Indexed 5 colors + colored JBIG2 + Brotli native | — | 1,100,131 | 4,318,364 | 17,816 | 338,105 |
+| Indexed 5 colors + Classic Flate (reference) | — | 1,341,839 | 4,469,850 | 31,951 | 378,057 |
+| Indexed 5 colors + Classic Flate (reference) + PNG prediction | — | 1,879,772 | 5,065,305 | 39,838 | 390,403 |
+| Indexed 5 colors + Zopfli-Flate | — | 1,174,973 | 4,098,298 | 28,999 | 359,021 |
+| Indexed 5 colors + Zopfli-Flate + PNG prediction | — | 1,684,784 | 4,518,574 | 34,617 | 367,014 |
+| Indexed 5 colors + Brotli | — | 1,192,432 | **3,523,561** | 23,219 | **332,124** |
+| Indexed 5 colors + Brotli + PNG prediction | — | 1,625,012 | 4,283,194 | 30,164 | 347,017 |
+| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** | **1,095,765** | 4,488,350 | **12,417** | **337,274** |
 | Color FFPR; indexed 5 colors + Classic Flate (reference) | 733,827 | 1,337,939 | 5,778,786 | 32,907 | 876,609 |
 | Color FFPR; indexed 5 colors + Classic Flate (reference) + PNG prediction | 722,927 | 1,875,872 | 6,763,541 | 41,339 | 860,595 |
 | Color FFPR; indexed 5 colors + Zopfli-Flate | 688,882 | 1,171,074 | 5,208,697 | 28,079 | 783,305 |
 | Color FFPR; indexed 5 colors + Zopfli-Flate + PNG prediction | 650,134 | 1,680,885 | 6,024,506 | 34,163 | 754,689 |
 | Color FFPR; indexed 5 colors + Brotli | 531,549 | 1,188,457 | **4,380,676** | 21,438 | 602,501 |
 | Color FFPR; indexed 5 colors + Brotli + PNG prediction | 578,803 | 1,621,037 | 5,729,329 | 31,336 | 668,343 |
-| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** | **1,095,765** | 4,488,350 | **12,417** | **337,274** |
+
+### 3. Full color
+
+JPEG q50, JPEG2000 lossy r192 and JPEG2000 lossless remain distinct fidelity
+groups, with native-retaining rows first and full-color FFPR below.
+
+| Algorithm combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images |
+|---|---:|---:|---:|---:|---:|
+| JPEG q50 + Zopfli-Flate native | — | **3,944,595** | 6,249,832 | **116,165** | 551,040 |
+| JPEG q50 + Brotli native | — | 3,944,852 | **6,148,336** | 116,319 | **543,477** |
+| JPEG2000 lossy r192 + Zopfli-Flate native | — | **1,053,173** | 3,626,722 | **139,048** | 538,500 |
+| JPEG2000 lossy r192 + Brotli native | — | 1,053,430 | **3,525,226** | 139,202 | **530,937** |
+| JPEG2000 lossless + Zopfli-Flate native | — | **26,637,476** | 55,276,886 | **569,743** | 1,816,596 |
+| JPEG2000 lossless + Brotli native | — | 26,637,733 | **55,175,390** | 569,897 | **1,809,033** |
 | Color FFPR + JPEG q50; optimized residual streams | **5,674,560** | **3,940,696** | **16,386,640** | **119,537** | **5,695,628** |
 | Color FFPR + JPEG2000 lossy r192; optimized residual streams | **790,654** | **1,049,274** | **2,321,850** | **132,375** | **1,186,046** |
 | Color FFPR + JPEG2000 lossless; optimized residual streams | **26,977,014** | **26,633,577** | **130,483,529** | **631,823** | **27,091,577** |
@@ -290,7 +324,7 @@ they cannot leak into the next image-decoding stage or excuse a new warning.
 
 ## Measurement and provenance
 
-The overview has **42 realistic combination rows × 5 whole-PDF classes**, **188 verified final PDFs**, **22 explicitly inapplicable cells**, and **zero rejected cells**. The focused study adds **62 verified final PDFs**, for **250 distinct actual complete outputs** referenced by these tables. Per-cell source/preparation/output hashes and implementation provenance are in `.tmp/integrated-compression/representative-300dpi-20261016-v3/` and `.tmp/integrated-compression/scenarios-300dpi-20261016-v3/`. Main and focused studies share the same recorded core/verifier implementation.
+The overview and its unresampled reference controls have **42 realistic combination rows × 5 whole-PDF classes**, **188 verified final PDFs**, **22 explicitly inapplicable cells**, and **zero rejected cells**. The focused study adds **62 verified final PDFs**, for **250 distinct actual complete outputs** referenced by these tables. Per-cell source/preparation/output hashes and implementation provenance are in `.tmp/integrated-compression/representative-300dpi-20261016-v3/` and `.tmp/integrated-compression/scenarios-300dpi-20261016-v3/`. Main and focused studies share the same recorded core/verifier implementation. The §227 row regrouping changes presentation only; measured artifacts and focused tables are unchanged.
 
 Each final save uses the shared production page composer, image primitives
 and native/font/container saver. Packed-stream prediction and prototype

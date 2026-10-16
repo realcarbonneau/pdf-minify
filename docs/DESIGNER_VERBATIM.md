@@ -942,3 +942,6 @@ Superseded by §220: retain the paired predictor columns in the main tables.
 ## 226 — migrate every existing saved filter to 300 DPI (verbatim, 2026-10-15)
 Clarification question: should existing saved filters that explicitly specify 150 or 200 DPI also be changed to 300 DPI, or should explicit saved values be preserved? Selected answer:
 > Change all saved filters to 300 DPI
+
+## 227 — group the integrated overview by BW, indexed color and full color (verbatim excerpt, 2026-10-16)
+> In the table "Overview — final complete-file bytes" Make three sections to clarify the analysis, the first will be all BW algorithms, then indexed colors, then full colors algorithms.  It's generally expected that JPBIG2 will be the best for BW, then maybe Brotli or layered JBIG2 for low pallettes, then JPEG, JPG2000 for full color.

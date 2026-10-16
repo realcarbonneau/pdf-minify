@@ -2067,3 +2067,15 @@ study now has 250 verified final PDFs with fresh provenance and zero rejected
 cells; old affected files remain diagnostic only.
 See B112, `COMPRESSION.md`, `ARCHITECTURE.md` and `TEST_PLAN.md`.
 Implementation completion is not designer acceptance or PDF/UA certification.
+
+## 232 — DONE (designer §227: group the integrated overview by output type)
+~~Group the primary overview as BW, indexed color / low palettes, then full
+color, with unresampled references above the groups.~~
+Stub: `INTEGRATED_COMPRESSION.md` now presents 3 reference rows, then 15 BW,
+15 indexed and 9 full-color rows across the same five PDF columns. All 210
+cells (188 measured sizes and 22 N/A entries), labels and per-fidelity bold
+minima are unchanged. Native-retaining rows precede FFPR within each group;
+indexed FFPR stays indexed. Focused tables and benchmark artifacts are intact.
+The row/cell/minimum and stable-ID/quotation/link audits pass, as does a fresh
+full **552-test** suite. See `DESIGN.md` §227 and `DEVELOPER_GUIDELINES.md`.
+Presentation only; no processing, algorithm, default or issue-acceptance change.
