@@ -25,7 +25,7 @@ from .stream_compression import STREAM_LABELS, recompress_native_streams
 from .defaults import DEFAULT_DPI
 from .canvas import flatten_rgb
 
-log = logging.getLogger("pdf_minimalist")
+log = logging.getLogger("pdf_minify")
 _ENCODE_WORKDIR = ContextVar("encoder_workdir", default=None)
 _STREAM_POLICY = ContextVar("stream_compression", default="flate")
 _SAVE_TOKEN = ContextVar("save_token", default=None)

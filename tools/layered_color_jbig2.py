@@ -24,13 +24,13 @@ import numpy as np
 import pymupdf as fitz
 from PIL import Image, ImageDraw
 
-from pdf_minimalist.core import image_layers, pipeline
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.canvas import flatten_rgb
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import CancelledError
-from pdf_minimalist.core import stencils
-from pdf_minimalist.core.stencils import PaletteCanvas
+from pdf_minify.core import image_layers, pipeline
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.canvas import flatten_rgb
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import CancelledError
+from pdf_minify.core import stencils
+from pdf_minify.core.stencils import PaletteCanvas
 
 
 def check_cancel(token):
@@ -84,7 +84,7 @@ def save_variant(source, target, canvases, kind, token=None):
     if kind not in ("indexed", "jbig2"):
         raise ValueError(kind)
     token = token or CancelToken()
-    from pdf_minimalist.core.native_layer import NativeContext
+    from pdf_minify.core.native_layer import NativeContext
     with fitz.open(source) as doc, fitz.open(source) as original:
         native_context = NativeContext(doc)
         if len(canvases) != len(doc):

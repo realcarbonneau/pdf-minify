@@ -13,7 +13,7 @@ from PySide6.QtGui import QIcon, QImage  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from pdf_minimalist.ui_qt.icon_lab import (  # noqa: E402
+from pdf_minify.ui_qt.icon_lab import (  # noqa: E402
     ACTIONS, ASSET_ROOT, BY_CODE, CANDIDATES, FAMILIES, IconLab,
     candidate_icon, resource_bank,
 )

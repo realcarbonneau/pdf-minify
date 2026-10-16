@@ -17,7 +17,7 @@ and separate Intel/ARM macOS application bundles/DMGs. These are references,
 not a promise to support Task Coach's entire platform matrix.
 
 Do **not** copy wxPython/GTK dependencies, tree-widget patches, Python/version
-pins, macOS minima or signing exceptions: pdf-minimalist uses Qt/PyMuPDF and
+pins, macOS minima or signing exceptions: PDF Minify uses Qt/PyMuPDF and
 must validate its own native libraries and minimum OS. Qt's
 [pyside6-deploy](https://doc.qt.io/qtforpython-6/deployment/deployment-pyside6-deploy.html)
 is an additional Qt-specific candidate, wrapping Nuitka. Choose and test one
@@ -74,7 +74,7 @@ and verified; Task Coach having them does not certify or require them here.
 
 1. Add package metadata, versioned entry point, icons/desktop metadata and a
    release dependency lock. None of the proposed build scripts/specs or
-   installers exists here yet. Preserve `python -m pdf_minimalist` for source.
+   installers exists here yet. Preserve `python -m pdf_minify` for source.
 2. Preserve multiprocessing **spawn**, process-pool limits, cancellation and
    one GUI per launch. A frozen launcher must dispatch worker/resource-tracker
    startup before importing/creating the GUI or parsing normal app arguments.
@@ -92,7 +92,7 @@ and verified; Task Coach having them does not certify or require them here.
    distinguishes bundled from host-system programs. Do not strip or replace
    the main GUI's library environment globally to fix an external command.
 5. Keep settings in Qt's native settings location and all generated PDF/encoder
-   files in `QStandardPaths.TempLocation/pdf-minimalist/saves/<GUI-PID>/…`.
+   files in `QStandardPaths.TempLocation/pdf-minify/saves/<GUI-PID>/…`.
    Never write into an install directory, app bundle or freezer extraction
    root. Preserve UUID ownership, two simultaneous apps, locks, draft cleanup
    and mmap/document-handle closure before deletion (especially on Windows).

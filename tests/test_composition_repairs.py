@@ -8,12 +8,12 @@ import pymupdf as fitz
 from PIL import Image
 import pytest
 
-from pdf_minimalist.core import pipeline, presets, image_layers
-from pdf_minimalist.core.algorithms import ALGORITHMS, BW_MODES, with_algorithm
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.recipes import preset_spec, spec_key
-from pdf_minimalist.core.stencils import PaletteCanvas
+from pdf_minify.core import pipeline, presets, image_layers
+from pdf_minify.core.algorithms import ALGORITHMS, BW_MODES, with_algorithm
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.recipes import preset_spec, spec_key
+from pdf_minify.core.stencils import PaletteCanvas
 from tools import bench_image_streams as images
 from tools import bench_compression_overview as overview
 
@@ -210,8 +210,8 @@ def test_native_glyph_validation_accepts_regrouping_not_changed_glyphs(tmp_path)
 
 
 def test_tag_repair_checks_cancellation_between_native_tokens():
-    from pdf_minimalist.core.marked_content import _repair_stream
-    from pdf_minimalist.core.pdf_io import CancelledError
+    from pdf_minify.core.marked_content import _repair_stream
+    from pdf_minify.core.pdf_io import CancelledError
     token = CancelToken()
     token.cancel()
     with pytest.raises(CancelledError):

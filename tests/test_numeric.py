@@ -8,7 +8,7 @@ from PySide6.QtCore import Qt, QSignalBlocker
 from PySide6.QtTest import QTest, QSignalSpy
 from PySide6.QtWidgets import QApplication, QStyle, QStyleOptionSpinBox
 
-from pdf_minimalist.ui_qt.numeric import NumericSlider
+from pdf_minify.ui_qt.numeric import NumericSlider
 
 _app = QApplication.instance() or QApplication([])
 

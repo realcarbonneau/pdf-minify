@@ -2,20 +2,44 @@
 
 ## Current regression verification — 2026-10-16
 
-Fresh full-suite run (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q`):
-**552 passed**, exit 0. This is regression
+Fresh full-suite run (`QT_QPA_PLATFORM=offscreen ./test.sh`):
+**572 passed**, exit 0 / FULL SUITE GREEN. This includes the all-row coverage,
+B113 repair and PDF Minify rename described below. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
 
-The final legacy-prototype stencil caller is aligned with direct placement.
+The earlier **552-test** verification aligned the final legacy-prototype
+stencil caller with direct placement.
 Two new 72/300-DPI fractional-page cases reproduced its clipping failure and
 pass after the change; its full 15-test module passes, followed by the fresh
-complete **552-test** run above. The current matrix's frozen saver hashes are
+complete **552-test** run at that stage. The current matrix's frozen saver hashes are
 unchanged by that separate prototype-tool correction.
 
 An additional full rerun was interrupted by SIGTERM before a test summary;
-it is not counted as a pass. The subsequent complete run above passed.
+it is not counted as a pass. The subsequent complete run at that stage passed.
+
+## PDF Minify identity and settings migration (§230)
+
+`tests/test_app_identity.py` adds 11 cases covering typed Qt values, saved
+filters/UUIDs/order/names/parameters, last-file startup, existing destination
+values, empty settings, malformed markers, repeated launches, deletion without
+resurrection, read-only review snapshots and reported synchronization errors.
+The real migrated MainWindow preserves deliberate post-DPI-migration values
+without dirty state. CLI help and Qt machine/display identity use the new name.
+An initial missing-`blurb` test fixture was corrected; the focused 11 cases and
+fresh **572-test** full suite then pass. No product fallback or weakened oracle
+was introduced to satisfy that fixture.
+
+Normal and 2× offscreen `tools/shot.py examples/images.pdf --progress-only`
+runs exit 0. Full-window and 1:1 strip/pane/junction images were actually
+viewed. Both tools read a non-mutating settings snapshot before using isolated
+review stores; the designer's actual name migration waits for a normal launch.
+The package/asset audit verifies all 75 moved files exist, all 42 licensed
+resources/notices are byte-identical, and all 18 headless modules change only
+the logger namespace where applicable. Quotes, stable IDs and 96 local links
+pass their audit. The desktop app remains closed; no designer acceptance is
+claimed. NASA Kepler's sixth-column extension (§231) is separately pending.
 
 ## Uniform 300 DPI, color FFPR and native-layer repairs (§§224–226)
 
@@ -76,16 +100,25 @@ Indexed/colored JBIG2 for all four image-bearing representatives plus
 Flate/JBIG2 BW on all eight photo pages. No new PDF/UA certification or
 designer acceptance is implied.
 
-## Representative integrated overview (§§223–225)
+## Representative integrated overview (§§223–229)
 
-`tests/test_compression_overview.py`: 20 cases verify exactly five distinct
+`tests/test_compression_overview.py`: 25 cases verify exactly five distinct
 repository inputs and their actual native/scan/photo/artwork/mixed structure,
-42 realistic combination rows, 188 applicable cells and 22 inapplicable
-image-free cells. Packed pixels/native policies always use the same general
+42 realistic combination rows and all **210 measured cells**, including
+redundant no-image recipes (§229 / TODO §234). Missing native-only measurements
+are errors, not N/A; the runner saves 42 distinct outputs for an image-free
+input even when every size is identical. Packed pixels/native policies use the same general
 compressor; specialized-codec FFPR has one residual-stream row per recipe,
 including color JPEG/JPX/indexed/stencil cases. Classic Flate is marked
 reference. Descriptive transposed tables bold ties only within the same
 document and fidelity group; missing measurements are errors, not zero sizes.
+
+Four real no-image cases in `tests/test_image_stream_bench.py` cover both BW
+and indexed preparation, with plain and xref-stream source containers. Every
+variant saves a separate PDF without thresholding, palette quantization,
+image encoding or synthetic bitmap paint. Native artwork/pixels and actual
+saved-ID readback are checked. B113 uses the existing container-only ID
+normalizer exclusively for this formerly untested no-image path.
 
 Source/preparation/output hashes, actual bytes and exact-verification flags
 gate reuse without re-encoding. Explicit interrupted-study imports validate
@@ -98,25 +131,29 @@ even when later saves/imports perfectly preserve them. These are reporting
 and validation checks; the shared production repairs are covered above.
 
 The runner reuses the original 14 strict integrated-encoder regressions
-below. Full suite after the final runner/failure-reporting changes:
-**552 passed**, exit 0. `test_compression_scenarios.py`
+below. Full suite after the coverage and B113 changes:
+**561 passed**, exit 0. `test_compression_scenarios.py`
 adds four scope/provenance cases for nine focused scenarios / 62 additional
 complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
 Current published evidence and its exact counts
 are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
-The repaired uniform run is complete: **188 verified overview PDFs**,
-**62 focused PDFs**, **250 distinct actual final outputs**, zero rejected
-cells and 22 explicitly inapplicable image-free cells. Every transformed
+The expanded uniform run is complete: **210 verified overview PDFs**,
+**62 focused PDFs**, **272 distinct actual final outputs**, zero rejected
+or excluded cells. The 22 newly covered cells are independently saved and
+verified, never filled by copying a control's size/file. Every transformed
 case is 300 DPI; preserve-images controls are unresampled. All current source/
 preparation/output hashes, bytes and tied bold minima pass the independent
-publication audit. The same frozen saver/verifier hashes cover both studies.
-QPDF 12.2.0 syntax checks pass all 166 ordinary-format final PDFs; 84 known-
+publication audit. The 188 old overview cells and 62 focused cells retain
+their original frozen provenance. A bounded before/after source audit proves
+that B113 changes only an entry branch unused by those preparations; saver
+and other verifier functions are unchanged. The strict cross-version import
+gate is not relaxed. QPDF 12.2.0 syntax checks pass all 179 ordinary-format final PDFs; 93 known-
 unsupported Brotli outputs are excluded, not certified by that reader.
 No timing rankings, CSV delivery, desktop launch or designer issue acceptance.
 
-Historical mixed-DPI run, superseded by §§224/225: 138 applicable dispositions, **114 valid final
-PDFs / 24 rejected or preparation-blocked cells**, plus 22 inapplicable
+Historical mixed-DPI run, superseded by §§224/225/229: 138 applicable dispositions, **114 valid final
+PDFs / 24 rejected or preparation-blocked cells**, plus 22 then-excluded
 image-free cells. Thirty new valid outputs and 84 verified prior outputs;
 focused tables bring the publication to 195 distinct actual PDFs. All
 published values/minima and saved hashes are independently audited. B108

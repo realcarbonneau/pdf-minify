@@ -1,4 +1,4 @@
-# pdf-minimalist — Overview & Opinionated Defaults
+# PDF Minify — Overview & Opinionated Defaults
 
 Current canon is in `DESIGN.md`, `UI_LAYOUT.md`, `ARCHITECTURE.md`,
 `FILTER_LIFECYCLE.md`, and `COMPRESSION.md`. All filters produce real saved

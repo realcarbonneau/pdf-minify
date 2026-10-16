@@ -16,7 +16,7 @@ import numpy as np
 from PySide6.QtGui import QImage
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
-from pdf_minimalist.ui_qt.app import MainWindow, setup_logging
+from pdf_minify.ui_qt.app import MainWindow, setup_logging
 
 
 def main():

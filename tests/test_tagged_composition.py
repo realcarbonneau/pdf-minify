@@ -7,8 +7,8 @@ from PIL import Image
 import pymupdf as fitz
 import pytest
 
-from pdf_minimalist.core import pipeline
-from pdf_minimalist.core.native_layer import NativeContext
+from pdf_minify.core import pipeline
+from pdf_minify.core.native_layer import NativeContext
 from tools import bench_image_streams as images
 
 

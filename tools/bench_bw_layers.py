@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import fitz
 import numpy as np
 from PIL import Image
-from pdf_minimalist.core.pipeline import save_with_spec, jbig2_binary, _threshold
+from pdf_minify.core.pipeline import save_with_spec, jbig2_binary, _threshold
 
 
 def inspect(path):

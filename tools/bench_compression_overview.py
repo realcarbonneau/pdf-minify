@@ -210,12 +210,6 @@ def prepare_case(document, family, folder, production, previous=None):
     return production[document.source][family]
 
 
-def applicable(document, row):
-    # This image-free fixture exercises native compression directly. Repeating
-    # its unchanged result under an image-codec label would not test that codec.
-    return document.key != "native" or row.family == "preserve-images" or row.family.endswith("-ffpr")
-
-
 def matrix_markdown(documents, rows, records):
     values = {(r["document"], r["family"], r["result"]["image_variant"], r["result"]["native_policy"]):
               r["result"]["complete_pdf_bytes"] for r in records if not r["result"].get("validation_error")}
@@ -234,9 +228,6 @@ def matrix_markdown(documents, rows, records):
         cells = []
         for document in documents:
             key = (document.key, row.family, row.variant, row.native)
-            if not applicable(document, row):
-                cells.append("—")
-                continue
             if key in failures:
                 cells.append("PREP FAILED" if failures[key] == "shared-preparation" else "FAILED")
                 continue
@@ -281,8 +272,6 @@ def run(folder, history_path, *, resume=False, reuse_overview=None):
     for document in DOCUMENTS:
         prepared = {}
         for row in ROWS:
-            if not applicable(document, row):
-                continue
             prior = history.get(case_id(document.source, row.family))
             prior_result = next((r for r in prior["results"]
                                  if (r["image_variant"], r["native_policy"]) == (row.variant, row.native)), None) if prior else None

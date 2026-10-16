@@ -3,9 +3,9 @@ import numpy as np
 from PIL import Image
 import io
 import pytest
-from pdf_minimalist.core.pipeline import process_file, recompress_file, gc_copy, PAGE_SIZES
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.display import DisplayPage
+from pdf_minify.core.pipeline import process_file, recompress_file, gc_copy, PAGE_SIZES
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.display import DisplayPage
 
 
 def _make_mixed(path: str):
@@ -38,7 +38,7 @@ def test_letter_explicit(tmp_path):
 
 
 def test_absurd_pages():
-    from pdf_minimalist.core.pipeline import absurd_pages
+    from pdf_minify.core.pipeline import absurd_pages
     assert absurd_pages([(612.0, 792.0)]) == []  # letter fine
     assert absurd_pages([(960.0, 540.0)]) == []  # 16:9 slides pass
     assert absurd_pages([(72.0, 1400.0)]) == [0]  # strip scan flagged
@@ -74,12 +74,12 @@ def test_unforced_save_keeps_text_and_1bits_images(tmp_path):
 def test_force_keys_differ_by_force():
     """Designer §127: forced and unforced are different outputs — preview,
     mini and amount keys all carry the force."""
-    from pdf_minimalist.ui_qt.app import MainWindow
+    from pdf_minify.ui_qt.app import MainWindow
     a = {"preset_id": "bw-otsu", "mode": "bw", "dpi": 300,
          "strategy": "otsu", "t": 180, "force_raster": True}
     b = dict(a, force_raster=False)
     assert MainWindow._spec_tuple(a) != MainWindow._spec_tuple(b)
-    from pdf_minimalist.ui_qt.artifacts import ArtifactStore
+    from pdf_minify.ui_qt.artifacts import ArtifactStore
     # Preview, mini, and final bytes all share this one real-file identity.
     uid = "1b81d828-6917-4684-bf1f-ab268ce009a3"
     assert ArtifactStore.key("f", a, uid) != ArtifactStore.key("f", b, uid)
@@ -99,9 +99,9 @@ def test_bw_save_flattens_text_pages(tmp_path):
 @pytest.mark.parametrize("png_fallback", [False, True])
 def test_distinct_forced_pages_keep_their_own_image_payload(tmp_path, monkeypatch, png_fallback):
     """Different JBIG2 pages must never overwrite one shared placeholder xref."""
-    from pdf_minimalist.core.pipeline import _threshold
+    from pdf_minify.core.pipeline import _threshold
     if png_fallback:
-        monkeypatch.setattr("pdf_minimalist.core.pipeline.bw_page_jbig2", lambda *a, **k: None)
+        monkeypatch.setattr("pdf_minify.core.pipeline.bw_page_jbig2", lambda *a, **k: None)
     source, output = tmp_path / "distinct.pdf", tmp_path / "distinct-bw.pdf"
     with fitz.open() as doc:
         for i in range(3):
@@ -186,7 +186,7 @@ def _make_dense(path: str):
 def test_jbig2_save_roundtrip(tmp_path):
     """Designer §3/§55: dense BW pages embed real JBIG2 and render with ink."""
     import shutil
-    from pdf_minimalist.core.pipeline import bw_page_payload, jbig2_binary
+    from pdf_minify.core.pipeline import bw_page_payload, jbig2_binary
     if shutil.which("jbig2") is None:
         import pytest
         pytest.skip("jbig2 binary missing")
@@ -204,13 +204,13 @@ def test_jbig2_save_roundtrip(tmp_path):
         got = np.frombuffer(px.samples, dtype=np.uint8).reshape(px.height, px.width)
         assert 0 in np.unique(got)  # ink survived, not a blank page
     # real payload beats the PNG fallback
-    from pdf_minimalist.core.pdf_io import render_gray
+    from pdf_minify.core.pdf_io import render_gray
     import fitz as _fz
     with _fz.open(src) as _d:
         g = render_gray(_d, 0, dpi=100, token=CancelToken())
     jb2, codec = bw_page_payload(g, "otsu")
     assert codec == "jbig2"
-    from pdf_minimalist.core.pipeline import bw_page_png
+    from pdf_minify.core.pipeline import bw_page_png
     assert len(jb2) < len(bw_page_png(g, "otsu"))
 
 
@@ -221,11 +221,11 @@ def test_jbig2_fallback_stays_valid(tmp_path, monkeypatch):
     compression wrapper (B79). Inject invalid bytes instead of asserting
     that repaired, valid encoder output must always use a worse fallback.
     """
-    from pdf_minimalist.core import pipeline
+    from pdf_minify.core import pipeline
     monkeypatch.setattr(pipeline, "bw_page_jbig2", lambda *a, **k: b"invalid JBIG2")
-    from pdf_minimalist.core.pdf_io import render_gray
+    from pdf_minify.core.pdf_io import render_gray
     import fitz as _fz
-    from pdf_minimalist.core.pipeline import bw_page_payload
+    from pdf_minify.core.pipeline import bw_page_payload
     src = str(tmp_path / "in.pdf")
     out = str(tmp_path / "out.pdf")
     _make_mixed(src)
@@ -246,8 +246,8 @@ def test_jbig2_pixel_exact(tmp_path):
     if shutil.which("jbig2") is None:
         import pytest
         pytest.skip("jbig2 binary missing")
-    from pdf_minimalist.core.pdf_io import render_gray
-    from pdf_minimalist.core.pipeline import bw_page_jbig2, _place_bw, _threshold, jbig2_renders
+    from pdf_minify.core.pdf_io import render_gray
+    from pdf_minify.core.pipeline import bw_page_jbig2, _place_bw, _threshold, jbig2_renders
     src = str(tmp_path / "in.pdf")
     _make_dense(src)
     with fitz.open(src) as _d:
@@ -287,7 +287,7 @@ def _make_flat_logo(path: str):
 
 def test_jpx_lossless_roundtrip_exact(tmp_path):
     """Designer §100: JPX lossless choice round-trips bit-exact."""
-    from pdf_minimalist.core.pipeline import jpx_encode
+    from pdf_minify.core.pipeline import jpx_encode
     import numpy as _np
     rng = _np.random.default_rng(8)
     arr = (rng.random((120, 160, 3)) * 255).astype(_np.uint8)
@@ -344,7 +344,7 @@ def test_indexed_forced_mode(tmp_path):
 
 
 def test_indexed_helpers():
-    from pdf_minimalist.core.pipeline import indexed_rgb, quantize_method
+    from pdf_minify.core.pipeline import indexed_rgb, quantize_method
     import numpy as _np
     rng = _np.random.default_rng(4)
     arr = (rng.random((60, 80, 3)) * 255).astype(_np.uint8)
@@ -356,7 +356,7 @@ def test_indexed_helpers():
 
 def test_indexed_palette_no_overflow():
     """Live-log bug: numpy uint8 index math wrapped past 85 palette entries."""
-    from pdf_minimalist.core.pipeline import indexed_parts
+    from pdf_minify.core.pipeline import indexed_parts
     import numpy as _np
     rng = _np.random.default_rng(21)
     arr = (rng.random((40, 50, 3)) * 255).astype(_np.uint8)
@@ -368,7 +368,7 @@ def test_indexed_palette_no_overflow():
 def test_flate_stream_decodes_exact():
     """Designer §80 fix: Flate streams carry raw rows, no filter bytes."""
     import zlib
-    from pdf_minimalist.core.pipeline import flate_rgb_encode
+    from pdf_minify.core.pipeline import flate_rgb_encode
     import numpy as _np
     arr = _np.arange(24, dtype=_np.uint8).reshape(2, 4, 3)
     assert zlib.decompress(flate_rgb_encode(arr)) == arr.tobytes()
@@ -376,7 +376,7 @@ def test_flate_stream_decodes_exact():
 
 def test_true_indexed_bpc_and_render(tmp_path):
     """Designer §80: bit depth follows actual entries; render is exact."""
-    from pdf_minimalist.core.pipeline import indexed_parts, _place_indexed
+    from pdf_minify.core.pipeline import indexed_parts, _place_indexed
     import fitz as _fz
     import numpy as _np
     img2 = Image.new("RGB", (32, 32))
@@ -385,7 +385,7 @@ def test_true_indexed_bpc_and_render(tmp_path):
     assert parts["bpc"] == 1 and parts["hival"] == 1 and len(parts["palette"]) == 6
     out = _fz.open()
     page = out.new_page(width=32, height=32)
-    from pdf_minimalist.core.pipeline import _tiny_png
+    from pdf_minify.core.pipeline import _tiny_png
     page.insert_image(_fz.Rect(0, 0, 32, 32), stream=_tiny_png())
     xref = page.get_images(full=True)[-1][0]
     _place_indexed(out, xref, parts)

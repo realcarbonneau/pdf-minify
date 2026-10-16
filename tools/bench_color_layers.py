@@ -16,10 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pymupdf as fitz
 import numpy as np
 from PIL import Image
-from pdf_minimalist.core.pipeline import save_with_spec
-from pdf_minimalist.core.presets import PRESETS
-from pdf_minimalist.core.recipes import preset_spec
-from pdf_minimalist.core.display import DisplayPage
+from pdf_minify.core.pipeline import save_with_spec
+from pdf_minify.core.presets import PRESETS
+from pdf_minify.core.recipes import preset_spec
+from pdf_minify.core.display import DisplayPage
 
 
 def verify(source, target, spec, folder):

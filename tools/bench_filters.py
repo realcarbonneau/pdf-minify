@@ -10,9 +10,9 @@ import time
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pdf_minimalist.core import presets
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.pipeline import process_file, recompress_file, gc_copy
+from pdf_minify.core import presets
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.pipeline import process_file, recompress_file, gc_copy
 
 FILES = [
     "examples/deed-brevard.pdf",

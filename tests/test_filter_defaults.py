@@ -8,10 +8,10 @@ import pytest
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import QApplication
 
-from pdf_minimalist.core import presets
-from pdf_minimalist.core.algorithms import ALGORITHMS
-from pdf_minimalist.core.filter_defaults import RASTER_DEFAULTS_REVISION, migrate_raster_dpi
-from pdf_minimalist.ui_qt.app import MainWindow
+from pdf_minify.core import presets
+from pdf_minify.core.algorithms import ALGORITHMS
+from pdf_minify.core.filter_defaults import RASTER_DEFAULTS_REVISION, migrate_raster_dpi
+from pdf_minify.ui_qt.app import MainWindow
 
 app = QApplication.instance() or QApplication([])
 

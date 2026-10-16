@@ -153,6 +153,43 @@ def test_invalid_preparation_count_and_existing_output_directory_are_rejected(tm
         study.run_case(source, tmp_path)
 
 
+@pytest.mark.parametrize("mode", ["indexed", "bw-images"])
+@pytest.mark.parametrize("object_streams", [False, True])
+def test_no_image_recipes_save_all_variants_without_inventing_a_bitmap(tmp_path, monkeypatch, mode, object_streams):
+    source = tmp_path / "native.pdf"
+    with fitz.open() as doc:
+        page = doc.new_page(width=84, height=96)
+        page.insert_text((5, 20), "Native only", fontsize=8)
+        page.draw_line((5, 30), (70, 30), color=(0, .7, 0))
+        doc.save(source, use_objstms=object_streams)
+    original = source.read_bytes()
+    if object_streams:
+        with fitz.open(source) as doc:
+            assert doc.xref_get_key(-1, "Type")[1] == "/XRef"
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("A no-image recipe must not fabricate or encode a bitmap")
+
+    monkeypatch.setattr(study, "place_bitmap", forbidden)
+    monkeypatch.setattr(study, "encoded_samples", forbidden)
+    monkeypatch.setattr(study.pipeline, "_quantize_palette", forbidden)
+    monkeypatch.setattr(study.pipeline, "_threshold", forbidden)
+    report = study.run_case(source, tmp_path / mode, mode=mode, dpi=300)
+    assert report["prepared"] == [None]
+    assert [result["variant"] for result in report["results"]] == list(study.VARIANTS)
+    assert len({result["pdf"] for result in report["results"]}) == len(study.VARIANTS)
+    for result in report["results"]:
+        assert result["image_objects"] == result["encoded_image_bytes"] == 0
+        assert result["actual_pages_exact"] and result["decoded_samples_exact"]
+        target = study.Path(result["pdf"])
+        assert target.stat().st_size == result["complete_pdf_bytes"]
+        with fitz.open(target) as doc:
+            assert not doc[0].get_images()
+            assert "Native only" in doc[0].get_text()
+            assert report["input_sha256"][:16] in doc.pdf_trailer()
+    assert source.read_bytes() == original
+
+
 def test_resume_revalidates_existing_pdfs_and_rejects_changed_preparation(tmp_path, monkeypatch):
     source = tmp_path / "source.pdf"
     source_pdf(source, 0)

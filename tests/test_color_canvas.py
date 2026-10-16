@@ -8,12 +8,12 @@ import pymupdf as fitz
 from PIL import Image
 import pytest
 
-from pdf_minimalist.core import pipeline
-from pdf_minimalist.core import canvas
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.canvas import flatten_rgb
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import CancelledError
+from pdf_minify.core import pipeline
+from pdf_minify.core import canvas
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.canvas import flatten_rgb
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import CancelledError
 
 
 def png(array):

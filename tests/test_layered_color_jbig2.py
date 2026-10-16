@@ -8,9 +8,9 @@ from PIL import Image
 import pytest
 
 from tools import layered_color_jbig2 as study
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import CancelledError
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import CancelledError
 
 requires_encoder = pytest.mark.skipif(study.pipeline.jbig2_binary() is None,
                                       reason="JBIG2 prototype needs the external encoder")
@@ -133,7 +133,7 @@ def test_actual_multipage_files_share_one_palette_map_and_independent_decoding(t
 
 
 def test_existing_production_recipes_remain_unchanged():
-    from pdf_minimalist.core.presets import PRESETS
+    from pdf_minify.core.presets import PRESETS
     assert not any(preset["mode"] == "layered-jbig2" for preset in PRESETS)
     with pytest.raises(ValueError, match="Unknown filter mode"):
         study.pipeline._save_recipe("unused", "unused", {"mode": "not-an-algorithm"}, None, None)

@@ -9,8 +9,8 @@ from PySide6.QtCore import QEvent, QPoint, QPointF, QTimer, Qt, QSettings, QMime
 from PySide6.QtGui import QDrag, QMouseEvent, QDropEvent, QDragEnterEvent, QPixmap, QPainter, QFont, QPalette
 from PySide6.QtWidgets import QApplication, QAbstractItemView
 
-from pdf_minimalist.ui_qt.app import MainWindow, _StripList, STRIP_ICON, FILTER_UUID_ROLE, FILTER_DRAG_MIME
-from pdf_minimalist.core import presets
+from pdf_minify.ui_qt.app import MainWindow, _StripList, STRIP_ICON, FILTER_UUID_ROLE, FILTER_DRAG_MIME
+from pdf_minify.core import presets
 
 _app = QApplication.instance() or QApplication([])
 _defaults = copy.deepcopy(presets.PRESETS)
@@ -18,7 +18,7 @@ _defaults = copy.deepcopy(presets.PRESETS)
 
 @pytest.fixture
 def window(monkeypatch):
-    settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    settings = QSettings("pdf-minify", "pdf-minify")
     kept = {key: settings.value(key) for key in settings.allKeys()}
     previous = copy.deepcopy(presets.PRESETS)
     settings.clear()

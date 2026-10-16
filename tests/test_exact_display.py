@@ -13,10 +13,10 @@ from PySide6.QtGui import QColor, QImage, QPainter
 from PySide6.QtCore import QPoint
 from PySide6.QtWidgets import QApplication, QWidget
 
-from pdf_minimalist.core.display import DisplayPage, render_display_page
-from pdf_minimalist.ui_qt.artifacts import build_artifact
-from pdf_minimalist.ui_qt.jobs import frame_view
-from pdf_minimalist.ui_qt.viewer import ContinuousDocView, _PdfSource
+from pdf_minify.core.display import DisplayPage, render_display_page
+from pdf_minify.ui_qt.artifacts import build_artifact
+from pdf_minify.ui_qt.jobs import frame_view
+from pdf_minify.ui_qt.viewer import ContinuousDocView, _PdfSource
 
 _app = QApplication.instance() or QApplication([])
 

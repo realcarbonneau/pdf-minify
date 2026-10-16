@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QThread, Signal, QSize, QTimer, QModelIndex, QEvent, QRect, QSignalBlocker, QMimeData
 from PySide6.QtGui import QImage, QIcon, QPixmap, QPainter, QFont, QPen, QAction, QColor, QPalette, QCursor
 
+from .. import APP_ID, APP_NAME
 from ..core.cancel import CancelToken
 from ..core import pdf_io, threshold as T
 from ..core import presets
@@ -35,10 +36,11 @@ from .jobs import cpu_cap, pool as filter_pool, frame_view
 from .artifacts import ArtifactStore
 from .lab import open_progress_lab, open_buttons_lab
 from .icon_lab import IconLab
+from .settings import app_settings, configure_application
 
 import fitz
 
-log = logging.getLogger("pdf_minimalist")
+log = logging.getLogger("pdf_minify")
 
 PREVIEW_DPI = 150
 FILTER_EDIT_DEBOUNCE_MS = 300
@@ -55,7 +57,7 @@ def setup_logging(debug: bool = False):
     """Stdout logging for run-and-review. INFO default; --debug => DEBUG + diagnostics."""
     h = logging.StreamHandler(sys.stdout)
     h.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s", "%H:%M:%S"))
-    root = logging.getLogger("pdf_minimalist")
+    root = logging.getLogger("pdf_minify")
     root.handlers.clear()
     root.addHandler(h)
     root.setLevel(logging.DEBUG if debug else logging.INFO)
@@ -111,7 +113,7 @@ STRIP_AMOUNT_RECT = QRect(0, STRIP_ALGO_RECT.bottom() + 1 + 1, STRIP_WIDTH, 14)
 STRIP_ICON = (STRIP_WIDTH, STRIP_AMOUNT_RECT.bottom() + 1 + STRIP_PADDING)
 FILTER_UUID_ROLE = Qt.UserRole + 1
 FILTER_PROGRESS_ROLE = Qt.UserRole + 2
-FILTER_DRAG_MIME = "application/x-pdf-minimalist-filter-uuid"
+FILTER_DRAG_MIME = f"application/x-{APP_ID}-filter-uuid"
 
 
 def _numbered_filter_label(row: int, name: str) -> str:
@@ -709,7 +711,7 @@ class CopyWorker(QThread):
         try:
             total, done = os.path.getsize(in_path), 0
             with open(in_path, "rb") as source, tempfile.NamedTemporaryFile(
-                    prefix=".pdf-minimalist-export-", suffix=".pdf",
+                    prefix=f".{APP_ID}-export-", suffix=".pdf",
                     dir=os.path.dirname(os.path.abspath(out_path)), delete=False) as dest:
                 partial = dest.name
                 while True:
@@ -736,7 +738,7 @@ class CopyWorker(QThread):
 class MainWindow(QMainWindow):
     def __init__(self, start_pdf: str | None = None):
         super().__init__()
-        self.setWindowTitle("pdf-minimalist")
+        self.setWindowTitle(APP_NAME)
         self.resize(1100, 650)
         self.doc = None
         self.path = None
@@ -1108,15 +1110,14 @@ class MainWindow(QMainWindow):
         self._sync_threshold_enabled()
         self._active_pid = self.preset.currentData()
         self._load_filter_controls(self._active_pid)
-        self.setWindowTitle("pdf-minimalist[*]")
+        self.setWindowTitle(f"{APP_NAME}[*]")
         self._refresh_dirty_labels()
         if start_pdf:
             self.open_file(start_pdf)
 
     # --- presets + view modes ---
     def _custom_store(self):
-        from PySide6.QtCore import QSettings as _QS
-        return _QS("pdf-minimalist", "pdf-minimalist")
+        return app_settings()
 
     def _apply_custom_presets(self):
         """Load recipes, preserving pasted copies and repairing UUIDs (§155)."""
@@ -2264,11 +2265,10 @@ class MainWindow(QMainWindow):
 
 
 def main(start_pdf: str | None = None, debug: bool = False):
-    log.info("starting pdf-minimalist debug=%s pdf=%s", debug, start_pdf)
+    log.info("starting %s debug=%s pdf=%s", APP_NAME, debug, start_pdf)
     if start_pdf is None:
         # §91: reopen the last file; fall back to the photo demo.
-        from PySide6.QtCore import QSettings as _QS
-        last = _QS("pdf-minimalist", "pdf-minimalist").value("lastFile")
+        last = app_settings().value("lastFile")
         if last and os.path.exists(last):
             start_pdf = last
             log.info("reopening last file %s", start_pdf)
@@ -2286,6 +2286,7 @@ def main(start_pdf: str | None = None, debug: bool = False):
         log.debug("argv=%s", sys.argv)
         log.debug("filter workers<=%d (half cores cap)", cpu_cap())
     app = QApplication(sys.argv)
+    configure_application(app)
     w = MainWindow(start_pdf)
     w.show()
     log.info("window shown")

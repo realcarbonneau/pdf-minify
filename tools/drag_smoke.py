@@ -22,9 +22,9 @@ from PySide6.QtCore import QPoint, QRect, QTimer, Qt, QSettings  # noqa: E402
 from PySide6.QtGui import QFont, QImage, QPainter, QPalette, QPixmap  # noqa: E402
 from PySide6.QtWidgets import QApplication, QAbstractItemView, QMessageBox, QStyle, QStyleOptionViewItem  # noqa: E402
 
-from pdf_minimalist.ui_qt.app import MainWindow, setup_logging, STRIP_ICON, FILTER_UUID_ROLE  # noqa: E402
-from pdf_minimalist.core import presets  # noqa: E402
-from pdf_minimalist.core.identity import new_filter_uuid  # noqa: E402
+from pdf_minify.ui_qt.app import MainWindow, setup_logging, STRIP_ICON, FILTER_UUID_ROLE  # noqa: E402
+from pdf_minify.core import presets  # noqa: E402
+from pdf_minify.core.identity import new_filter_uuid  # noqa: E402
 
 
 def main():
@@ -37,7 +37,7 @@ def main():
         custom.update(id="smoke-forced-copy", uuid=new_filter_uuid(),
                       label="BW · Strong T=210 FFPR")
         custom["params"]["force_raster"] = True
-        settings = QSettings("pdf-minimalist", "pdf-minimalist")
+        settings = QSettings("pdf-minify", "pdf-minify")
         settings.setValue("customPresets", [custom])
         settings.setValue("stripOrder", ["smoke-forced-copy", "bw-t180", "bw-otsu",
                           "bw-fast", "bw-t210", "color-p16", "color-i64",

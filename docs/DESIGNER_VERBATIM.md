@@ -945,3 +945,15 @@ Clarification question: should existing saved filters that explicitly specify 15
 
 ## 227 — group the integrated overview by BW, indexed color and full color (verbatim excerpt, 2026-10-16)
 > In the table "Overview — final complete-file bytes" Make three sections to clarify the analysis, the first will be all BW algorithms, then indexed colors, then full colors algorithms.  It's generally expected that JPBIG2 will be the best for BW, then maybe Brotli or layered JBIG2 for low pallettes, then JPEG, JPG2000 for full color.
+
+## 228 — one continuous overview table with unnumbered divider rows (verbatim, 2026-10-16)
+> No, put in a same continuous table with a row as the divider, no numbering.  Merged cells if md permits, if not, just blank cell except for the far left one with the title.
+
+## 229 — benchmark every row, including redundant no-image cases (verbatim, 2026-10-16)
+> please drop that rule, every row gets benchmarked, even if redundant, this is also a sanity check on the benchmarks.
+
+## 230 — rename the project to PDF Minify (verbatim, 2026-10-16)
+> Also, rename this project to "PDF Minify", rename anything in the repo and I will rename the repo itself later.  Also, why is there a dir that restates pdf_minimalist, why not app, source, code, or something like that?
+
+## 231 — add a sixth representative complete-document benchmark (verbatim, 2026-10-16)
+> also, add models-nasa-kepler.pdf as another Representative class, or within an existing class, or suggest another alternative to add a sixth case that covers a broad spectrum.  I have been using that one as a good test case, but maybe you have other suggestions?

@@ -8,10 +8,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import fitz  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from pdf_minimalist.ui_qt.app import (  # noqa: E402
+from pdf_minify.ui_qt.app import (  # noqa: E402
     MainWindow, STRIP_ICON, STRIP_PADDING, STRIP_PREVIEW_RECT, STRIP_AMOUNT_RECT,
 )
-from pdf_minimalist.ui_qt.jobs import cpu_cap  # noqa: E402
+from pdf_minify.ui_qt.jobs import cpu_cap  # noqa: E402
 
 _app = QApplication.instance() or QApplication([])
 
@@ -79,7 +79,7 @@ def test_background_job_fills_minis_and_preview(tmp_path):
 
 def test_pure_job_helpers():
     import numpy as np
-    from pdf_minimalist.ui_qt.jobs import frame_view
+    from pdf_minify.ui_qt.jobs import frame_view
     assert cpu_cap() >= 1
     page = np.full((60, 60, 3), 123, dtype=np.uint8)
     frame = frame_view([page], 100, 100, 24, 1, (0, 0, 100, 100))
@@ -90,7 +90,7 @@ def test_pure_job_helpers():
 def test_threshold_slider_only_for_simple(tmp_path):
     """Designer §65: T feeds Simple only — disabled (not lying) elsewhere."""
     w = MainWindow(str(_three_pages(str(tmp_path))))
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w.preset.setCurrentIndex(w.preset.findData("bw-otsu"))
     assert not w.slider.isEnabled()  # otsu computes its own threshold
     w.strategy.setCurrentText("simple")
@@ -101,7 +101,7 @@ def test_threshold_slider_only_for_simple(tmp_path):
 
 def test_lossless_checkbox_states(tmp_path, monkeypatch):
     """Designer §100: choice only for JPX; grey + fixed everywhere else."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     monkeypatch.setattr(w, "_ask_unsaved_filter", lambda pid: "discard")
     ids = [p["id"] for p in presets.PRESETS]
@@ -129,9 +129,9 @@ def test_recompute_never_blanks_amounts(tmp_path):
 
 def test_filter_set_covers_every_preset(tmp_path):
     """Every filter observes its real saved file, including PDF overhead."""
-    from pdf_minimalist.core import presets
-    from pdf_minimalist.core.recipes import preset_spec
-    from pdf_minimalist.ui_qt.artifacts import build_artifact
+    from pdf_minify.core import presets
+    from pdf_minify.core.recipes import preset_spec
+    from pdf_minify.ui_qt.artifacts import build_artifact
     src = str(_three_pages(str(tmp_path)))
     for p in presets.PRESETS:
         if p["mode"] == "passthrough":
@@ -152,7 +152,7 @@ def test_filter_set_covers_every_preset(tmp_path):
 
 def test_colors_slider_only_for_indexed(tmp_path):
     """Designer §67: Colors feeds Indexed only — disabled elsewhere."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     w.preset.setCurrentIndex(w.preset.findData("color-i64"))
     assert w.colors.isEnabled()
@@ -166,7 +166,7 @@ def test_colors_slider_only_for_indexed(tmp_path):
 
 def test_zoom_actions_have_real_icons():
     """Designer §197: standard zoom icons remain available without a theme."""
-    from pdf_minimalist.ui_qt.app import MainWindow as _MW
+    from pdf_minify.ui_qt.app import MainWindow as _MW
     w = _MW(None)
     for act in (w.zoom_in_act, w.zoom_out_act):
         assert not act.icon().isNull()
@@ -213,7 +213,7 @@ def test_icon_lab_menu_reuses_window_without_filter_or_settings_changes(tmp_path
     from PySide6.QtCore import QSettings
     w = MainWindow(str(_three_pages(str(tmp_path))))
     _wait_job(w)
-    settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    settings = QSettings("pdf-minify", "pdf-minify")
     settings_before = {key: settings.value(key) for key in settings.allKeys()}
     before = (w._gen, w._active_pid, w.filters.currentRow(), w.preset.currentData(),
               dict(w._saved_specs), dict(w._draft_specs), dict(w._artifacts.results),
@@ -244,7 +244,7 @@ def test_icon_lab_menu_reuses_window_without_filter_or_settings_changes(tmp_path
 
 def test_details_codec_first_for_all_modes():
     """Designer §82: Codec opens the details in every mode, same sequence."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(None)
     for p in presets.PRESETS:
         w.preset.setCurrentIndex(w.preset.findData(p["id"]))
@@ -254,7 +254,7 @@ def test_details_codec_first_for_all_modes():
 
 def test_preset_owns_its_dpi(tmp_path):
     """Designer §§83/85: one DPI — presets seed the shared combo, which rules."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     w.preset.setCurrentIndex(w.preset.findData("bw-fast"))
@@ -268,7 +268,7 @@ def test_preset_owns_its_dpi(tmp_path):
 
 def test_zoom_combo_two_way(tmp_path):
     """Designer §86: preset pick, typed number, and live sync all work."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     w.zoom_combo.setCurrentIndex(5)  # 150%
     w._zoom_combo_chosen(5)
@@ -317,7 +317,7 @@ def test_close_mid_processing_is_safe(tmp_path):
 
 def test_filter_progress_weights_cost(tmp_path):
     """Designer §§89/95: bars start at 0, minis weigh ~15%, amounts ~85%."""
-    from pdf_minimalist.ui_qt.app import filter_progress
+    from pdf_minify.ui_qt.app import filter_progress
     assert filter_progress(0, 7, 0, 7) == 0.0
     first_mini = filter_progress(1, 7, 0, 7)
     assert 0.0 < first_mini < 0.2, first_mini  # never near half
@@ -401,7 +401,7 @@ def test_mini_progress_matches_native_reserved_width_with_highlight_padding(styl
     from PySide6.QtCore import QRect, Qt
     from PySide6.QtGui import QColor, QPalette
     from PySide6.QtWidgets import QStyleFactory
-    from pdf_minimalist.ui_qt.app import FILTER_PROGRESS_ROLE, STRIP_WIDTH, STRIP_PADDING
+    from pdf_minify.ui_qt.app import FILTER_PROGRESS_ROLE, STRIP_WIDTH, STRIP_PADDING
     w = MainWindow()
     style = QStyleFactory.create(style_name)
     assert style is not None
@@ -463,7 +463,7 @@ def test_mini_progress_matches_native_reserved_width_with_highlight_padding(styl
 
 def test_mini_progress_model_update_needs_no_icon_rebuild_or_filtering(monkeypatch):
     import numpy as np
-    from pdf_minimalist.ui_qt.app import FILTER_PROGRESS_ROLE
+    from pdf_minify.ui_qt.app import FILTER_PROGRESS_ROLE
     w = MainWindow()
     pid = w._strip_ids[0]
     w._mini_view[pid] = np.zeros((104, 120, 3), dtype=np.uint8)
@@ -490,7 +490,7 @@ def test_pending_mini_uses_progress_not_working_labels(monkeypatch, progress, ca
     import numpy as np
     from PySide6.QtCore import QRect
     from PySide6.QtGui import QPainter
-    from pdf_minimalist.ui_qt.app import FILTER_PROGRESS_ROLE
+    from pdf_minify.ui_qt.app import FILTER_PROGRESS_ROLE
     w = MainWindow()
     pid = w._strip_ids[0]
     if cached:
@@ -523,7 +523,7 @@ def test_pending_mini_uses_progress_not_working_labels(monkeypatch, progress, ca
 def test_completed_mini_hides_bar_and_backing_without_changing_geometry():
     import numpy as np
     from PySide6.QtCore import QRect, Qt
-    from pdf_minimalist.ui_qt.app import FILTER_PROGRESS_ROLE
+    from pdf_minify.ui_qt.app import FILTER_PROGRESS_ROLE
     w = MainWindow()
     pid = w._strip_ids[0]
     w._mini_view[pid] = np.zeros((104, 120, 3), dtype=np.uint8)
@@ -631,7 +631,7 @@ def test_main_regions_share_one_padding_policy_and_no_strip_title(mode, size, mo
     """§§188/192: actual frame/header edges and one shared composition."""
     from PySide6.QtCore import QPoint, QRect
     from PySide6.QtWidgets import QLabel
-    from pdf_minimalist.ui_qt.layout import UI_PADDING, PaneBlock, PreviewPair
+    from pdf_minify.ui_qt.layout import UI_PADDING, PaneBlock, PreviewPair
     w = MainWindow()
     def forbidden(*args):
         pytest.fail("Layout/view changes must not dispatch PDF processing")
@@ -712,7 +712,7 @@ def test_preset_strip_sync_by_id():
     assert all(w.preset.itemData(i) != "orig" for i in range(w.preset.count()))
     assert w.preset.itemText(0).startswith("1. ")  # first strip filter
     w._filterstrip_chosen(0)  # first mini -> its preset
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     assert w.preset.itemData(w.preset.currentIndex()) == w._strip_ids[0]
     assert presets.get(w._strip_ids[0])["mode"] != "passthrough"
 
@@ -729,7 +729,7 @@ def test_file_menu_and_single_panel(tmp_path):
 def test_force_raster_per_filter(tmp_path):
     """Designer §§103/127: only bw-fast forces; preset switch syncs the box.
     ON = whole page into one image; OFF = text kept, images 1-bit in place."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     forced = [p["id"] for p in presets.PRESETS
@@ -744,7 +744,7 @@ def test_force_raster_per_filter(tmp_path):
 def test_zz_rename_and_copy_filter(tmp_path, monkeypatch):
     """Designer §109: rename + copy via naming popup, persisted. Last."""
     from PySide6.QtWidgets import QInputDialog
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     n_combo, n_strip = w.preset.count(), w.filters.count()
@@ -794,7 +794,7 @@ def test_preview_reuse_and_panel_divider(tmp_path):
 
 def test_bw_details_state_follows_force(tmp_path):
     """Designer §§127/171: full-page raster vs native artwork + image canvas."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     w.preset.setCurrentIndex(w.preset.findData("bw-otsu"))
@@ -838,8 +838,8 @@ def test_force_toggle_updates_only_active_filter(tmp_path):
 def test_unforced_preview_keeps_crisp_text(tmp_path):
     """§§127/149: rendered saved output preserves text when FFPR is OFF."""
     import numpy as np
-    from pdf_minimalist.ui_qt.artifacts import build_artifact
-    from pdf_minimalist.core.display import render_display_page
+    from pdf_minify.ui_qt.artifacts import build_artifact
+    from pdf_minify.core.display import render_display_page
     src = str(_three_pages(str(tmp_path)))
     spec = {"mode": "bw", "dpi": 300, "strategy": "otsu", "t": 180,
             "force_raster": False}
@@ -864,7 +864,7 @@ def test_unforced_preview_keeps_crisp_text(tmp_path):
 
 def test_pane_headers_elide_with_tooltip(tmp_path):
     """Designer §124: overflowing pane titles elide; hover shows it all."""
-    from pdf_minimalist.ui_qt.headers import PaneHeader
+    from pdf_minify.ui_qt.headers import PaneHeader
     w = MainWindow(str(_three_pages(str(tmp_path))))
     _wait_job(w)
     full = w.afterHeader.property("fullText")
@@ -1086,7 +1086,7 @@ def test_clicking_preset_keeps_other_amounts(tmp_path):
     DPI combo) must not move any other filter's amount — estimates follow
     each filter's own recipe DPI, only the active filter follows the UI."""
     import time
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     _wait_job(w)
     before_est = dict(w._mini_amount)
@@ -1142,7 +1142,7 @@ def test_drop_renumbers_visible_captions_without_content_refresh(state, monkeypa
     import numpy as np
     from PySide6.QtCore import QRect, Qt
     from PySide6.QtGui import QFont, QPainter, QPalette, QPixmap
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
 
     w = MainWindow()
     v = w.filters
@@ -1398,7 +1398,7 @@ def test_drag_ghost_is_translucent(tmp_path):
 def test_strip_fits_row_across_scrollbar_styles():
     """§145: actual Qt scrollbars never clip cells or create vertical range."""
     from PySide6.QtWidgets import QListWidgetItem, QProxyStyle, QStyle, QStyleFactory
-    from pdf_minimalist.ui_qt.app import _StripList
+    from pdf_minify.ui_qt.app import _StripList
 
     for style_name, extent in (("Fusion", 14), ("Fusion", 30), ("Windows", 16)):
         class ScrollbarStyle(QProxyStyle):
@@ -1552,7 +1552,7 @@ def test_filter_drop_from_any_window_height(tmp_path):
 
 def test_zz_save_filter_persists_without_invalidating(tmp_path):
     """Designer §§112/149: Save keeps the processed live recipe/result."""
-    from pdf_minimalist.core import presets
+    from pdf_minify.core import presets
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     w.preset.setCurrentIndex(w.preset.findData("bw-t180"))

@@ -1,4 +1,4 @@
-# Developer guidelines — pdf-minimalist (full)
+# Developer guidelines — PDF Minify (full)
 
 Read this before touching code. Source of truth for designer intent:
 `DESIGNER_VERBATIM.md`. Request tracker: [TODO.md](TODO.md) (this directory).
@@ -53,9 +53,16 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   designer quotations.
 
 ## 2. Stack & layout (locked unless the designer says otherwise)
+- Product identity (§230): display **PDF Minify**, package `pdf_minify`,
+  machine/settings/temp slug `pdf-minify`. Keep the flat import-package layout;
+  do not add installation/layout work to a branding rename. All settings
+  access uses `ui_qt/settings.py` and its one-time non-overwriting legacy
+  migration. Tests/review runs isolate both namespaces before migration.
+  Preserve exact quotes, licensed resources and frozen benchmark provenance;
+  keep the actual GitHub remote unchanged until the designer renames it.
 - Python + PySide6 (Qt6) GUI + PyMuPDF pipeline. `core/` = headless, NO Qt imports.
   `ui_qt/` = widgets only. Pure-numpy thresholds (no hard OpenCV dep).
-- REPOSITORY-OWNED: `pdf_minimalist/`, `tests/`, `tools/`, `docs/`,
+- REPOSITORY-OWNED: `pdf_minify/`, `tests/`, `tools/`, `docs/`,
   `requirements*.txt`, `.venv/` (git-ignored, via `setup_local.sh`).
 - SYSTEM (apt, never vendored): `python3`, `jbig2`, `mutool`, `pdfimages`,
   Qt6 C++ libs. Never `sudo pip install`; pip targets `./.venv` only.
@@ -165,13 +172,23 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   not imply every dependent codec independently failed. Preserve valid
   independent results and expose any processing defects. §224 requests repair
   of B108–B111; worker verification is distinct from designer acceptance.
-- §227: group the primary integrated overview as BW, indexed color / low
+- §§227/228: group the primary integrated overview as BW, indexed color / low
   palettes, then full color, retaining the same five PDF columns and all
-  measured combinations. Put unresampled preserve-images references above
-  the groups, and native-retaining rows before FFPR within each group.
+  measured combinations in one continuous Markdown table with one header.
+  Use unnumbered divider rows with the title only in the far-left cell and
+  five blank cells; no separate tables, numbered headings or HTML colspan.
+  Put unresampled preserve-images references above the groups in the same
+  table, and native-retaining rows before FFPR within each group.
   Indexed FFPR stays indexed. Preserve every size and existing per-fidelity
   bold minimum; expected codec strengths do not establish universal winners
   or authorize codec/default changes. Focused tables remain unchanged.
+- §229: benchmark every row against every input, including redundant no-image
+  cases. The 42 × 5 overview has 210 measured cells, not image-free N/A cells.
+  Save/verify an actual complete output per row; do not copy another row's
+  size or alias a control file. An unused image codec is a valid no-op while
+  native/font/container compression still runs. Annotate it, never invent a
+  bitmap to exercise the encoder. Prior exact-row measurements may be reused
+  only with strict compatible-code/source/preparation/output provenance.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image
@@ -265,7 +282,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   (§209) collects no compute-time comparisons; temporary workstation scheduling
   does not belong in the design log.
   Confirm `window shown` + preview applied in
-  `${TMPDIR:-/tmp}/pdf-minimalist/pdf-minimalist.log`. Never leave the
+  `${TMPDIR:-/tmp}/pdf-minify/pdf-minify.log`. Never leave the
   designer on a stale build. Sandbox process lists may not include desktop
   processes; check the desktop context when resolving a PID.
 - `python3 tools/check_env.py` then `./.venv/bin/python tools/check_env.py`.
@@ -325,7 +342,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 - The app logs everything important to stdout: startup, open (path + page count),
   preset selection, preview renders (page/strategy/T/size), save params,
   job progress/completion, cancel requests, view-mode changes, warnings.
-- `--debug` (`python -m pdf_minimalist --debug`) raises logging to DEBUG and dumps
+- `--debug` (`python -m pdf_minify --debug`) raises logging to DEBUG and dumps
   diagnostics: Python/PySide/Qt/fitz versions, cwd, argv, per-stage preview
   timings (render/threshold ms), per-page job progress.
 - Default (no flag) stays INFO: quiet enough to run, complete enough to review

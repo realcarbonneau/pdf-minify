@@ -1,4 +1,4 @@
-# GitHub project text for pdf-minimalist (designer §110)
+# GitHub project text for PDF Minify (designer §110)
 
 Copy-paste ready. Keep it factual — every claim below is true of the tree.
 
@@ -11,7 +11,7 @@ PDF optimizer with a camera-filter UI: compare BW/color presets side-by-side and
 ## Long description (option — README top mirrors this)
 
 ```
-pdf-minimalist shrinks PDFs with strong opinions and a live before/after
+PDF Minify shrinks PDFs with strong opinions and a live before/after
 workbench. Open a scan, a paper, a manual or a photo-heavy report, click
 through Threshold / Otsu / Sauvola black-and-white, JPEG, JPEG2000 and
 palette-indexed filters, and watch every filter's real output size update

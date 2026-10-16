@@ -22,8 +22,10 @@ from PySide6.QtCore import QPoint, QRect, QSettings  # noqa: E402
 from PySide6.QtGui import QColor, QIcon, QPalette  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
 from PySide6.QtWidgets import QApplication, QToolBar  # noqa: E402
-from pdf_minimalist.ui_qt.app import MainWindow, setup_logging, FILTER_PROGRESS_ROLE  # noqa: E402
-from pdf_minimalist.ui_qt.icons import ICON_NAMES  # noqa: E402
+from pdf_minify.ui_qt.app import MainWindow, setup_logging, FILTER_PROGRESS_ROLE  # noqa: E402
+from pdf_minify.ui_qt.icons import ICON_NAMES  # noqa: E402
+from pdf_minify import APP_ID  # noqa: E402
+from pdf_minify.ui_qt.settings import configure_application, settings_snapshot  # noqa: E402
 
 
 def wait_job(w, timeout=120):
@@ -190,8 +192,8 @@ def icon_samples(pdf):
 
 def compression_samples(w):
     """Real debounced codec changes; preview comes from each completed PDF."""
-    from pdf_minimalist.core.algorithms import ALGORITHMS, PALETTE_MODES
-    from pdf_minimalist.core.stream_compression import STREAM_POLICIES
+    from pdf_minify.core.algorithms import ALGORITHMS, PALETTE_MODES
+    from pdf_minify.core.stream_compression import STREAM_POLICIES
     w.preset.setCurrentIndex(w.preset.findData("color-p16"))
     tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
     pid = w._active_pid
@@ -358,15 +360,14 @@ def main():
     setup_logging(True)
     global app
     app = QApplication([])
+    configure_application(app)
     Path(".tmp").mkdir(exist_ok=True)
     # Review the designer's layout/order without writing their preferences or
     # replacing the remembered input with one of these throwaway fixtures.
-    source_settings = QSettings("pdf-minimalist", "pdf-minimalist")
-    kept = {key: source_settings.value(key) for key in source_settings.allKeys()}
-    del source_settings
+    kept = settings_snapshot()
     QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope,
                       str(Path(".tmp/shot-settings").resolve()))
-    review_settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    review_settings = QSettings(APP_ID, APP_ID)
     review_settings.clear()
     for key, value in kept.items():
         review_settings.setValue(key, value)

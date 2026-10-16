@@ -19,9 +19,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pymupdf as fitz
 from PIL import Image
 
-from pdf_minimalist.core import pipeline
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.stream_compression import native_stream_xrefs, recompress_native_streams
+from pdf_minify.core import pipeline
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.stream_compression import native_stream_xrefs, recompress_native_streams
 
 POLICIES = ("none", "flate-fast", "flate", "zopfli", "brotli-9", "brotli", "lzw", "runlength")
 

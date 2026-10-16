@@ -15,13 +15,13 @@ from PySide6.QtCore import QModelIndex, QSettings, QTimer, Qt
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication, QFileDialog, QInputDialog, QMessageBox
 
-from pdf_minimalist.core import presets, pipeline
-from pdf_minimalist.core.recipes import preset_spec, spec_key
-from pdf_minimalist.core.display import render_display_page
-from pdf_minimalist.ui_qt import app as ui
-from pdf_minimalist.ui_qt.artifacts import build_artifact
-from pdf_minimalist.ui_qt.artifacts import ArtifactStore
-from pdf_minimalist.ui_qt.paths import sweep_stale_temps
+from pdf_minify.core import presets, pipeline
+from pdf_minify.core.recipes import preset_spec, spec_key
+from pdf_minify.core.display import render_display_page
+from pdf_minify.ui_qt import app as ui
+from pdf_minify.ui_qt.artifacts import build_artifact
+from pdf_minify.ui_qt.artifacts import ArtifactStore
+from pdf_minify.ui_qt.paths import sweep_stale_temps
 
 _app = QApplication.instance() or QApplication([])
 _defaults = copy.deepcopy(presets.PRESETS)
@@ -39,7 +39,7 @@ def wait_until(condition, timeout=40):
 @pytest.fixture
 def window(tmp_path, monkeypatch):
     previous = copy.deepcopy(presets.PRESETS)
-    settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    settings = QSettings("pdf-minify", "pdf-minify")
     kept = {key: settings.value(key) for key in settings.allKeys()}
     settings.clear()
     presets.PRESETS[:] = copy.deepcopy(_defaults)
@@ -739,7 +739,7 @@ def test_effective_recipe_keys_include_all_saver_inputs_not_names():
 
 
 def test_temp_sweeper_protects_live_processes_and_fresh_empty_folders(tmp_path):
-    saves = tmp_path / "pdf-minimalist" / "saves"
+    saves = tmp_path / "pdf-minify" / "saves"
     saves.mkdir(parents=True)
     live = ArtifactStore(str(saves))
     root = Path(live.root)
@@ -772,8 +772,8 @@ def test_temp_sweeper_protects_live_processes_and_fresh_empty_folders(tmp_path):
 
 
 def test_pid_directory_is_exclusive_and_removed_on_normal_exit(tmp_path):
-    from pdf_minimalist.ui_qt.artifacts import FilterArtifact
-    saves = tmp_path / "pdf-minimalist" / "saves"
+    from pdf_minify.ui_qt.artifacts import FilterArtifact
+    saves = tmp_path / "pdf-minify" / "saves"
     store = ArtifactStore(str(saves))
     root = Path(store.root)
     assert root == saves / str(os.getpid())
@@ -893,7 +893,7 @@ def test_zopfli_uses_valid_zlib_container_and_rejects_bad_output(tmp_path, monke
 
 
 def test_every_filter_can_edit_all_six_image_algorithms_without_changing_identity(window):
-    from pdf_minimalist.core.algorithms import ALGORITHMS, BW_MODES, PALETTE_MODES
+    from pdf_minify.core.algorithms import ALGORITHMS, BW_MODES, PALETTE_MODES
     w = window
     choose(w, "bw-t180")
     pid = w._active_pid

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 from PySide6.QtCore import QTimer, Qt  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
 from PySide6.QtWidgets import QApplication, QInputDialog, QLineEdit, QMessageBox  # noqa: E402
-from pdf_minimalist.ui_qt.app import MainWindow, setup_logging  # noqa: E402
+from pdf_minify.ui_qt.app import MainWindow, setup_logging  # noqa: E402
 
 
 def main():

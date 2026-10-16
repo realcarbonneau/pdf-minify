@@ -13,8 +13,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from PySide6.QtCore import QPoint, QRect, QSettings
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
-from pdf_minimalist.ui_qt.app import MainWindow
-from pdf_minimalist.ui_qt.layout import UI_PADDING
+from pdf_minify.ui_qt.app import MainWindow
+from pdf_minify.ui_qt.layout import UI_PADDING
+from pdf_minify import APP_ID
+from pdf_minify.ui_qt.settings import configure_application, settings_snapshot
 
 
 def geometry(w):
@@ -48,17 +50,16 @@ def geometry(w):
 
 def main():
     app = QApplication([])
+    configure_application(app)
     suffix = "-2x" if app.devicePixelRatio() >= 2 else ""
 
     def capture(widget, name):
         widget.grab().save(f".tmp/resize{suffix}-{name}.png")
     Path(".tmp").mkdir(exist_ok=True)
-    source = QSettings("pdf-minimalist", "pdf-minimalist")
-    kept = {key: source.value(key) for key in source.allKeys()}
-    del source
+    kept = settings_snapshot()
     QSettings.setPath(QSettings.NativeFormat, QSettings.UserScope,
                       str(Path(".tmp/resize-settings").resolve()))
-    isolated = QSettings("pdf-minimalist", "pdf-minimalist")
+    isolated = QSettings(APP_ID, APP_ID)
     isolated.clear()
     for key, value in kept.items():
         isolated.setValue(key, value)

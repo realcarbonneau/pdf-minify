@@ -6,7 +6,7 @@ from PIL import Image
 import pymupdf as fitz
 import pytest
 
-from pdf_minimalist.core import pipeline
+from pdf_minify.core import pipeline
 
 
 def artwork():

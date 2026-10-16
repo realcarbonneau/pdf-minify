@@ -13,7 +13,7 @@ from PySide6.QtCore import QEvent, QSize  # noqa: E402
 from PySide6.QtGui import QAction, QColor, QIcon, QImage, QPalette  # noqa: E402
 from PySide6.QtWidgets import QApplication, QPushButton, QToolBar, QWidget  # noqa: E402
 
-from pdf_minimalist.ui_qt import icons  # noqa: E402
+from pdf_minify.ui_qt import icons  # noqa: E402
 
 _app = QApplication.instance() or QApplication([])
 

@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import pymupdf as fitz
 
-from pdf_minimalist.core import pipeline, stream_compression as streams
+from pdf_minify.core import pipeline, stream_compression as streams
 from tools import bench_image_streams as images
 
 
@@ -32,12 +32,12 @@ def digest(data):
 
 
 def environment():
-    files = ("pdf_minimalist/core/pipeline.py", "pdf_minimalist/core/stream_compression.py",
-             "pdf_minimalist/core/display.py", "pdf_minimalist/core/image_layers.py",
-             "pdf_minimalist/core/marked_content.py", "pdf_minimalist/core/native_layer.py",
-             "pdf_minimalist/core/canvas.py",
-             "pdf_minimalist/core/stencils.py", "pdf_minimalist/core/algorithms.py",
-             "pdf_minimalist/core/defaults.py", "pdf_minimalist/core/threshold.py",
+    files = ("pdf_minify/core/pipeline.py", "pdf_minify/core/stream_compression.py",
+             "pdf_minify/core/display.py", "pdf_minify/core/image_layers.py",
+             "pdf_minify/core/marked_content.py", "pdf_minify/core/native_layer.py",
+             "pdf_minify/core/canvas.py",
+             "pdf_minify/core/stencils.py", "pdf_minify/core/algorithms.py",
+             "pdf_minify/core/defaults.py", "pdf_minify/core/threshold.py",
              "tools/bench_image_streams.py", "tools/bench_integrated_compression.py")
     return dict(python=sys.version.split()[0], pymupdf=fitz.VersionBind,
                 zopfli=pipeline.zopfli_binary(),

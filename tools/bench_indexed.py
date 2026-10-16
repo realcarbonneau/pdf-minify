@@ -18,7 +18,7 @@ import fitz
 import numpy as np
 from PIL import Image
 
-from pdf_minimalist.core.pipeline import indexed_rgb, flate_rgb_encode
+from pdf_minify.core.pipeline import indexed_rgb, flate_rgb_encode
 
 ZOPFLI = shutil.which("zopfli")
 

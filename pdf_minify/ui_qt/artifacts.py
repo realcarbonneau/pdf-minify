@@ -20,7 +20,7 @@ from ..core.recipes import spec_key
 from ..core.identity import canonical_uuid
 from .jobs import pool, PREVIEW_DPI
 
-log = logging.getLogger("pdf_minimalist")
+log = logging.getLogger("pdf_minify")
 
 
 @dataclass

@@ -1,4 +1,4 @@
-"""Qt entry point: python -m pdf_minimalist [input.pdf] [--debug]"""
+"""Qt entry point: python -m pdf_minify [input.pdf] [--debug]"""
 import os
 
 # Single-thread numerical backends FIRST (before numpy/BLAS load): background
@@ -9,10 +9,11 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 import argparse
 
 from .ui_qt.app import main, setup_logging
+from . import APP_ID
 
 
 def cli(argv=None):
-    ap = argparse.ArgumentParser(prog="pdf_minimalist")
+    ap = argparse.ArgumentParser(prog=APP_ID)
     ap.add_argument("pdf", nargs="?", default=None)
     ap.add_argument("--debug", action="store_true",
                     help="verbose stdout diagnostics for run-and-review")

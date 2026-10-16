@@ -7,15 +7,15 @@ import uuid
 import pytest
 from PySide6.QtCore import QSettings
 
-from pdf_minimalist.core import identity, presets
-from pdf_minimalist.ui_qt.app import MainWindow
+from pdf_minify.core import identity, presets
+from pdf_minify.ui_qt.app import MainWindow
 
 DEFAULTS = copy.deepcopy(presets.PRESETS)
 
 
 @pytest.fixture
 def registry(monkeypatch):
-    settings = QSettings("pdf-minimalist", "pdf-minimalist")
+    settings = QSettings("pdf-minify", "pdf-minify")
     kept = {key: settings.value(key) for key in settings.allKeys()}
     settings.clear()
     monkeypatch.setattr(presets, "PRESETS", copy.deepcopy(DEFAULTS))

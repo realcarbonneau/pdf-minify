@@ -44,18 +44,18 @@ Stub: verified 2026-10-09 — Qt 6.8.2 in trixie, PySide6 LGPL, QPdfView/QGraphi
 ## 8 — DONE
 ~~Start with Qt; everything local in this directory; tell me what is local vs system packages.~~
 Stub: local scaffold built; local-vs-system split documented.
-See: `pdf_reducer/`, `.venv/`, `requirements*.txt`, `setup_local.sh`, `docs/DEPENDENCIES.md`, `README.md`.
+See: `pdf_minify/`, `.venv/`, `requirements*.txt`, `setup_local.sh`, `docs/DEPENDENCIES.md`, `README.md`.
 
 ## 9 — DONE
 ~~Verbatim comments in a design doc, docs dir, dev guidance doc, preset list like camera photo filters with small previews, click → main original+preview side by side H/V, same for filter thumbnails, all as menu view options.~~
 Stub: docs dir + verbatim file + dev guidance + 8-preset strip + View menu (main H/V/single, filters film/rail/grid) built and smoke-tested.
-See: `docs/DESIGNER_VERBATIM.md`, `docs/DEVELOPER_GUIDELINES.md`, `docs/DESIGN.md`, `pdf_reducer/core/presets.py`, `pdf_reducer/ui_qt/app.py`.
+See: `docs/DESIGNER_VERBATIM.md`, `docs/DEVELOPER_GUIDELINES.md`, `docs/DESIGN.md`, `pdf_minify/core/presets.py`, `pdf_minify/ui_qt/app.py`.
 Open follow-up (offered, awaiting designer ruling): live-rendered 96px thumbnail minis in the strip (currently label rows).
 
 ## 10 — DONE
 ~~Generally forcing alll images on the page and page rasterizing to 300dpi, and 8.5x11, but that also would be options on the main screen.~~
 Stub: force-raster + 300dpi + Letter defaults, all three as main-screen controls (DPI combo, page-size combo, force checkbox); force-off passes text pages through.
-See: `pdf_reducer/core/pipeline.py`, `pdf_reducer/core/presets.py`, `pdf_reducer/ui_qt/app.py`, `tests/test_pipeline.py`.
+See: `pdf_minify/core/pipeline.py`, `pdf_minify/core/presets.py`, `pdf_minify/ui_qt/app.py`, `tests/test_pipeline.py`.
 
 ## 11 — DONE
 ~~In the docs, always call the operator/user the designer.~~
@@ -75,7 +75,7 @@ See: `docs/DEVELOPER_GUIDELINES.md` (§0).
 ## 14 — DONE
 ~~Log important app activity to stdout and provide --debug diagnostics; document the developer workflow.~~
 Stub: INFO stdout logging everywhere, `--debug` adds versions/argv/timings, `./run.sh` launcher + `.tmp/` log, offscreen review shots.
-See: `pdf_reducer/ui_qt/app.py` (`setup_logging`), `pdf_reducer/__main__.py`, `docs/DEVELOPER_GUIDELINES.md` (§6), `run.sh`, `tools/shot.py`.
+See: `pdf_minify/ui_qt/app.py` (`setup_logging`), `pdf_minify/__main__.py`, `docs/DEVELOPER_GUIDELINES.md` (§6), `run.sh`, `tools/shot.py`.
 
 ## 15 — DONE
 ~~Keep project work local and scratch in gitignored ./.tmp/.~~
@@ -106,14 +106,14 @@ See: `docs/DEVELOPER_GUIDELINES.md` (§0).
 ~~page zoom, pan, etc is always synced on both panes~~
 Stub: original/preview panes mirror zoom + pan/scroll both ways (peer sync
 with reentrancy guard); covered by sync test.
-See: `docs/DESIGN.md` (Behavior), `pdf_reducer/ui_qt/viewer.py`,
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/viewer.py`,
 `tests/test_viewer_sync.py`.
 
 ## 23 — DONE
 ~~left side is baseline, so no preview of basline, right side is per filter.~~
 Stub: left pane fixed baseline; right pane shows selected filter; strip renders
 a live mini per filter of the current page (icon mode, preset params).
-See: `docs/DESIGN.md` (Behavior), `pdf_reducer/ui_qt/app.py`
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/app.py`
 (`_render_filter_minis`), `tests/test_minis.py`, `.tmp/shot-main.png`.
 
 ## 24 — DONE
@@ -128,7 +128,7 @@ See: `examples/`, `examples/README.md`.
 is zoom, I think that is more common ui, no?~~
 Stub: common convention adopted — plain wheel scrolls, Ctrl+wheel zooms,
 both panes stay synced. Covered by wheel test.
-See: `pdf_reducer/ui_qt/viewer.py`, `tests/test_viewer_sync.py`,
+See: `pdf_minify/ui_qt/viewer.py`, `tests/test_viewer_sync.py`,
 `docs/DEVELOPER_GUIDELINES.md`, `docs/ARCHITECTURE.md`.
 
 ## 26 — DONE
@@ -138,8 +138,8 @@ side if it fits in the window width.~~
 Stub: both panes are continuous scrollers (24px gap, autowrap grid by
 viewport/zoom, synced zoom+scroll); page list removed, status shows Page N of
 M; PgUp/PgDn jump pages; minis follow the top-visible page.
-See: `docs/DESIGN.md` (Behavior), `pdf_reducer/ui_qt/viewer.py`
-(`ContinuousDocView`), `pdf_reducer/ui_qt/app.py`, `tests/test_continuous.py`,
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/viewer.py`
+(`ContinuousDocView`), `pdf_minify/ui_qt/app.py`, `tests/test_continuous.py`,
 `.tmp/shot-main.png`.
 
 ## 27 — DONE
@@ -172,7 +172,7 @@ Stub: it was code, not a stale launch (relaunches verified by pid + log).
 Strip now shows only the 7 real filters (passthrough excluded — left pane is
 the baseline); preset combo keeps all 8 modes for Save; strip↔preset mapping
 is by id. Covered by strip-sync test; live instance relaunched on the build.
-See: `pdf_reducer/ui_qt/app.py`, `tests/test_minis.py`, `docs/DESIGN.md`.
+See: `pdf_minify/ui_qt/app.py`, `tests/test_minis.py`, `docs/DESIGN.md`.
 
 ## 31 — DONE
 ~~why are you using that terrible pdf as a default?~~
@@ -190,8 +190,8 @@ Stub: strip minis carry real encoder-based est. sizes; OverviewMap navigator
 (baseline page + viewport rect, click/drag to jump); left panel deleted —
 File menu (Open/Save/Quit), single right panel, page/progress/status in the
 status bar.
-See: `docs/DESIGN.md` (Behavior), `pdf_reducer/ui_qt/app.py`,
-`pdf_reducer/ui_qt/overview.py`, `pdf_reducer/ui_qt/viewer.py`,
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/app.py`,
+`pdf_minify/ui_qt/overview.py`, `pdf_minify/ui_qt/viewer.py`,
 `tests/test_minis.py`, `tests/test_continuous.py`, `.tmp/shot-main.png`.
 
 ## 33 — DONE
@@ -199,12 +199,12 @@ See: `docs/DESIGN.md` (Behavior), `pdf_reducer/ui_qt/app.py`,
 place for that~~
 Stub: pane/strip header labels removed; hints live as zero-space hover
 tooltips pending final placement.
-See: `pdf_reducer/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 34 — DONE
 ~~For now, fit everything you can on the right side panel or in the menu.~~
 Stub: done as part of item 32 (File menu + single right panel + status bar).
-See: `pdf_reducer/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 35 — DONE
 ~~document, compile and collect these, document in an examples md doc with
@@ -235,7 +235,7 @@ view; progress per filter + status bar. Hardened along the way: never drop the
 last ref of a running QThread (Qt fatal — track in-flight workers); preview
 application suppresses sync cascades and preserves scroll/zoom; splitter
 stretch keeps panes equal. Sort-filters/max-auto deferred.
-See: `pdf_reducer/ui_qt/jobs.py`, `docs/DESIGN.md`.
+See: `pdf_minify/ui_qt/jobs.py`, `docs/DESIGN.md`.
 
 ## 38 — OPEN (full detail)
 Designer audit: consolidate to ~22–23 (reserve: Kepler, Swift, 2 JFK, TM972,
@@ -250,7 +250,7 @@ Stub: `git mv pdf_reducer/ pdf_minimalist/` + all `from pdf_reducer`
 imports → `pdf_minimalist` (8 test files); display strings/docs already
 renamed; `run.sh` + `tools/shot.py` now resolve; `python -m pdf_minimalist`
 verified; 27/27 tests green. Historical `TODO.md` stubs keep old paths.
-See: `pdf_minimalist/`, `tests/`, `run.sh`, `tools/shot.py`.
+See: `pdf_minify/`, `tests/`, `run.sh`, `tools/shot.py`.
 
 ## 41 — DONE
 ~~also, why does it say local? Ref: pdf-reducer (local)~~
@@ -264,8 +264,8 @@ See: `README.md`, `docs/DEPENDENCIES.md`, `docs/DEVELOPER_GUIDELINES.md`.
 Stub: each strip mini now paints its own bar (`working…` 0.0 → mini 0.5 →
 `est. X` 1.0, bar hidden when done); status bar keeps only the aggregate.
 Verified by offscreen run (all 7 reach 1.0, icons non-null).
-See: `docs/DESIGN.md` (Behavior), `pdf_minimalist/ui_qt/app.py`
-(`_paint_strip_item`, `_filter_prog`), `pdf_minimalist/ui_qt/jobs.py`.
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/app.py`
+(`_paint_strip_item`, `_filter_prog`), `pdf_minify/ui_qt/jobs.py`.
 
 ## 44 — DONE
 ~~when I was clicking on a filter preview, it seemed to be restarting it
@@ -278,9 +278,9 @@ spec tuple (preset/mode/dpi/strategy/t); strip/preset clicks hit
 `need_mini/need_est/need_preview` so partial misses only compute what's
 missing. Verified: cache-hit dispatch bumps no gen, same-row click no job,
 spec change reprocesses + grows cache 1→2; 27/27 tests green.
-See: `docs/DESIGN.md` (Behavior), `pdf_minimalist/ui_qt/app.py`
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/app.py`
 (`_file_key`, `_dispatch_filters`, `_try_apply_cached`, `_preview_cache`),
-`pdf_minimalist/ui_qt/jobs.py`.
+`pdf_minify/ui_qt/jobs.py`.
 
 ## 45 — DONE (superseded by 48)
 ~~Previews are truncated half page or something, when they should should the
@@ -296,7 +296,7 @@ See: `docs/DESIGN.md` (Behavior), item 48.
 in smaller characters and aso clearly divided~~
 Stub: bordered preview frame + divider line + small caption (name dark, est
 gray) painted per mini; verified offscreen (`shot-main.png`).
-See: `pdf_minimalist/ui_qt/app.py` (`_paint_strip_item`).
+See: `pdf_minify/ui_qt/app.py` (`_paint_strip_item`).
 
 ## 47 — DONE
 ~~again, why is there reprocessing when I scroll????~~
@@ -305,7 +305,7 @@ the single-page mini/est cache wiped on every top-page change; fixed by the
 item-48 redesign (per-preset full-document caches + reframe). Verified
 offscreen on a 6-page doc: page turn and scrollbar moves bump no generation,
 no job object.
-See: `pdf_minimalist/ui_qt/app.py` (`_reframe_minis`, `_on_page_changed`).
+See: `pdf_minify/ui_qt/app.py` (`_reframe_minis`, `_on_page_changed`).
 
 ## 48 — DONE
 ~~Still wrong! Thumbnails should be a mini version of exactly the current view
@@ -319,9 +319,9 @@ preset's pages (`frame_view`); reframe on scroll with zero jobs; new jobs
 only on file/spec change; preview cache capped at 2 specs. Verified: 27/27
 tests green + offscreen 6-page check (framing aspect == main view, click
 dispatches exactly one preview-only job, click-back cached).
-See: `docs/DESIGN.md` (Behavior), `pdf_minimalist/ui_qt/jobs.py`
+See: `docs/DESIGN.md` (Behavior), `pdf_minify/ui_qt/jobs.py`
 (`mini_page_task`, `frame_view`, `FilterWorker`),
-`pdf_minimalist/ui_qt/app.py` (stores, `_reframe_minis`, `_dispatch_filters`).
+`pdf_minify/ui_qt/app.py` (stores, `_reframe_minis`, `_dispatch_filters`).
 
 ## 60 — DONE
 ~~Above the original and the applied preview, show the relevant information
@@ -330,7 +330,7 @@ the file size.~~
 Stub: splitter halves carry headers — left `Original · name · size · 100% ·
 N pages`, right `label · recipe · size (%)`, updated with strip data.
 Verified offscreen + suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_update_pane_headers`).
+See: `pdf_minify/ui_qt/app.py` (`_update_pane_headers`).
 
 ## 61 — DONE
 ~~Also, in the thumnails and top lines, shows the size percentage, like
@@ -338,14 +338,14 @@ original 230kb 100%, filter 1, 23kb 10%.~~
 Stub: every amount carries % of original (`_sized`: `23KB (10%)`, left header
 `100%`); original bytes cached at open. Verified: suite asserts `%` on all 8
 + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`_sized`).
+See: `pdf_minify/ui_qt/app.py` (`_sized`).
 
 ## 68 — DONE
 ~~File name should be the firlst list of the right side block.  Original and
 size stays above the first previous main window~~
 Stub: file name (bold) heads the right panel under a `File:` label, set on
 every open; left header untouched. Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`file_label`).
+See: `pdf_minify/ui_qt/app.py` (`file_label`).
 
 ## 79 — DONE
 ~~why do you have encode and codec on different lines, very incoherent, follow
@@ -355,7 +355,7 @@ consistent first line in all modes (`JBIG2`, `JPEG`, `JPEG2000`,
 `Flate (palette)`); same label set/order per mode (modern readout practice:
 consistent, scannable, units on every value). The stale live build still
 showed the old `Encode:` line. Verified: suite green, relaunched.
-See: `pdf_minimalist/ui_qt/app.py` (`_refresh_details`).
+See: `pdf_minify/ui_qt/app.py` (`_refresh_details`).
 
 ## 82 — DONE
 ~~Still, why is codec sometimes the first line and other times the last
@@ -365,7 +365,7 @@ custom codec specific options after.~~
 Stub: fixed properly — Codec opens every mode (BW had it last), then common
 properties, then codec-specific options; new test asserts the first line for
 all 11 presets. Verified: suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_refresh_details`).
+See: `pdf_minify/ui_qt/app.py` (`_refresh_details`).
 
 ## 85 — DONE
 ~~No, you said buttons combined with the scale percentage, no? [...] there
@@ -377,13 +377,13 @@ nothing to undo, and ESC idles quietly); (c) single DPI: the combo rules
 preview, totals and save for the whole active filter, every preset seeds it
 on selection (combos/sliders enable only where they act). Verified: suite
 green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 78 — DONE
 ~~yes please~~ (toolbar upgrade approval for the §76 zoom row)
 Stub: zoom pair is a joined zero-gap `QToolBar` (16px magnifier theme icons +
 words, tooltips); old push-buttons deleted. Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (zoom bar).
+See: `pdf_minify/ui_qt/app.py` (zoom bar).
 
 ## 77 — DONE
 ~~also make the tumbnail stip go full width, right side panel stopping above
@@ -391,7 +391,7 @@ with it's own scroll bar if overflow.~~
 Stub: strip + its label moved to the window-width bottom row; right panel
 lives in a `QScrollArea` (vertical scroll on overflow, min width 250).
 Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (layout).
+See: `pdf_minify/ui_qt/app.py` (layout).
 
 ## 76 — DONE
 ~~use the magnifying glass zoom in out and buttons should be small and on same
@@ -400,7 +400,7 @@ word also.~~
 Stub: magnifier theme icons + short words (In/Out) sharing one compact row
 with stretch (never full-width); tooltips kept. Verified: suite green +
 offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (zoom row).
+See: `pdf_minify/ui_qt/app.py` (zoom row).
 
 ## 73 — DONE
 ~~page size never changes, so put that in the top block call file info.   The
@@ -408,7 +408,7 @@ final name should have it's full path also.~~
 Stub: File box shows full path + pages + page size + original size (100%);
 page size left Filter details (combo stays as the Save control); box
 refreshes on open and on page-size change. Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`_refresh_file_box`).
+See: `pdf_minify/ui_qt/app.py` (`_refresh_file_box`).
 
 ## 75 — DONE
 ~~those are awefull zoom buttons, use proper icons for all of the four buttons
@@ -416,7 +416,7 @@ please, small with icons please.~~
 Stub: Zoom +/−, Save, Cancel are small (18px) freedesktop-theme icon buttons
 with tooltips; any missing theme icon keeps its text label. Verified: suite
 green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (button setup).
+See: `pdf_minify/ui_qt/app.py` (button setup).
 
 ## 74 — DONE
 ~~The filter should not generally have a page size [...] It's an advanced
@@ -427,7 +427,7 @@ Original size everywhere (pipeline + UI combo); Letter/A4 stay as advanced
 Save options; absurd sizes (sub-2in/over-24in sides, wilder than 1:3, slides
 pass) get a File-box warning + log suggesting Letter, never auto-applied.
 Verified: new default/absurd tests + suite green.
-See: `pdf_minimalist/core/pipeline.py` (`DEFAULT_PAGE_SIZE`,
+See: `pdf_minify/core/pipeline.py` (`DEFAULT_PAGE_SIZE`,
 `absurd_pages`).
 
 ## 72 — DONE
@@ -437,7 +437,7 @@ Stub: the codec was named inside the `Recompress:` sentence — easy to miss.
 Filter details now open with an explicit `Codec:` line (`JPEG2000`, `JPEG`,
 `Flate (palette)`; BW already had `Encode: JBIG2`). Verified: suite green +
 offscreen readout check.
-See: `pdf_minimalist/ui_qt/app.py` (`_refresh_details`).
+See: `pdf_minify/ui_qt/app.py` (`_refresh_details`).
 
 ## 83 — DONE
 ~~why do we have two different dpi values??~~
@@ -445,7 +445,7 @@ Stub: true — the preset DPI was decoration while the combo did the work.
 Now the preset owns it: selecting a BW filter seeds the Raster DPI combo
 (like strategy/T); the combo enables for BW only (color presets carry their
 own caps, shown disabled with reason). Verified: new test + suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_preset_chosen`,
+See: `pdf_minify/ui_qt/app.py` (`_preset_chosen`,
 `_sync_filter_controls`).
 
 ## 71 — DONE
@@ -455,14 +455,14 @@ Stub: Prev/Next buttons deleted (scrollbars + PgUp/PgDn cover paging —
 PgUp/PgDn now call `goto_page` directly); Zoom +/− buttons added to the
 right panel (same 1.25 step as Ctrl+Plus/Minus). Verified: suite green +
 offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`zin_btn`, `zout_btn`).
+See: `pdf_minify/ui_qt/app.py` (`zin_btn`, `zout_btn`).
 
 ## 69 — DONE
 ~~number of pages in the right hand box, things that are constant for
 original and any filter stay in the right hand box, as the main info box~~
 Stub: `File:` box now shows name + pages + original size (100%); left header
 untouched per §68. Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`open_file`).
+See: `pdf_minify/ui_qt/app.py` (`open_file`).
 
 ## 67 — DONE
 ~~I mean to force a reduction of the pallette based on automatic algorithms
@@ -477,7 +477,7 @@ saver/estimator/preview/mini/details branches; JPX rate calibrated 24→192
 (r192 ≈ q45 size at +4.5dB); palette benchmark (`tools/bench_palette.py`,
 13 images) + full filter×corpus benchmark (`tools/bench_filters.py`, table
 in `examples/README.md`). Verified: 37/37 green + offscreen.
-See: `pdf_minimalist/core/pipeline.py` (`indexed_rgb`, `indexed_encode`,
+See: `pdf_minify/core/pipeline.py` (`indexed_rgb`, `indexed_encode`,
 `color_stream_plan`), `tools/bench_*.py`.
 
 ## 65 — DONE
@@ -489,7 +489,7 @@ compute their own thresholds, so dragging T re-rendered identical pixels and
 looked dead. Slider + label now disable everywhere but Simple (also stops the
 pointless identical jobs). (2) Percents round to nearest (`0%`/`1%`, `<1%`
 gone). Verified: new enable-state test + suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_sync_threshold_enabled`, `_sized`).
+See: `pdf_minify/ui_qt/app.py` (`_sync_threshold_enabled`, `_sized`).
 
 ## 63 — DONE
 ~~what does <=150dpi mean?  How is that even something that make sense??~~
@@ -497,14 +497,14 @@ Stub: my shorthand — it is a downsample CEILING: images larger than 150dpi
 at print size get shrunk to it, smaller ones are never upscaled (BW presets
 render exactly, hence plain `300dpi`). Reworded everywhere to
 `max 150dpi`. Verified: suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_preset_algo`).
+See: `pdf_minify/ui_qt/app.py` (`_preset_algo`).
 
 ## 64 — DONE
 ~~then you don't need to say max, just the dpi, it's assumed it's a max, write
 as a ui design ruling, users don't care to see this difference.~~
 Stub: captions read plain `150dpi`; ceiling semantics recorded as UI ruling
 in `docs/DESIGN.md`. Verified: suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_preset_algo`).
+See: `pdf_minify/ui_qt/app.py` (`_preset_algo`).
 
 ## 62 — DONE (standing rule)
 ~~run, always run after a new build, kill the existing one~~
@@ -519,7 +519,7 @@ Stub: finished in flight — color captions are real post-save amounts (saver
 and estimator share `color_stream_plan` with doc-wide dedupe; BW already
 real), `./test.sh` runs the full suite (README + dev-guidelines workflow
 updated), `./test.sh` green before this ship. Verified: 33/33 + offscreen.
-See: `test.sh`, `pdf_minimalist/core/pipeline.py` (`color_stream_plan`).
+See: `test.sh`, `pdf_minify/core/pipeline.py` (`color_stream_plan`).
 
 ## 58 — DONE
 ~~also, prev/next buttons seem to do nothing...~~
@@ -534,7 +534,7 @@ Stub: OverviewMap widget + label + `_refresh_nav`/`_nav_goto`/nav state
 deleted from the right panel; baseline pane is the navigator; view changes
 feed only the mini-reframe timer. `overview.py` module kept (covered by
 `test_overview_mirrors_view`). Verified offscreen + 27/27 green.
-See: `pdf_minimalist/ui_qt/app.py`, `docs/DESIGN.md`.
+See: `pdf_minify/ui_qt/app.py`, `docs/DESIGN.md`.
 
 ## 54 — DONE
 ~~filter details left side should have it [...] sorry, right side~~
@@ -554,14 +554,14 @@ guidelines, design table). UI now reads the ruled `Encode: JBIG2` /
 Also fixed latent bug: DPI / page-size / force-raster changes never
 dispatched (silently stale) — now they reprocess per §44. Verified offscreen
 + 27/27 green.
-See: `pdf_minimalist/ui_qt/app.py` (`_refresh_details`).
+See: `pdf_minify/ui_qt/app.py` (`_refresh_details`).
 
 ## 84 — DONE
 ~~your buttons are not fixed~~
 Stub: the earlier custom-magnifier workaround is superseded by §201 / designer
 §197: standard theme icons plus bundled Breeze SVG fallbacks keep zoom
 available without custom artwork. Words and 16px logical sizes remain.
-See: `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`.
+See: `docs/ICONS.md`, `pdf_minify/ui_qt/icons.py`.
 
 ## 56 — DONE
 ~~I also thought that there was a better jpeg compression algo that was widely
@@ -576,7 +576,7 @@ swallowed it — one eternal `need_mini=1`, 100% bar, idle CPU. Fixed the
 branch + worker failures now log warnings (no more silent stalls) + test
 asserts real composites for all 8. MozJPEG noted but not installed.
 Verified offscreen + 33/33 green.
-See: `pdf_minimalist/core/presets.py`, `pdf_minimalist/core/pipeline.py`
+See: `pdf_minify/core/presets.py`, `pdf_minify/core/pipeline.py`
 (`jpx_encode`, `recompress_file` codec), `tests/test_pipeline.py`.
 
 ## 57 — DONE
@@ -587,7 +587,7 @@ options; (b) few-color images (≤256 distinct colors) get a lossless
 palette-quantized Flate candidate that wins whenever smallest — in every
 color preset, saver and estimator alike. Verified: FlateDecode picked on flat
 logo fixture + smaller file; 32/32 green.
-See: `pdf_minimalist/core/pipeline.py` (`indexed_flate_candidate`).
+See: `pdf_minify/core/pipeline.py` (`indexed_flate_candidate`).
 
 ## 55 — DONE
 ~~Also, why is proper saving not wired?? I said the size should NOT be
@@ -603,7 +603,7 @@ test-decoded before embedding, failures take 1-bit PNG, per-page codecs
 logged at save. Estimator and saver share `bw_page_payload`, so BW captions
 are real embedded-byte sums (no `est.`); color stays estimated. 30/30 green
 incl. JBIG2 roundtrip, fallback-validity and pixel-exact tests.
-See: `pdf_minimalist/core/pipeline.py` (`bw_page_jbig2`, `jbig2_renders`,
+See: `pdf_minify/core/pipeline.py` (`bw_page_jbig2`, `jbig2_renders`,
 `_place_bw`, `process_file`), `tests/test_pipeline.py`.
 
 ## 53 — DONE
@@ -617,7 +617,7 @@ estimate (all pages, real save settings, summed; container overhead unknowable
 till Save). Exact output size + saving reported after every save. Known
 limitation: BW save embeds 1-bit PNG today, JBIG2 wiring outstanding — est
 matches today's save output. Verified offscreen + 27/27 green.
-See: `docs/DESIGN.md`, `pdf_minimalist/ui_qt/app.py`
+See: `docs/DESIGN.md`, `pdf_minify/ui_qt/app.py`
 (`_preset_algo`, `_reframe_one`, `_on_done`).
 
 ## 52 — DONE
@@ -627,7 +627,7 @@ Stub: nothing was bound (only Ctrl+wheel zoomed). Added the modern standard:
 Ctrl+Plus in, Ctrl+Minus out, Ctrl+0 fit-width (`=` doubles as `+` on US
 layouts); applied to the synced panes. Verified offscreen (in/out/sync/reset)
 + 27/27 green.
-See: `pdf_minimalist/ui_qt/app.py` (`keyPressEvent`, `_keyboard_zoom`).
+See: `pdf_minify/ui_qt/app.py` (`keyPressEvent`, `_keyboard_zoom`).
 
 ## 51 — DONE
 ~~WHen I open a new file, the right preview is the last to be updated, it
@@ -638,7 +638,7 @@ Stub: yes — priority target is always the active spec (default preset at
 first open, selected filter after). `FilterWorker` now renders the active
 filter's full preview pages before mini-pages and ests. Verified: emission
 order `preview, mini, mini, …` offscreen + 27/27 green.
-See: `pdf_minimalist/ui_qt/jobs.py` (`FilterWorker._run`).
+See: `pdf_minify/ui_qt/jobs.py` (`FilterWorker._run`).
 
 ## 49 — OPEN (full detail)
 Designer: open-file window should show previews of the PDF files; asks if that
@@ -655,21 +655,21 @@ the file size.~~
 Stub: splitter halves carry headers — left `Original · size · 100% ·
 N pages` (no name since item 87; un-bolded), right `label · recipe ·
 size (%)`. Verified offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`_update_pane_headers`).
+See: `pdf_minify/ui_qt/app.py` (`_update_pane_headers`).
 
 ## 87 — DONE
 ~~remove the file name from the left side top title.  Also, remove the bold
 from both.~~
 Stub: name lives only in the File box now; both pane headers plain.
 Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 61 — DONE
 ~~Also, in the thumnails and top lines, shows the size percentage, like
 original 230kb 100%, filter 1, 23kb 10%.~~
 Stub: every amount carries % of original (`_sized`); percents round to nearest
 per item 65. Verified offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`_sized`).
+See: `pdf_minify/ui_qt/app.py` (`_sized`).
 
 ## 90 — DONE
 ~~Also, when I choose a to be processed filter to the far right, when other
@@ -682,14 +682,14 @@ reuses the running mini job with a preview follow-up. Previews cache always
 but apply only when still current. Verified: no-restart probe (same mini
 object, token uncancelled) + suite green. issues.md created with B1–B22,
 crossed on designer confirmation only.
-See: `pdf_minimalist/ui_qt/app.py` (`_dispatch_filters`), `issues.md`.
+See: `pdf_minify/ui_qt/app.py` (`_dispatch_filters`), `issues.md`.
 
 ## 91 — DONE
 ~~Also, the app should remember the last opened file.~~
 Stub: last path in QSettings on every open; bare launch reopens it (photo
 demo fallback). `run.sh` no longer forces a file. Verified offscreen with
 isolated `XDG_CONFIG_HOME`.
-See: `pdf_minimalist/ui_qt/app.py` (`open_file`, `main`), `run.sh`.
+See: `pdf_minify/ui_qt/app.py` (`open_file`, `main`), `run.sh`.
 
 ## 89 — DONE
 ~~Why do the per filter progress bars always seem to start at 50%?  This is
@@ -697,7 +697,7 @@ also incorrect please fix.~~
 Stub: phasing artifact — fast minis all finished before slow ests started,
 parking every bar at 50%. Minis and amounts now share one interleaved batch
 so each bar advances on its own completions. Verified: suite green.
-See: `pdf_minimalist/ui_qt/jobs.py` (`FilterWorker._run`).
+See: `pdf_minify/ui_qt/jobs.py` (`FilterWorker._run`).
 
 ## 62 — DONE (standing rule)
 ~~run, always run after a new build, kill the existing one~~
@@ -721,7 +721,7 @@ wrong.  Also, your <1% is wrong, round to the nearest, it's either 1% or
 Stub: the slider feeds ONLY Simple — under Otsu it re-rendered identical
 pixels and looked dead. Slider + label disable everywhere but Simple (+
 tooltip); percents round. Verified: new enable-state test, suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_sync_filter_controls`).
+See: `pdf_minify/ui_qt/app.py` (`_sync_filter_controls`).
 
 ## 66 — DONE (Q&A)
 ~~is there a mode that can reduce the color pallette for compression?  And what
@@ -738,7 +738,7 @@ Stub: Colors slider (2–256, indexed-only) + `Poster 16` + `Indexed 64`;
 saver/estimator/preview/mini/details branches; JPX rate 24→192 (r192 ≈ q45
 size at +4.5dB); `tools/bench_palette.py` + `tools/bench_filters.py` with
 tables in `examples/README.md`. Verified: 37/37 + offscreen.
-See: `pdf_minimalist/core/pipeline.py`, `tools/bench_*.py`.
+See: `pdf_minify/core/pipeline.py`, `tools/bench_*.py`.
 
 ## 68 — DONE
 ~~File name should be the firlst list of the right side block.  Original and
@@ -782,7 +782,7 @@ suggest?~~
 Stub: agreed — default flipped to Original size everywhere (pipeline + UI);
 Letter/A4 advanced-only; absurd sizes flagged with a File-box warning + log,
 never auto-applied. Verified: new tests, suite green.
-See: `pdf_minimalist/core/pipeline.py` (`DEFAULT_PAGE_SIZE`, `absurd_pages`).
+See: `pdf_minify/core/pipeline.py` (`DEFAULT_PAGE_SIZE`, `absurd_pages`).
 
 ## 75 — DONE (restyled under 76/78)
 ~~those are awefull zoom buttons, use proper icons [...]~~
@@ -819,7 +819,7 @@ bugs fixed along the way: (1) my Flate streams carried PNG filter bytes with
 no predictor declared, shifting every row a byte; (2) fresh xrefs from
 `get_new_xref` are not dicts, so palettes ride inline (spec-legal). Verified:
 Flate roundtrip + true-Indexed bpc/render tests, 41/41 green.
-See: `pdf_minimalist/core/pipeline.py` (`indexed_parts`, `_place_indexed`,
+See: `pdf_minify/core/pipeline.py` (`indexed_parts`, `_place_indexed`,
 `deflate_best`), `tools/bench_indexed.py`.
 
 ## 81 — DONE (policy, verified in code)
@@ -853,7 +853,7 @@ write safe code for all scenarios and have test cases for all scenarios,
 please make sure you do complete work.~~
 Stub: `closeEvent` cancels all tokens, joins workers (8s each), closes the
 doc; new close-mid-processing test. Verified: 48/48 green.
-See: `pdf_minimalist/ui_qt/app.py` (`closeEvent`), `issues.md` (B26).
+See: `pdf_minify/ui_qt/app.py` (`closeEvent`), `issues.md` (B26).
 
 ## 95 — DONE
 ~~thumbnails progress bar always starts a 50% and stays there until real
@@ -863,7 +863,7 @@ fast minis like slow encodings. Bars are now cost-weighted (15/85, current
 job arrivals only) via unit-tested `filter_progress`: always start at 0,
 climb with real completions. Logged as issues.md B27. Verified: unit vectors
 + 49/49 green.
-See: `pdf_minimalist/ui_qt/app.py` (`filter_progress`).
+See: `pdf_minify/ui_qt/app.py` (`filter_progress`).
 
 ## 96 — DONE
 ~~The preview thumnail section below should always be full heigh, no vertical
@@ -872,7 +872,7 @@ Stub: strip fixed to one full row (no vscroll, h-scroll on overflow,
 selection highlight transparent); progress overlays the mini middle (no
 reserved space, icon shorter); zoom/Save/X share one compact toolbar row.
 Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 97 — DONE
 ~~why is there still a bar under the thumbnail when it is selected, but not
@@ -880,7 +880,7 @@ when the window is out of focus, is that a standard part of the widgets?  I
 asked to remove the "blue bar", not just the "blue".~~
 Stub: yes — Qt's focus frame, invisible when unfocused. Strip takes NoFocus
 now (mouse selection unaffected). Verified: suite green.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 98 — DONE
 ~~The whole thumbnail is already highlighted when selected, the bar below it
@@ -891,7 +891,7 @@ bar is not the pattern — selected mini paints a 2px theme-highlight ring
 around its own box, always marking what the right pane shows; ring defaults
 onto the startup preset. Logged as issues.md B32. Verified: suite green +
 offscreen.
-See: `pdf_minimalist/ui_qt/app.py` (`_paint_strip_item`).
+See: `pdf_minify/ui_qt/app.py` (`_paint_strip_item`).
 
 ## 100 — DONE
 ~~Also, add a checkbox for lossless. [...] it should always be show for each
@@ -901,7 +901,7 @@ default off per usually-lossy §81); grey + fixed-correct everywhere else
 (BW/indexed/passthrough on, JPEG off). Threaded through spec, preview, est
 keys, save and details. Verified: states test + JPX lossless roundtrip +
 suite green.
-See: `pdf_minimalist/ui_qt/app.py`, `pdf_minimalist/core/pipeline.py`.
+See: `pdf_minify/ui_qt/app.py`, `pdf_minify/core/pipeline.py`.
 
 ## 101 — DONE
 ~~Also, when I zoom out [...] the right preview side does not follow in
@@ -913,7 +913,7 @@ baseline grid exactly (`layout_from`: positions, columns, zoom source).
 Filter switches can't move the view; only the zoom controls reset it.
 Logged as issues.md B33 (grid sync) + B34 (zoom reset/processing on switch).
 Verified: suite green + offscreen grid-mirror check.
-See: `pdf_minimalist/ui_qt/viewer.py`, issues.md.
+See: `pdf_minify/ui_qt/viewer.py`, issues.md.
 
 ## 102 — DONE
 ~~'PySide6.QtGui.QPalette' object has no attribute 'Mid', BUT you should see
@@ -923,7 +923,7 @@ fixed to class access; (2) `open_file` showed only a popup, burying the
 traceback AND hanging headless runs on the modal. Now `log.exception` first.
 This also explains the stuck suite (modal block inside `open_file`).
 Logged as issues.md B35 (see below). Verified: 53/53 green in 23s.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 103 — DONE
 ~~force full page raste should be per filter option [...] Normally, we don't
@@ -934,7 +934,7 @@ preset switch syncs the box (default unchecked); force-off text pages pass
 through with text intact while images still compress (shared mixed-mode
 helper); flag lives in spec/tuples/mini+est keys so toggling re-renders.
 Logged as issues.md B36/B37. Verified: mixed/force/spec-key tests, 56/56.
-See: `pdf_minimalist/core/pipeline.py`, `pdf_minimalist/ui_qt/jobs.py`.
+See: `pdf_minify/core/pipeline.py`, `pdf_minify/ui_qt/jobs.py`.
 
 ## 104 — DONE
 ~~Also, another issue, no horizontal divider between original and right side
@@ -944,7 +944,7 @@ repeat??~~
 Stub: visible 6px divider; drags snap back to equal halves (single-pane
 excluded). Logged as issues.md B38. Verified:
 new snap test + suite green.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 105 — DONE
 ~~when I check/uncheck the force raster, it changes all the BW thumbnails,
@@ -954,7 +954,7 @@ preview, amounts and save follow it. First attempt was wrong (it painted BW
 minis as color photos on text pages); corrected to always-rasterized minis
 + filter-set test over every preset. Logged as issues.md B39/B41. Verified:
 suite green (59/59).
-See: `pdf_minimalist/ui_qt/jobs.py` (`mini_page_task`).
+See: `pdf_minify/ui_qt/jobs.py` (`mini_page_task`).
 
 ## 106 — DONE
 ~~It still changes the size of all the thumbnail previews, you clearly don't
@@ -964,7 +964,7 @@ rule): minis/amounts are stable views over key-addressed stores;
 recomputes swap values in place and never blank them (bars signal work);
 only a new file clears. Logged as issues.md B40. Verified: no-blank test +
 suite green.
-See: `docs/DESIGN.md`, `pdf_minimalist/ui_qt/app.py` (`_reframe_one`).
+See: `docs/DESIGN.md`, `pdf_minify/ui_qt/app.py` (`_reframe_one`).
 
 ## 107 — DONE
 ~~Remove the vertical sizer between the two main previews, not just make it
@@ -972,7 +972,7 @@ not draggable, that is just wrong.~~
 Stub: QSplitter deleted — fixed equal QHBoxLayout (direction flips for
 stacked/single modes). Test asserts equal pane widths. Logged as issues.md
 B43. Verified: suite green + offscreen.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 108 — DONE
 ~~also, why when I click on a mini, the filter seems to be recomputed, that
@@ -981,7 +981,7 @@ Stub: §44 held — jobs never reran on clicks (log proves cache hits). The
 visible flicker was the preview pane rebuilding identical pixmaps: panes now
 skip the rebuild when already showing the key. Logged as issues.md B44.
 Verified: suite green.
-See: `pdf_minimalist/ui_qt/app.py` (`_apply_preview_pages`).
+See: `pdf_minify/ui_qt/app.py` (`_apply_preview_pages`).
 
 ## 109 — DONE
 ~~Also, have a button that permits naming/renaming the filter, and a popup
@@ -990,7 +990,7 @@ used for the copy.~~
 Stub: Rename…/Copy… buttons with naming popups; customs persisted in
 QSettings and merged at startup (combo + strip rebuild live). Verified:
 rename/copy test + suite green.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 110 — DONE
 ~~Also, when you are done, give me some text, descriptions and tags to put in
@@ -1006,7 +1006,7 @@ Stub: the pane could sit empty until the first preview landed — it now shows
 baseline immediately, replaced by the real filter preview on arrival. Cause
 of confusion found too: theme-dependent selection paint (fixed with a custom
 delegate). Verified: suite green + live screenshots.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 112 — DONE
 ~~I need a save filter changes button also after the rename and copy, or
@@ -1015,7 +1015,7 @@ resizing the dropdown to fill the space.~~
 Stub: `Save` writes UI settings into the filter (builtins shadowed by id,
 persisted; caches for the new recipe invalidated so it rebuilds); row is now
 dropdown-fills + Rename + Copy + Save. Verified: save-filter test + 61/61.
-See: `pdf_minimalist/ui_qt/app.py` (`save_filter`).
+See: `pdf_minify/ui_qt/app.py` (`save_filter`).
 
 ## 113 — DONE
 ~~It still doesn't work, I choose a BW mini and the big upper right preview
@@ -1024,13 +1024,13 @@ Stub: the mixed-mode preview showed the ORIGINAL on text pages while minis
 showed thresholded — rebuilt so the right pane always shows the full filter
 effect (force left the preview cache key: toggling never rebuilds it).
 Verified: preview-ignores-force test + 62/62.
-See: `pdf_minimalist/ui_qt/jobs.py` (`preview_page`).
+See: `pdf_minify/ui_qt/jobs.py` (`preview_page`).
 
 ## 114 — DONE
 ~~And put the proper icons on the save, rename, duplicate buttons.~~
 Stub: Rename (edit-rename chain), Copy (edit-copy), Save (document-save)
 beside their words, theme-or-text fallback like the rest. Verified: suite.
-See: `pdf_minimalist/ui_qt/app.py`.
+See: `pdf_minify/ui_qt/app.py`.
 
 ## 116 — DONE
 ~~again, when I change full page raster, many filters get updated, this is
@@ -1040,7 +1040,7 @@ force), so every toggle recomputed every BW size (§106 repeat). Amounts now
 follow each filter's OWN recipe force (only bw-fast forces, §103); the
 checkbox arms Save and refreshes details only — zero jobs dispatched.
 Verified: toggle regression test (fails pre-fix) + suite.
-See: `pdf_minimalist/ui_qt/app.py` (`_estb_key`), `pdf_minimalist/ui_qt/jobs.py`
+See: `pdf_minify/ui_qt/app.py` (`_estb_key`), `pdf_minify/ui_qt/jobs.py`
 (`_recipe_force`).
 
 ## 117 — DONE
@@ -1050,7 +1050,7 @@ Stub: dropped the Panel-width slider; the previews block and the right panel
 now sit in a real draggable QSplitter (`panel_split`, non-collapsible).
 §107 untouched: nothing splits the two panes themselves — they stay locked
 equal inside their own half.
-See: `pdf_minimalist/ui_qt/app.py` (`panel_split`).
+See: `pdf_minify/ui_qt/app.py` (`panel_split`).
 
 ## 118 — DONE
 ~~If the right panel becomes too small for it's content, it must have a
@@ -1058,7 +1058,7 @@ horizontal scroll bar~~
 Stub: one-line policy flip — `panelScroll` went from `ScrollBarAlwaysOff`
 to `ScrollBarAsNeeded`, so dragging the divider below content width scrolls
 instead of clipping. Pinned in the divider test.
-See: `pdf_minimalist/ui_qt/app.py` (`panelScroll`).
+See: `pdf_minify/ui_qt/app.py` (`panelScroll`).
 
 ## 120 — DONE
 ~~isn't there a standard rename icon that looks like a cursor with a letter
@@ -1068,7 +1068,7 @@ Stub: icon-only filter buttons and tooltips remain. The earlier custom
 I-beam/floppy implementation misread the STANDARD-icon request; its claim
 that custom artwork was the exact requested look was incorrect. §201 /
 designer §197 replaces it with native-theme icons and stock Breeze fallbacks.
-See: `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`, issue B102.
+See: `docs/ICONS.md`, `pdf_minify/ui_qt/icons.py`, issue B102.
 
 ## 121 — DONE (analysis delivered; later rulings §§126/127/149 settle the flow)
 Historical mixed-vs-forced measurements and preview discrepancy remain in
@@ -1091,17 +1091,17 @@ App scratch moved to the OS temp dir via Qt (`QStandardPaths.TempLocation`
 — /tmp Linux, GetTempPath Windows, $TMPDIR macOS; verified live: `/tmp`).
 New `ui_qt/paths.py` (`app_temp_dir`, `sweep_stale_temps` at startup);
 `run.sh` log follows `TMPDIR`; single-path saver temps reserved under
-`<os-temp>/pdf-minimalist/saves/`. New `docs/PERSISTENCE_AND_TEMP.md`
+`<os-temp>/pdf-minify/saves/`. New `docs/PERSISTENCE_AND_TEMP.md`
 (temp vs QSettings persistence vs repo `./.tmp/` dev artifacts) cross-ref'd
 from ARCHITECTURE, DESIGN, issues B54. `core/` stays Qt-free (workdir args).
-See: `pdf_minimalist/ui_qt/paths.py`, `docs/PERSISTENCE_AND_TEMP.md`.
+See: `pdf_minify/ui_qt/paths.py`, `docs/PERSISTENCE_AND_TEMP.md`.
 
 ## 124 — DONE
 Pane headers elide past the available width with the full text on hover
 (QLabel can't elide itself: full text kept in a `fullText` property +
 tooltip, re-elided in `resizeEvent`). Pinned by a mechanism test (layout
 minimums hold real windows open — no squeeze to test against).
-See: `pdf_minimalist/ui_qt/app.py` (`_set_header`, `_elide_headers`).
+See: `pdf_minify/ui_qt/app.py` (`_set_header`, `_elide_headers`).
 
 ## 125 — DONE
 New `docs/UI_LAYOUT.md`: four regions, sizing/divider/strip/header rules
@@ -1132,7 +1132,7 @@ with thresholded image rects via one shared helper; OFF estimator counts
 1-bit payloads + kept masks (the old SMask blind spot is gone on this
 path). Fixed two own bugs found while building: flate row-stride validation
 and `PAGE_SIZES` transcription. Pinned by save/preview/key/toggle tests.
-See: `pdf_minimalist/core/pipeline.py` (`image_1bit_payload`).
+See: `pdf_minify/core/pipeline.py` (`image_1bit_payload`).
 
 ## 128 — DONE
 Strip minis DnD-reorderable with STANDARD framework machinery
@@ -1150,7 +1150,7 @@ page-size sit inline with their labels (label left, control fills).
 Pinned by reorder-sync and row-alignment tests. Also fixed: strip→combo
 mapping by id — PRESETS-index desynced after reorder and ping-ponged the
 two chosen-handlers into a recursion crash (suite segfault).
-See: `pdf_minimalist/ui_qt/app.py` (`_restrip_ordered`).
+See: `pdf_minify/ui_qt/app.py` (`_restrip_ordered`).
 
 ## 129 — DONE
 DPI forced on every save transform (§129): displayed-inches × setting-DPI
@@ -1177,13 +1177,13 @@ already did active-UI/rest-recipe. Fixed the same way: per-pid estimate
 DPI (`_pid_dpi`, frozen as `dpi_by_pid` on each job like force); a preset
 switch now recomputes nothing but the preview. Pinned by a click-stability
 test.
-See: `pdf_minimalist/ui_qt/app.py` (`_pid_dpi`).
+See: `pdf_minify/ui_qt/app.py` (`_pid_dpi`).
 
 ## 133 — DONE
 Sequence numbers in front of filters (`_strip_label`: `N. label` from the
 live strip order) in both minis captions and dropdown; reorder renumbers.
 Pinned by a numbering test.
-See: `pdf_minimalist/ui_qt/app.py` (`_strip_label`).
+See: `pdf_minify/ui_qt/app.py` (`_strip_label`).
 Follow-up §148/B73: that test covered helper/combo strings only and missed
 stale numbers baked into mini icons. Position-dependent text now belongs to
 the shared delegate; actual first-paint caption pixels are regression-tested.
@@ -1210,7 +1210,7 @@ was stomping the fixed height; wheel events drive the horizontal bar so
 vertical scroll is structurally impossible, not just hidden.
 Follow-up 3: the last caption line clipped under taller native
 scrollbars — caption block condensed to end at y=158 (1:1 verified).
-See: `pdf_minimalist/ui_qt/app.py` (`_StripDelegate`).
+See: `pdf_minify/ui_qt/app.py` (`_StripDelegate`).
 
 ## 137 — DONE
 Screenshot canon in `docs/DEVELOPER_GUIDELINES.md` (§5b): offscreen shots
@@ -1237,13 +1237,13 @@ alpha asserted (max-min ≤ 2). Native partial-alpha drag windows are opaque
 on the non-composited X11 desktop, so the live ghost is software-blended
 once inside the strip viewport; the native drag pixmap is suppressed.
 No checkerboard/1-bit alpha: background, image, and letters all use 65%.
-See: `pdf_minimalist/ui_qt/app.py` (`_StripList`).
+See: `pdf_minify/ui_qt/app.py` (`_StripList`).
 
 ## 140 — DONE
 Original removed from the filter dropdown (§140): it is not an option,
 it is always the left preview. Dropdown lists real filters in strip order
 only; default selection by id. Pinned by combo-content tests.
-See: `pdf_minimalist/ui_qt/app.py` (`_rebuild_preset_combo`).
+See: `pdf_minify/ui_qt/app.py` (`_rebuild_preset_combo`).
 
 ## 141 — SUPERSEDED BY §142
 Drag ghost transparency corrected after the native implementation failed
@@ -1254,7 +1254,7 @@ thumbnail, and every caption glyph share the exact same opacity. Qt's
 native drag window is suppressed; model mime, insertion bar, and drop path
 remain unchanged. Pinned by uniform-alpha and live-composite render tests;
 captured output viewed; full suite 79/79.
-See: `pdf_minimalist/ui_qt/app.py` (`_StripList.paintEvent`).
+See: `pdf_minify/ui_qt/app.py` (`_StripList.paintEvent`).
 
 ## 142 — DONE — DESIGNER CONFIRMED (2026-10-13, §147)
 Ghost content corrected: at drag threshold the code now synchronously
@@ -1273,7 +1273,7 @@ synchronously and anchors at the original mouse-down point; a real xdotool
 drag under Xvfb is the acceptance check.
 Current design supersedes the clipped viewport capture: shared delegate
 rendering (§145), uniform 75% opacity (§146). Ghost accepted in §147.
-See: `pdf_minimalist/ui_qt/app.py` (`_drag_base_pixmap`).
+See: `pdf_minify/ui_qt/app.py` (`_drag_base_pixmap`).
 
 ## 143 — DONE — DESIGNER CONFIRMED (2026-10-13, §§144/147)
 The blue-rectangle failure was reproduced with a real X11 drag, not the
@@ -1321,7 +1321,7 @@ Whole selected-mini ghost now uses uniform 75% opacity (25% background
 shows through), preserving window-wide drop snap and the §145 geometry
 fix. Actual pixel-blend checks and all five native drag scenarios pass at
 100% and 200% display scaling. Full suite 81/81; restart per §62.
-See: `docs/UI_LAYOUT.md`, `pdf_minimalist/ui_qt/app.py`.
+See: `docs/UI_LAYOUT.md`, `pdf_minify/ui_qt/app.py`.
 
 ## 147 — DONE
 ~~Ok, this is good, you can mark these issues fixed, confirmed by me.  I don't know if the worker was self-marking issues fixed without my confirmation, but try to have a marking that indicates that I explicitly confirmed it fixed and the date.  There are still other DnD issues, so mark this ghost as fixed.   Is transparency at 75% now also?~~
@@ -1392,7 +1392,7 @@ See: `docs/FILTER_LIFECYCLE.md`, `docs/COMPRESSION.md`, issues B74–B80.
 ## 154 — DONE (designer §151: recorded temp location)
 ~~where are the temp files stored?  I previously ruled, but I am double-checking to see what the prior weak worker recorded.~~
 Qt reports `/tmp` here. §123 and `PERSISTENCE_AND_TEMP.md` record OS temp via
-Qt, with `/tmp/pdf-minimalist/saves/` for runtime filtered PDFs and repo `.tmp/`
+Qt, with `/tmp/pdf-minify/saves/` for runtime filtered PDFs and repo `.tmp/`
 for developer artifacts only. The previous implementation reserved that location
 but did not actually produce canonical preview PDFs. The new store uses private
 PID/UUID/recipe directories there; see TODO §§150–160.
@@ -1415,7 +1415,7 @@ See: `docs/COMPRESSION.md`, issue B79 (OPEN).
 
 ## 157 — DONE (designer §152: PID-owned temp directory)
 ~~So the temp dir should be in a dir with the process id number?  Is this possible?~~
-Runtime filtered files live under `<os-temp>/pdf-minimalist/saves/<GUI-PID>/`,
+Runtime filtered files live under `<os-temp>/pdf-minify/saves/<GUI-PID>/`,
 protected by a process lock. No additional session directory (§153); filter
 directories are named with persistent UUIDs (§155).
 See: `docs/PERSISTENCE_AND_TEMP.md`, issue B78 (OPEN).
@@ -1799,7 +1799,7 @@ checksums, licenses and packaging/plugin gates recorded. Full suite 339
 passed; 33 focused cases also pass at 2×; real/fallback light/dark full windows
 and 1:1 enabled/disabled controls viewed at both scales.
 B102 remains OPEN for designer acceptance.
-See `docs/ICONS.md`, `pdf_minimalist/ui_qt/icons.py`.
+See `docs/ICONS.md`, `pdf_minify/ui_qt/icons.py`.
 
 ## 202 — DONE (designer §§198/199: mini progress enlargement is 25%, not 50%)
 ~~Use 25%-larger mini bars, instead of the previous 50% enlargement.~~
@@ -2005,14 +2005,15 @@ timings, GUI codec/default change, desktop launch or issue acceptance claimed.
 ## 226 — DONE (designer §223: representative, realistic integrated size tables)
 ~~Publish realistic combination rows over five representative complete PDFs,
 with focused scenarios and actual final-file bytes.~~ `INTEGRATED_COMPRESSION.md`
-now has 42 descriptive rows, **188 verified overview PDFs**, 22 explicit N/A
-cells and **62 focused PDFs**: **250 distinct final outputs**, zero rejected
-cells. Same-general-compressor pairs, meaningful specialized codecs, classic
+now has 42 descriptive rows, **210 verified overview PDFs**, no excluded
+cells and **62 focused PDFs**: **272 distinct final outputs**, zero rejected
+cells, after designer §229 / TODO §234 filled the former 22 gaps.
+Same-general-compressor pairs, meaningful specialized codecs, classic
 Flate reference, plain/PNG prediction and separate fidelity groups are retained.
 All prepared rasters are 300 DPI; controls are explicitly unresampled.
 Bytes/hashes and tied bold minima are independently audited. QPDF syntax
-passes 166 ordinary-format files; 84 unsupported Brotli files are excluded
-from that reader check. Full **552-test** suite passes. Earlier mixed-DPI/
+passes 179 ordinary-format files; 93 unsupported Brotli files are excluded
+from that reader check. Full **561-test** suite passes. Earlier mixed-DPI/
 rejected studies remain historical evidence, not current results. See §§227–231.
 
 ## 227 — DONE (designer §224: repair preparation failures and support color FFPR)
@@ -2071,11 +2072,61 @@ Implementation completion is not designer acceptance or PDF/UA certification.
 ## 232 — DONE (designer §227: group the integrated overview by output type)
 ~~Group the primary overview as BW, indexed color / low palettes, then full
 color, with unresampled references above the groups.~~
-Stub: `INTEGRATED_COMPRESSION.md` now presents 3 reference rows, then 15 BW,
-15 indexed and 9 full-color rows across the same five PDF columns. All 210
-cells (188 measured sizes and 22 N/A entries), labels and per-fidelity bold
-minima are unchanged. Native-retaining rows precede FFPR within each group;
+Stub: `INTEGRATED_COMPRESSION.md` groups 3 reference rows, then 15 BW,
+15 indexed and 9 full-color rows across the same five PDF columns. The initial
+regrouping preserved all 210 cells (then 188 measured sizes and 22 gaps),
+labels and per-fidelity bold minima. §234 subsequently measures those gaps.
+Native-retaining rows precede FFPR within each group;
 indexed FFPR stays indexed. Focused tables and benchmark artifacts are intact.
 The row/cell/minimum and stable-ID/quotation/link audits pass, as does a fresh
 full **552-test** suite. See `DESIGN.md` §227 and `DEVELOPER_GUIDELINES.md`.
 Presentation only; no processing, algorithm, default or issue-acceptance change.
+The separate-table presentation is superseded by designer §228 / TODO §233.
+
+## 233 — DONE (designer §228: one continuous overview table with divider rows)
+~~Use one continuous overview table with unnumbered title-only divider rows.~~
+Stub: `INTEGRATED_COMPRESSION.md` now has one header and one uninterrupted
+table: reference controls, BW, indexed color, then full color. Divider titles
+occupy only the far-left source cell; all five following cells are blank.
+Markdown render and data audits confirm one table, all 42 measurement rows,
+unchanged values/bold minima and unchanged focused tables. No HTML is needed.
+The fresh full **552-test** suite passes. This changes presentation only,
+not benchmark coverage or processing. See `DESIGN.md` §§227/228.
+
+## 234 — DONE (designer §229: benchmark every combination, including no-image no-ops)
+~~Remove native-only exclusions; measure every row/input, even when redundant.~~
+Stub: runner and formatter require all 42 × 5 = **210 measured cells**. The
+22 missing cells now have independent complete saved files and original-native/
+pixel/zero-image verification; no control size or file was copied. The earlier
+188 overview and 62 focused outputs retain actual files and bounded compatible
+provenance: **272 distinct outputs**, zero rejected or excluded cells. Coverage
+caught B113's xref-stream ID bug; its shared preparation repair preserves all
+image-bearing/FFPR paths and keeps the strict cross-version import gate intact.
+The continuous table includes tied minima and annotated no-op repeats. New
+row-coverage/distinct-save and plain/xref-stream no-image tests pass; full
+**561-test** suite passes. See `INTEGRATED_COMPRESSION.md`, `TEST_PLAN.md` and
+B113, which remains OPEN pending explicit designer confirmation.
+
+## 235 — DONE (designer §230: rename the project to PDF Minify)
+
+~~Rename the product/package and active project references, preserving saved
+settings and the designer's separately managed repository rename.~~
+Stub: UI **PDF Minify**, package `pdf_minify`, machine/temp/settings slug
+`pdf-minify`. One shared settings factory imports legacy values once without
+overwriting new keys, deleting old data or resurrecting later removals. The
+flat Python layout, GitHub remote, exact quotes and measured provenance remain
+intact. All 42 licensed files are byte-identical. Eleven identity/migration/CLI
+cases and the fresh **572-test** full suite pass. Normal/2× isolated GUI captures
+exit 0 and were viewed. The real settings migration waits for a normal launch;
+worker verification is not designer acceptance.
+See `DESIGN.md` §230, `ARCHITECTURE.md` and `PERSISTENCE_AND_TEMP.md`.
+
+## 236 — OPEN (designer §231: sixth representative document — NASA Kepler)
+
+Add the complete 12-page `examples/models-nasa-kepler.pdf` as a sixth overview
+column, retaining the existing five sources. Inspect its native/image/vector
+composition and explain its additional technical-document coverage. Measure
+all 42 realistic combinations at 300 DPI, including every redundant case;
+retain the same fidelity-aware minima, continuous table and size-only scope.
+Do not invent results or relabel old source/implementation fingerprints.
+See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.

@@ -11,12 +11,12 @@ import pymupdf as fitz
 from PIL import Image
 import pytest
 
-from pdf_minimalist.core import pipeline, stream_compression as streams
-from pdf_minimalist.core.algorithms import ALGORITHMS, BW_MODES, with_algorithm
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import CancelledError
-from pdf_minimalist.core.recipes import preset_spec, spec_key
+from pdf_minify.core import pipeline, stream_compression as streams
+from pdf_minify.core.algorithms import ALGORITHMS, BW_MODES, with_algorithm
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import CancelledError
+from pdf_minify.core.recipes import preset_spec, spec_key
 
 
 def source_pdf(path, pages=1):

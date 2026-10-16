@@ -5,7 +5,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtCore import Qt  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
-from pdf_minimalist.ui_qt.lab import ProgressLab, ButtonsLab  # noqa: E402
+from pdf_minify.ui_qt.lab import ProgressLab, ButtonsLab  # noqa: E402
 
 _app = QApplication.instance() or QApplication([])
 
@@ -28,13 +28,13 @@ def test_buttons_lab_variants():
 def test_app_temp_dir_is_os_temp(tmp_path):
     """Designer §123: app scratch lives in the OS temp dir, never the repo."""
     import tempfile
-    from pdf_minimalist.ui_qt.paths import app_temp_dir, sweep_stale_temps
+    from pdf_minify.ui_qt.paths import app_temp_dir, sweep_stale_temps
     from PySide6.QtCore import QStandardPaths
     base = QStandardPaths.writableLocation(QStandardPaths.TempLocation) or tempfile.gettempdir()
     p = app_temp_dir("probe")
     assert os.path.isdir(p)
     assert os.path.abspath(p).startswith(os.path.abspath(base) + os.sep)
-    assert "pdf-minimalist" in p
+    assert "pdf-minify" in p
     assert os.path.abspath(os.getcwd()) not in os.path.abspath(p)
     stale = os.path.join(p, "old.pdf")
     with open(stale, "wb") as f:

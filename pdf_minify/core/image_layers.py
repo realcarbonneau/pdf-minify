@@ -12,7 +12,7 @@ from .pdf_io import CancelledError
 from .canvas import flatten_rgb
 
 m = fitz.mupdf
-log = logging.getLogger("pdf_minimalist")
+log = logging.getLogger("pdf_minify")
 _PATH_PAINT = {m.FZ_CULL_PATH_FILL, m.FZ_CULL_PATH_STROKE,
                m.FZ_CULL_PATH_FILL_STROKE}
 _CLIP_PAINT = {m.FZ_CULL_CLIP_PATH_FILL, m.FZ_CULL_CLIP_PATH_STROKE,

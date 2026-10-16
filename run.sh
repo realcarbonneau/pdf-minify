@@ -6,6 +6,6 @@ set -e -o pipefail
 trap 'app_exit_code=$?; printf "APP_EXIT status=%s\n" "$app_exit_code"' EXIT
 cd "$(dirname "$0")"
 mkdir -p .tmp
-LOGDIR="${TMPDIR:-/tmp}/pdf-minimalist"
+LOGDIR="${TMPDIR:-/tmp}/pdf-minify"
 mkdir -p "$LOGDIR" .tmp
-./.venv/bin/python -m pdf_minimalist "$@" 2>&1 | tee "$LOGDIR/pdf-minimalist.log"
+./.venv/bin/python -m pdf_minify "$@" 2>&1 | tee "$LOGDIR/pdf-minify.log"

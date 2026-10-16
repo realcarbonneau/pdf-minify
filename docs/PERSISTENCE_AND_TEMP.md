@@ -9,12 +9,12 @@ Saved/live filter ownership is canon in `FILTER_LIFECYCLE.md` (§149).
 
 - Source of truth: `QStandardPaths.writableLocation(QStandardPaths.TempLocation)`
   → `/tmp` on Linux, `GetTempPath` on Windows, `$TMPDIR` on macOS.
-  Central helper: `pdf_minimalist/ui_qt/paths.py: app_temp_dir(*parts)`
+  Central helper: `pdf_minify/ui_qt/paths.py: app_temp_dir(*parts)`
   (stdlib-`tempfile` fallback if Qt ever reports nothing).
-- Layout: `<os-temp>/pdf-minimalist/` — private
+- Layout: `<os-temp>/pdf-minify/` — private
   `saves/<GUI-PID>/<filter-UUID>/<artifact-key>/filtered.pdf` directories with prepared page buffers
   (single-path saver temps, §122), plus the app log
-  (`<os-temp>/pdf-minimalist/pdf-minimalist.log`, written by `run.sh`).
+  (`<os-temp>/pdf-minify/pdf-minify.log`, written by `run.sh`).
 - Lifecycle: swept once at startup (`sweep_stale_temps`, default >48h) —
   nothing of value is lost because every temp regenerates from
   (input file + spec). A crashed worker leaves at most an orphan temp,
@@ -73,8 +73,8 @@ otherwise). Pending copies retain their source until completed safely.
 - What persists: last opened file (§91), custom/renamed/copied/saved
   filter presets (§§109/112), window prefs. These are user data, not
   regenerable — they live where each OS keeps app config (e.g.
-  `~/.config` on Linux), managed by `QSettings("pdf-minimalist",
-  "pdf-minimalist")`. Tests isolate it via `XDG_CONFIG_HOME` (B23).
+  `~/.config` on Linux), managed by `QSettings("pdf-minify",
+  "pdf-minify")`. Tests isolate it via `XDG_CONFIG_HOME` (B23).
 - Rule: recipe persistence is written only on explicit user action (open file,
   save/copy/rename filter), never as a side effect of background work. Internal
   UUID/schema repairs on load (§155) are identity migration, not recipe edits;
@@ -90,6 +90,25 @@ otherwise). Pending copies retain their source until completed safely.
   authorized one-time migration is an exception to ordinary explicit-edit
   persistence, not a background edit or an ongoing clamp. Tests and screenshot
   tools use isolated settings; the designer's migration runs on their next launch.
+
+### Application-name migration (§230)
+
+PDF Minify uses `QSettings("pdf-minify", "pdf-minify")` through the shared
+`ui_qt/settings.py` factory, both for initial last-file lookup and every
+subsequent settings access. On first use, copy keys from the former
+`QSettings("pdf-minimalist", "pdf-minimalist")` user store, keeping Qt value
+types and preserving any key already in the destination. The old store is
+read-only for this migration. A persisted `identityMigrationRevision` marker
+makes it one-time, including when the old store is empty; later removals or
+edits in the new store must not be undone by another legacy import. Failed
+settings synchronization must be reported, not marked successful.
+
+This is independent of the existing UUID and one-time 300-DPI migrations;
+their markers and all filter data travel with the settings. Runtime temps
+and logs move to `<os-temp>/pdf-minify/`; there is no migration/deletion of
+legacy scratch directories or saved output PDFs. Review tools read raw
+settings without triggering migration, copy them into isolated review stores,
+then run the application factory only inside that isolated location.
 
 ## Deliberately NOT in OS temp — repo `./.tmp/` (gitignored)
 

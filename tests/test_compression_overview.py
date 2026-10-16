@@ -27,11 +27,16 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
 
 
-def test_five_class_matrix_has_188_applicable_whole_file_cells():
-    assert sum(overview.applicable(d, row) for d in overview.DOCUMENTS for row in overview.ROWS) == 188
-    native = overview.DOCUMENTS[0]
-    assert not overview.applicable(native, next(r for r in overview.ROWS if r.family == "indexed"))
-    assert overview.applicable(native, next(r for r in overview.ROWS if r.family == "bw-ffpr"))
+def test_five_class_matrix_requires_all_210_whole_file_cells_even_if_redundant():
+    records = [dict(document=d.key, family=row.family,
+                    result=dict(image_variant=row.variant, native_policy=row.native,
+                                complete_pdf_bytes=123456))
+               for d in overview.DOCUMENTS for row in overview.ROWS]
+    assert len(records) == 210
+    table = overview.matrix_markdown(overview.DOCUMENTS, overview.ROWS, records)
+    assert len(table.splitlines()) == 44
+    assert table.count("**123,456**") == 210
+    assert "—" not in table
 
 
 def test_transposed_table_bolds_ties_within_same_document_and_fidelity():
@@ -53,10 +58,57 @@ def test_missing_applicable_measurement_is_error_not_blank_or_zero():
         overview.matrix_markdown(overview.DOCUMENTS[:1], overview.ROWS[:1], [])
 
 
-def test_unapplicable_image_free_cells_do_not_invent_measurements():
-    row = next(r for r in overview.ROWS if r.family == "indexed")
-    table = overview.matrix_markdown(overview.DOCUMENTS[:1], [row], [])
-    assert table.endswith("| — |\n")
+@pytest.mark.parametrize("family", ["bw-images", "indexed", "jpeg-q50", "jpx-r192", "jpx-lossless"])
+def test_image_free_non_ffpr_rows_require_actual_measurements(family):
+    document = overview.DOCUMENTS[0]
+    row = next(r for r in overview.ROWS if r.family == family)
+    with pytest.raises(ValueError, match="Missing measured cell"):
+        overview.matrix_markdown([document], [row], [])
+    record = dict(document=document.key, family=family,
+                  result=dict(image_variant=row.variant, native_policy=row.native,
+                              complete_pdf_bytes=123456))
+    table = overview.matrix_markdown([document], [row], [record])
+    assert table.endswith("| **123,456** |\n")
+    assert "—" not in table
+
+
+def test_image_free_runner_saves_every_row_separately_even_with_identical_sizes(tmp_path, monkeypatch):
+    source = tmp_path / "native.pdf"
+    source.write_bytes(b"native text and vectors only")
+    document = overview.Document("native", "Native text/vectors", str(source))
+    prepared, saved = [], []
+
+    def prepare(document, family, folder, production, previous=None):
+        prepared.append(family)
+        base = tmp_path / f"{family}.pdf"
+        base.write_bytes(b"prepared native content")
+        return dict(id=family, source=str(source), input_sha256=overview.file_digest(source),
+                    dpi=300, recipe=dict(mode="passthrough"),
+                    bases={row.variant: dict(pdf=str(base), sha256=overview.file_digest(base))
+                           for row in overview.ROWS if row.family == family})
+
+    def save(case, destination, *, policies, resume):
+        destination.mkdir(parents=True)
+        target = destination / "actual.pdf"
+        target.write_bytes(b"identical complete-file bytes")
+        saved.append(target)
+        result = dict(image_variant=next(iter(case["bases"])), native_policy=policies[0],
+                      pdf=str(target), pdf_sha256=overview.file_digest(target),
+                      complete_pdf_bytes=target.stat().st_size,
+                      exact_native=True, exact_images=True, exact_all_page_pixels=True)
+        return dict(results=[result])
+
+    monkeypatch.setattr(overview, "DOCUMENTS", [document])
+    monkeypatch.setattr(overview, "prepare_case", prepare)
+    monkeypatch.setattr(overview, "preparation_error", lambda *args: None)
+    monkeypatch.setattr(overview.study, "run_case", save)
+    monkeypatch.setattr(overview.study, "environment", lambda: dict(implementation={}))
+    records = overview.run(tmp_path / "overview", None)
+    assert len(records) == len(saved) == len(set(saved)) == 42
+    assert len({record["result"]["complete_pdf_bytes"] for record in records}) == 1
+    assert set(prepared) == {row.family for row in overview.ROWS}
+    assert len(prepared) == len(set(prepared))
+    assert all(path.is_file() for path in saved)
 
 
 def test_minima_do_not_compare_native_preservation_with_bw_conversion():

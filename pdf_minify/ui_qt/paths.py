@@ -17,11 +17,13 @@ the repo `./.tmp/` — they are review outputs, not app scratch (gitignored).
 import os
 import time
 
-APP_TAG = "pdf-minimalist"
+from .. import APP_ID
+
+APP_TAG = APP_ID
 
 
 def app_temp_dir(*parts: str) -> str:
-    """`<os-temp>/pdf-minimalist[/...parts]`, created on demand."""
+    """`<os-temp>/pdf-minify[/...parts]`, created on demand."""
     try:
         from PySide6.QtCore import QStandardPaths
         base = QStandardPaths.writableLocation(QStandardPaths.TempLocation)

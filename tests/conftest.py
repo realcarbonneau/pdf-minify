@@ -1,7 +1,7 @@
 """pytest bootstrap: single-thread numerical backends before anything loads BLAS.
 
 Background QThread workers abort under BLAS thread-pool load in constrained
-environments (designer §37). Same guards live in pdf_minimalist/__main__.py
+environments (designer §37). Same guards live in pdf_minify/__main__.py
 (app entry) and tools/shot.py.
 """
 import os
@@ -29,12 +29,12 @@ def isolate_gui_artifact_roots(request, tmp_path, monkeypatch):
     if not request.module.__name__.endswith(("test_minis", "test_filter_lifecycle",
                                            "test_strip_reorder_identity")):
         return
-    from pdf_minimalist.ui_qt import app as ui, paths
+    from pdf_minify.ui_qt import app as ui, paths
     store_type = ui.ArtifactStore
     counter = itertools.count()
 
     def new_store(_root):
-        root = tmp_path / f"test-window-{next(counter)}" / "pdf-minimalist" / "saves"
+        root = tmp_path / f"test-window-{next(counter)}" / "pdf-minify" / "saves"
         return store_type(str(root))
 
     original_sweep = paths.sweep_stale_temps

@@ -7,7 +7,7 @@ from PySide6.QtCore import QEvent, QObject, Qt
 from PySide6.QtGui import QPalette
 from PySide6.QtWidgets import QApplication, QHBoxLayout, QSizePolicy, QWidget
 
-from pdf_minimalist.ui_qt.headers import PaneHeader
+from pdf_minify.ui_qt.headers import PaneHeader
 
 _app = QApplication.instance() or QApplication([])
 

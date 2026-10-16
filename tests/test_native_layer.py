@@ -7,10 +7,10 @@ import pymupdf as fitz
 from PIL import Image
 import pytest
 
-from pdf_minimalist.core import image_layers, pipeline
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import CancelledError
+from pdf_minify.core import image_layers, pipeline
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import CancelledError
 from tools import bench_image_streams as images
 
 

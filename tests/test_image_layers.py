@@ -7,8 +7,8 @@ import numpy as np
 from PIL import Image
 import pytest
 
-from pdf_minimalist.core import pipeline
-from pdf_minimalist.core.display import DisplayPage
+from pdf_minify.core import pipeline
+from pdf_minify.core.display import DisplayPage
 
 
 def _png(array):
@@ -159,7 +159,7 @@ def test_text_clipping_has_no_hidden_fallback_or_invented_glyph_masks(tmp_path, 
                           image_ops + b"\nQ")
         page.set_contents(stream)
         doc.save(source)
-    with caplog.at_level("INFO", logger="pdf_minimalist"):
+    with caplog.at_level("INFO", logger="pdf_minify"):
         _save(source, output)
     assert "one BW image canvas" in caplog.text
     with fitz.open(source) as before, fitz.open(output) as after:
@@ -199,7 +199,7 @@ def test_non_normal_blend_uses_same_simple_canvas_not_per_image_fallback(tmp_pat
         doc.update_stream(image_stream, b"q /Blend gs\n" + original_image + b"Q")
         page.insert_text((5, 125), "Native blend")
         doc.save(source)
-    with caplog.at_level("INFO", logger="pdf_minimalist"):
+    with caplog.at_level("INFO", logger="pdf_minify"):
         _save(source, output)
     assert "one BW image canvas" in caplog.text
     with fitz.open(source) as before, fitz.open(output) as after:

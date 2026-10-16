@@ -1,4 +1,4 @@
-# pdf-minimalist — shrink PDFs with a camera-filter workbench
+# PDF Minify — shrink PDFs with a camera-filter workbench
 
 PDF optimizer and compressor: open a scan, research paper, manual, or
 photo-heavy report, click through black-and-white threshold (Otsu, Simple,
@@ -54,12 +54,12 @@ xvfb-run -a ./.venv/bin/python tools/drag_smoke.py  # native DnD smoke (xdotool)
 QT_QPA_PLATFORM=offscreen ./.venv/bin/python tools/filter_smoke.py  # filter flow smoke
 # no file: reopens the last one. or:
 source .venv/bin/activate
-python -m pdf_minimalist [input.pdf] [--debug]
+python -m pdf_minify [input.pdf] [--debug]
 ```
 
-App logs live in `${TMPDIR:-/tmp}/pdf-minimalist/pdf-minimalist.log`.
+App logs live in `${TMPDIR:-/tmp}/pdf-minify/pdf-minify.log`.
 Runtime filtered PDFs and encoder scratch live under
-`${TMPDIR:-/tmp}/pdf-minimalist/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/`;
+`${TMPDIR:-/tmp}/pdf-minify/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/`;
 each process holds a lock so cleanup cannot delete another running app's work.
 Its generated files and empty PID directory are removed on normal exit.
 Development artifacts (demos and screenshots) live in gitignored `./.tmp/`:
@@ -71,8 +71,8 @@ native drags into `.tmp/drag-*.png`,
 ## Layout
 
 ```
-pdf-minimalist/
-  pdf_minimalist/     # all app source
+<checkout>/
+  pdf_minify/         # importable Python package; all app source
     core/             # headless pipeline (no Qt imports)
     ui_qt/            # Qt GUI only
   tests/              # pytest suite (./test.sh)
@@ -82,6 +82,13 @@ pdf-minimalist/
   requirements*.txt   # pip pins (installed into .venv)
   .venv/              # virtualenv (created by setup_local.sh, git-ignored)
 ```
+
+The checkout directory is independent of Python's `pdf_minify` package name.
+The package gives imports and `python -m pdf_minify` a specific namespace;
+`src/` would be an additional container, not a replacement package name.
+This project retains its flat layout. On first normal launch, existing saved
+filters/settings migrate from the former app name without overwriting new
+values; see [settings migration](docs/PERSISTENCE_AND_TEMP.md#application-name-migration-230).
 
 ## System (apt, NOT in this dir)
 

@@ -26,12 +26,12 @@ sudo apt install python3-venv jbig2 mupdf-tools poppler-utils
 sudo apt install python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qtwidgets python3-pymupdf
 ```
 
-## REPOSITORY-OWNED — in `/home/user/Downloads/pdf-minimalist/`
+## REPOSITORY-OWNED — this checkout
 | Path | What |
 |---|---|
-| `pdf_minimalist/` | all app source (`core/` headless + `ui_qt/` GUI) |
-| `pdf_minimalist/ui_qt/assets/breeze/` | stock LGPL-3-or-later Breeze icon subset, provenance, notices and license texts; portable fallback, not a system-theme dependency |
-| `pdf_minimalist/ui_qt/assets/icon_lab/` | curated Nuvola/Oxygen/GNOME PNG resources, original hashes and notices/licenses for §200's comparison lab; not a system package or Task Coach dependency |
+| `pdf_minify/` | all app source (`core/` headless + `ui_qt/` GUI) |
+| `pdf_minify/ui_qt/assets/breeze/` | stock LGPL-3-or-later Breeze icon subset, provenance, notices and license texts; portable fallback, not a system-theme dependency |
+| `pdf_minify/ui_qt/assets/icon_lab/` | curated Nuvola/Oxygen/GNOME PNG resources, original hashes and notices/licenses for §200's comparison lab; not a system package or Task Coach dependency |
 | `tests/` | pytest suite + future fixtures in `tests/data/` |
 | `tools/check_env.py` | prints system-vs-local diagnostic |
 | `requirements.txt` | `pymupdf, PySide6-Essentials, Pillow, numpy` → installed into `.venv`, NOT system-wide |

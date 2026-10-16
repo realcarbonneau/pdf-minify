@@ -9,7 +9,7 @@
 | PyGObject GTK3 | most native on LXDE | painful on Win/Mac | good | rejected (portability) |
 | Electron / Tauri | too heavy for old LXDE boxes | excellent | good | rejected |
 
-Qt is built directly (`pdf_minimalist/ui_qt/`); there is no Tk code and no Tk-first
+Qt is built directly (`pdf_minify/ui_qt/`); there is no Tk code and no Tk-first
 staging step. Pipeline code in `core/` must never import Qt.
 
 ## Dependencies (Debian 13)
@@ -28,9 +28,18 @@ pip install -r requirements.txt  # into local ./.venv (PySide6, pymupdf, Pillow,
   `jbig2 -p`, test-decoded before embedding, 1-bit PNG where undecodable.
 
 ## Module layout (actual)
+
+The repository root and import package are different concepts. `pdf_minify/`
+is the application's Python namespace, not a duplicate checkout. Retain the
+current **flat layout** for §230: `python -m pdf_minify` works from the root
+without installing the project. A future `src/` layout would still contain
+`src/pdf_minify/` and need packaging/editable-install changes; generic `app`
+or `code` names offer no required benefit for this rename. See the
+[PyPA layout guide](https://packaging.python.org/en/latest/discussions/src-layout-vs-flat-layout/).
+
 ```
-pdf-minimalist/
-  pdf_minimalist/
+<checkout>/
+  pdf_minify/
     core/             # headless, NO Qt imports
       cancel.py       # shared CancelToken (threading.Event + kill list)
       threshold.py    # simple / otsu / adaptive / sauvola, pure numpy
@@ -53,6 +62,7 @@ pdf-minimalist/
       headers.py      # metadata elides on paint, never drives splitter widths
       icons.py        # one named-theme action provider, stock Breeze SVG fallback (§197)
       icon_lab.py     # reusable stock-family comparison, permanent codes, no Apply (§200)
+      settings.py     # shared user settings, one-time legacy name migration (§230)
       assets/breeze/  # 16/22px light/dark icons with provenance and licenses
       assets/icon_lab/ # original PNG resource bank, hashes, provenance/notices/licenses
       viewer.py       # QGraphicsView: wheel=scroll, ctrl+wheel=zoom, drag-pan, peer-synced
@@ -61,6 +71,14 @@ pdf-minimalist/
   tools/              # check_env, make_demo, shot (all scratch → .tmp/)
   docs/               # all analysis + rulings docs
 ```
+
+Display name **PDF Minify** and machine identifier `pdf-minify` are declared
+once in the package root. The Qt entry point uses both; the main window and
+startup last-file lookup share the settings factory. Runtime scratch/logs
+use the new identifier; old user data is copied once, never deleted. Frozen
+benchmark archives and original designer/license records retain their exact
+historical identifiers. The designer will rename the GitHub repository
+separately; the remote and outer checkout directory are not changed here.
 
 ## Background jobs (designer rulings §§37/43/44/47/48/51/89/90/95)
 
@@ -104,7 +122,7 @@ drifting apart. The flow:
 
 ```
 input PDF + filter spec
-  → run the REAL saver → <os-temp>/pdf-minimalist/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/filtered.pdf
+  → run the REAL saver → <os-temp>/pdf-minify/saves/<GUI-PID>/<filter-UUID>/<artifact-key>/filtered.pdf
      (background, process-once; OS temp via Qt QStandardPaths — /tmp Linux,
      GetTempPath Windows, $TMPDIR macOS; designer §123, see
      docs/PERSISTENCE_AND_TEMP.md and ui_qt/paths.py)
@@ -280,7 +298,7 @@ saved artifact lifecycle or default changes during the study. This is not
 the parked rasterized-text mixed-mode design.
 
 ## Packaging
-- v0.1: `python3 -m pdf_minimalist` from source + `requirements.txt`.
+- v0.1: `python3 -m pdf_minify` from source + `requirements.txt`.
 - Later: `.deb`, AppImage, `pipx`, Windows exe via PyInstaller (same `core/`).
 
 ## Issues on this page

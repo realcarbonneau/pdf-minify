@@ -4,6 +4,32 @@ Documentation scope (§218): keep substantive design, defect reports and dated
 acceptance. One-off execution, status and publication commands are not design
 requirements. Lasting development/test rules belong in `DEVELOPER_GUIDELINES.md`.
 
+## Project identity (§230)
+
+The product name is **PDF Minify**. The importable Python package is
+`pdf_minify`; the machine/settings/temp identifier is `pdf-minify`. The
+application title uses the product name, including Qt's unsaved `[*]` marker.
+Rename launchers, imports, diagnostics, runtime paths and active documentation
+together. The designer will rename the GitHub repository separately; do not
+change its remote or pretend that a new repository URL already exists.
+
+Retain the existing flat Python layout: `pdf_minify/` is the import package,
+not another repository. A `src/` layout would contain `src/pdf_minify/` and
+require installation changes; generic `app`/`source` directories are not a
+replacement needed for this naming change. See `ARCHITECTURE.md`.
+
+Preserve all saved filters, UUIDs, order, names, parameters and the remembered
+input. One shared settings factory copies legacy user-scope settings once,
+without overwriting values already in the new store or modifying the old
+store. Persist a migration marker so deleted new settings never reappear
+from the legacy copy. This identity migration is not a filter edit or a
+reason to reprocess during selection. Tests/review tools must never migrate
+or write the designer's real settings. Details: `PERSISTENCE_AND_TEMP.md`.
+
+Original designer quotations, license/provenance notices, historical artifact
+paths and benchmark source hashes remain exact. Historical names in these
+records and the explicit legacy-settings identifier are not active branding.
+
 ## Designer rulings (verbatim)
 Quoted exactly from `DESIGNER_VERBATIM.md`. Do not edit the quotes.
 
@@ -153,15 +179,23 @@ This supersedes §222's exhaustive cross-product presentation; its actual
 complete-file metric and strict output verification remain unchanged. It
 does not migrate recipes or implement the proposed compression controls.
 
-### Integrated overview output groups (§227)
+### Integrated overview output groups (§§227/228)
 
 Designer §227 (verbatim excerpt):
 > In the table "Overview — final complete-file bytes" Make three sections to clarify the analysis, the first will be all BW algorithms, then indexed colors, then full colors algorithms.  It's generally expected that JPBIG2 will be the best for BW, then maybe Brotli or layered JBIG2 for low pallettes, then JPEG, JPG2000 for full color.
 
+Designer §228 (verbatim):
+> No, put in a same continuous table with a row as the divider, no numbering.  Merged cells if md permits, if not, just blank cell except for the far left one with the title.
+
 Present the primary overview in this order: **BW**, **indexed color / low
 palettes**, then **full color**. Keep the same five PDF columns and every
 measured combination, including classic-Flate references and plain/predicted
-pairs. Place unresampled preserve-images controls above these three groups.
+pairs. Use one continuous Markdown table with one column-header row, not
+separate tables or numbered headings. Each group starts with an unnumbered
+divider row: a bold title in the far-left cell and five blank measurement
+cells. Standard Markdown tables do not merge cells; do not require HTML
+colspan. Put unresampled preserve-images controls first under their own
+reference divider in the same table, above the three algorithm groups.
 Within each group, put native-retaining rows before its FFPR rows; indexed
 FFPR belongs to indexed color, not full color. Preserve separate native/FFPR
 and lossy/lossless fidelity minima, including tied bold winners. Expected
@@ -169,7 +203,26 @@ codec strengths guide interpretation, not changes to measurements, automatic
 codec selection or claims of a universal winner. This is a presentation-only
 refinement of §223; focused scenarios and benchmark artifacts remain intact.
 See [the overview](INTEGRATED_COMPRESSION.md#overview--final-complete-file-bytes)
-and TODO §232.
+and TODO §§232/233.
+
+### Complete matrix coverage (§229)
+
+Designer §229 (verbatim):
+> please drop that rule, every row gets benchmarked, even if redundant, this is also a sanity check on the benchmarks.
+
+Benchmark every combination against every representative PDF: all 42 rows ×
+five inputs, including image-free inputs with FFPR off. An unused image codec
+is a valid no-op, not an inapplicable recipe; native/font/container compression
+still runs. Save and verify each row's actual complete PDF even when its size
+duplicates another row. Never fill a newly measured cell by copying a control
+size or aliasing another recipe's output. No-image cases must preserve native
+artwork and must not invent a raster just to exercise the selected image codec.
+Record that the image stage was unused; it is not codec-compression evidence.
+Compatible previously measured cells may retain their actual files with strict
+source/implementation/output verification and explicit provenance. Preserve
+300-DPI transforms, same-fidelity minima, reader-support limits and the single
+continuous table. Failures remain explicit, never blanks or guessed sizes.
+See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) and TODO §234.
 
 ### Uniform resolution and color FFPR (§§224/225)
 
@@ -243,7 +296,7 @@ tracked in TODO §217; no runtime change is claimed by this documentation pass.
 See `COMPRESSION_COMBINATIONS.md`, `NATIVE_STREAM_COMPRESSION.md` and
 `DROPPED.md` D3 for the corrected policy and measured scope.
 
-Defined in code: `pdf_minimalist/core/presets.py` → `PRESETS` (id, label, mode, params).
+Defined in code: `pdf_minify/core/presets.py` → `PRESETS` (id, label, mode, params).
 Rendering/proof rules have moved to their topical docs (designer §125):
 main-window regions, dividers, strip, headers and controls in `UI_LAYOUT.md`;
 the single-path saver→temp→preview/minis/amounts flow in `ARCHITECTURE.md`;

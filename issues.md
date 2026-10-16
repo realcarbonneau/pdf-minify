@@ -1442,3 +1442,31 @@ The completed 300-DPI integrated study has 188 overview plus 62 focused final
 PDFs, all 250 validated with new provenance and zero rejected cells. Complete
 bytes/hashes and tied bold minima are independently audited. See
 `docs/INTEGRATED_COMPRESSION.md`. Keep OPEN pending explicit designer confirmation.
+
+## B113 — OPEN: no-image benchmark preparations fail when assigning IDs to an xref-stream PDF
+
+Designer §229 requires every representative row, including redundant no-image
+recipes. Exercising the formerly excluded W-9 BW/indexed preparations exposed
+an assertion in `tools/bench_image_streams.py:set_pdf_id`: MuPDF's xref-stream
+copy-on-write leaves the unchanged document's cached trailer ID stale. The
+source has zero image placements, so this is benchmark container bookkeeping,
+not a BW, palette, predictor or image-codec failure. JPEG/JPX preparation uses
+the existing normalized-ID path at final combination save and succeeds.
+
+Repair the shared image-preparation entry point for the no-image native-copy
+case with the existing `open_for_id_change` helper. Do not delete the ID check,
+invent raster content, weaken glyph/pixel checks or alter image-bearing/FFPR
+preparation. Add plain/xref-stream no-image regressions and read back actual
+saved IDs. Re-measure the 16 rejected BW/indexed cells as independent outputs.
+Keep earlier artifacts and their original provenance; compatible old results
+require a bounded source-change audit, unchanged saver/verifier functions and
+verified source/preparation/output hashes. No designer confirmation is implied.
+
+Worker verification (2026-10-16): the no-image entry now uses the existing
+container normalizer; image-bearing and FFPR paths are unchanged. Four real
+plain/xref-stream BW/indexed cases exercise every variant with no fabricated
+bitmap and correct saved-ID readback. All 22 formerly excluded cells now have
+independent verified files, including the 16 originally rejected preparations.
+The overview has 210 valid cells and no exclusions/failures. Full **561-test**
+suite, bounded source/provenance audit and complete-file checks pass. Remains
+OPEN pending explicit designer confirmation; worker checks are not acceptance.

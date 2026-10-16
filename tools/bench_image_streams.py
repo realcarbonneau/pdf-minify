@@ -23,12 +23,12 @@ import numpy as np
 import pymupdf as fitz
 from PIL import Image, __version__ as pillow_version
 
-from pdf_minimalist.core import image_layers, pipeline, stream_compression as streams
-from pdf_minimalist.core.cancel import CancelToken
-from pdf_minimalist.core.canvas import flatten_rgb
-from pdf_minimalist.core.display import DisplayPage
-from pdf_minimalist.core.pdf_io import render_gray
-from pdf_minimalist.core.stencils import PaletteCanvas, place_stencils
+from pdf_minify.core import image_layers, pipeline, stream_compression as streams
+from pdf_minify.core.cancel import CancelToken
+from pdf_minify.core.canvas import flatten_rgb
+from pdf_minify.core.display import DisplayPage
+from pdf_minify.core.pdf_io import render_gray
+from pdf_minify.core.stencils import PaletteCanvas, place_stencils
 from tools.layered_color_jbig2 import write_fixture
 
 
@@ -224,12 +224,17 @@ def stabilize_existing_id(source_hash, prepared, variant, target, folder):
 def save_variant(source, target, bitmaps, mode, variant, folder):
     """One shared native page assembler and optimizer; no alternative saver."""
     token = CancelToken()
-    from pdf_minimalist.core.native_layer import NativeContext
+    from pdf_minify.core.native_layer import NativeContext
     work_context = pipeline._ENCODE_WORKDIR.set(str(folder))
     stream_context = pipeline._STREAM_POLICY.set("flate")
     try:
         with fitz.open(source) as original:
-            with (fitz.open() if mode.endswith("-ffpr") else fitz.open(source)) as doc:
+            # An untouched xref-stream document needs a direct trailer before
+            # controlled ID assignment (B113), just like the final saver.
+            # Image-bearing and FFPR preparation retain their existing path.
+            with (fitz.open() if mode.endswith("-ffpr") else
+                  fitz.open(source) if any(bitmap is not None for bitmap in bitmaps)
+                  else open_for_id_change(source)) as doc:
                 native_context = NativeContext(doc)
                 if len(bitmaps) != len(original):
                     raise ValueError("Prepared page count does not match source")
