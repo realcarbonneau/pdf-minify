@@ -7,16 +7,22 @@ Corpus band (designer §35, supersedes the §24 band for new additions):
 Two requested-type files sit under the 200KB floor — marked (\*) below.
 
 Fetch/validate: `python3 tools/corpus/fetch_and_validate.py` →
-`corpus_report.csv` (`OK` / `OUT_OF_RANGE` / `ERROR`). Total: ~127MB, 35 files.
+`corpus_report.csv` (`OK` / `OUT_OF_RANGE` / `ERROR`). Current corpus: 34 PDFs.
 
 ## Corpus table (codecs = embedded image encodings found by the validator)
+
+Stored image `/Filter` audit, 2026-10-16 (B115): codecs below are the actual
+PDF encodings, not the PNG/TIFF export format returned by extraction.
+`scan-naca-tm972.pdf` is the integrated overview's non-JBIG2 BW representative
+(designer §233). Keep `scan-jfk-poor-copies.pdf` as B114's already-JBIG2
+end-to-end no-growth/pixel-preservation regression, not that comparison input.
 
 | file | pages | bytes | profile | codecs |
 |---|---|---|---|---|
 | `form-941-2026.pdf` | 3 | 841,648 | IRS Form 941: forms, fine lines, small text | none (vector) |
-| `worksheet-antietam-jr6.pdf` | 6 | 227,220 | NPS junior-ranger worksheet: simple B&W | Flate-1bit |
+| `worksheet-antietam-jr6.pdf` | 6 | 227,220 | NPS junior-ranger worksheet: simple B&W | JBIG2 |
 | `paper-tracemonkey-pldi09.pdf` | 14 | 1,016,315 | Mozilla paper: fonts, columns, graphs | Flate |
-| `models-nasa-observatories.pdf` | 37 | 355,237 | Paper models: ultra-compact line art — leave-alone test | Flate-1bit,JPEG |
+| `models-nasa-observatories.pdf` | 37 | 355,237 | Paper models: ultra-compact line art — leave-alone test | CCITT,JPEG |
 | `models-nasa-kepler.pdf` | 12 | 2,262,602 | Technical illustrations | Flate |
 | `models-nasa-tess.pdf` | 8 | 1,599,636 | Diagrams and labels | JPEG |
 | `coloring-nasa-exoplanets.pdf` | 28 | 4,934,372 | Coloring book: B&W illustration edges | none (vector) |
@@ -29,24 +35,24 @@ Fetch/validate: `python3 tools/corpus/fetch_and_validate.py` →
 | `models-nasa-swift.pdf` | 32 | 15,973,127 | Large print-model file | JPEG |
 | `manual-community-gardening.pdf` | 40 | 25,784,891 | Illustrated manual | Flate,JPEG |
 | `report-east-point-agri.pdf` | 43 | 27,051,723 | Large photo-rich planning report | Flate,JPEG |
-| `scan-naca-report820.pdf` | 23 | 1,660,774 | 1945 aged print: graphs, equations, artifacts | Flate-1bit |
-| `scan-nara-dod-schedule.pdf` | 12 | 1,130,733 | Modern cover + historic scans, dirty borders, speckle | Flate-1bit,JPEG |
-| `scan-jfk-handwritten-index.pdf` | 30 | 1,069,151 | Forms + handwriting, variable contrast | Flate-1bit |
-| `scan-jfk-surveillance-notes.pdf` | 9 | 335,232 | Small cursive, ink strokes, speckles | Flate-1bit |
-| `scan-jfk-ruled-list.pdf` | 35 | 1,785,051 | Faded ruled lines, sparse handwriting | Flate-1bit |
-| `scan-jfk-dark-letter.pdf` | 6 | 3,980,142 | Severely degraded, dark background — threshold torture test | Flate-1bit |
-| `scan-jfk-poor-copies.pdf` | 8 | 349,667 | Faint broken characters, low contrast | Flate-1bit |
-| `scan-naca-tm972.pdf` | 11 | 374,461 | Aged typewriting, annotations, diagrams | Flate-1bit |
-| `scan-naca-tm997.pdf` | 23 | 787,836 | Formulas, weak print, noise, graphics | Flate-1bit |
-| `scan-naca-formulas.pdf` | 7 | 257,739 | Heavy type, math symbols, small marks | Flate-1bit |
-| `images.pdf` | 1 | 1,494,439 | Raster logos/artwork with gradients + tiny text (pre-corpus) | JPEG |
-| `issue1905.pdf` | 1 | 918,339 | Mixed 8 images + text (pre-corpus) | JPEG |
-| `issue13520.pdf` | 1 | 754,579 | Tiny vector snippet (pre-corpus) | vector |
-| `bug1721218_reduced.pdf` | 1 | 825,329 | 3522 vector drawings (pre-corpus) | vector |
-| `deed-brevard.pdf` | 2 | 144,058* | Recorded warranty deed, signed scan (pre-corpus) | scan |
-| `form-fw9.pdf` | 6 | 140,815* | IRS W-9 + instructions (pre-corpus) | text |
-| `manual-maytag-dryer.pdf` | 2 | 1,503,636 | Appliance quick-start EN/FR (pre-corpus) | JPEG |
-| `paper-arxiv-1406.2661.pdf` | 9 | 530,482 | Research paper, 6 figures (pre-corpus) | JPEG |
+| `scan-naca-report820.pdf` | 23 | 1,660,774 | 1945 aged print: graphs, equations, artifacts | CCITT |
+| `scan-nara-dod-schedule.pdf` | 12 | 1,130,733 | Modern cover + historic scans, dirty borders, speckle | JBIG2,JPEG |
+| `scan-jfk-handwritten-index.pdf` | 30 | 1,069,151 | Forms + handwriting, variable contrast | JBIG2 |
+| `scan-jfk-surveillance-notes.pdf` | 9 | 335,232 | Small cursive, ink strokes, speckles | JBIG2 |
+| `scan-jfk-ruled-list.pdf` | 35 | 1,785,051 | Faded ruled lines, sparse handwriting | JBIG2 |
+| `scan-jfk-dark-letter.pdf` | 6 | 3,980,142 | Severely degraded, dark background — threshold torture test | JBIG2 |
+| `scan-jfk-poor-copies.pdf` | 8 | 349,667 | Faint broken characters; B114 already-JBIG2 flow regression | JBIG2 |
+| `scan-naca-tm972.pdf` | 11 | 374,461 | Aged typewriting, annotations, diagrams; main BW comparison | CCITT |
+| `scan-naca-tm997.pdf` | 23 | 787,836 | Formulas, weak print, noise, graphics | CCITT |
+| `scan-naca-formulas.pdf` | 7 | 257,739 | Heavy type, math symbols, small marks | CCITT |
+| `images.pdf` | 1 | 1,494,439 | Raster logos/artwork with gradients + tiny text (pre-corpus) | Flate |
+| `issue1905.pdf` | 1 | 918,339 | Mixed 8 images + text (pre-corpus) | Flate,JPEG |
+| `issue13520.pdf` | 1 | 754,579 | Tiny vector snippet (pre-corpus) | none (vector) |
+| `bug1721218_reduced.pdf` | 1 | 825,329 | 3522 vector drawings (pre-corpus) | none (vector) |
+| `deed-brevard.pdf` | 2 | 144,058* | Recorded warranty deed, signed scan (pre-corpus) | Flate-1bit |
+| `form-fw9.pdf` | 6 | 140,815* | IRS W-9 + instructions (pre-corpus) | none (text/vector) |
+| `manual-maytag-dryer.pdf` | 2 | 1,503,636 | Appliance quick-start EN/FR (pre-corpus) | Flate |
+| `paper-arxiv-1406.2661.pdf` | 9 | 530,482 | Research paper, 6 figures (pre-corpus) | Flate |
 
 Not fetched: `report-cdc-births-deaths.pdf` (CDC stacks returns 403 to scripts —
 validator status ERROR; direct browser download works).

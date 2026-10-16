@@ -184,6 +184,22 @@ def test_tiled_native_composite_has_no_seams_or_whole_source_buffer(tmp_path, mo
         assert np.abs(np.asarray(actual).astype(int) - np.asarray(expected).astype(int)).max() <= 1
 
 
+@pytest.mark.parametrize("density", [299.5, 300.25, 301.75])
+def test_source_density_keeps_genuine_fractional_sampling(tmp_path, density):
+    source = tmp_path / "fractional-density.pdf"
+    width, height = 601, 485
+    samples = np.full((height, width, 3), (32, 128, 224), np.uint8)
+    with fitz.open() as pdf:
+        page = pdf.new_page(width=width * 72 / density, height=height * 72 / density)
+        page.insert_image(page.rect, stream=png(samples), keep_proportion=False)
+        pdf.save(source)
+    with fitz.open(source) as pdf:
+        actual = canvas._source_dpi(pdf[0])
+        assert actual == pytest.approx(density, abs=0.0001)
+        grid = (pdf[0].rect * fitz.Matrix(actual / 72, actual / 72)).irect
+        assert (grid.width, grid.height) == (width, height)
+
+
 def test_native_only_pages_do_not_gain_a_bitmap(tmp_path):
     source, output = tmp_path / "native.pdf", tmp_path / "filtered.pdf"
     with fitz.open() as doc:

@@ -1470,3 +1470,86 @@ independent verified files, including the 16 originally rejected preparations.
 The overview has 210 valid cells and no exclusions/failures. Full **561-test**
 suite, bounded source/provenance audit and complete-file checks pass. Remains
 OPEN pending explicit designer confirmation; worker checks are not acceptance.
+
+## B114 — OPEN — same-DPI JBIG2 flow resamples and increases an already compressed scan
+
+Designer §233, 2026-10-16, requires the complete
+`examples/scan-jfk-poor-copies.pdf` as an end-to-end non-regression case, not
+the main codec-comparison scan. The input has eight 1-bit `/JBIG2Decode`
+images at approximately 300 DPI, no text/vector artwork, and is 349,667 bytes.
+
+Root cause: `core/canvas.py:_source_dpi` applies `ceil` to PDF float geometry.
+For example, 300.000014486 DPI becomes 301. The compositor then renders at
+301 and performs a needless Lanczos downsample to the requested 300 before
+Otsu. All original/output image dimensions agree, but 141,203 samples across
+the eight pages change. Direct exact 300-DPI display rendering reproduces all
+eight original image arrays with zero changed samples. Re-encoding the
+unchanged original arrays with the existing lossless encoder reproduces the
+original per-page byte counts exactly: 332,974 image bytes in total.
+
+Frozen faulty-flow evidence: rebuilt image payloads total 346,186 bytes.
+Complete native/JBIG2/Zopfli output is 354,089 bytes versus 341,696 for the
+unresampled Zopfli control: +12,393 bytes / +3.63%. FFPR has identical rebuilt
+image bytes and a 350,190-byte complete PDF. Old files/hashes remain under
+`.tmp/integrated-compression/representative-300dpi-20261016-v3/outputs/scan/`.
+The finding invalidates a claim of lossless source-to-preparation no-op,
+not the existing byte-exact encoder checks against the already changed
+preparation. No claim that JBIG2 is universally optimal follows from this case.
+
+Regression/repair criteria: the actual full-file save at unchanged 300 DPI
+with lossless JBIG2 and no intentional appearance change must preserve source
+image samples, all page geometry and valid decoding, with complete bytes no
+larger than the source and the matching preserve-images control. Cover both
+native and FFPR; prevent the false 301-DPI intermediate. Keep deliberate
+resolution/threshold/geometry changes outside the no-op equivalence contract,
+without silently dropping requested work. Retaining a smaller, equivalent
+existing JBIG2 stream is permitted; replacing the selected codec is not.
+Require these contracts to pass normally after repair and regenerate affected
+benchmark preparations/outputs without rewriting historical provenance.
+See TODO §238, `docs/TEST_PLAN.md` and `docs/DESIGN.md` §233.
+
+Pre-repair regression evidence: five assertions failed (false 301-DPI grid,
+changed source samples in native/FFPR, complete-file growth in native/FFPR).
+They were strict expected failures, not passes. Actual unmodified GUI-style
+IDs produced a 341,728-byte control, 354,121-byte native output and 350,222-byte
+FFPR output; the +32 bytes versus the historical size study were ID framing.
+
+Implemented/worker-verified repair (§235), 2026-10-16: `_source_dpi` retains
+actual fractional image/mask density rather than applying `ceil`. There is
+no epsilon, filename special case, global integer rounding, codec substitution
+or encoder setting change. The original grid survives the nominal same-DPI
+composition; genuine fractional densities remain intact. All five expected-
+failure markers are removed. All six full-flow regression cases and 23 canvas
+cases pass, followed by the full **593-test** suite.
+
+Fresh actual production saves: preserve-images/Zopfli **341,728 bytes**,
+native/JBIG2/Zopfli **340,909**, FFPR/JBIG2/Zopfli **337,010**. Both rebuilt
+paths reproduce every original bitmap sample, page geometry and all-page
+pixels at 72/300 DPI, with **332,974 encoded image bytes**, equal to the
+original streams. Source SHA-256 remains unchanged. Evidence and exact source/
+output hashes: `.tmp/b114-fixed-verification/metrics.json`; normal/2× offscreen
+real-file previews are reviewed. The main historical size matrix is explicitly
+pre-repair, with replacement/recomputation tracked in TODO §239. Keep this
+issue OPEN pending explicit designer confirmation; these checks are not
+designer acceptance.
+
+## B115 — OPEN — corpus inventory mistakes extracted PNG/TIFF for the PDF image codec
+
+Related worker finding while selecting the designer §233 replacement:
+`tools/corpus/fetch_and_validate.py:codecs_of` infers a stored codec from
+`extract_image()`'s export extension. PyMuPDF exports these JBIG2 and CCITT
+images as PNG, so the README incorrectly labels them `Flate-1bit`. The
+Poppler fallback also reads the y-PPI column instead of the encoding column.
+Audit actual PDF image `/Filter` values (and `/BitsPerComponent` where useful),
+correct the fallback column, test real JBIG2/CCITT/Flate/JPEG sources, and fix
+the affected corpus table. Do not change the source PDFs or rewrite historical
+measurements. See TODO §239 and `examples/README.md`. Keep OPEN pending
+explicit designer confirmation, even after worker verification.
+
+Implemented/worker-verified: the classifier reads stored image filters without
+extracting/decoding images and the Poppler fallback uses its encoding column.
+Ten tests pass, including actual JBIG2/CCITT/Flate/JPEG/native-only inputs,
+one-bit Flate versus raw storage, the fallback, and every codec cell in the
+34-PDF README inventory. The selection guard requires eleven original CCITT
+images and no JBIG2 for TM972. No source PDFs changed. Remains OPEN pending
+explicit designer confirmation. B114's separate runtime repair is recorded above.

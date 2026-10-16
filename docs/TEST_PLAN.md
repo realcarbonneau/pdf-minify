@@ -2,9 +2,12 @@
 
 ## Current regression verification — 2026-10-16
 
-Fresh full-suite run (`QT_QPA_PLATFORM=offscreen ./test.sh`):
-**572 passed**, exit 0 / FULL SUITE GREEN. This includes the all-row coverage,
-B113 repair, PDF Minify rename and six-case overview coverage described below. This is regression
+Fresh full-suite run (`./test.sh`, offscreen): **593 passed**, exit 0 /
+FULL SUITE GREEN, with no expected failures. B114's five formerly failing
+contracts now pass normally after the shared density repair; their markers
+were removed. This includes the all-row coverage, B113 repair, PDF Minify
+rename, non-JBIG2 scan selection, fractional-density and corpus-codec
+inventory coverage described below. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
@@ -18,6 +21,56 @@ unchanged by that separate prototype-tool correction.
 
 An additional full rerun was interrupted by SIGTERM before a test summary;
 it is not counted as a pass. The subsequent complete run at that stage passed.
+
+## Already-JBIG2 no-op flow versus non-JBIG2 comparison scan (§233 / B114–B115)
+
+`tests/test_jbig2_non_regression.py` pins the whole eight-page
+`scan-jfk-poor-copies.pdf` by SHA-256, verifies its actual 1-bit JBIG2 streams
+and proves that direct 300-DPI rendering equals every original bitmap sample.
+The complete input is 349,667 bytes; the historical controlled-ID Zopfli
+preserve-images control is 341,696, versus 354,089 for the faulty native BW
+flow and 350,190 for FFPR. Those pre-repair preparations are not source-pixel-
+exact no-ops even though their subsequent encoder checks pass.
+
+The executable repair contract checks source-density rounding and real full
+`save_with_spec` outputs, with native preservation and FFPR: unchanged page
+geometry and original samples, valid 1-bit JBIG2, no input overwrite, and
+complete file bytes no larger than source or the matching preserve-images
+control. The repair retains actual fractional sampling density instead of
+rounding up to integer DPI. All six cases pass normally, including all-page
+pixel equality at 72 and 300 DPI; no expected-failure markers remain. Three
+additional density cases preserve the real 299.5/300.25/301.75-DPI grids.
+The combined flow/canvas modules pass 29 tests.
+
+Fresh actual production saves have a 341,728-byte preserve-images control,
+340,909-byte native output and 337,010-byte FFPR output. All eight original
+image arrays, page geometry and complete page pixels at 72/300 DPI agree
+exactly; encoded image bytes total the original 332,974 in every output.
+The input hash is unchanged. These use normal production IDs; do not compare
+them as a paired benchmark against historical controlled-ID saves. Evidence:
+`.tmp/b114-fixed-verification/metrics.json`. B114 is worker-verified repaired,
+but remains **OPEN** pending explicit designer confirmation. QPDF syntax/stream
+checks pass all three fresh outputs, without claiming all-reader certification.
+
+Normal and 2× isolated offscreen `tools/shot.py
+examples/scan-jfk-poor-copies.pdf --progress-only` runs exit 0. Full windows
+and 1:1 original/filtered pane and strip captures are actually viewed. The
+selected preview comes from the completed real filtered file, not a separate
+render/filter approximation. The desktop application remains closed.
+
+The main BW comparison instead uses all eleven pages of
+`scan-naca-tm972.pdf`: actual `/CCITTFaxDecode`, one-bit grayscale, about
+300 DPI, scanned typewriting/annotations/diagrams with existing OCR text.
+Selection tests require this complete non-JBIG2 source and independently
+inspect stored filters. The overview refresh remains TODO §239: all 42
+replacement cells must be saved and verified, and every affected preparation
+must use the repaired implementation. Historical files/hashes stay untouched;
+the published matrix is labeled pre-B114 until that refresh is verified.
+
+`tests/test_corpus_codecs.py` covers real JBIG2, CCITT, Flate, JPEG and native-
+only sources while forbidding `extract_image()` for codec identification;
+it also tests one-bit Flate and Poppler's actual encoding column. The corpus
+README is audited against stored filters, not export extensions (B115).
 
 ## PDF Minify identity and settings migration (§230)
 
@@ -102,7 +155,7 @@ designer acceptance is implied.
 
 ## Representative integrated overview (§§223–231)
 
-`tests/test_compression_overview.py`: 25 cases verify six distinct complete
+`tests/test_compression_overview.py`: 27 cases verify six distinct complete
 repository inputs and their actual native/scan/photo/artwork/mixed/technical
 structure, including Kepler's 12 text-bearing, ten vector-bearing and nine
 image-bearing pages (15 image placements). The formatter requires all
@@ -140,10 +193,11 @@ complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
 Current published evidence and its exact counts
 are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
-The six-case uniform run is complete: **252 verified overview PDFs**,
+Historical six-case baseline before the §233 scan replacement: **252 verified overview PDFs**,
 **62 focused PDFs**, **314 distinct actual final outputs**, zero rejected
 or excluded cells. Kepler adds 42 separately saved/verified 12-page outputs;
-all 210 previous overview cells/files and every focused table remain intact.
+all 210 previous overview cells/files and every focused table remained intact
+at that stage. §233 replaces the scan, not the other five PDF inputs.
 The 22 formerly missing no-image cells are also independently saved, never
 filled by copying a control's size/file. Every transformed case is 300 DPI;
 preserve-images controls are unresampled. All current source/preparation/

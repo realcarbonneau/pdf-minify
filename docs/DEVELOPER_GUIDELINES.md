@@ -184,6 +184,12 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Indexed FFPR stays indexed. Preserve every size and existing per-fidelity
   bold minimum; expected codec strengths do not establish universal winners
   or authorize codec/default changes. Focused tables remain unchanged.
+- §232: label the overview BW divider **Black and white (BW + Otsu)**.
+  Omit redundant `; keep native` from published combination labels and their
+  generator; absence of FFPR implies native text/vector preservation. Keep
+  FFPR and native-stream compressor names explicit. No threshold, recipe,
+  measured size or bold-minimum change is implied; focused Simple threshold
+  columns remain explicitly labeled.
 - §229: benchmark every row against every input, including redundant no-image
   cases. With §231 the 42 × 6 overview requires 252 measured cells, not
   image-free N/A cells. NASA Kepler is a whole 12-page input, not an extract.
@@ -192,6 +198,28 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   native/font/container compression still runs. Annotate it, never invent a
   bitmap to exercise the encoder. Prior exact-row measurements may be reused
   only with strict compatible-code/source/preparation/output provenance.
+- §233: the main BW scan must not already use JBIG2. Use the complete
+  11-page CCITT `scan-naca-tm972.pdf`, keeping six columns and all 42 rows.
+  Keep `scan-jfk-poor-copies.pdf` separately as B114's full-flow regression:
+  unchanged-resolution lossless JBIG2 must preserve original samples/geometry
+  and not increase complete-file bytes. Cover native/FFPR, compare a compatible
+  preserve-images control, and keep intentional transformations distinct.
+  Check source image `/Filter` values, not extraction/export extensions (B115).
+  Never relabel an old input's size as a replacement measurement or mark a
+  documented known failure fixed. Historical artifacts stay immutable.
+- §234: maintain `JBIG2.md` as the dedicated encoder/embedding/safety reference
+  and TODO §240 as the detailed optimization exploration plan. Current `-p`
+  generic-region measurements do not prove optimal JBIG2 settings. Research
+  `-d`, symbol settings/refinement and shared dictionaries with exact pixels,
+  whole-file size and reader gates; no lossy/default/UI changes are approved
+  merely by asking for documentation. B114's worker-verified repair is not
+  designer acceptance; its issue remains open until explicitly confirmed.
+- §235: preserve actual fractional image/mask sampling density in composition,
+  never ceil it to whole DPI and create an unintended resize. Keep the one
+  final target-DPI resize and existing layer/encoder policy. Same-density
+  JBIG2 must pass original-sample, all-page-pixel and complete-file no-growth
+  checks normally, not as expected failures. Cover genuinely fractional DPI;
+  refresh affected measurements without rewriting historical provenance.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

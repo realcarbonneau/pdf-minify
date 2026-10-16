@@ -957,3 +957,15 @@ Clarification question: should existing saved filters that explicitly specify 15
 
 ## 231 — add a sixth representative complete-document benchmark (verbatim, 2026-10-16)
 > also, add models-nasa-kepler.pdf as another Representative class, or within an existing class, or suggest another alternative to add a sixth case that covers a broad spectrum.  I have been using that one as a good test case, but maybe you have other suggestions?
+
+## 232 — explicit Otsu group label; native preservation implied without FFPR (verbatim, 2026-10-16)
+> "Black and white (BW)" rename to "Black and white (BW + Otsu)" and remove the "; keep native", this is implied by no FFPR.
+
+## 233 — JBIG2 end-to-end non-regression; non-JBIG2 BW benchmark input (verbatim, 2026-10-16)
+> that is a good test case for the full flow, the flow should never make a JBIG2 worse, document this as an issue and a test case to use to fix and check for regressions.  Also, this is NOT a good test case for this table, find another BW pdf that is NOT already JBIG2, or else the results are meaningless.
+
+## 234 — dedicated JBIG2 developer guide and optimization exploration TODO (verbatim, 2026-10-16)
+> Add a JBIG2 dev doc, add documentation relevant to the algo and add a TODO that we need to explore other JBIG2 optimization features and detail them
+
+## 235 — repair the JBIG2 same-DPI preparation bug (verbatim, 2026-10-16)
+> Please fix that bug

@@ -4,6 +4,17 @@ Designer §§210–214/220–231; TODO §§226–236. This is the primary integr
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16 (America/New_York).
 
+**Historical matrix — before the B114 preparation repair.** The numbers below
+are preserved measurements of the recorded older implementation, not fresh
+post-fix results. B114's false 301-DPI intermediate altered the already-JBIG2
+scan; it must not be used to rank conversion codecs. The repaired full-flow
+regression now preserves every source sample and does not grow the file:
+see [current regression evidence](JBIG2.md#end-to-end-regression-b114-repaired-awaiting-designer-confirmation).
+TODO §239 tracks the overview's replacement with whole CCITT
+`scan-naca-tm972.pdf` and recomputation of affected preparations. Its runner and
+source guards are updated; the published scan column still identifies its
+actual historical JFK source. No old value is relabeled as a new measurement.
+
 ## Scope and six representative cases
 
 **Realistic algorithm combinations are rows; six complete repository PDFs
@@ -57,6 +68,10 @@ broadening coverage rather than implying six exclusive PDF categories.
   are no unmeasured or inapplicable cells in the overview.
 
 ### Fixed recipes and fidelity
+
+Rows without FFPR retain native text/vectors; preservation is implicit in
+their labels (§232). A compressor followed by `native` identifies the
+compression applied to those PDF streams, not the bitmap image codec.
 
 Native-preserving rows compose original bitmap artwork into one canvas and
 keep native text/vectors above it under the established layer policy. FFPR
@@ -116,15 +131,15 @@ and plain/predicted comparisons are retained; divider rows contain no sizes.
 | Preserve images + Classic Flate (reference) native | 188,447 | 341,697 | 4,641,959 | 1,493,125 | 502,235 | 2,188,983 |
 | Preserve images + Zopfli-Flate native | 187,455 | **341,696** | 4,574,656 | **1,492,980** | 491,510 | 2,016,866 |
 | Preserve images + Brotli native | **182,638** | 341,881 | **4,472,657** | 1,493,126 | **483,963** | **1,766,110** |
-| **Black and white (BW)** | | | | | | |
-| BW; keep native + JBIG2 + Zopfli-Flate native | 187,455 | **354,089** | 1,769,572 | **9,826** | 308,200 | 1,357,553 |
-| BW; keep native + JBIG2 + Brotli native | **182,638** | 354,346 | **1,668,076** | 9,980 | **300,637** | **1,106,479** |
-| BW; keep native + Classic Flate (reference) | 188,447 | 713,873 | 2,211,586 | 22,466 | 336,563 | 1,606,164 |
-| BW; keep native + Classic Flate (reference) + PNG prediction | 188,447 | 822,666 | 2,260,390 | 23,957 | 338,053 | 1,615,786 |
-| BW; keep native + Zopfli-Flate | 187,455 | 638,993 | 2,067,873 | 20,744 | 323,303 | 1,423,956 |
-| BW; keep native + Zopfli-Flate + PNG prediction | 187,455 | 744,246 | 2,078,249 | 21,330 | 323,722 | 1,427,788 |
-| BW; keep native + Brotli | **182,638** | 585,313 | 1,824,470 | 14,839 | 304,720 | 1,126,864 |
-| BW; keep native + Brotli + PNG prediction | **182,638** | 710,936 | 1,945,111 | 18,023 | 308,773 | 1,145,037 |
+| **Black and white (BW + Otsu)** | | | | | | |
+| BW + JBIG2 + Zopfli-Flate native | 187,455 | **354,089** | 1,769,572 | **9,826** | 308,200 | 1,357,553 |
+| BW + JBIG2 + Brotli native | **182,638** | 354,346 | **1,668,076** | 9,980 | **300,637** | **1,106,479** |
+| BW + Classic Flate (reference) | 188,447 | 713,873 | 2,211,586 | 22,466 | 336,563 | 1,606,164 |
+| BW + Classic Flate (reference) + PNG prediction | 188,447 | 822,666 | 2,260,390 | 23,957 | 338,053 | 1,615,786 |
+| BW + Zopfli-Flate | 187,455 | 638,993 | 2,067,873 | 20,744 | 323,303 | 1,423,956 |
+| BW + Zopfli-Flate + PNG prediction | 187,455 | 744,246 | 2,078,249 | 21,330 | 323,722 | 1,427,788 |
+| BW + Brotli | **182,638** | 585,313 | 1,824,470 | 14,839 | 304,720 | 1,126,864 |
+| BW + Brotli + PNG prediction | **182,638** | 710,936 | 1,945,111 | 18,023 | 308,773 | 1,145,037 |
 | BW FFPR + JBIG2; optimized residual streams | **297,872** | **350,190** | **1,254,079** | **3,876** | **316,049** | **299,818** |
 | BW FFPR + Classic Flate (reference) | 733,677 | 709,973 | 2,714,039 | 17,679 | 800,867 | 800,754 |
 | BW FFPR + Classic Flate (reference) + PNG prediction | 722,777 | 818,766 | 2,689,224 | 19,271 | 777,268 | 805,442 |
@@ -231,14 +246,14 @@ print are distinct stress cases, not interchangeable evidence.
 
 | Algorithm combination | JFK poor copies | NACA formulas |
 |---|---:|---:|
-| BW; keep native + Classic Flate (reference) | 713,873 | 439,941 |
-| BW; keep native + Classic Flate (reference) + PNG prediction | 822,666 | 442,832 |
-| BW; keep native + Zopfli-Flate | 638,993 | 400,877 |
-| BW; keep native + Zopfli-Flate + PNG prediction | 744,246 | 389,105 |
-| BW; keep native + Brotli | 585,313 | 296,438 |
-| BW; keep native + Brotli + PNG prediction | 710,936 | 363,846 |
-| BW; keep native + JBIG2 + Zopfli-Flate native | **354,089** | 197,613 |
-| BW; keep native + JBIG2 + Brotli native | 354,346 | **196,098** |
+| BW + Classic Flate (reference) | 713,873 | 439,941 |
+| BW + Classic Flate (reference) + PNG prediction | 822,666 | 442,832 |
+| BW + Zopfli-Flate | 638,993 | 400,877 |
+| BW + Zopfli-Flate + PNG prediction | 744,246 | 389,105 |
+| BW + Brotli | 585,313 | 296,438 |
+| BW + Brotli + PNG prediction | 710,936 | 363,846 |
+| BW + JBIG2 + Zopfli-Flate native | **354,089** | 197,613 |
+| BW + JBIG2 + Brotli native | 354,346 | **196,098** |
 
 ### Threshold sensitivity — three explicit BW transforms
 
@@ -248,14 +263,14 @@ column, not the thresholds as though their output were visually identical.
 
 | Algorithm combination | Otsu | Simple T180 | Simple T210 |
 |---|---:|---:|---:|
-| BW; keep native + Classic Flate (reference) | 22,466 | 23,312 | 26,704 |
-| BW; keep native + Classic Flate (reference) + PNG prediction | 23,957 | 24,749 | 28,411 |
-| BW; keep native + Zopfli-Flate | 20,744 | 21,546 | 24,363 |
-| BW; keep native + Zopfli-Flate + PNG prediction | 21,330 | 22,037 | 25,145 |
-| BW; keep native + Brotli | 14,839 | 15,533 | 17,970 |
-| BW; keep native + Brotli + PNG prediction | 18,023 | 18,911 | 22,325 |
-| BW; keep native + JBIG2 + Zopfli-Flate native | **9,826** | **10,102** | **10,937** |
-| BW; keep native + JBIG2 + Brotli native | 9,980 | 10,256 | 11,091 |
+| BW + Classic Flate (reference) | 22,466 | 23,312 | 26,704 |
+| BW + Classic Flate (reference) + PNG prediction | 23,957 | 24,749 | 28,411 |
+| BW + Zopfli-Flate | 20,744 | 21,546 | 24,363 |
+| BW + Zopfli-Flate + PNG prediction | 21,330 | 22,037 | 25,145 |
+| BW + Brotli | 14,839 | 15,533 | 17,970 |
+| BW + Brotli + PNG prediction | 18,023 | 18,911 | 22,325 |
+| BW + JBIG2 + Zopfli-Flate native | **9,826** | **10,102** | **10,937** |
+| BW + JBIG2 + Brotli native | 9,980 | 10,256 | 11,091 |
 
 ### Native-heavy files — fonts, drawings and container overhead
 
@@ -323,7 +338,7 @@ they cannot leak into the next image-decoding stage or excuse a new warning.
 
 ## Measurement and provenance
 
-The overview has **42 realistic combination rows × 6 whole-PDF cases**, **252 verified final PDFs**, **zero excluded/unmeasured cells**, and **zero rejected cells**. The focused study retains **62 verified final PDFs**, for **314 distinct actual complete outputs** referenced by these tables. The sixth case adds 42 independently saved, verified whole-Kepler outputs, not partial-page or component-size estimates. All 210 earlier overview cells retain their exact sizes, files and measurement-specific provenance.
+The historical overview has **42 realistic combination rows × 6 whole-PDF cases**, **252 verified final PDFs**, **zero excluded/unmeasured cells**, and **zero rejected cells**. The focused study retains **62 verified final PDFs**, for **314 distinct actual complete outputs** referenced by these tables. The sixth case adds 42 independently saved, verified whole-Kepler outputs, not partial-page or component-size estimates. All 210 earlier overview cells retain their exact sizes, files and measurement-specific provenance. Encoder/output equality against these frozen preparations does not establish source-pixel equality when preparation was defective (B114); this is not post-fix verification.
 
 The combined six-case manifest, frozen overview/extension drivers and exact source-compatibility proof are under `.tmp/integrated-compression/representative-six-300dpi-20261016/`; its `kepler/metrics.json` records the new 42-cell run and its actual renamed source environment. The previous 210-cell overview remains under `.tmp/integrated-compression/representative-complete-300dpi-20261016-v2/`; the original 188-file overview and focused outputs remain under `.tmp/integrated-compression/representative-300dpi-20261016-v3/` and `.tmp/integrated-compression/scenarios-300dpi-20261016-v3/`. No old fingerprint or archived result is rewritten.
 
@@ -346,8 +361,8 @@ saver's existing option, avoiding random literal-versus-hex size noise.
 Normal GUI ID generation is unchanged; these remain actual complete PDFs,
 not estimated UI bytes or payload-only sizes.
 
-All current cells are actual complete-file measurements with recorded repaired
-source versions and hashes. Earlier mixed-DPI/rejected artifacts and the historical 549-output
+All snapshot cells are actual complete-file measurements with their recorded
+source versions and hashes, preceding the B114 density repair. Earlier mixed-DPI/rejected artifacts and the historical 549-output
 cross-product remain diagnostic evidence; none is relabeled as a new 300-DPI
 result. Original examples are unchanged. No timing metric is collected.
 Preparations and per-case outputs can run in parallel. Only completed,
@@ -385,4 +400,4 @@ The Brotli outputs' exact samples/native streams/page pixels
 are validated with the recorded MuPDF build. QPDF syntax success alone is
 not a visual, accessibility or all-reader certification.
 
-Fresh full suite after all-row coverage, PDF Minify rename and six-case extension: **572 passed**, exit 0 / FULL SUITE GREEN. Regression coverage includes tagged ownership/whole-file image gates, native-state/inline-image and fractional-page repairs, all color FFPR codecs, saved-filter/name migration, strict integrated/representative/scenario verification and exact real-file lifecycle. All published bytes, output hashes and tied bold minima were independently audited. Offscreen full-window and 1:1 controls/panes/strip captures were reviewed; no desktop launch or designer issue acceptance is implied.
+Historical full suite after all-row coverage, PDF Minify rename and six-case extension: **572 passed**, exit 0 / FULL SUITE GREEN. Regression coverage includes tagged ownership/whole-file image gates, native-state/inline-image and fractional-page repairs, all color FFPR codecs, saved-filter/name migration, strict integrated/representative/scenario verification and exact real-file lifecycle. All published bytes, output hashes and tied bold minima were independently audited. Current B114 repair and **593-test** verification are recorded in [TEST_PLAN.md](TEST_PLAN.md); they do not remeasure this snapshot. No desktop launch or designer issue acceptance is implied.

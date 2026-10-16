@@ -14,6 +14,7 @@ def test_six_distinct_real_repository_cases_include_the_complete_kepler_document
     assert {d.key for d in overview.DOCUMENTS} == {"native", "scan", "photos", "art", "mixed", "kepler"}
     assert next(d.source for d in overview.DOCUMENTS if d.key == "photos").endswith("news-crater-lake-2026.pdf")
     assert next(d.source for d in overview.DOCUMENTS if d.key == "art").endswith("images.pdf")
+    assert next(d.source for d in overview.DOCUMENTS if d.key == "scan").endswith("scan-naca-tm972.pdf")
     assert next(d.source for d in overview.DOCUMENTS if d.key == "kepler").endswith("models-nasa-kepler.pdf")
 
 
@@ -26,6 +27,16 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
     residual = [r for r in overview.ROWS if r.family == "bw-ffpr" and r.variant == "jbig2"]
     assert len(residual) == 1 and residual[0].native == "zopfli"
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
+
+
+def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
+    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    assert "| **Black and white (BW + Otsu)** |" in report
+    assert "; keep native" not in report
+    for row in overview.ROWS:
+        assert "; keep native" not in row.label
+        assert ("FFPR" in row.label) == row.family.endswith("-ffpr")
+        assert f"| {row.label} |" in report
 
 
 def test_six_case_matrix_requires_all_252_whole_file_cells_even_if_redundant():
@@ -138,13 +149,28 @@ def test_fixture_structure_matches_its_compression_class():
                 vector_pages=sum(bool(page.get_drawings()) for page in pdf))
     assert not any(statistics["native"]["images"]) and statistics["native"]["words"] > 1000
     assert all(statistics["photos"]["images"])
-    assert all(statistics["scan"]["images"]) and statistics["scan"]["words"] == 0
+    assert len(statistics["scan"]["images"]) == 11
+    assert all(statistics["scan"]["images"]) and statistics["scan"]["words"] > 0  # original OCR
     assert sum(statistics["mixed"]["images"]) and statistics["mixed"]["words"] > 1000
     assert sum(statistics["art"]["images"]) and statistics["art"]["words"] < 20
     kepler = statistics["kepler"]
     assert len(kepler["images"]) == kepler["text_pages"] == 12
     assert sum(kepler["images"]) == 15 and sum(bool(count) for count in kepler["images"]) == 9
     assert kepler["vector_pages"] == 10
+
+
+def test_main_bw_scan_is_real_bilevel_ccitt_not_precompressed_jbig2():
+    import pymupdf as fitz
+    from tools.corpus.fetch_and_validate import codecs_of
+    document = next(d for d in overview.DOCUMENTS if d.key == "scan")
+    assert codecs_of(document.source) == "CCITT"
+    with fitz.open(document.source) as pdf:
+        images = [entry for page in pdf for entry in page.get_images(full=True)]
+        assert len(images) == len(pdf) == 11
+        assert all(entry[4:6] == (1, "DeviceGray") for entry in images)
+        assert all(pdf.xref_get_key(entry[0], "Filter")[1] == "/CCITTFaxDecode" for entry in images)
+        assert not any("JBIG2Decode" in pdf.xref_get_key(xref, "Filter")[1]
+                       for xref in range(1, pdf.xref_length()))
 
 
 def test_valid_prior_complete_results_are_reused_without_preparation_or_encoding(tmp_path, monkeypatch):

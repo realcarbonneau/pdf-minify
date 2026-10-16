@@ -18,6 +18,12 @@ from .display import DisplayPage
 
 
 def _source_dpi(page):
+    """Actual maximum sampling density; native matrices accept fractional DPI.
+
+    Ceil-to-integer DPI promotes PDF float round-off near 300 to 301,
+    creating a real upscale/downscale even when the source grid is unchanged.
+    Keep precision here; MuPDF resolves the final device-pixel bounds.
+    """
     masks = {e[0]: e[1] for e in page.get_images(full=True) if e[1]}
     dpi = 72.0
     for info in page.get_image_info(xrefs=True):
@@ -30,7 +36,7 @@ def _source_dpi(page):
         for pixels, points in ((width, math.hypot(a, b)), (height, math.hypot(c, d))):
             if points > 0:
                 dpi = max(dpi, pixels * 72 / points)
-    return math.ceil(dpi)
+    return dpi
 
 
 def flatten_rgb(page, dpi, token, resample, *, directory=None, tile_pixels=8_000_000,

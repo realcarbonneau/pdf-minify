@@ -2139,3 +2139,93 @@ The fresh **572-test** suite passes. The residual-stream legend explicitly
 means fixed Zopfli-Flate, not automatic best selection. No encoding-time
 comparison, new GUI choice/default, dependency or designer acceptance is claimed.
 See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 237 — DONE (designer §232: explicit BW/Otsu heading and concise combination labels)
+
+~~Rename the BW divider to Black and white (BW + Otsu); remove redundant
+`; keep native`, since absence of FFPR implies native preservation.~~
+Stub: updated the overview and focused labels plus their generator. FFPR,
+native-stream compressor names and focused Simple threshold columns stay
+explicit. An exact report audit preserves every measurement and bold minimum;
+regression coverage keeps generated and published combination labels aligned.
+This is presentation only; no filter, benchmark output or GUI behavior changes.
+See `DESIGN.md` §232 and `INTEGRATED_COMPRESSION.md`.
+
+## 238 — DONE (designer §§233/235 / B114: JBIG2 same-DPI end-to-end non-regression)
+
+~~Repair the 300→301→300 preparation error; retain the full eight-page JBIG2
+input and require source-pixel/page-geometry equality and complete-file
+non-growth through real native/FFPR saves.~~
+Stub: the shared compositor preserves actual fractional density; all five
+expected-failure markers are removed. Six full-flow cases and three genuinely
+fractional-density cases pass; the full suite passes **593 tests**. Fresh
+native/FFPR saves are 340,909/337,010 bytes versus the 341,728-byte preservation
+control, with every original bitmap/page pixel exact. No codec/default change.
+See B114, `JBIG2.md` and `TEST_PLAN.md`. DONE means implementation verified,
+not designer acceptance; B114 remains OPEN. The historical main-matrix
+replacement/recomputation remains separately tracked in §239.
+
+## 239 — OPEN (designer §233: replace the overview scan with a non-JBIG2 PDF)
+
+Use whole `scan-naca-tm972.pdf`: 11 pages, 374,461 bytes, eleven 300-DPI
+CCITT 1-bit images plus original OCR text. Audit actual PDF filters, repair
+the misleading extraction-format corpus classifier/README (B115), and guard
+the representative selection with tests. The runner/source guard and inventory
+repair are implemented. Measure all 42 new complete outputs with the repaired
+§235 compositor; recompute other affected preparations rather than relabeling
+their old measurements. Keep original files/hashes/provenance untouched. Update
+the continuous overview, focused scan comparison, minima, conclusions and
+reader/provenance totals from actual saved files; keep historical JFK outputs
+as diagnostic/regression evidence, not codec rankings. No time comparison.
+See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §233 and `TEST_PLAN.md`.
+
+## 240 — OPEN (designer §234: explore JBIG2 optimization features)
+
+The dedicated [JBIG2 developer guide](JBIG2.md) separates implemented behavior
+from research. Current production and published measurements invoke only
+`jbig2 -p`: independent lossless generic regions, no `-d`, symbols, refinement
+or cross-page dictionary. None of these extra encoder switches has a GUI control.
+Do not present the existing results as an exhaustive/best-settings JBIG2 search.
+
+Explore and document, in order:
+
+- Compare generic coding with and without `-d` typical prediction. It encodes
+  repeated rows losslessly, not by deleting image rows. Test both final size
+  and actual readers; upstream's old API comments warn of larger streams and
+  Ghostscript trouble, so neither a universal size win nor compatibility is
+  assumed. Prefer automatic smallest validated same-fidelity encoding over
+  a speed/effort setting, if later approved for integration.
+- Assess `-s` symbol dictionaries, `-t` classification similarity (installed
+  default 0.92), and `-w` weighting (0.50). Keep approximate-symbol substitution
+  separate from lossless results; a more stringent threshold is not proof of
+  exactness. The app's Otsu/manual threshold controls are different operations.
+- Investigate genuine zero-error symbol refinement and maintained encoder
+  alternatives. Installed 0.30 and reviewed upstream CLI reject `-r` as broken.
+  Do not just bypass that guard: the API exposes a per-symbol error tolerance
+  and inactive CLI code uses a nonzero value. Require exact reconstructed
+  samples and reader evidence before claiming any lossless refinement support.
+- Assess document-wide/shared and grouped dictionaries versus per-page
+  dictionaries, including `/JBIG2Globals` overhead, references, isolated-page
+  decoding with required globals, subset extraction and corrupted/missing
+  globals. Dictionary sharing is not inherently lossy; matching/refinement
+  determines fidelity. Whole-image PDF deduplication is a separate existing
+  mechanism, not evidence that cross-page symbol sharing is implemented.
+- If symbol research proceeds, assess `-a`/`--auto-thresh` and `--no-hash` as
+  symbol-classification candidates, never as no-op lossless switches. Audit
+  encoder versions/library-only coding options rather than invent CLI knobs.
+
+Fix and pass B114's full-flow source-pixel/no-growth gates before promoting
+new JBIG2 optimization results. Use whole non-JBIG2 TM972/formulas scans,
+already-JBIG2 JFK as regression only, FFPR text, noisy/dithered BW imagery,
+flat palette stencils and repeated/sparse/random synthetic patterns. Verify
+every decoded image/mask, original geometry/native content, diagnostics and
+target readers; measure actual complete PDFs at 300 DPI, not payload estimates.
+Freeze inputs, prepared samples, exact arguments, tool/source versions and
+all output hashes. Publish Markdown complete-size comparisons with same-
+fidelity bold minima, failures and unchanged controls; no timing rankings.
+Keep BW and layered color, native and FFPR, and lossless and lossy separate.
+
+This is an exploration task, not authorization to enable lossy coding,
+install/change dependencies, replace current recipes, add advanced GUI fields,
+or silently change existing saved-filter results. See `JBIG2.md`, B114,
+`COMPRESSION.md` and `INTEGRATED_COMPRESSION.md`.

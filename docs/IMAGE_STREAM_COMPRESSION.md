@@ -1,7 +1,7 @@
 # Bitmap PDF compression — size-only paired benchmarks
 
 Supporting component study: native compression is fixed in this document.
-The primary final-file comparison uses realistic combination rows over five
+The primary final-file comparison uses realistic combination rows over six
 representative PDFs, followed by focused scenarios (§223):
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
@@ -10,6 +10,13 @@ and shared assembly repairs (§§224–226, B108–B112). They retain the origin
 explicit recipes and are not current default-filter sizes. Use the primary
 integrated overview and focused tables for repaired, uniformly 300-DPI
 comparisons; do not relabel these older mixed-DPI artifacts.
+
+§233 moves the already-JBIG2 JFK scan out of the primary codec-comparison
+table and retains it as B114's full-flow regression. The old component rows
+below compare transformed pixels; they are not evidence of an improvement
+over untouched source JBIG2. The current main BW source is CCITT TM972.
+[JBIG2.md](JBIG2.md) documents the implemented encoder scope, safety limits
+and TODO §240's optimization exploration; extra settings are not implemented.
 
 Designer §§208/209/220, 2026-10-15 (America/New_York); TODO §§212/223.
 Related: [COMPRESSION.md](COMPRESSION.md),

@@ -25,7 +25,7 @@ class Document:
 
 DOCUMENTS = (
     Document("native", "Native text/vectors", "examples/form-fw9.pdf"),
-    Document("scan", "BW scan", "examples/scan-jfk-poor-copies.pdf"),
+    Document("scan", "BW scan", "examples/scan-naca-tm972.pdf"),
     Document("photos", "Color photos", "examples/news-crater-lake-2026.pdf"),
     Document("art", "Flat-color artwork", "examples/images.pdf"),
     Document("mixed", "Mixed text/images", "examples/paper-arxiv-1406.2661.pdf"),
@@ -49,7 +49,7 @@ def combinations():
                           ("jpx-lossless", "JPEG2000 lossless")):
         rows += [Combination(family, family, p, f"{label} + {names[p]} native")
                  for p in ("zopfli", "brotli")]
-    for family, label in (("indexed", "Indexed 5 colors"), ("bw-images", "BW; keep native"),
+    for family, label in (("indexed", "Indexed 5 colors"), ("bw-images", "BW"),
                           ("bw-ffpr", "BW FFPR"), ("indexed-ffpr", "Color FFPR; indexed 5 colors")):
         for policy in study.POLICIES:
             rows += [Combination(family, f"{policy}-{prediction}", policy,

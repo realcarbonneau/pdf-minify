@@ -12,6 +12,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -22,31 +23,29 @@ MAX_BYTES = 60_000_000
 
 
 def codecs_of(path):
-    """Return sorted image-encoding names found in the PDF (best effort)."""
+    """Read stored PDF image filters, never the extracted/export image format."""
     try:
-        import fitz
-        doc = fitz.open(path)
+        import pymupdf as fitz
         kinds = set()
-        for pno in range(doc.page_count):
-            for xref, *_ in doc[pno].get_images(full=True):
-                try:
-                    info = doc.extract_image(xref)
-                except Exception:
-                    continue
-                ext = (info.get("ext") or "").lower()
-                if ext in ("jpg", "jpeg"):
-                    kinds.add("JPEG")
-                elif ext in ("jp2", "jpx"):
-                    kinds.add("JPX")
-                elif ext in ("jb2", "jbig2", "jb2e"):
-                    kinds.add("JBIG2")
-                elif ext in ("tif", "tiff"):
-                    kinds.add("TIFF-G4?" if info.get("bpc") == 1 else "TIFF")
-                elif ext == "png" or info.get("bpc") == 1:
-                    kinds.add("Flate-1bit" if info.get("bpc") == 1 else "Flate")
-                else:
-                    kinds.add(ext.upper() or "RAW")
-        doc.close()
+        names = {"DCTDecode": "JPEG", "DCT": "JPEG", "JPXDecode": "JPX",
+                 "JBIG2Decode": "JBIG2", "CCITTFaxDecode": "CCITT", "CCF": "CCITT",
+                 "LZWDecode": "LZW", "LZW": "LZW", "BrotliDecode": "Brotli"}
+        wrappers = {"ASCII85Decode", "A85", "ASCIIHexDecode", "AHx", "Crypt"}
+        with fitz.open(path) as doc:
+            images = {entry[0] for page in doc for entry in page.get_images(full=True)}
+            for xref in images:
+                kind, value = doc.xref_get_key(xref, "Filter")
+                if kind == "xref":
+                    value = doc.xref_object(int(value.split()[0]), compressed=True)
+                filters = re.findall(r"/([A-Za-z0-9]+)", value)
+                one_bit = doc.xref_get_key(xref, "BitsPerComponent")[1] == "1"
+                for name in filters:
+                    if name in ("FlateDecode", "Fl"):
+                        kinds.add("Flate-1bit" if one_bit else "Flate")
+                    elif name not in wrappers:
+                        kinds.add(names.get(name, name))
+                if not filters:
+                    kinds.add("Raw-1bit" if one_bit else "Raw")
         return ",".join(sorted(kinds)) if kinds else "none"
     except ImportError:
         pass
@@ -57,8 +56,10 @@ def codecs_of(path):
             encs = set()
             for line in out.splitlines()[2:]:
                 parts = line.split()
-                if len(parts) > 13:
-                    encs.add(parts[13])
+                if len(parts) > 8:
+                    codec = parts[8]
+                    encs.add({"jbig2": "JBIG2", "ccitt": "CCITT", "jpeg": "JPEG",
+                              "jpx": "JPX", "image": "image (filter unknown)"}.get(codec, codec))
             return ",".join(sorted(encs)) if encs else "none"
         except Exception as e:  # noqa: BLE001
             return f"pdfimages-error:{e}"

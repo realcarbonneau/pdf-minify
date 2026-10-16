@@ -6,10 +6,19 @@ B10, B16, B25, B36, B37 (superseded), B39, B40, B47, B58, B60, B62, B89, B90 (se
 `issues.md` — the gated log; this page explains the substance).
 
 Primary size comparison (§222): [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md)
-uses realistic combination rows and five representative PDFs, followed by
+uses realistic combination rows and six representative PDFs, followed by
 focused scenario tables (§223), and measures actual complete saved PDFs.
 Component studies linked below explain individual stages;
 they do not replace the integrated matrix or justify estimated combined sizes.
+
+Encoder-specific reference (§234): [JBIG2.md](JBIG2.md) documents the current
+`jbig2 -p` generic path, unused `-d`/symbol settings, unavailable refinement,
+shared-dictionary requirements and TODO §240's detailed size-only exploration.
+Current measurements are not a best-settings search. B114's same-DPI/no-growth
+repair is worker-verified, awaiting designer confirmation. §233 selects a
+non-JBIG2 CCITT scan for the next overview, not the already-JBIG2 regression
+fixture. The published overview remains explicitly pre-B114 until TODO §239's
+replacement/recomputation is verified; current regression sizes are in the guide.
 
 Historical design/benchmark study (§§192–194): [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md)
 specifies one lossless colored JBIG2 stencil per non-white palette entry.

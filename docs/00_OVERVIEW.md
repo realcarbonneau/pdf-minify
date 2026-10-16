@@ -34,10 +34,20 @@ limits: [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
 Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
 
 §§222/223 make [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) the primary
-size analysis: realistic combination rows over five representative complete
+size analysis: realistic combination rows over six representative complete
 PDFs, then focused scenario tables, with all overhead included and no timing
 comparisons. Mixed general-codec pairs are excluded; the two component
 studies above support the analysis, not substitute for it.
+
+[JBIG2.md](JBIG2.md) (§234) documents the current generic-region `-p` path,
+lossless/lossy feature boundaries, refinement limitations and TODO §240's
+size-only optimization research. No additional switches or advanced GUI
+fields are implemented by that documentation. §233 selects non-JBIG2 CCITT
+TM972 for the main BW column; the runner/source guards are updated, while
+TODO §239 tracks the still-pending published-matrix refresh. Its historical
+pre-B114 numbers retain their actual source/version. §235 repairs the
+already-JBIG2 JFK full-flow pixel/no-growth regression: all contracts now pass
+normally. B114 remains open only pending explicit designer confirmation.
 
 §§210/211 request [a reasonable-combinations table and UI review](COMPRESSION_COMBINATIONS.md).
 The proposed shared general-compressor/disabled-control design is separate

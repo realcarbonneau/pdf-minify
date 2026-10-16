@@ -207,6 +207,85 @@ refinement of §223; focused scenarios and benchmark artifacts remain intact.
 See [the overview](INTEGRATED_COMPRESSION.md#overview--final-complete-file-bytes)
 and TODO §§232/233.
 
+### Integrated benchmark labels (§232)
+
+Designer §232 (verbatim):
+> "Black and white (BW)" rename to "Black and white (BW + Otsu)" and remove the "; keep native", this is implied by no FFPR.
+
+Use **Black and white (BW + Otsu)** for the overview's BW divider. Omit the
+redundant `; keep native` from combination labels throughout the report and
+its generator: absence of FFPR means original text/vectors remain native.
+Keep FFPR explicit and retain compressor suffixes such as `Zopfli-Flate
+native`, which identify native-stream compression rather than image encoding.
+This changes presentation only, not processing, measured bytes, minima or
+the explicitly labeled Simple thresholds in the focused sensitivity table.
+See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
+### JBIG2 flow regression versus codec-comparison input (§233)
+
+Designer §233 (verbatim):
+> that is a good test case for the full flow, the flow should never make a JBIG2 worse, document this as an issue and a test case to use to fix and check for regressions.  Also, this is NOT a good test case for this table, find another BW pdf that is NOT already JBIG2, or else the results are meaningless.
+
+Keep the complete eight-page `scan-jfk-poor-copies.pdf` as an end-to-end
+non-regression fixture, not as the main BW conversion/compression example.
+At unchanged 300 DPI with lossless JBIG2 and no requested visual changes,
+the real save flow must retain exact source bitmap samples and page geometry
+and must not grow the final complete PDF relative to the input or a compatible
+preserve-images control. Include native-preserving and FFPR paths. A
+no-op must not accidentally round source DPI upward and resample. A future
+size guard must not silently ignore an intentional transform or substitute
+another codec; preserving existing valid JBIG2 is not a codec substitution.
+Issue B114 records the defect, executable regression contract and §235 repair.
+It remains OPEN pending designer acceptance; normally passing worker checks
+do not supply that acceptance.
+
+Use whole `scan-naca-tm972.pdf` (11 pages, 374,461 bytes) for the six-case
+overview's BW scan column. Its eleven 1-bit images use `/CCITTFaxDecode` at
+approximately 300 DPI, not JBIG2; it contains scanned typewriting, annotations,
+diagrams and an existing OCR layer. Keep the other five representatives and
+all 42 combinations. Verify actual stored `/Filter` values, never infer
+source compression from the PNG/TIFF returned by extraction (B115).
+Keep the JFK file and historical measurements untouched, outside the current
+codec-comparison tables. Replace, independently save and verify all 42 scan
+cells; never reuse the old scan's sizes under the new filename. Source/output
+hashes, original reader limitations and common 300-DPI transformations remain
+required. This does not declare B114 fixed or authorize pixel changes to a
+same-DPI no-op. See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+
+### Same-density composition repair (§235)
+
+Designer §235 (verbatim):
+> Please fix that bug
+
+B114 must be repaired, not left as expected test failures. Preserve the
+actual fractional image/mask sampling density when constructing the native
+composition matrix; the renderer does not require integer DPI. Remove whole-
+DPI upward quantization, which turns harmless PDF float noise near 300 into
+a real 301-DPI intermediate. Keep genuine fractional densities and mask
+resolution, the original composition/layer policy and the one final resize.
+The nominal same-density source grid must remain the original pixel grid.
+Remove the five expected-failure markers and require original bitmap sample
+equality and complete-file non-growth through native and FFPR saves. Add
+genuinely fractional-density tests so the fix cannot indiscriminately round
+real resolutions. Recheck color/alpha/rotation/tile/cancellation behavior and
+regenerate affected benchmark preparations with new provenance. Old files
+and hashes stay historical; no unrelated encoder switches/defaults change.
+
+### JBIG2 encoder documentation and exploration (§234)
+
+Designer §234 (verbatim):
+> Add a JBIG2 dev doc, add documentation relevant to the algo and add a TODO that we need to explore other JBIG2 optimization features and detail them
+
+[JBIG2.md](JBIG2.md) is the dedicated developer reference for current codec
+scope, safe/lossy features, upstream limitations, PDF embedding and a size-only
+exploration protocol. TODO §240 tracks duplicate-line typical prediction,
+symbol classification settings, zero-error refinement, shared dictionaries,
+encoder alternatives and their validation gates. Current `-p` generic coding
+and actual GUI capabilities must remain explicit. A research/documentation
+request is not approval to enable lossy modes or change encoders/defaults.
+The B114 same-DPI source-pixel/no-growth contract remains an independent
+prerequisite for promoting future optimization results.
+
 ### Complete matrix coverage (§229)
 
 Designer §229 (verbatim):
