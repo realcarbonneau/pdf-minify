@@ -68,7 +68,7 @@ filtering again; it retains the original filter's saved files. File copying
 runs in background (hard links for immutable files where supported, copying
 otherwise). Pending copies retain their source until completed safely.
 
-## Persistence — Qt QSettings platform locations (unchanged)
+## Persistence — Qt QSettings platform locations
 
 - What persists: last opened file (§91), custom/renamed/copied/saved
   filter presets (§§109/112), window prefs. These are user data, not

@@ -2,7 +2,7 @@
 
 Designer ruling: `DESIGNER_VERBATIM.md` §176. Recorded **2026-10-14**
 (America/New_York). Packaging plan: [PACKAGING.md](PACKAGING.md).
-Latest verification update: **2026-10-15** (America/New_York).
+Latest verification update: **2026-10-16** (America/New_York).
 
 ## Current certificate: Debian 13 x86-64, source/workspace build
 
@@ -29,7 +29,10 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
 
 ## Evidence and limits
 
-- Current full suite: **561 passed**, full offscreen pytest, 2026-10-16, exit 0.
+- Current full suite: **572 passed**, full offscreen `./test.sh`, 2026-10-16, exit 0.
+  PDF Minify's renamed package/CLI/Qt identity and one-time settings migration
+  pass 11 dedicated tests; normal/2× isolated GUI captures pass and were viewed.
+  The real user's name migration is deferred to their next normal launch.
   All six raster defaults and a one-time saved/custom-recipe migration use
   300 DPI, preserving identity/non-DPI settings and later deliberate choices.
   All four color FFPR codecs share the actual saver, effective edit/cache
@@ -44,15 +47,18 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
   is not a PDF/UA certification. These
   native-binding behaviors are verified on the exact MuPDF build above;
   an engine upgrade needs renewed regression testing, not assumed support.
-  The complete-source 300-DPI preflight passes all four image-bearing
+  The earlier complete-source 300-DPI preflight passes all four image-bearing
   representatives in Indexed/colored JBIG2 and the full photo document in
-  Flate/JBIG2 BW. The expanded integrated run has 210 overview plus 62 focused
-  final PDFs, all 272 validated, with zero rejected or excluded cells. Every
+  Flate/JBIG2 BW. The six-case integrated run adds all 42 whole-Kepler variants:
+  252 overview plus 62 focused final PDFs, all 314 validated, with zero rejected
+  or excluded cells. All 210 previous overview cells/files are preserved. Every
   formerly skipped no-image cell has a separately saved/verified output;
   B113 covers controlled IDs on native-only xref-stream preparations.
-  Original measurements retain frozen provenance and a bounded preparation-
-  compatibility audit; saver/verifier functions remain unchanged. Independent QPDF
-  12.2.0 syntax checks pass 179 ordinary-format files; 93 unsupported Brotli
+  Original measurements retain frozen provenance and bounded preparation/
+  namespace-compatibility proofs; no old hashes are relabeled as new code.
+  The continuous table renders as one header, four title-only dividers and
+  42 combination rows across six whole-PDF columns. Independent QPDF
+  12.2.0 syntax checks pass 207 ordinary-format files; 107 unsupported Brotli
   outputs are excluded from that reader check. The primary size analysis is
   [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). No new dependency,
   installer/OS/reader certification or designer acceptance is implied.

@@ -4,7 +4,7 @@
 
 Fresh full-suite run (`QT_QPA_PLATFORM=offscreen ./test.sh`):
 **572 passed**, exit 0 / FULL SUITE GREEN. This includes the all-row coverage,
-B113 repair and PDF Minify rename described below. This is regression
+B113 repair, PDF Minify rename and six-case overview coverage described below. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
@@ -39,7 +39,7 @@ The package/asset audit verifies all 75 moved files exist, all 42 licensed
 resources/notices are byte-identical, and all 18 headless modules change only
 the logger namespace where applicable. Quotes, stable IDs and 96 local links
 pass their audit. The desktop app remains closed; no designer acceptance is
-claimed. NASA Kepler's sixth-column extension (§231) is separately pending.
+claimed. NASA Kepler's sixth-column extension (§231) is verified below.
 
 ## Uniform 300 DPI, color FFPR and native-layer repairs (§§224–226)
 
@@ -100,11 +100,13 @@ Indexed/colored JBIG2 for all four image-bearing representatives plus
 Flate/JBIG2 BW on all eight photo pages. No new PDF/UA certification or
 designer acceptance is implied.
 
-## Representative integrated overview (§§223–229)
+## Representative integrated overview (§§223–231)
 
-`tests/test_compression_overview.py`: 25 cases verify exactly five distinct
-repository inputs and their actual native/scan/photo/artwork/mixed structure,
-42 realistic combination rows and all **210 measured cells**, including
+`tests/test_compression_overview.py`: 25 cases verify six distinct complete
+repository inputs and their actual native/scan/photo/artwork/mixed/technical
+structure, including Kepler's 12 text-bearing, ten vector-bearing and nine
+image-bearing pages (15 image placements). The formatter requires all
+42 realistic combination rows × six inputs = **252 measured cells**, including
 redundant no-image recipes (§229 / TODO §234). Missing native-only measurements
 are errors, not N/A; the runner saves 42 distinct outputs for an image-free
 input even when every size is identical. Packed pixels/native policies use the same general
@@ -138,18 +140,29 @@ complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
 Current published evidence and its exact counts
 are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
-The expanded uniform run is complete: **210 verified overview PDFs**,
-**62 focused PDFs**, **272 distinct actual final outputs**, zero rejected
-or excluded cells. The 22 newly covered cells are independently saved and
-verified, never filled by copying a control's size/file. Every transformed
-case is 300 DPI; preserve-images controls are unresampled. All current source/
-preparation/output hashes, bytes and tied bold minima pass the independent
-publication audit. The 188 old overview cells and 62 focused cells retain
-their original frozen provenance. A bounded before/after source audit proves
-that B113 changes only an entry branch unused by those preparations; saver
-and other verifier functions are unchanged. The strict cross-version import
-gate is not relaxed. QPDF 12.2.0 syntax checks pass all 179 ordinary-format final PDFs; 93 known-
-unsupported Brotli outputs are excluded, not certified by that reader.
+The six-case uniform run is complete: **252 verified overview PDFs**,
+**62 focused PDFs**, **314 distinct actual final outputs**, zero rejected
+or excluded cells. Kepler adds 42 separately saved/verified 12-page outputs;
+all 210 previous overview cells/files and every focused table remain intact.
+The 22 formerly missing no-image cells are also independently saved, never
+filled by copying a control's size/file. Every transformed case is 300 DPI;
+preserve-images controls are unresampled. All current source/preparation/
+output hashes, actual bytes and tied bold minima pass the publication audit.
+The Markdown is one rendered table/header, four unnumbered title-only divider
+rows and 42 measurement rows with seven cells (algorithm + six PDF cases).
+All 252 sizes match their actual files; the first 210 cell strings are unchanged.
+
+The frozen extension replays B113's bounded proof from pinned Git revision
+`aa3cb847a75ca0f6acf65de5159ace85cc155847`, not mutable HEAD, and proves only
+literal namespace substitutions in saver/verifier modules plus the added
+document/docstring in the overview driver. Original measurements keep their
+own source versions; new results retain the renamed implementation. The
+combined manifest explicitly marks mixed provenance, without relaxing the
+strict automatic cross-version import gate. A fresh full **572-test** suite
+passes after the six-case code change. QPDF 12.2.0 syntax checks pass all
+**207 ordinary-format final PDFs**; **107 Brotli outputs** are excluded from
+that unsupported reader check, not certified by it. Across all current tables,
+93 plain/prediction pairs yield 12 wins, six no-image ties and 75 losses.
 No timing rankings, CSV delivery, desktop launch or designer issue acceptance.
 
 Historical mixed-DPI run, superseded by §§224/225/229: 138 applicable dispositions, **114 valid final

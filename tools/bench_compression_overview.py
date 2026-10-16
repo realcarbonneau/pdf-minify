@@ -1,4 +1,4 @@
-"""Five representative PDF classes, realistic combinations, complete bytes only.
+"""Six representative PDF cases, realistic combinations, complete bytes only.
 
 Reuses hash-verified complete outputs, measures missing cells with the existing
 strict integrated saver, and publishes Markdown rather than a codec cross-product.
@@ -29,6 +29,7 @@ DOCUMENTS = (
     Document("photos", "Color photos", "examples/news-crater-lake-2026.pdf"),
     Document("art", "Flat-color artwork", "examples/images.pdf"),
     Document("mixed", "Mixed text/images", "examples/paper-arxiv-1406.2661.pdf"),
+    Document("kepler", "Technical illustrations", "examples/models-nasa-kepler.pdf"),
 )
 
 

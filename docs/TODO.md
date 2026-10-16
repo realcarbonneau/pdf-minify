@@ -2034,7 +2034,8 @@ Implemented through shared defaults; §229 covers the authorized one-time
 saved/custom migration. Every transformed overview/focused case uses 300 DPI,
 without lower-DPI variation tables. Preserve-images controls remain explicitly
 unresampled. Historical artifacts are not relabeled as current results.
-See `COMPRESSION.md`, `PERSISTENCE_AND_TEMP.md` and the 250-file integrated report.
+See `COMPRESSION.md`, `PERSISTENCE_AND_TEMP.md` and the then-250-file integrated report
+(expanded under §§234/236).
 
 ## 229 — DONE (designer §226: migrate all existing saved raster filters to 300 DPI)
 ~~Migrate every existing saved/custom raster filter to 300 DPI once, retaining
@@ -2064,7 +2065,7 @@ and color, prepends an Artifact canvas, and reads immutable originals across
 shared Forms. Tagged derivative conflicts fail explicitly; no metadata is
 silently stripped. Nine tagged/whole-file regressions, the full **552-test**
 suite and renewed complete-source 300-DPI preflight pass. The integrated
-study now has 250 verified final PDFs with fresh provenance and zero rejected
+study at that stage has 250 verified final PDFs with fresh provenance and zero rejected
 cells; old affected files remain diagnostic only.
 See B112, `COMPRESSION.md`, `ARCHITECTURE.md` and `TEST_PLAN.md`.
 Implementation completion is not designer acceptance or PDF/UA certification.
@@ -2121,12 +2122,20 @@ exit 0 and were viewed. The real settings migration waits for a normal launch;
 worker verification is not designer acceptance.
 See `DESIGN.md` §230, `ARCHITECTURE.md` and `PERSISTENCE_AND_TEMP.md`.
 
-## 236 — OPEN (designer §231: sixth representative document — NASA Kepler)
+## 236 — DONE (designer §231: sixth representative document — NASA Kepler)
 
-Add the complete 12-page `examples/models-nasa-kepler.pdf` as a sixth overview
-column, retaining the existing five sources. Inspect its native/image/vector
-composition and explain its additional technical-document coverage. Measure
-all 42 realistic combinations at 300 DPI, including every redundant case;
-retain the same fidelity-aware minima, continuous table and size-only scope.
-Do not invent results or relabel old source/implementation fingerprints.
+~~Add whole-document NASA Kepler as a sixth case, measuring every combination
+and retaining the existing five sources and actual results.~~
+Stub: **Technical illustrations** adds all 12 pages (text on 12, vectors on ten,
+15 image placements across nine). All **42** new complete PDFs are saved and
+verified at common 300-DPI transforms, with unresampled controls. The continuous
+overview has **252 numeric cells**, zero exclusions/rejections; all 210 earlier
+cells/files and focused tables are unchanged. The publication references
+**314 distinct complete PDFs**. Pinned B113 and literal namespace proofs keep
+old/new source provenance honest without a permissive import bypass. All bytes,
+hashes, minima and seven-column Markdown rendering pass independent checks;
+QPDF passes 207 ordinary outputs, excluding 107 unsupported Brotli outputs.
+The fresh **572-test** suite passes. The residual-stream legend explicitly
+means fixed Zopfli-Flate, not automatic best selection. No encoding-time
+comparison, new GUI choice/default, dependency or designer acceptance is claimed.
 See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.

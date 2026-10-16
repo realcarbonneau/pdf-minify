@@ -7,13 +7,14 @@ import pytest
 from tools import bench_compression_overview as overview
 
 
-def test_exactly_five_distinct_real_repository_classes():
-    assert len(overview.DOCUMENTS) == 5
-    assert len({d.source for d in overview.DOCUMENTS}) == 5
+def test_six_distinct_real_repository_cases_include_the_complete_kepler_document():
+    assert len(overview.DOCUMENTS) == 6
+    assert len({d.source for d in overview.DOCUMENTS}) == 6
     assert all(Path(d.source).is_file() for d in overview.DOCUMENTS)
-    assert {d.key for d in overview.DOCUMENTS} == {"native", "scan", "photos", "art", "mixed"}
+    assert {d.key for d in overview.DOCUMENTS} == {"native", "scan", "photos", "art", "mixed", "kepler"}
     assert next(d.source for d in overview.DOCUMENTS if d.key == "photos").endswith("news-crater-lake-2026.pdf")
     assert next(d.source for d in overview.DOCUMENTS if d.key == "art").endswith("images.pdf")
+    assert next(d.source for d in overview.DOCUMENTS if d.key == "kepler").endswith("models-nasa-kepler.pdf")
 
 
 def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
@@ -27,15 +28,17 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
 
 
-def test_five_class_matrix_requires_all_210_whole_file_cells_even_if_redundant():
+def test_six_case_matrix_requires_all_252_whole_file_cells_even_if_redundant():
     records = [dict(document=d.key, family=row.family,
                     result=dict(image_variant=row.variant, native_policy=row.native,
                                 complete_pdf_bytes=123456))
                for d in overview.DOCUMENTS for row in overview.ROWS]
-    assert len(records) == 210
+    assert len(records) == 252
     table = overview.matrix_markdown(overview.DOCUMENTS, overview.ROWS, records)
     assert len(table.splitlines()) == 44
-    assert table.count("**123,456**") == 210
+    assert table.count("**123,456**") == 252
+    assert "| Technical illustrations |" in table.splitlines()[0]
+    assert all(len(line.split("|")[1:-1]) == 7 for line in table.splitlines())
     assert "—" not in table
 
 
@@ -130,12 +133,18 @@ def test_fixture_structure_matches_its_compression_class():
         with fitz.open(document.source) as pdf:
             statistics[document.key] = dict(
                 images=[len(page.get_image_info()) for page in pdf],
-                words=sum(len(page.get_text("words")) for page in pdf))
+                words=sum(len(page.get_text("words")) for page in pdf),
+                text_pages=sum(bool(page.get_text().strip()) for page in pdf),
+                vector_pages=sum(bool(page.get_drawings()) for page in pdf))
     assert not any(statistics["native"]["images"]) and statistics["native"]["words"] > 1000
     assert all(statistics["photos"]["images"])
     assert all(statistics["scan"]["images"]) and statistics["scan"]["words"] == 0
     assert sum(statistics["mixed"]["images"]) and statistics["mixed"]["words"] > 1000
     assert sum(statistics["art"]["images"]) and statistics["art"]["words"] < 20
+    kepler = statistics["kepler"]
+    assert len(kepler["images"]) == kepler["text_pages"] == 12
+    assert sum(kepler["images"]) == 15 and sum(bool(count) for count in kepler["images"]) == 9
+    assert kepler["vector_pages"] == 10
 
 
 def test_valid_prior_complete_results_are_reused_without_preparation_or_encoding(tmp_path, monkeypatch):

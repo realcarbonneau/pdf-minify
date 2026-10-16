@@ -101,7 +101,7 @@ tools, not GUI runtime requirements. PySide6 brings its own Qt libraries but
 still needs compatible OS display/font libraries.
 
 Certified current platform: **Debian 13 x86-64, LXDE/X11**, source/workspace
-runtime (initial certificate 2026-10-14, updated verification 2026-10-15).
+runtime (initial certificate 2026-10-14, updated verification 2026-10-16).
 See [platform/version evidence](docs/PLATFORMS.md) and the
 [multi-platform packaging guide](docs/PACKAGING.md). Windows/macOS/other
 platforms and installers are not yet certified or built.
@@ -112,7 +112,7 @@ platforms and installers are not yet certified or built.
 - [docs/TODO.md](docs/TODO.md) — numbered project requirements and pending engineering work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
-- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — realistic algorithm-combination rows across five representative PDFs, then focused scenario tables; actual complete-file bytes only.
+- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — 42 realistic algorithm-combination rows across six complete PDFs, including NASA Kepler, then focused scenario tables; actual complete-file bytes only.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
 - [Bitmap component controls](docs/IMAGE_STREAM_COMPRESSION.md#results) — supporting equal-pixel indexed/BW study with native compression fixed.
 - `docs/NATIVE_STREAM_COMPRESSION.md` — supporting native-stream controls with image bytes fixed, plus reader limits.

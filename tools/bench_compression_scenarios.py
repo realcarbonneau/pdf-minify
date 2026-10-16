@@ -1,7 +1,7 @@
 """Focused integrated size cases at 300 DPI, using the overview's real pairs.
 
 No timing metric, CSV, mixed general-codec cross-product or alternate saver.
-The five-class overview supplies the five-color/main-source columns; this
+The representative overview supplies the five-color/main-source columns; this
 runner measures only additional palette, threshold, scan and native controls.
 """
 

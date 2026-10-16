@@ -167,13 +167,14 @@ Designer §223:
 > Why does your table have columns like Z/B, etc?  We agreed that those are not realistic?  Same for F/Z.  These are useless.  Have one table with all the algo combos as rows and choose a 5 typical types of pdfs that cover the major styles.   Then we will have other table that goes into more details for specific scenarios, like color photos, scanned BW docs, mix images text, etc.  There are only a few major classes of pdfs that are load bearing to pdf compression algorithm analysis, no?
 
 The primary integrated matrix has realistic algorithm combinations as rows
-and five representative complete PDFs as columns. Use descriptive names.
+and representative complete PDFs as columns: the original five plus the
+NASA Kepler technical document added by §231. Use descriptive names.
 For packed pixels, use the same general compressor for images and native
 streams, not mixed general-codec pairs. Specialized image codecs retain
 their meaningful optimized-Flate/Brotli native alternatives. Classic Flate
 remains a labeled reference, not another recommended product choice. Keep
 page handling/fidelity explicit, with focused scenario tables for palette,
-DPI, threshold, photo, scan and mixed-content detail. These five classes are
+DPI, threshold, photo, scan and mixed-content detail. These classes are
 a useful benchmark basis, not an exhaustive PDF taxonomy or reader certificate.
 This supersedes §222's exhaustive cross-product presentation; its actual
 complete-file metric and strict output verification remain unchanged. It
@@ -188,11 +189,12 @@ Designer §228 (verbatim):
 > No, put in a same continuous table with a row as the divider, no numbering.  Merged cells if md permits, if not, just blank cell except for the far left one with the title.
 
 Present the primary overview in this order: **BW**, **indexed color / low
-palettes**, then **full color**. Keep the same five PDF columns and every
-measured combination, including classic-Flate references and plain/predicted
+palettes**, then **full color**. Retain every representative PDF column and
+add the sixth Kepler case (§231), keeping every measured combination,
+including classic-Flate references and plain/predicted
 pairs. Use one continuous Markdown table with one column-header row, not
 separate tables or numbered headings. Each group starts with an unnumbered
-divider row: a bold title in the far-left cell and five blank measurement
+divider row: a bold title in the far-left cell and otherwise blank measurement
 cells. Standard Markdown tables do not merge cells; do not require HTML
 colspan. Put unresampled preserve-images controls first under their own
 reference divider in the same table, above the three algorithm groups.
@@ -211,8 +213,8 @@ Designer §229 (verbatim):
 > please drop that rule, every row gets benchmarked, even if redundant, this is also a sanity check on the benchmarks.
 
 Benchmark every combination against every representative PDF: all 42 rows ×
-five inputs, including image-free inputs with FFPR off. An unused image codec
-is a valid no-op, not an inapplicable recipe; native/font/container compression
+six inputs (§231), including image-free inputs with FFPR off. An unused image
+codec is a valid no-op, not an inapplicable recipe; native/font/container compression
 still runs. Save and verify each row's actual complete PDF even when its size
 duplicates another row. Never fill a newly measured cell by copying a control
 size or aliasing another recipe's output. No-image cases must preserve native
@@ -223,6 +225,23 @@ source/implementation/output verification and explicit provenance. Preserve
 300-DPI transforms, same-fidelity minima, reader-support limits and the single
 continuous table. Failures remain explicit, never blanks or guessed sizes.
 See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) and TODO §234.
+
+### Sixth representative: technical illustrations (§231)
+
+Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview
+column, **Technical illustrations**, rather than replacing a current class.
+Its 12 pages all contain native text; ten have vector drawings, nine have
+bitmap images (15 placements total), and three have no bitmap placements.
+It broadens the existing short artwork and research-paper cases with a
+multipage illustrated technical document and includes the designer's regular
+regression input. This is a practical additional stress case, not a claim
+that PDF composition has six exhaustive, mutually exclusive classes.
+
+Measure all 42 rows at the common 300-DPI transform resolution, with the same
+unresampled controls, native/FFPR distinction and reader limitations. Keep
+all previous actual files/values; verify pinned implementation changes and
+their hashes instead of relabeling old measurements as freshly encoded.
+See `INTEGRATED_COMPRESSION.md`, `TEST_PLAN.md` and TODO §236.
 
 ### Uniform resolution and color FFPR (§§224/225)
 

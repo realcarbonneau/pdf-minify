@@ -156,8 +156,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Keep exact recipe/fidelity and reader requirements explicit. Separate
   component studies are supporting diagnostics, not evidence for unmeasured
   combined outputs.
-- §223: present realistic combinations as rows over five representative
-  complete-PDF classes, with descriptive labels and focused scenario tables.
+- §§223/231: present realistic combinations as rows over six representative
+  complete-PDF cases (the original five plus NASA Kepler technical illustrations),
+  with descriptive labels and focused scenario tables.
   Packed-image/native policies share their general compressor; omit mixed
   general-codec pairings from the published analysis. Keep specialized image
   codecs' meaningful native alternatives, a classic-Flate reference and
@@ -173,17 +174,19 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   independent results and expose any processing defects. §224 requests repair
   of B108–B111; worker verification is distinct from designer acceptance.
 - §§227/228: group the primary integrated overview as BW, indexed color / low
-  palettes, then full color, retaining the same five PDF columns and all
+  palettes, then full color, retaining every representative PDF column and all
   measured combinations in one continuous Markdown table with one header.
   Use unnumbered divider rows with the title only in the far-left cell and
-  five blank cells; no separate tables, numbered headings or HTML colspan.
+  otherwise blank measurement cells; no separate tables, numbered headings
+  or HTML colspan.
   Put unresampled preserve-images references above the groups in the same
   table, and native-retaining rows before FFPR within each group.
   Indexed FFPR stays indexed. Preserve every size and existing per-fidelity
   bold minimum; expected codec strengths do not establish universal winners
   or authorize codec/default changes. Focused tables remain unchanged.
 - §229: benchmark every row against every input, including redundant no-image
-  cases. The 42 × 5 overview has 210 measured cells, not image-free N/A cells.
+  cases. With §231 the 42 × 6 overview requires 252 measured cells, not
+  image-free N/A cells. NASA Kepler is a whole 12-page input, not an extract.
   Save/verify an actual complete output per row; do not copy another row's
   size or alias a control file. An unused image codec is a valid no-op while
   native/font/container compression still runs. Annotate it, never invent a
