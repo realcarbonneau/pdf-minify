@@ -50,8 +50,22 @@ def encode_mask(mask):
     return pipeline.encode_binary_jbig2(mask)
 
 
-def stencil_pdf(canvas, token=None, *, page_size=None, mask_encoder=None):
-    """One opaque canvas, one validated lossless JBIG2 stencil per color.
+def _own_dictionary(doc, owner, key):
+    """Copy a resource dictionary before adding page-local names to it."""
+    kind, value = doc.xref_get_key(owner, key)
+    dictionary = doc.xref_object(int(value.split()[0])) if kind == "xref" else value if kind == "dict" else "<<>>"
+    xref = doc.get_new_xref()
+    doc.update_object(xref, dictionary)
+    doc.xref_set_key(owner, key, f"{xref} 0 R")
+    return xref
+
+
+def place_stencils(doc, page, rect, canvas, token=None, *, mask_encoder=None):
+    """Paint validated masks DIRECTLY on the destination page (B108).
+
+    A page-sized Form adds a second clipping boundary. On fractional pages
+    that clips the last raster column, unlike an ordinary image placement.
+    Direct XObjects share exactly the packed-image placement geometry.
 
     mask_encoder is a diagnostic/test seam; the product and study use the SAME
     shared encoder and renderer. No codec fallback or lossy symbol substitution.
@@ -61,39 +75,51 @@ def stencil_pdf(canvas, token=None, *, page_size=None, mask_encoder=None):
     check_cancel(token)
     if canvas.nonwhite_colors and pipeline.jbig2_binary() is None:
         raise RuntimeError("JBIG2 Color unavailable: install jbig2 or choose Flate Color (palette).")
+    resources = _own_dictionary(doc, page.xref, "Resources")
+    images = _own_dictionary(doc, resources, "XObject")
+    spaces = _own_dictionary(doc, resources, "ColorSpace")
+    palette_name = f"Palette{spaces}"
+    doc.xref_set_key(spaces, palette_name,
+                     f"[/Indexed /DeviceRGB {len(canvas.palette)-1} <{canvas.palette.tobytes().hex()}>]")
+    target = fitz.Rect(rect) * ~page.transformation_matrix
+    width, height = target.width, target.height
+    commands = [f"q 1 1 1 rg {target.x0} {target.y0} {width} {height} re f Q"]
+    for index, color in enumerate(canvas.palette):
+        check_cancel(token)
+        if np.all(color == 255):
+            continue
+        mask = np.where(canvas.indices == index, 0, 255).astype(np.uint8)
+        payload = mask_encoder(mask)
+        check_cancel(token)
+        if payload is None or not pipeline.jbig2_renders(
+                payload, canvas.width, canvas.height, mask):
+            raise RuntimeError("JBIG2 Color failed: mask did not decode pixel-exact.")
+        xref = doc.get_new_xref()
+        doc.update_object(xref, f"<< /Type /XObject /Subtype /Image "
+                          f"/Width {canvas.width} /Height {canvas.height} "
+                          "/ImageMask true /BitsPerComponent 1 "
+                          "/Interpolate false /Decode [0 1] >>")
+        doc.update_stream(xref, payload, compress=False)
+        doc.xref_set_key(xref, "Filter", "/JBIG2Decode")
+        name = f"C{index}"
+        while doc.xref_get_key(images, name)[0] != "null":
+            name = "_" + name
+        doc.xref_set_key(images, name, f"{xref} 0 R")
+        commands.append(f"q /{palette_name} cs {index} scn "
+                        f"{width} 0 0 {height} {target.x0} {target.y0} cm /{name} Do Q")
+    content = doc.get_new_xref()
+    doc.update_object(content, "<<>>")
+    doc.update_stream(content, b"q\n" + page.read_contents() + b"\nQ\n" + "\n".join(commands).encode("ascii"))
+    page.set_contents(content)
+
+
+def stencil_pdf(canvas, token=None, *, page_size=None, mask_encoder=None):
+    """Standalone proof using the same direct placement as production."""
     doc = fitz.open()
     try:
         width, height = page_size or (canvas.width, canvas.height)
         page = doc.new_page(width=width, height=height)
-        resources = []
-        commands = [f"q 1 1 1 rg 0 0 {width} {height} re f Q"]
-        for index, color in enumerate(canvas.palette):
-            check_cancel(token)
-            if np.all(color == 255):
-                continue
-            mask = np.where(canvas.indices == index, 0, 255).astype(np.uint8)
-            payload = mask_encoder(mask)
-            check_cancel(token)
-            if payload is None or not pipeline.jbig2_renders(
-                    payload, canvas.width, canvas.height, mask):
-                raise RuntimeError("JBIG2 Color failed: mask did not decode pixel-exact.")
-            xref = doc.get_new_xref()
-            doc.update_object(xref, f"<< /Type /XObject /Subtype /Image "
-                              f"/Width {canvas.width} /Height {canvas.height} "
-                              "/ImageMask true /BitsPerComponent 1 "
-                              "/Interpolate false /Decode [0 1] >>")
-            doc.update_stream(xref, payload, compress=False)
-            doc.xref_set_key(xref, "Filter", "/JBIG2Decode")
-            resources.append(f"/C{index} {xref} 0 R")
-            commands.append(f"q /Palette cs {index} scn "
-                            f"{width} 0 0 {height} 0 0 cm /C{index} Do Q")
-        doc.xref_set_key(page.xref, "Resources", "<< /XObject << " + " ".join(resources) +
-                         f" >> /ColorSpace << /Palette [/Indexed /DeviceRGB {len(canvas.palette)-1} "
-                         f"<{canvas.palette.tobytes().hex()}>] >> >>")
-        content = doc.get_new_xref()
-        doc.update_object(content, "<< >>")
-        doc.update_stream(content, "\n".join(commands).encode("ascii"))
-        page.set_contents(content)
+        place_stencils(doc, page, page.rect, canvas, token, mask_encoder=mask_encoder)
         actual = DisplayPage(page).render(fitz.Matrix(canvas.width/width, canvas.height/height))
         pixels = np.frombuffer(actual.samples, dtype=np.uint8).reshape(actual.height, actual.width, 3)
         if not np.array_equal(pixels, canvas.rgb):

@@ -228,14 +228,29 @@ def compression_samples(w):
 
 
 def compression_state_samples(w):
-    """An inactive remembered BW-only flag must not claim color rasterization."""
+    """All color FFPR codecs are effective edits with actual saved readback."""
     tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
     w.preset.setCurrentIndex(w.preset.findData("bw-fast"))
     assert w.force_raster.isChecked()
-    w.compression.setCurrentIndex(w.compression.findData("color"))
+    w.dpi.setCurrentIndex(w.dpi.findData(300))
+    for mode in ("color", "jpx", "indexed", "layered-jbig2"):
+        w.compression.setCurrentIndex(w.compression.findData(mode))
+        if mode in ("indexed", "layered-jbig2"):
+            w.colors_value.setValue(5)
+        wait_job(w)
+        assert w.force_raster.isEnabled() and w.force_raster.isChecked()
+        assert w._shown_preview_key == w._result_key(w._active_pid)
+        result = w._artifacts.results[w._result_key(w._active_pid)]
+        with fitz.open(result.pdf_path) as doc:
+            assert all(not page.get_text("words") and not page.get_fonts(full=True) for page in doc)
+        w.panelScroll.ensureWidgetVisible(w.force_raster)
+        settle_view(w)
+        name = f"compression-{mode}-ffpr{tag}"
+        capture(w, name)
+        w.panelScroll.widget().grab().save(f".tmp/shot-{name}-panel.png")
+    w.force_raster.setChecked(False)
     wait_job(w)
-    assert not w.force_raster.isEnabled() and not w.force_raster.isChecked()
-    w.panelScroll.ensureWidgetVisible(w.force_raster)
+    assert "Text/vectors kept" in w.details.text()
     capture(w, f"compression-color-native-state{tag}")
     w.panelScroll.widget().grab().save(f".tmp/shot-compression-color-native-state{tag}-panel.png")
     w.revert_filter()
@@ -338,7 +353,7 @@ def main():
     parser.add_argument("--compression-only", action="store_true",
                         help="capture real image/native compression choices and completed files")
     parser.add_argument("--compression-state-only", action="store_true",
-                        help="capture BW/color inactive FFPR control state and revert")
+                        help="capture actual BW/color FFPR and native-preserving state/revert")
     args = parser.parse_args()
     setup_logging(True)
     global app

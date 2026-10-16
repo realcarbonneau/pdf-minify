@@ -676,19 +676,20 @@ def _preset_algo(pid: str, spec: dict | None = None) -> str:
     """One recipe readout for mini and preview, including live edits."""
     recipe = preset_spec(presets.get(pid)) if spec is None else spec
     mode = recipe["mode"]
+    page_handling = "FFPR · " if recipe.get("force_raster") else ""
     if mode in BW_MODES:
         strategy, dpi = recipe["strategy"], recipe["dpi"]
         codec = "JBIG2" if mode == "bw" else "Flate BW"
-        return (f"simple T{recipe.get('t', 180)}" if strategy == "simple" else strategy) + f" · {dpi}dpi · {codec}"
+        return page_handling + (f"simple T{recipe.get('t', 180)}" if strategy == "simple" else strategy) + f" · {dpi}dpi · {codec}"
     if mode == "color":
-        return f"JPEG q{recipe['jpeg_q']} · {recipe['dpi_cap']}dpi"
+        return page_handling + f"JPEG q{recipe['jpeg_q']} · {recipe['dpi_cap']}dpi"
     if mode == "jpx":
         codec = "JPEG2000 lossless" if recipe.get("lossless") else f"JPEG2000 r{recipe['rate']}"
-        return f"{codec} · {recipe['dpi_cap']}dpi"
+        return page_handling + f"{codec} · {recipe['dpi_cap']}dpi"
     if mode == "indexed":
-        return f"Indexed {recipe['colors']}c · {recipe['dpi_cap']}dpi"
+        return page_handling + f"Indexed {recipe['colors']}c · {recipe['dpi_cap']}dpi"
     if mode == "layered-jbig2":
-        return f"JBIG2 Color {recipe['colors']}c · {recipe['dpi_cap']}dpi"
+        return page_handling + f"JBIG2 Color {recipe['colors']}c · {recipe['dpi_cap']}dpi"
     return "as-is"
 
 
@@ -869,7 +870,7 @@ class MainWindow(QMainWindow):
             _fit_combo(_cb)  # static items: fit once (§130)
         self.force_raster = QCheckBox("Force full-page raster")
         self.force_raster.setChecked(False)
-        self.force_raster.setToolTip("ON: flatten the complete page, including text and vectors. OFF: combine images into one BW canvas with original text/vector artwork overlaid. Use ON when the original stacking needs to be flattened exactly.")
+        self.force_raster.setToolTip("ON: flatten the complete page, including text and vectors, then apply the selected image compression. OFF: transform one image canvas and retain native text/vector artwork. Use ON to flatten original stacking; full-page rasterization loses text selectability and vector precision.")
         self.save_act = QAction("Save", self)
         self.save_act.setToolTip("Save reduced PDF (Ctrl+S)")
         self.save_act.triggered.connect(self.save)
@@ -1119,11 +1120,18 @@ class MainWindow(QMainWindow):
 
     def _apply_custom_presets(self):
         """Load recipes, preserving pasted copies and repairing UUIDs (§155)."""
+        from ..core.filter_defaults import RASTER_DEFAULTS_REVISION, migrate_raster_dpi
+        store = self._custom_store()
         try:
-            renames = self._custom_store().value("customRenames", {}) or {}
-            customs = self._custom_store().value("customPresets", []) or []
+            renames = store.value("customRenames", {}) or {}
+            customs = store.value("customPresets", []) or []
         except Exception:  # noqa: BLE001
             renames, customs = {}, []
+        try:
+            dpi_revision = int(store.value("rasterDefaultsRevision", 0) or 0)
+        except (TypeError, ValueError):
+            # A malformed migration marker must not hide valid saved filters.
+            dpi_revision = 0
         entries = {p["id"]: p for p in presets.PRESETS}
         seen_records, loaded, aliases_changed = set(), [], False
         for c in customs:
@@ -1155,11 +1163,19 @@ class MainWindow(QMainWindow):
         identities_changed = repair_filter_uuids(presets.PRESETS)
         schema_changed = any(isinstance(p, dict) and isinstance(p.get("id"), str)
                              and "uuid" not in p for p in customs)
-        if aliases_changed or identities_changed or schema_changed:
-            store = self._custom_store()
+        migrate_dpi = dpi_revision < RASTER_DEFAULTS_REVISION
+        dpi_changed = migrate_raster_dpi(presets.PRESETS) if migrate_dpi else []
+        identity_changed = aliases_changed or identities_changed or schema_changed
+        if identity_changed or dpi_changed:
             store.setValue("customPresets", [dict(p) for p in loaded])
+        if migrate_dpi:
+            store.setValue("rasterDefaultsRevision", RASTER_DEFAULTS_REVISION)
+        if identity_changed or dpi_changed or migrate_dpi:
             store.sync()
+        if identity_changed:
             log.warning("filter identity migration: repaired missing/invalid/duplicate UUIDs or aliases")
+        if migrate_dpi:
+            log.info("filter resolution migration: %d saved recipes now use %d DPI", len(dpi_changed), presets.DEFAULT_DPI)
         for p in presets.PRESETS:
             if p["id"] in renames:
                 p["label"] = renames[p["id"]]
@@ -1230,6 +1246,7 @@ class MainWindow(QMainWindow):
                         page_size=self.page_size.currentData())
         else:
             spec["dpi_cap"] = self.dpi.currentData()
+            spec.update(force_raster=self.force_raster.isChecked(), page_size=self.page_size.currentData())
             if mode == "jpx":
                 spec["lossless"] = self.lossless_box.isChecked()
             elif mode in PALETTE_MODES:
@@ -1455,13 +1472,8 @@ class MainWindow(QMainWindow):
             self.lossless_box.setEnabled(False)
         self.strategy.setEnabled(bw)
         self.strategy_label.setEnabled(bw)
-        if not bw and self.force_raster.isChecked():
-            # Color always retains native artwork. An inactive remembered BW
-            # preference must not look like an applied full-page raster flag.
-            with QSignalBlocker(self.force_raster):
-                self.force_raster.setChecked(False)
-        self.force_raster.setEnabled(bw)
-        self.page_size.setEnabled(bw and self.force_raster.isChecked())
+        self.force_raster.setEnabled(mode in ALGORITHM_LABELS)
+        self.page_size.setEnabled(mode in ALGORITHM_LABELS and self.force_raster.isChecked())
         self.stream_warning.setVisible(self._spec_for(pid).get("stream_compression") == "brotli")
 
     def _sync_threshold_enabled(self):
@@ -1523,20 +1535,20 @@ class MainWindow(QMainWindow):
             lines = [
                 "Codec: JPEG",
                 f"Quality: q={spec['jpeg_q']} · {self.dpi.currentData()}dpi",
-                "Text/vectors kept · color image canvas",
+                "Full-page raster" if spec.get("force_raster") else "Text/vectors kept · color image canvas",
             ]
         elif mode == "jpx":
             lines = [
                 "Codec: JPEG2000",
                 ("Lossless" if self.lossless_box.isChecked() else
                  f"Rate: r={spec.get('rate', 192)}") + f" · {self.dpi.currentData()}dpi",
-                "Text/vectors kept · color image canvas",
+                "Full-page raster" if spec.get("force_raster") else "Text/vectors kept · color image canvas",
             ]
         elif mode in PALETTE_MODES:
             lines = [
                 f"Codec: {ALGORITHM_LABELS[mode]}",
                 f"Colors: {self.colors.value()} (auto algorithm, no dither)",
-                "Text/vectors kept · color image canvas",
+                "Full-page raster" if spec.get("force_raster") else "Text/vectors kept · color image canvas",
             ]
         else:
             lines = [

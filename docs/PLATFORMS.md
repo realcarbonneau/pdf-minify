@@ -29,7 +29,30 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
 
 ## Evidence and limits
 
-- Current full suite: **460 passed**, `./test.sh`, 2026-10-15, exit 0.
+- Current full suite: **552 passed**, full offscreen pytest, 2026-10-16, exit 0.
+  All six raster defaults and a one-time saved/custom-recipe migration use
+  300 DPI, preserving identity/non-DPI settings and later deliberate choices.
+  All four color FFPR codecs share the actual saver, effective edit/cache
+  lifecycle and full-color/one-resize preparation. Offscreen state captures
+  pass at 100%/2×; full windows and 1:1 controls/panes/strip/junction regions
+  were actually viewed. The designer's desktop app was not launched.
+  B108–B112 repairs cover direct fractional-edge stencil placement, orphan
+  image-only ActualText, explicitly initialized native filter flags and
+  retained Form/text-state operators without a final sanitize pass, and
+  accessibility ownership/whole-file retained-image checks. Tagged native
+  page/Form owners, ParentTree, Alt text and document metadata remain; this
+  is not a PDF/UA certification. These
+  native-binding behaviors are verified on the exact MuPDF build above;
+  an engine upgrade needs renewed regression testing, not assumed support.
+  The complete-source 300-DPI preflight passes all four image-bearing
+  representatives in Indexed/colored JBIG2 and the full photo document in
+  Flate/JBIG2 BW. The uniform integrated run has 188 overview plus 62 focused
+  final PDFs, all 250 validated, with zero rejected cells. Independent QPDF
+  12.2.0 syntax checks pass 166 ordinary-format files; 84 unsupported Brotli
+  outputs are excluded from that reader check. The primary size analysis is
+  [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). No new dependency,
+  installer/OS/reader certification or designer acceptance is implied.
+- Previous size-only bitmap stage: **460 passed**, `./test.sh`, 2026-10-15, exit 0.
   The separate size-only bitmap study (§209) adds 31 headless cases and
   22 paired real/control cases / 176 actual PDFs / 600 candidate pages.
   Flate/Zopfli/Brotli plain/predicted Indexed/BW data and BW/colored JBIG2
@@ -128,7 +151,7 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
   not relabeled as current-saver measurements or universal-viewer proof.
 
 Certification is worker verification, **not designer acceptance of issues**.
-B89/B90/B91/B92/B94/B96/B97/B98/B101/B102/B103/B104/B105/B106 remain OPEN
+B89/B90/B91/B92/B94/B96/B97/B98/B101/B102/B103/B104/B105/B106/B108/B109/B110/B111/B112 remain OPEN
 until explicit designer confirmation. B99/B100 were audit findings only in
 the historical study; their production repairs are now worker-verified under
 §203 but remain OPEN pending confirmation. B107 is a new unimplemented

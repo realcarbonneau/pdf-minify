@@ -170,9 +170,9 @@ def test_text_clipping_has_no_hidden_fallback_or_invented_glyph_masks(tmp_path, 
     pipeline.process_file(str(source), str(forced), force_raster=True, dpi=72,
                           strategy="simple", t=128)
     with fitz.open(source) as before, fitz.open(forced) as after:
-        pix = before[0].get_pixmap(dpi=72, colorspace=fitz.csGRAY)
-        expected = pipeline._threshold(np.frombuffer(pix.samples, dtype=np.uint8).reshape(144, 144),
-                                       "simple", 128)
+        pix = DisplayPage(before[0]).render()
+        rgb = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+        expected = pipeline._threshold(np.asarray(rgb.convert("L")), "simple", 128)
         assert np.array_equal(_pixels(after[0])[:, :, 0], expected)
     with fitz.open(output) as simple:
         # The image-layer compositor follows the exact no-AA source policy;

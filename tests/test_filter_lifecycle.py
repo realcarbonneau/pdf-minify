@@ -911,7 +911,7 @@ def test_every_filter_can_edit_all_six_image_algorithms_without_changing_identit
         assert w.strategy.isEnabled() == (mode in BW_MODES)
         assert w.threshold_control.isEnabled() == (mode in BW_MODES)
         assert w.colors_control.isEnabled() == (mode in PALETTE_MODES)
-        assert w.force_raster.isEnabled() == (mode in BW_MODES)
+        assert w.force_raster.isEnabled()
         assert w.lossless_box.isEnabled() == (mode == "jpx")
         assert w.details.text().splitlines()[0] == "Codec: "+label
         if mode == "jpx":
@@ -956,20 +956,53 @@ def test_image_and_native_compression_share_single_trailing_edit_debounce(window
     assert w.after._pdf_source.path == result.pdf_path
 
 
-def test_color_algorithm_does_not_display_inactive_bw_full_page_flag_as_applied(window):
+def test_full_page_flag_remains_effective_when_changing_between_bw_and_color(window):
     w = window
     choose(w, "bw-fast")
     assert w.force_raster.isChecked() and w.force_raster.isEnabled()
     original = dict(w._saved_specs["bw-fast"])
     w.compression.setCurrentIndex(w.compression.findData("color"))
-    assert not w.force_raster.isEnabled() and not w.force_raster.isChecked()
-    assert "Text/vectors kept" in w.details.text()
-    # The inactive preference is remembered for returning to BW, not applied
-    # to color or used as an effective color cache input.
+    assert w.force_raster.isEnabled() and w.force_raster.isChecked()
+    assert "Full-page raster" in w.details.text()
+    assert w._spec_for("bw-fast")["force_raster"]
+    assert spec_key(w._spec_for("bw-fast")) != spec_key(dict(w._spec_for("bw-fast"), force_raster=False))
     w.compression.setCurrentIndex(w.compression.findData("bw"))
     assert w.force_raster.isChecked() and w.force_raster.isEnabled()
     assert spec_key(w._spec_for("bw-fast")) == spec_key(original)
     assert not w._draft_specs
+
+
+@pytest.mark.parametrize("mode", ["color", "jpx", "indexed", "layered-jbig2"])
+def test_color_ffpr_uses_one_debounced_real_file_and_revert_reuses_saved_result(window, monkeypatch, mode):
+    w = window
+    choose(w, "color-p16")
+    pid = w._active_pid
+    saved_key = w._result_key(pid)
+    saved = w._artifacts.results[saved_key]
+    starts = []
+    start = w._artifacts.start
+    def record(key, path, spec, *args, **kwargs):
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None:
+            starts.append(dict(spec))
+        return worker
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.compression.setCurrentIndex(w.compression.findData(mode))
+    w.force_raster.setChecked(True)
+    assert w.force_raster.isEnabled() and w.page_size.isEnabled()
+    assert not starts and w._preview_timer.isActive()
+    assert w._filter_display_name(pid).endswith(" *")
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(starts) == 1 and starts[0]["force_raster"] and starts[0]["dpi_cap"] == 300
+    result = w._artifacts.results[w._result_key(pid)]
+    assert result.nbytes == os.path.getsize(result.pdf_path)
+    assert w.after._pdf_source.path == result.pdf_path
+    assert "Full-page raster" in w.details.text() and "FFPR" in ui._preset_algo(pid, w._spec_for(pid))
+    with fitz.open(result.pdf_path) as doc:
+        assert all(not page.get_text("words") for page in doc)
+    w.revert_filter()
+    assert w._result_key(pid) == saved_key and w._artifacts.results[saved_key] is saved
+    assert not w.force_raster.isChecked() and len(starts) == 1
 
 
 def test_changed_algorithm_and_native_compression_save_and_reload_builtin_override(window):

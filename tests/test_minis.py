@@ -258,10 +258,10 @@ def test_preset_owns_its_dpi(tmp_path):
     w = MainWindow(str(_three_pages(str(tmp_path))))
     ids = [p["id"] for p in presets.PRESETS]
     w.preset.setCurrentIndex(w.preset.findData("bw-fast"))
-    assert w.dpi.currentData() == 200 and w.dpi.isEnabled()
+    assert w.dpi.currentData() == 300 and w.dpi.isEnabled()
     w.preset.setCurrentIndex(w.preset.findData("color-j2k"))
     assert w.dpi.isEnabled()  # the single DPI feeds every mode
-    assert w.dpi.currentData() == 150  # preset cap seeds the combo
+    assert w.dpi.currentData() == 300  # all built-in output defaults are uniform (§225)
     w.preset.setCurrentIndex(w.preset.findData("bw-otsu"))
     assert w.dpi.currentData() == 300 and w.dpi.isEnabled()
 
@@ -1091,8 +1091,8 @@ def test_clicking_preset_keeps_other_amounts(tmp_path):
     _wait_job(w)
     before_est = dict(w._mini_amount)
     ids = [p["id"] for p in presets.PRESETS]
-    w.preset.setCurrentIndex(w.preset.findData("bw-fast"))  # seeds 200dpi combo
-    assert w.dpi.currentData() == 200
+    w.preset.setCurrentIndex(w.preset.findData("bw-fast"))  # uniform 300dpi seed (§225)
+    assert w.dpi.currentData() == 300
     t0 = time.perf_counter()
     while True:
         _app.processEvents()

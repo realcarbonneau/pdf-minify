@@ -5,6 +5,7 @@ import io
 import pytest
 from pdf_minimalist.core.pipeline import process_file, recompress_file, gc_copy, PAGE_SIZES
 from pdf_minimalist.core.cancel import CancelToken
+from pdf_minimalist.core.display import DisplayPage
 
 
 def _make_mixed(path: str):
@@ -114,10 +115,10 @@ def test_distinct_forced_pages_keep_their_own_image_payload(tmp_path, monkeypatc
     with fitz.open(source) as src, fitz.open(output) as out:
         assert len({page.get_images()[0][0] for page in out}) == 3
         for i in range(3):
-            orig = src[i].get_pixmap(dpi=72, colorspace=fitz.csGRAY, alpha=False)
+            orig = DisplayPage(src[i]).render()
             saved = out[i].get_pixmap(dpi=72, colorspace=fitz.csGRAY, alpha=False)
-            expect = _threshold(np.frombuffer(orig.samples, dtype=np.uint8).reshape(
-                orig.height, orig.width), "simple", 180)
+            rgb = Image.frombytes("RGB", (orig.width, orig.height), orig.samples)
+            expect = _threshold(np.asarray(rgb.convert("L")), "simple", 180)
             got = np.frombuffer(saved.samples, dtype=np.uint8).reshape(saved.height, saved.width)
             assert np.array_equal(got, expect), i
 

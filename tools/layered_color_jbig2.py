@@ -84,7 +84,9 @@ def save_variant(source, target, canvases, kind, token=None):
     if kind not in ("indexed", "jbig2"):
         raise ValueError(kind)
     token = token or CancelToken()
-    with fitz.open(source) as doc:
+    from pdf_minimalist.core.native_layer import NativeContext
+    with fitz.open(source) as doc, fitz.open(source) as original:
+        native_context = NativeContext(doc)
         if len(canvases) != len(doc):
             raise ValueError("Canvas count must match the source page count")
         for pno, canvas in enumerate(canvases):
@@ -95,13 +97,11 @@ def save_variant(source, target, canvases, kind, token=None):
                 if kind == "indexed":
                     pipeline._place_color(out, page, page.rect, indexed_payload(canvas))
                 else:
-                    # Express masks directly in target PAGE units, just like
-                    # the Indexed image. Avoid inverse nested scale matrices
-                    # whose float rounding shifts dense alternating pixels.
-                    with stencil_pdf(canvas, token, page_size=(page.rect.width, page.rect.height)) as tile:
-                        page.show_pdf_page(page.rect, tile, 0, keep_proportion=False)
-            with image_layers._copy_page(doc, pno) as prepared:
-                image_layers._assemble_layers(doc, pno, prepared, token, "canvas", paint)
+                    stencils.place_stencils(out, page, page.rect, canvas, token,
+                                            mask_encoder=encode_mask)
+            with image_layers._copy_page(original, pno) as prepared:
+                image_layers._assemble_layers(doc, pno, prepared, token, "canvas", paint,
+                                              native_context=native_context)
         check_cancel(token)
         pipeline._save_optimized_pdf(doc, str(target))
 

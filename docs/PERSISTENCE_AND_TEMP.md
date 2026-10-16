@@ -79,10 +79,22 @@ otherwise). Pending copies retain their source until completed safely.
   save/copy/rename filter), never as a side effect of background work. Internal
   UUID/schema repairs on load (§155) are identity migration, not recipe edits;
   they do not set `*` or restart filtering.
+- Explicit resolution migration (§226): `core.filter_defaults` sets every
+  existing saved/custom raster recipe to 300 DPI once, including previously
+  explicit DPI values. `_apply_custom_presets` performs this before saved
+  specs/artifact keys are constructed and persists `customPresets` plus
+  `rasterDefaultsRevision = 1` in the same settings store. Retain UUIDs,
+  names, order, codecs and non-DPI parameters. A malformed marker is treated
+  as unmigrated without hiding valid custom records. Later deliberate DPI
+  edits are saved normally and are not reset on subsequent launches. This
+  authorized one-time migration is an exception to ordinary explicit-edit
+  persistence, not a background edit or an ongoing clamp. Tests and screenshot
+  tools use isolated settings; the designer's migration runs on their next launch.
 
 ## Deliberately NOT in OS temp — repo `./.tmp/` (gitignored)
 
 Dev-tool review outputs, not app scratch: offscreen screenshots
-(`tools/shot.py`), benchmark CSVs (`tools/bench_*.py`), demo PDFs
+(`tools/shot.py`), benchmark evidence (current integrated runners emit
+Markdown/JSON, not CSV), demo PDFs
 (`tools/make_demo.py` — explicitly never `/tmp`, so review files stay
 findable next to the project). The app itself writes nothing here.

@@ -14,7 +14,9 @@ def preset_spec(preset: dict) -> dict:
                     force_raster=bool(prm.get("force_raster", False)),
                     page_size=prm.get("page_size", DEFAULT_PAGE_SIZE))
     elif mode in COLOR_MODES:
-        spec["dpi_cap"] = int(prm.get("dpi_cap", 150))
+        spec.update(dpi_cap=int(prm.get("dpi_cap", DEFAULT_DPI)),
+                    force_raster=bool(prm.get("force_raster", False)),
+                    page_size=prm.get("page_size", DEFAULT_PAGE_SIZE))
         if mode == "color":
             spec["jpeg_q"] = int(prm.get("jpeg_q", 50))
         elif mode == "jpx":
@@ -36,6 +38,8 @@ def spec_key(spec: dict) -> tuple:
 
 def _image_spec_key(spec):
     mode = spec["mode"]
+    force = bool(spec.get("force_raster", False))
+    raster = (force, spec.get("page_size", DEFAULT_PAGE_SIZE) if force else None)
     if mode in BW_MODES:
         strategy = spec.get("strategy", "otsu")
         force = bool(spec.get("force_raster", False))
@@ -43,14 +47,14 @@ def _image_spec_key(spec):
                 int(spec.get("t", 180)) if strategy == "simple" else None,
                 force, spec.get("page_size", DEFAULT_PAGE_SIZE) if force else None)
     if mode == "color":
-        return (mode, int(spec.get("dpi_cap", 150)), int(spec.get("jpeg_q", 50)))
+        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), int(spec.get("jpeg_q", 50)), *raster)
     if mode == "jpx":
         lossless = bool(spec.get("lossless", False))
-        return (mode, int(spec.get("dpi_cap", 150)), lossless,
-                None if lossless else int(spec.get("rate", 192)))
+        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), lossless,
+                None if lossless else int(spec.get("rate", 192)), *raster)
     if mode in PALETTE_MODES:
-        return (mode, int(spec.get("dpi_cap", 150)),
-                int(spec.get("colors", 5 if mode == "layered-jbig2" else 64)))
+        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)),
+                int(spec.get("colors", 5 if mode == "layered-jbig2" else 64)), *raster)
     if mode == "passthrough":
         return (mode,)
     raise ValueError(f"Unknown filter mode: {mode}")

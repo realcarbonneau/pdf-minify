@@ -1222,7 +1222,7 @@ process-pool cancellation regression, not a mocked Python-only exception.
 Keep OPEN; the green compression suite does not establish coverage or repair
 of this shutdown path.
 
-## B108 — OPEN — colored-stencil embedding clips fractional-page edge pixels (worker benchmark finding)
+## B108 — OPEN — colored-stencil page-edge repair implemented; designer confirmation pending
 
 Observed 2026-10-15 while extending designer §223's representative size
 analysis, not a designer-confirmed UI report. On page 2 of the complete
@@ -1244,13 +1244,23 @@ whole-page Form embedding/clipping boundary, not in JBIG2 lossless decoding.
 The representative runner must report rejected cells as FAILED with no size
 or minimum ranking and continue verified independent cases. Do not loosen
 pixel equality, change the representative scan, remove the edge from the
-test or count the rejected file as a compression success. No product/display
-fix is implemented here. A repair needs a fractional-page edge regression
+test or count the rejected file as a compression success. At discovery no
+product/display fix was implemented. A repair needs a fractional-page edge regression
 and exact whole-page checks for both production and benchmark assemblers;
 the standalone stencil test alone is insufficient. Scope: TODO §226 and
 `docs/INTEGRATED_COMPRESSION.md`. Keep OPEN.
 
-## B109 — OPEN — image-layer reconstruction introduces unpositioned ActualText (worker benchmark finding)
+Repair under designer §224, 2026-10-15: `core.stencils.place_stencils` now
+paints the masks directly into the destination page with the same image
+placement geometry as Indexed. Nested page-sized Forms imposed an additional
+fractional clipping boundary. The standalone proof, production and bitmap
+benchmark share the direct placement; decoded-mask and exact whole-page
+checks remain. Regressions cover fractional pages at 72/150/300 DPI with
+72/recipe/600-DPI readback; the complete-source 300-DPI assembly preflight
+also checks the actual repository scan. Worker implementation/test verification is not designer
+acceptance; keep OPEN pending explicit confirmation.
+
+## B109 — OPEN — orphaned ActualText repair implemented; designer confirmation pending
 
 Observed 2026-10-15 on the complete eight-page photo-rich repository input
 `examples/news-crater-lake-2026.pdf` while building designer §223's five-class
@@ -1276,9 +1286,26 @@ preparation. The overview now checks new source-to-preparation diagnostics
 even for reused production JPEG/JPX outputs; affected recipes are marked
 PREP FAILED with no size ranking. Preserve-images and deliberate FFPR are
 validated independently. No original input is replaced to hide the case.
-See TODO §226 and `docs/INTEGRATED_COMPRESSION.md`. Keep OPEN.
+See TODO §226 and `docs/INTEGRATED_COMPRESSION.md` for the original rejected
+measurements. At discovery no product fix was implemented.
 
-## B110 — OPEN — native overlay retains original color photos over the BW canvas (worker benchmark finding)
+Repair under designer §224, 2026-10-15: extraction removed an image but kept
+its whitespace ActualText property around surviving clipping/state operators.
+That property no longer had positioned content. `core.marked_content` uses
+MuPDF's lexer/parser to remove only disconnected whitespace replacement text,
+keeping the wrapper's MCID/other metadata and all drawing/clipping operations.
+Text-bearing tags and non-whitespace ActualText remain intact. No diagnostics
+are hidden, no glyph masks/text are invented, and invalid frozen preparations
+remain rejected. Tests cover operator-like text, retained Unicode tag metadata
+and repeated Crater Lake saves without new output diagnostics. Native fonts,
+glyphs (including actual spaces), paint, origins/bounds and semantic replacement
+text are checked. Locally renumbered subset glyphs require identical outlines;
+image-driven word/block regrouping is not content loss. Source extraction
+warnings are archived separately, cannot leak into the next decoder stage,
+and cannot excuse a new output-only warning. Keep OPEN until
+explicit designer confirmation.
+
+## B110 — OPEN — native-filter write-back repair implemented; designer confirmation pending
 
 Observed 2026-10-15 on `examples/news-crater-lake-2026.pdf` in designer §223's
 representative study. The BW-image preparation fails the one-final-canvas
@@ -1302,4 +1329,116 @@ merely relax image-count assertions or store the duplicate color artwork.
 Preserve genuine native text/vectors while removing all replaced bitmap
 artwork. No product fix or designer acceptance is claimed. The shared BW
 preparation is marked PREP FAILED; its dependent codecs are unmeasured, not
-eight independently failed encoders. Scope: TODO §226. Keep OPEN.
+eight independently failed encoders. These paragraphs record the discovery
+and the original rejected artifacts, not current repaired behavior.
+
+Root cause and repair under designer §224, 2026-10-15: on the installed
+MuPDF 1.28.2 wrapper, a newly allocated filter-options object's `no_update`
+field sometimes held an uninitialized nonzero value (observed 32682), despite
+its advertised zero initialization. All callbacks ran and counted the desired
+paint, but the engine then skipped writing the filtered streams/resources
+back. Original color photos therefore survived intermittently. The compositor
+now explicitly sets the full filtering policy, especially `no_update = 0`.
+A deterministic poisoned-option regression and repeated actual photo-page
+saves verify that the selected canvas is present and original photo-stream
+hashes are absent, with native text/geometry retained.
+
+The additional xref-zero occurrences initially described as inline images
+include genuine grayscale soft masks of native vector borders. They are not
+the six ICCBased source photos. Their opacity stays native and their bytes
+stay fixed across compression variants; indiscriminately deleting them would
+damage the retained vector artwork. B109 is a separate orphaned-tag problem.
+No image/pixel assertion is relaxed to retain the original photos. Scope:
+TODO §§226/227 and the new 300-DPI integrated study. Keep OPEN pending explicit
+designer confirmation, not marked designer-confirmed by test success.
+
+## B111 — OPEN — native cleanup loses inherited text rendering state at Form calls
+
+Worker audit finding during the uniform 300-DPI preflight. On page 5 of
+`examples/news-crater-lake-2026.pdf`, even an all-artwork-kept MuPDF 1.28.2
+sanitize pass removes `0 Tr` before a nested Form invocation. The original
+page first paints invisible whitespace with `3 Tr`, then explicitly resets
+to `0 Tr` outside BT before calling the map Form. The sanitizer defers text
+state until a local text show; a Form call does not flush that state. The
+Form consequently inherits invisible mode, losing visible map labels. The
+same problem reproduces with `page.clean_contents()` alone; glyph extraction
+still returns the characters, so word-count-only validation misses the damage.
+
+The repair must preserve original native text/state/geometry rather than
+accept invisible glyphs or weaken the benchmark gate. Retain native streams
+verbatim except deliberate bitmap-paint/backdrop removal and orphan-tag
+repair; use MuPDF's PDF lexer/parser, not regex over strings/inline samples.
+Do not run a final sanitizing cleanup over the retained native operators.
+Construct destination resources without the replaced source bitmap entries
+instead of depending on that cleanup to prune them. Add the actual map and
+synthetic inherited-state/inline-image regressions. See TODO §230 and
+`docs/COMPRESSION.md`. No implementation success or designer acceptance is
+claimed by this discovery record.
+
+Implemented under §224: `core/native_layer.py` uses MuPDF's lexer/parser to
+remove replaced image paint and deliberate backdrop fill, retaining original
+native operators, inherited state, clipping and opacity resources. Original
+Form content is preserved with per-invocation pruned resources. Binary inline
+samples are consumed by the actual decoder, never scanned for an EI-like
+byte pattern. Destination resources start fresh, eliminating final cleanup
+that rewrote retained native text. Native soft masks/Type 3 programs remain.
+
+Synthetic nested-Form hidden/visible transitions have exact whole-page
+pixel tests. Actual newspaper pages, including the regional-map labels,
+retain glyph identity/style/geometry and subset-renumbered outlines. The
+validator rejects invisible text and deleted real-space glyphs even when
+ordinary extraction seems unchanged. The complete-source 300-DPI preflight
+and fresh full **541-test** suite pass; normal/2× offscreen UI captures and
+the actual native map were viewed. This is worker verification only. B111
+remains OPEN until explicit designer confirmation; B107's separate native-
+callback cancellation path is not claimed fixed.
+
+## B112 — OPEN — stale accessibility references retain replaced original images
+
+Worker finding, 2026-10-16, during the uniform 300-DPI integrated study.
+On `examples/news-crater-lake-2026.pdf`, the indexed color preparation paints
+only the processed canvas/native overlays, yet the catalog structure tree
+still has MCR `/Stm` references to original Forms. Those Forms retain their
+old image resources. Fourteen original encoded page-image hashes remain in
+the complete output, including the 1,334,517-byte map image. This is separate
+from genuine native soft masks and from B110's visibly retained photographs.
+
+Evidence: `photos-indexed/flate-plain.pdf` in
+`.tmp/integrated-compression/preflight-300dpi-20261015-v3/` is 6,527,843 bytes.
+It contains 5,031,906 bytes of encoded Image XObjects, although the selected
+processed canvas payloads total only 3,093,543 bytes. Its structure elements
+reference old Form 8 with `/Stm 8 0 R`; that Form reaches the original map
+image through Form 7. Page-only resource, extraction and exact-pixel gates
+therefore pass without proving that replaced bitmap payloads were removed.
+
+Repair the ownership/mapping of tagged native and replaced image content,
+not just resource counts or reported sizes. Preserve accessibility semantics;
+do not silently drop `StructTreeRoot`, `MarkInfo`, Alt text or other document
+metadata. Extend complete-file validation to detect replaced source-image
+streams retained through non-page references, with tagged-page/Form tests.
+The first 300-DPI rerun is not publishable as a validated comparison. No
+implementation success or designer acceptance is claimed. See TODO §231
+and `docs/COMPRESSION.md`.
+
+Implemented and worker-verified, 2026-10-16: native content now stays in the
+original page/first Form owners, with a pruned resource graph and an Artifact
+underlay. An explicit per-document native context preserves immutable Form
+inputs and equal derivatives; incompatible tagged derivatives fail clearly.
+Every canvas reads the immutable original so a shared Form changed on one
+page cannot remove imagery from later preparations. BW native mode retains
+the original catalog, metadata, structure tree, bookmarks and attachments.
+Semantic image-only containers/Alt text stay; no accessibility metadata is
+cleared. This is not a new PDF/UA certification.
+
+Nine tagged/whole-file regression cases pass and the fresh full suite is
+**552 passed**, exit 0. On all eight actual newspaper pages, the 300-DPI
+indexed/Flate preparation is now 4,469,850 bytes (previous invalid ownership:
+6,527,843); the processed canvas bytes remain exactly 3,093,543. These are
+diagnostic before/after file sizes, not a codec ranking. The new whole-file
+gate rejects hidden source-image payloads; native glyphs and Flate/colored-
+JBIG2 prepared-pixel comparisons pass. Artifacts are under
+`.tmp/integrated-compression/preflight-300dpi-20261016-v4/`.
+The completed 300-DPI integrated study has 188 overview plus 62 focused final
+PDFs, all 250 validated with new provenance and zero rejected cells. Complete
+bytes/hashes and tied bold minima are independently audited. See
+`docs/INTEGRATED_COMPRESSION.md`. Keep OPEN pending explicit designer confirmation.

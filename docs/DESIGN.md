@@ -56,12 +56,12 @@ View=Main:V + Filters:V (square / portrait screens) → panes stacked, rail on r
 | 2 | BW · Clean T=180 | BW | 300dpi, simple T=180 | clean laser prints |
 | 3 | BW · Strong T=210 | BW | 300dpi, simple T=210 | faint pencil / gray bg |
 | 4 | BW · Stained Paper | BW | 300dpi, sauvola w31 k0.25 | yellowed / uneven light |
-| 5 | BW · Fast Draft | BW | 200dpi, otsu, JBIG2 | old hardware, quick pass |
-| 6 | Color · JPEG2000 ★ default color | JPX | 150dpi, rate 192 | smallest photos, slower |
-| 7 | Color · Max Squeeze | JPEG | 150dpi, q45 4:2:0 | smallest slides/photos |
-| 8 | Color · Balanced | JPEG | 200dpi, q60 | readable photos, fewer blocks |
-| 9 | Color · Poster 16 | indexed | 150dpi, 16 colors | flat graphics, tiny |
-| 10 | Color · Indexed 64 | indexed | 150dpi, 64 colors | diagrams and logos |
+| 5 | BW · Full-page | BW | 300dpi, otsu, JBIG2, FFPR | flatten all artwork |
+| 6 | Color · JPEG2000 ★ default color | JPX | 300dpi, rate 192 | photo/reader tradeoff |
+| 7 | Color · Max Squeeze | JPEG | 300dpi, q45 | smaller lossy photos |
+| 8 | Color · Balanced | JPEG | 300dpi, q60 | fewer JPEG blocks |
+| 9 | Color · Poster 16 | indexed | 300dpi, 16 colors | flat graphics, tiny |
+| 10 | Color · Indexed 64 | indexed | 300dpi, 64 colors | diagrams and logos |
 
 Historical automatic choice (§57), superseded for explicit selections by
 §203: few-color images (≤256 distinct colors — logos,
@@ -153,6 +153,35 @@ This supersedes §222's exhaustive cross-product presentation; its actual
 complete-file metric and strict output verification remain unchanged. It
 does not migrate recipes or implement the proposed compression controls.
 
+### Uniform resolution and color FFPR (§§224/225)
+
+Designer §§224/225 supersede the earlier deferred-color-FFPR scope and the
+mixed-resolution defaults below. Full-page rasterization is valid for every
+supported image codec: flatten the whole original page in full color, resize
+once to the chosen DPI, then apply the selected BW/palette/codec transform.
+FFPR intentionally removes native text/vector drawing; OFF preserves native
+artwork above one transformed bitmap canvas. Both paths use the same saver,
+effective recipe, cache identity and exact saved-file preview lifecycle.
+
+Repair rejected preparations at their assembly/filtering root (B108–B111),
+not by suppressing diagnostics or weakening pixel checks. The primary and
+focused integrated comparisons use **300 DPI for all prepared rasters**;
+preserve-images controls deliberately retain their original samples. Remove
+lower-DPI scenario variations from the current analysis, retaining historical
+artifacts as evidence rather than mixing them into current rankings. Report
+actual complete-file bytes and maintain separate fidelity groups. A common
+DPI does not make JPEG/JPX quality settings or palette/BW transforms equivalent.
+
+All built-in raster filter defaults and missing-DPI fallbacks become 300 DPI.
+§226 additionally authorizes migrating ALL existing saved raster filters,
+including explicit custom values, to 300 DPI. Do this once at initial settings
+load before creating saved recipes/artifacts, then record the migration
+revision. DPI remains editable; subsequent deliberate choices must not be
+reset on every launch. Preserve names, UUIDs, order, codecs and other recipe
+settings. Keep built-in UUIDs stable. Any legacy seed renamed for clarity retains its
+identity; do not create a second low-DPI comparison profile. Implementation
+and validation are tracked in TODO §§227–229.
+
 ### Compression combinations: documentation and UI review (§§210/211)
 
 Designer §211:
@@ -162,8 +191,8 @@ The designer asks for a table and recommendation, not an approved replacement
 UI. `COMPRESSION_COMBINATIONS.md` separates current capabilities from proposals:
 shared general compression for packed BW/palette pixels plus native streams;
 native-only compression alongside specialized image codecs; automatic small
-painting streams after FFPR + a specialized codec. Color FFPR is not currently
-implemented or approved. Mixed native-Brotli/image-Flate is valid PDF even if
+painting streams after FFPR + a specialized codec. Color FFPR is authorized
+by §224 and its implementation is tracked in TODO §227. Mixed native-Brotli/image-Flate is valid PDF even if
 omitted from a future simplified editor. Recommendation: separate controls,
 visible disabled effective states and a read-only combined summary, not an
 enumerated cross-product menu. This does not supersede §§203–205, change any
@@ -189,7 +218,8 @@ makes the smallest full file. Existing exact-codec/fidelity rules remain.
 §213 supersedes the old speed-knob brief and worker arguments for keeping
 Flate BW merely to avoid the JBIG2 encoder dependency. It does not prove all
 BW/palette/photo codecs are universally dominated, approve the proposed UI
-layout/color FFPR, or authorize cross-codec substitution under explicit labels.
+layout or authorize cross-codec substitution under explicit labels. §224
+separately authorizes color FFPR and §225 updates all default resolutions.
 Current three-way native selector and zlib paths remain implementation gaps,
 tracked in TODO §217; no runtime change is claimed by this documentation pass.
 See `COMPRESSION_COMBINATIONS.md`, `NATIVE_STREAM_COMPRESSION.md` and

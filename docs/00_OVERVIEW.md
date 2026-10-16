@@ -41,8 +41,14 @@ studies above support the analysis, not substitute for it.
 
 §§210/211 request [a reasonable-combinations table and UI review](COMPRESSION_COMBINATIONS.md).
 The proposed shared general-compressor/disabled-control design is separate
-from current capabilities; no new selector behavior, color FFPR or saved-recipe
-migration is approved by the documentation request.
+from current capabilities; the documentation request alone approves no new
+selector behavior or saved-recipe migration. §§224/225 later authorize color
+FFPR across all six existing codecs and 300 DPI for every built-in raster
+default. §226 also authorizes a one-time migration of all saved/custom raster
+filters to 300 DPI, preserving UUIDs and all non-DPI settings. Later deliberate
+DPI edits remain intact. The current
+integrated overview and focused scenarios use 300 DPI throughout, rather than
+repeating lower-DPI variants; preserve-images controls remain unresampled.
 
 Designer §213 subsequently rules that encoding cost is not a product constraint:
 use the best validated encoding and drop superseded encoder choices. Zopfli

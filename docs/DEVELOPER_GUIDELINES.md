@@ -88,7 +88,27 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   flattened appearance. Do not rasterize native artwork or invent
   glyph-shaped masks. Lossless content/font/container compression is distinct
   from image thresholding. See `COMPRESSION.md`, issues B89/B90.
-- Color: downsample 150dpi + JPEG q~50 default; JPEG2000 opt-in only.
+- Color: 300dpi + JPEG q~50 default; JPEG2000 opt-in only (§225).
+- §§224/225 supersede mixed-resolution defaults: all built-in raster filters
+  and missing-DPI fallbacks use 300 DPI. §226 also requires a one-time migration
+  of ALL existing saved raster recipes, including explicit custom DPI values,
+  to 300 DPI. Preserve stable UUIDs and other settings; keep DPI editable and
+  respect deliberate post-migration values on subsequent launches. Current integrated overview AND
+  focused scenarios use 300 DPI, without lower-DPI variation tables.
+  Preserve-images controls are explicitly unresampled. §224 also authorizes
+  color FFPR: flatten whole-page full color, resize once, then transform/encode
+  with the selected existing codec. Extend the existing saver/capability/key
+  path, not an independent preview or benchmark-only product implementation.
+  Repair B108–B112 rather than suppress diagnostics or relax exact checks.
+  Native foreground must preserve original operators/Form text-state
+  inheritance. Use token-aware bitmap/backdrop removal and pruned native
+  resources, not a final sanitizing cleanup that rewrites retained content.
+  Keep native page/Form ownership consistent with the source structure tree;
+  prepend the replacement raster as an Artifact, not a grafted native page.
+  Use an immutable original for every canvas and one explicit per-document
+  native context across shared Forms. Never strip accessibility metadata to
+  hide retained images. Check all live image streams, not just page resources.
+  Parse inline-image boundaries with the decoder, never regex.
 - §203: compression is editable recipe state, never locked by the seed
   preset. Expose the six explicit choices documented in `COMPRESSION.md`;
   persist actual saved mode through Save/Save As/load. Explicit codecs cannot
@@ -108,8 +128,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 - §§210/211 request a compression-combination table and UI recommendation,
   not implementation. `COMPRESSION_COMBINATIONS.md` marks current versus
   proposed capabilities explicitly. Shared image/native general compression,
-  FFPR fixed states and color FFPR are not approved replacements for the
-  existing selectors. Never treat a worker recommendation as a designer
+  FFPR fixed general-compression states are not approved replacements for the
+  existing selectors. §224 subsequently authorizes color FFPR through the
+  existing checkbox/saver. Never treat a worker recommendation as a designer
   ruling or silently migrate saved mixed-codec recipes.
 - §220 supersedes §219's documentation split: retain the plain and `+PNG`
   columns together in the main bitmap-size tables. Explain that prediction
@@ -142,7 +163,8 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   production baseline. Report a bad candidate as FAILED and a rejected
   shared preparation as PREP FAILED, with no size/minimum; the latter does
   not imply every dependent codec independently failed. Preserve valid
-  independent results and expose open processing defects (B108–B110).
+  independent results and expose any processing defects. §224 requests repair
+  of B108–B111; worker verification is distinct from designer acceptance.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

@@ -7,8 +7,10 @@ over five representative PDF classes, followed by focused scenarios (§223).
 
 Design review requested by designer §§210–212, followed by the opinionated
 encoding ruling §213, 2026-10-15 (America/New_York). The best-encoding/reader-
-support policy is now a designer ruling; exact control layout, color FFPR and
-other extensions remain proposals. Current code is explicitly identified.
+support policy is now a designer ruling. §§224/225 separately authorize color
+FFPR and uniform 300-DPI defaults. The proposed shared-compressor control
+layout and automatic residual policy are not implemented. Current code is
+explicitly identified.
 
 ## Combination table
 
@@ -26,11 +28,11 @@ rasterization. This is the target policy; current integration gaps are noted.
 | Keep native text/vectors | JPEG | Optimized Flate / Brotli for native streams only | Native drawing/font streams; JPEG compresses the composed color image | Implemented; JPEG encoding is lossy. |
 | Keep native text/vectors | JPEG2000 | Optimized Flate / Brotli for native streams only | Native drawing/font streams; JPEG2000 compresses the composed color image | Implemented; lossy or lossless encoding. |
 | FFPR: flatten whole page | Packed 1-bit BW | Optimized Flate / Brotli; control remains active | The full-page BW raster, plus its small painting stream | BW FFPR + Flate exists; unified optimized Flate/Brotli image choices are benchmarked only. |
-| FFPR: flatten whole page | Packed indexed color | Optimized Flate / Brotli; control remains active | The full-page palette raster, plus its small painting stream | Proposed color FFPR extension, not implemented or approved. |
+| FFPR: flatten whole page | Packed indexed color | Optimized Flate / Brotli; control remains active | The full-page palette raster, plus its small painting stream | Flate Color FFPR implemented (§224); unified optimized-Flate/Brotli bitmap policy remains benchmark-only. |
 | FFPR: flatten whole page | JBIG2 BW | Automatic optimized residual streams; general control inactive | Only tiny placement/drawing instructions; no original native text/fonts/vectors remain | BW FFPR + JBIG2 exists; automatic/disabled general control is proposed, not implemented. |
-| FFPR: flatten whole page | JBIG2 Color | Automatic optimized residual streams; general control inactive | Colored-stencil painting instructions, not the JBIG2 masks | Proposed color FFPR extension, not implemented or approved; more painting/resource overhead than a single image. |
-| FFPR: flatten whole page | JPEG | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG compresses the full page | Proposed color FFPR extension, not implemented or approved; text becomes lossy raster content. |
-| FFPR: flatten whole page | JPEG2000 | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG2000 compresses the full page | Proposed color FFPR extension, not implemented or approved; lossless encoding does not restore vector/text precision. |
+| FFPR: flatten whole page | JBIG2 Color | Automatic optimized residual streams; general control inactive | Colored-stencil painting instructions, not the JBIG2 masks | Color FFPR implemented (§224); native selection still explicit, automatic/disabled policy remains proposed. |
+| FFPR: flatten whole page | JPEG | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG compresses the full page | Color FFPR implemented (§224); text becomes lossy raster content. Automatic residual selection remains proposed. |
+| FFPR: flatten whole page | JPEG2000 | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG2000 compresses the full page | Color FFPR implemented (§224); lossless does not restore native text/vector precision. Automatic residual selection remains proposed. |
 
 "Keep native" follows the established composed-image canvas + native overlay
 policy, not exact original image/native interleaving. FFPR deliberately removes
@@ -44,7 +46,11 @@ NEVER changes image bytes, including for Flate BW/Color. Indexed's existing
 automatic small-stream Zopfli path still stores FlateDecode; it is not a
 user-selectable, full-workload Zopfli image policy. The combined policy in
 this table would require explicit integration, recipe compatibility and tests.
-FFPR is currently enabled ONLY for the two BW modes, not color codecs.
+FFPR is enabled for all six image codecs (§224), including on native-only
+pages. All built-in raster defaults are 300 DPI (§225). §226 migrates all
+saved/custom raster recipes once to 300 DPI; later deliberate DPI edits remain
+intact. The main/focused comparison uses 300 DPI throughout,
+with preserve-images controls explicitly unresampled.
 
 ## Decoder support, not encoder cost (§213)
 
@@ -112,7 +118,9 @@ lossless additions from that review remain suggestions, not approved features.
 
 ## What remains after FFPR + a specialized image codec?
 
-Read-only inventory of the existing size-study PDFs, 2026-10-15:
+Historical read-only inventory of the original size-study PDFs, 2026-10-15,
+before §224's shared full-color FFPR preparation. These are retained artifacts,
+not the current 300-DPI matrix's output sizes:
 
 | Existing FFPR + JBIG2 output | Pages | Complete PDF B | JBIG2 image B | Unique native streams | Native decoded B | Native Flate B |
 |---|---:|---:|---:|---:|---:|---:|
@@ -142,8 +150,8 @@ in these two examples. Brotli's declaration can exceed any stream saving.
 This supports automatically handling the residual streams in FFPR + a
 specialized codec, rather than offering nearly identical general-compression choices.
 It does NOT mean all FFPR files have exactly 35 bytes of painting commands:
-colored stencils need more operators/resources. Before implementing color
-FFPR, verify its complete-file overhead separately. General compression still
+colored stencils need more operators/resources. The current integrated matrix
+measures color FFPR's actual complete-file overhead too. General compression still
 matters greatly for FFPR + packed pixels because it compresses the raster
 itself, not just those instructions.
 
@@ -158,8 +166,8 @@ itself, not just those instructions.
 Suggested control structure, not an implemented UI:
 
 1. **Force full-page rasterization**: retain the existing per-filter checkbox;
-   this controls whether text/vectors survive. Keep it BW-only unless the
-   designer separately approves color FFPR.
+   this controls whether text/vectors survive. §224 authorizes and implements
+   it for every existing image codec, not just BW.
 2. **Image encoding**: JBIG2 BW, JBIG2 Color, Packed BW, Indexed color,
    JPEG2000, JPEG. Packed modes inherit the general compressor, so their
    labels must not continue to promise "Flate" after choosing Brotli.
@@ -189,15 +197,17 @@ the last benchmark or make their applicability jump from page to page.
 A read-only summary gives the convenient combined name without a huge menu,
 for example: "Images: JBIG2 BW · Native streams: Brotli · Text/vectors kept"
 or "FFPR · JPEG2000 lossless · Remaining streams: automatic". These examples
-describe the proposed presentation; the latter is not a supported color
-FFPR recipe today.
+describe the proposed automatic-compressor presentation. Color FFPR itself is
+supported; automatic residual selection is not implemented.
 
 ## Compatibility, evidence and implementation boundary
 
 The recommendation above is design judgment, not a claim that Qt or the PDF
 standard mandates this exact arrangement. Qt supports normal enabled/disabled
-widgets; use native states rather than simulated grey paint. Product defaults
-remain unchanged. Missing explicitly selected encoders must still fail clearly;
+widgets; use native states rather than simulated grey paint. §225 changes
+built-in raster defaults to 300 DPI; §226 also migrates all saved/custom raster
+recipes once. Neither changes encoding defaults. Later deliberate DPI edits
+remain effective. Missing explicitly selected encoders must still fail clearly;
 never silently replace JPEG/JBIG2/Brotli with a different image codec.
 
 Any approved integration must resolve capabilities/effective parameters ONCE

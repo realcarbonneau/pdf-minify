@@ -22,6 +22,8 @@ from . import threshold as T
 from .image_layers import compose_page_images, compose_color_page
 from .algorithms import BW_MODES, COLOR_MODES
 from .stream_compression import STREAM_LABELS, recompress_native_streams
+from .defaults import DEFAULT_DPI
+from .canvas import flatten_rgb
 
 log = logging.getLogger("pdf_minimalist")
 _ENCODE_WORKDIR = ContextVar("encoder_workdir", default=None)
@@ -34,7 +36,6 @@ PAGE_SIZES = {
     "letter": (612.0, 792.0),
     "a4": (595.28, 841.89),
 }
-DEFAULT_DPI = 300
 DEFAULT_PAGE_SIZE = "original"  # §74: never reshape by default; Letter/A4 are
 # advanced-only fixes for absurd scan sizes (flagged, never auto-applied).
 
@@ -453,10 +454,8 @@ def color_canvas_payload(img, codec="jpeg", jpeg_q=45, rate=192,
 def _place_color(out, page, rect, payload):
     """Fresh opaque composite XObject; never retain source masks/Decode keys."""
     if "stencils" in payload:
-        from .stencils import stencil_pdf
-        with stencil_pdf(payload["stencils"], payload["token"],
-                         page_size=(rect.width, rect.height)) as tile:
-            page.show_pdf_page(rect, tile, 0, keep_proportion=False)
+        from .stencils import place_stencils
+        place_stencils(out, page, rect, payload["stencils"], payload["token"])
         return
     xref = out.get_new_xref()
     out.update_object(xref, f"<< /Type /XObject /Subtype /Image /Width {payload['w']} "
@@ -541,7 +540,9 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
     token = token or CancelToken()
     per_page = per_page or {}
     src = fitz.open(in_path)
-    out = fitz.open()
+    out = fitz.open() if force_raster else fitz.open(in_path)
+    from .native_layer import NativeContext
+    native_context = NativeContext(out)
     n_jbig2 = n_png = n_img = 0
     try:
         for i in range(src.page_count):
@@ -554,17 +555,19 @@ def process_file(in_path: str, out_path: str, strategy: str = "otsu", t: int = 1
             ps = ov.get("page_size", page_size)
             if not force_raster:
                 # §171: ONE image canvas + original native overlay.
-                out.insert_pdf(src, from_page=i, to_page=i)
-                composed = compose_page_images(out, out.page_count - 1, strat,
+                composed = compose_page_images(out, i, strat,
                                                tt, dd, token,
                                                lambda *a: bw_page_payload(*a, codec=codec),
                                                _place_bw, force_to_dpi,
-                                               directory=_ENCODE_WORKDIR.get())
+                                               directory=_ENCODE_WORKDIR.get(),
+                                               original=src, native_context=native_context)
                 n_img += composed
                 if progress:
                     progress(i + 1, src.page_count)
                 continue
-            gray = render_gray(src, i, dpi=dd, token=token)
+            rgb = flatten_rgb(src[i], dd, token, force_to_dpi,
+                              directory=_ENCODE_WORKDIR.get(), minimum_dpi=dd)
+            gray = np.asarray(rgb.convert("L"))
             if token.cancelled:
                 raise CancelledError()
             payload, actual_codec = bw_page_payload(gray, strat, tt, codec=codec)
@@ -628,34 +631,57 @@ def gc_copy(in_path: str, out_path: str):
 
 
 @_fitz_locked
-def recompress_file(in_path: str, out_path: str, dpi_cap: int = 150, jpeg_q: int = 50,
+def recompress_file(in_path: str, out_path: str, dpi_cap: int = DEFAULT_DPI, jpeg_q: int = 50,
                     token: CancelToken | None = None, progress=None,
                     codec: str = "jpeg", rate: int = 192, colors: int = 64,
-                    lossless: bool = False, *, allow_substitution: bool = True):
+                    lossless: bool = False, *, allow_substitution: bool = True,
+                    force_raster: bool = False, page_size: str = DEFAULT_PAGE_SIZE):
     """Color: native full-color composition → final DPI → transform/encode.
 
     One opaque canvas per image-bearing page, with native text/vectors above.
     No individual image rewrite or source opacity masks in the output (§180).
     Raises CancelledError on ESC.
     """
+    if page_size not in PAGE_SIZES:
+        raise ValueError(f"Unknown page size: {page_size}")
     token = token or CancelToken()
-    doc = fitz.open(in_path)
+    source = fitz.open(in_path)
+    doc = fitz.open() if force_raster else fitz.open(in_path)
+    from .native_layer import NativeContext
+    native_context = NativeContext(doc)
     try:
-        total = doc.page_count
+        total = source.page_count
         for pno in range(total):
             if token.cancelled:
                 raise CancelledError()
-            compose_color_page(doc, pno, dpi_cap, token,
-                               lambda rgb: color_canvas_payload(rgb, codec, jpeg_q,
-                                                                rate, colors, lossless,
-                                                                allow_substitution=allow_substitution,
-                                                                token=token),
-                               _place_color, force_to_dpi, directory=_ENCODE_WORKDIR.get())
+            def encode(rgb):
+                return color_canvas_payload(rgb, codec, jpeg_q, rate, colors, lossless,
+                                            allow_substitution=allow_substitution, token=token)
+            if force_raster:
+                # Same compose → one resize → transform/encode sequence as the
+                # image layer, but include ALL original page painting (§224).
+                rgb = flatten_rgb(source[pno], dpi_cap, token, force_to_dpi,
+                                  directory=_ENCODE_WORKDIR.get(), minimum_dpi=dpi_cap)
+                payload = encode(rgb)
+                if token.cancelled:
+                    raise CancelledError()
+                rect = source[pno].rect
+                target = PAGE_SIZES[page_size]
+                page = doc.new_page(width=target[0] if target else rect.width,
+                                    height=target[1] if target else rect.height)
+                placement = _fit_rect(rect.width, rect.height, *target) if target else page.rect
+                _place_color(doc, page, placement, payload)
+            else:
+                compose_color_page(doc, pno, dpi_cap, token, encode,
+                                   _place_color, force_to_dpi, directory=_ENCODE_WORKDIR.get(),
+                                   original=source, native_context=native_context)
             if progress:
                 progress(pno + 1, total)
         _save_optimized_pdf(doc, out_path)
     finally:
         doc.close()
+        if source is not doc:
+            source.close()
 
 
 def save_with_spec(in_path: str, out_path: str, spec: dict,
@@ -693,13 +719,15 @@ def _save_recipe(in_path, out_path, spec, token, progress):
                      force_raster=spec.get("force_raster", False),
                      codec="jbig2" if mode == "bw" else "flate")
     elif mode in COLOR_MODES:
-        recompress_file(in_path, out_path, dpi_cap=spec.get("dpi_cap", 150),
+        recompress_file(in_path, out_path, dpi_cap=spec.get("dpi_cap", DEFAULT_DPI),
                         jpeg_q=spec.get("jpeg_q", 50), token=token, progress=progress,
                         codec={"color": "jpeg", "jpx": "jpx", "indexed": "indexed",
                                "layered-jbig2": "layered-jbig2"}[mode],
                         rate=spec.get("rate", 192),
                         colors=spec.get("colors", 5 if mode == "layered-jbig2" else 64),
-                        lossless=spec.get("lossless", False), allow_substitution=False)
+                        lossless=spec.get("lossless", False), allow_substitution=False,
+                        force_raster=spec.get("force_raster", False),
+                        page_size=spec.get("page_size", DEFAULT_PAGE_SIZE))
     elif mode == "passthrough":
         gc_copy(in_path, out_path)
     else:

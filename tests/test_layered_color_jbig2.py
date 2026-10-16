@@ -137,3 +137,24 @@ def test_existing_production_recipes_remain_unchanged():
     assert not any(preset["mode"] == "layered-jbig2" for preset in PRESETS)
     with pytest.raises(ValueError, match="Unknown filter mode"):
         study.pipeline._save_recipe("unused", "unused", {"mode": "not-an-algorithm"}, None, None)
+
+
+@requires_encoder
+@pytest.mark.parametrize("dpi", [72, 300])
+def test_prototype_fractional_page_uses_same_direct_placement_as_indexed(tmp_path, dpi):
+    source, indexed, layered = (tmp_path / name for name in ("fractional.pdf", "indexed.pdf", "layered.pdf"))
+    width, height = 72.24, 96.37
+    iw, ih = round(width*dpi/72), round(height*dpi/72)
+    y, x = np.indices((ih, iw))
+    palette = np.array([(255, 255, 255), (255, 76, 35), (135, 63, 214)], dtype=np.uint8)
+    canvas = study.PaletteCanvas(((x+y*3) % 3).astype(np.uint8), palette)
+    stream = io.BytesIO()
+    Image.fromarray(canvas.rgb).save(stream, "PNG")
+    with fitz.open() as doc:
+        page = doc.new_page(width=width, height=height)
+        page.insert_image(page.rect, stream=stream.getvalue(), keep_proportion=False)
+        doc.save(source)
+    for kind, output in (("indexed", indexed), ("jbig2", layered)):
+        study.save_variant(str(source), output, [canvas], kind)
+    result = study.compare_outputs(str(source), indexed, layered, [canvas], dpi, tmp_path, independent=False)
+    assert result["mupdf_pixel_exact"]

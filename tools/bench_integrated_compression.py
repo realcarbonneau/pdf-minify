@@ -33,7 +33,12 @@ def digest(data):
 
 def environment():
     files = ("pdf_minimalist/core/pipeline.py", "pdf_minimalist/core/stream_compression.py",
-             "pdf_minimalist/core/display.py", "tools/bench_integrated_compression.py")
+             "pdf_minimalist/core/display.py", "pdf_minimalist/core/image_layers.py",
+             "pdf_minimalist/core/marked_content.py", "pdf_minimalist/core/native_layer.py",
+             "pdf_minimalist/core/canvas.py",
+             "pdf_minimalist/core/stencils.py", "pdf_minimalist/core/algorithms.py",
+             "pdf_minimalist/core/defaults.py", "pdf_minimalist/core/threshold.py",
+             "tools/bench_image_streams.py", "tools/bench_integrated_compression.py")
     return dict(python=sys.version.split()[0], pymupdf=fitz.VersionBind,
                 zopfli=pipeline.zopfli_binary(),
                 implementation={name: digest((ROOT / name).read_bytes()) for name in files})
@@ -183,13 +188,16 @@ def bitmap_cases(manifest):
         yield case
 
 
-def production_cases(sources, folder, resume=False, *, native_sources=None):
+def production_cases(sources, folder, resume=False, *, native_sources=None,
+                     dpi=pipeline.DEFAULT_DPI, include_ffpr=False):
     recipes = (
-        ("jpeg-q50", dict(mode="color", dpi_cap=150, jpeg_q=50)),
-        ("jpx-r192", dict(mode="jpx", dpi_cap=150, rate=192, lossless=False)),
-        ("jpx-lossless", dict(mode="jpx", dpi_cap=150, lossless=True)),
+        ("jpeg-q50", dict(mode="color", dpi_cap=dpi, jpeg_q=50)),
+        ("jpx-r192", dict(mode="jpx", dpi_cap=dpi, rate=192, lossless=False)),
+        ("jpx-lossless", dict(mode="jpx", dpi_cap=dpi, lossless=True)),
         ("preserve-images", dict(mode="passthrough")),
     )
+    if include_ffpr:
+        recipes += tuple((name + "-ffpr", dict(recipe, force_raster=True)) for name, recipe in recipes[:3])
     extra_native = [Path("examples") / name for name in (
         "models-nasa-kepler.pdf", "deed-brevard.pdf", "form-fw9.pdf", "form-941-2026.pdf")]
     fixture = Path(".tmp/native-stream-compression/main/native-text-vector-font.pdf")
@@ -198,9 +206,9 @@ def production_cases(sources, folder, resume=False, *, native_sources=None):
     if native_sources is not None:
         extra_native = native_sources
     for source, selected in [(source, recipes) for source in sources] + [
-            (source, recipes[-1:]) for source in extra_native]:
+            (source, recipes[3:4]) for source in extra_native]:
         for variant, recipe in selected:
-            case_id = f"{source.stem}.{variant}"
+            case_id = f"{source.stem}.{variant}.{dpi}dpi"
             prep = folder / "prepared" / case_id
             prep.mkdir(parents=True, exist_ok=resume)
             base = prep / "base.pdf"
@@ -218,7 +226,7 @@ def production_cases(sources, folder, resume=False, *, native_sources=None):
                 meta.write_text(json.dumps(dict(identity=identity, sha256=digest(base.read_bytes())), indent=2)+"\n")
             print(json.dumps(dict(prepared=case_id, recipe=recipe)), flush=True)
             yield dict(id=case_id, family="production", source=str(source),
-                       input_sha256=identity["input_sha256"], mode=recipe["mode"], dpi=150,
+                       input_sha256=identity["input_sha256"], mode=recipe["mode"], dpi=dpi,
                        recipe=recipe, bases={variant: dict(pdf=str(base), sha256=digest(base.read_bytes()))})
 
 

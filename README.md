@@ -12,7 +12,10 @@ What you see is what saving writes.
   overlays; FFPR on flattens the entire page, preserving its stacked appearance.
 - **Image processing**: compose original imagery/opacity in full color, resize
   once to final DPI, then threshold or reduce colors/compress. No post-filter
-  resizing; native text/vectors survive unless FFPR is on.
+  resizing; native text/vectors survive unless FFPR is on. Full-page raster
+  works with every image codec, including color. All built-in raster defaults
+  are 300 DPI. Existing saved/custom raster filters migrate once to 300 DPI;
+  later deliberate DPI choices are retained.
 - **Image compression**: each filter can select JBIG2 BW, colored JBIG2 stencils,
   Flate BW, palette Flate Color, JPEG2000 or JPEG; no preset codec lock or
   silent codec substitution. Color uses one composed canvas with native artwork.

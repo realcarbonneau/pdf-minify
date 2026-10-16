@@ -134,15 +134,25 @@ The extra warning is in the native scrollable panel, not a modal on every edit.
 §213 supersedes the product rationale for separate zlib-versus-Zopfli speed
 choices: target one optimized Flate choice and Brotli's genuine reader-support
 distinction. The three-choice panel above is the CURRENT implementation,
-not the updated target. TODO §217 tracks alignment; no new control layout,
-color FFPR or cross-codec automatic profile is implied by this policy ruling.
+not the updated target. TODO §217 tracks alignment; no new control layout
+or cross-codec automatic profile is implied by this policy ruling.
 
 §§210/211 request a table and review of combined versus separate controls:
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md). Separate controls
 with visible disabled effective states and a combined summary are recommended,
-not approved or implemented. Shared bitmap/native general compression and
-color FFPR would require explicit integration; the current panel above stays
-unchanged. Preserve the designer's grey-but-visible fixed-state rule (§100).
+not approved or implemented. Shared bitmap/native general compression would
+require separate integration. Preserve the designer's grey-but-visible
+fixed-state rule (§100).
+
+§§224/225 separately authorize color FFPR and uniform 300 DPI defaults. The
+existing Force full-page raster checkbox is now enabled for every image codec;
+the existing Page size control is enabled when FFPR is ON. The flag remains
+effective across BW/color codec changes, appears in mini/readout descriptions,
+and participates in the same dirty/debounce/Save/Revert lifecycle. All built-in
+raster defaults are 300 DPI. §226 also migrates all existing saved/custom
+raster recipes once to 300 DPI; the editable DPI control and later deliberate
+choices remain. No automatic residual-compression control or additional codec menu is
+introduced. FFPR color readouts must not claim text/vectors are kept.
 
 Numeric sliders (§178): Threshold (T, 0–255) and Colors (2–256) each use a
 standard horizontal QSlider paired with a right-aligned editable QSpinBox

@@ -5,6 +5,12 @@ The primary final-file comparison uses realistic combination rows over five
 representative PDFs, followed by focused scenarios (§223):
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
+Historical component measurements below predate the uniform 300-DPI ruling
+and shared assembly repairs (§§224–226, B108–B112). They retain the original
+explicit recipes and are not current default-filter sizes. Use the primary
+integrated overview and focused tables for repaired, uniformly 300-DPI
+comparisons; do not relabel these older mixed-DPI artifacts.
+
 Designer §§208/209/220, 2026-10-15 (America/New_York); TODO §§212/223.
 Related: [COMPRESSION.md](COMPRESSION.md),
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md),

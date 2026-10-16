@@ -4,6 +4,7 @@ import hashlib
 import io
 import shutil
 import subprocess
+import zlib
 
 import numpy as np
 import pymupdf as fitz
@@ -250,6 +251,44 @@ def test_cancelled_selected_codecs_produce_no_output(tmp_path):
     for mode, _ in ALGORITHMS:
         with pytest.raises(CancelledError):
             pipeline.save_with_spec("unused", str(tmp_path / "out.pdf"), recipe(mode), token)
+    assert not list(tmp_path.iterdir())
+
+
+@pytest.mark.parametrize("cancel", [False, True])
+def test_zopfli_has_no_elapsed_cutoff_but_reaps_on_cancellation(tmp_path, monkeypatch, cancel):
+    data = b"Exact native stream" * 10
+    token = CancelToken()
+    elapsed = [0]
+
+    class Encoder:
+        returncode = 0
+        terminated = False
+        calls = 0
+
+        def communicate(self, timeout):
+            self.calls += 1
+            if self.calls == 1:
+                elapsed[0] += 121
+                if cancel:
+                    token.cancel()
+                raise subprocess.TimeoutExpired("zopfli", timeout)
+            return zlib.compress(data, 9), b""
+
+        def terminate(self):
+            self.terminated = True
+
+    encoder = Encoder()
+    monkeypatch.setattr(streams.shutil, "which", lambda *a: "/usr/bin/zopfli")
+    monkeypatch.setattr(streams.subprocess, "Popen", lambda *a, **kw: encoder)
+    monkeypatch.setattr(streams.time, "monotonic", lambda: elapsed[0])
+    if cancel:
+        with pytest.raises(CancelledError):
+            streams._zopfli(data, str(tmp_path), token)
+        assert encoder.terminated
+    else:
+        assert zlib.decompress(streams._zopfli(data, str(tmp_path), token)) == data
+        assert not encoder.terminated
+    assert encoder.calls == 2 and elapsed[0] > 120
     assert not list(tmp_path.iterdir())
 
 

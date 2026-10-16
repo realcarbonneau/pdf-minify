@@ -1,5 +1,7 @@
 """Editable compression choices, independent of a filter's name/UUID (§203)."""
 
+from .defaults import DEFAULT_DPI
+
 ALGORITHMS = (
     ("bw", "JBIG2 BW"),
     ("layered-jbig2", "JBIG2 Color"),
@@ -25,7 +27,9 @@ def with_algorithm(spec: dict, mode: str) -> dict:
         raise ValueError(f"Unknown compression algorithm: {mode}")
     result = dict(spec, mode=mode)
     dpi_field = "dpi" if spec.get("mode") in BW_MODES else "dpi_cap"
-    dpi = int(spec.get(dpi_field, 300 if mode in BW_MODES else 150))
+    dpi = int(spec.get(dpi_field, DEFAULT_DPI))
+    result.setdefault("force_raster", False)
+    result.setdefault("page_size", "original")
     if mode in BW_MODES:
         result.update(dpi=dpi)
         result.setdefault("strategy", "otsu")

@@ -27,7 +27,7 @@ no time comparisons or new production choices/defaults are part of that study.
 
 Combination review (§§210/211): [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md)
 starts with the reasonable-combinations table, distinguishes implemented modes
-from proposed bitmap-policy/color-FFPR extensions, and compares one combined
+from proposed bitmap-policy/control extensions, and compares one combined
 menu with separate enabled/disabled controls. Its recommended shared general
 compressor and FFPR fixed-state behavior are PROPOSALS, not changes to the
 current independent selectors below or approval to migrate saved recipes.
@@ -49,8 +49,114 @@ for decoder tiers, exact compatibility wording and pending integration.
 This supersedes the historical encoding-effort rationale, not the explicit
 codec, real-file or fidelity rules. The implementation described below is
 still the current six-image/three-native-policy build; TODO §217 tracks its
-alignment. Color FFPR and an automatic cross-codec selector remain unapproved
-proposals, not implied by §213.
+alignment. An automatic cross-codec selector remains an unapproved proposal,
+not implied by §213. §224 separately authorizes color FFPR; see below.
+
+## Uniform 300 DPI and whole-page color (§§224–226)
+
+All built-in raster recipes and missing-DPI fallbacks now use the shared
+`core.defaults.DEFAULT_DPI = 300`. The old lower-DPI BW seed keeps its legacy
+`bw-fast` ID/UUID but is labeled **BW · Full-page**: its distinction is FFPR,
+not a lower resolution or speed promise. §226 additionally authorizes a
+one-time settings migration of all saved/custom raster recipes to 300 DPI,
+including explicit previous values. Preserve UUIDs and non-DPI settings;
+record the migration revision before constructing saved specs/artifacts.
+DPI stays editable: subsequent deliberate values are not reset on later
+launches. Display/minis sampling resolution is view-only and is not changed
+into an additional filtering pass.
+
+The existing Force full-page raster checkbox applies to all six image codecs.
+ON flattens ALL original page painting in full color, then performs one resize
+to target DPI, followed by the chosen BW/palette/JPEG/JPX transform. Render
+native geometry at at least target DPI during full-page composition, not at
+72 DPI followed by enlarging already-pixelated text. Source bitmap density
+can require a higher composition density; only the final RGB canvas is resized.
+OFF retains the established native-overlay/image-canvas policy. BW FFPR uses
+this same full-color preparation sequence before conversion to gray/threshold.
+There is no separate benchmark-only color FFPR implementation.
+
+FFPR intentionally removes selectable text, native vector precision and native
+font painting; JPEG FFPR also makes text lossy. Lossless JPEG2000 preserves
+the prepared raster, not the original vector representation. Page-size
+reshaping applies only with FFPR, for color as well as BW. The flag and its
+effective page size participate in recipe/save/load/cache identity and the
+existing single 300ms debounce; changing view/selection still does not process.
+The native-stream selector remains explicit; the proposed automatic residual-
+stream UI is not implemented by this extension.
+
+The current integrated analysis uses 300 DPI throughout prepared raster cases,
+including all focused scenarios. Original/preserve-images controls keep their
+source samples and are labeled unresampled. Historical mixed-DPI artifacts
+are not current equal-resolution comparisons. See `INTEGRATED_COMPRESSION.md`.
+
+### Shared assembly repairs (B108–B112)
+
+- B108: paint colored stencils directly in the destination page using the same
+  image placement geometry as Indexed. Do not wrap a page-sized raster in
+  nested clipped page Forms; their fractional boundary clipped the last column.
+  Production, the integrated/bitmap study and the older prototype saver all
+  use `stencils.place_stencils`; no remaining caller re-wraps it in a page Form.
+- B109: removing an image can leave a whitespace ActualText tag with only
+  clipping/state operators and no positioned content. Repair that disconnected
+  property in the derived native layer, using MuPDF's lexer/parser. Keep real
+  text-bearing replacement tags, non-whitespace ActualText, MCIDs, other tag
+  metadata and drawing/clipping operators. No log suppression or invented text.
+- B110: explicitly initialize all filter flags, especially `no_update = 0`.
+  On the installed MuPDF 1.28.2 wrapper, reused option storage sometimes held
+  a nonzero value despite the advertised default. All culling callbacks then
+  ran but the source page was not updated, retaining original photos. Native
+  vector-opacity soft masks remain valid native artwork; do not misidentify
+  those grayscale masks as the removed ICCBased color photographs.
+- B111: the sanitizer also drops text-state changes outside BT before Form
+  calls. An earlier invisible text mode can then hide visible nested labels.
+  Native foreground now uses `core.native_layer`: MuPDF's lexer/parser removes
+  only replaced image paint and deliberate page-backdrop fills, retaining all
+  other original text/state/clipping operators. Form resources remain native;
+  each invocation has its own pruned resource dictionary. The real inline-
+  image decoder consumes binary samples before the lexer resumes. Native
+  soft masks and Type 3 programs stay untouched. Prune native destination
+  resources before adding replacement layers; do not sanitize the page merely
+  to remove unused original images. Backdrop-only/raster fragments still use
+  the explicitly initialized native filter; they are not the retained text.
+- B112: keep the destination's original native page/first Form identities as
+  the actual overlay. Its structure tree, MCIDs and ParentTree must continue
+  to describe painted native content, not abandoned source copies. Prune
+  replaced image resources in those owners; prepend the composite/background
+  as an Artifact instead of moving native content into a new page Form.
+  Retain semantic containers/Alt text when bitmap paint is replaced. Read
+  every canvas from an immutable original, so editing a shared native Form
+  cannot remove imagery from a later page's preparation. Cache original Form
+  operators/resources and reuse equal native derivatives across invocations;
+  if a tagged Form requires incompatible context-specific derivatives, reject
+  the operation explicitly rather than silently corrupting its parent mapping.
+  BW native mode likewise keeps the original document catalog/structure tree,
+  rather than building a new document with only individually inserted pages.
+  Complete-file validation must inspect non-page references too, rejecting
+  encoded original page images that survive replacement through stale tags.
+  This preserves source semantics; it is not a new PDF/UA certification.
+
+The ownership requirement follows the PDF Association's
+[logical-structure reference](https://pdfa.org/download-area/cheat-sheets/LogicalStructureObjects.pdf):
+content streams and their StructParents/ParentTree entries have paired scope.
+Do not erase accessibility metadata as a compression shortcut.
+
+Strict validation checks source-to-preparation diagnostics and native text/
+font/glyph geometry, exact decoded bitmap samples, whole-page pixels between
+lossless variants, and final encoded/decoded streams. Text-extraction block
+IDs and word/run boundaries are bookkeeping affected by image composition,
+not content identity. Check every native glyph, including actual spaces,
+font, paint and origin/bounds, plus non-whitespace semantic replacement
+characters and their geometry. Extraction-inferred gap spaces and the
+image-only ActualText whitespace deliberately removed by B109 are not native
+glyphs; they cannot exempt a missing real space from the glyph check. Font
+subsetting can renumber local glyph IDs; changed numbers require identical
+actual vector outlines, not an exemption from glyph checks. The existing
+0.001pt serialization tolerance is unchanged;
+whole-page bitmap equality is never relaxed. MuPDF's native filter
+[write-back condition](https://github.com/ArtifexSoftware/mupdf/blob/1.28.2/source/pdf/pdf-clean.c)
+and [marked-content/image processing](https://github.com/ArtifexSoftware/mupdf/blob/1.28.2/source/pdf/pdf-op-filter.c)
+are the relevant upstream mechanisms. These are implementation repairs,
+not designer-confirmed acceptance.
 
 ## Editable compression selection (§203)
 
@@ -90,8 +196,8 @@ The word "automatic" must not describe the whole dropdown. Threshold controls
 apply to both BW encoders; palette count applies to both color-palette encoders.
 Lossless is editable only for JPEG2000; codec losslessness describes encoding
 AFTER resizing/thresholding/palette reduction, not losslessness to the original.
-FFPR/page reshaping retains its established BW-only semantics, using the same
-selected BW codec. All algorithm edits use the shared 300ms debounce, dirty
+§224 extends FFPR/page reshaping to every selected image codec, not just BW.
+All algorithm edits use the shared 300ms debounce, dirty
 star and Save / Save As / Discard / Cancel transaction. Selection/zoom still
 only observe completed actual PDFs; exports copy those exact files.
 
@@ -421,13 +527,13 @@ native text/vectors and zero image masks. Earlier tables are dated stage
 history, not the current BW composition order or byte counts. The native
 font/container overhead explanation still applies.
 
-### Current palette repair (§§183/184, 2026-10-14)
+### Historical palette repair (§§183/184, 2026-10-14; before uniform 300 DPI)
 
 The §183 fitter/nearest mapper supersedes the Indexed byte counts above;
 those are preserved stage history. `tools/bench_color_layers.py --repeat 1
 --label nearest-fit --before .tmp/color-layers/before-live` saves and independently
 decodes every default color output again. JPEG/JPX remain 40,437 / 45,140 /
-73,010 B at their respective default settings. Current **Poster 16: 28,516 B
+73,010 B at their respective then-default settings. Then-current **Poster 16: 28,516 B
 (2.4350s); Indexed 64: 34,026 B (2.3971s)**, versus the earlier live per-image
 99,224 / 113,261 B. These are one-run wall times, not medians over repetitions.
 Exact artifacts/recipes/dimensions/decoder evidence and final-file PNGs live

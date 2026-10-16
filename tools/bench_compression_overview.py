@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from tools import bench_integrated_compression as study
 
+BENCHMARK_DPI = 300
 
 @dataclass(frozen=True)
 class Document:
@@ -48,15 +49,19 @@ def combinations():
         rows += [Combination(family, family, p, f"{label} + {names[p]} native")
                  for p in ("zopfli", "brotli")]
     for family, label in (("indexed", "Indexed 5 colors"), ("bw-images", "BW; keep native"),
-                          ("bw-ffpr", "BW FFPR")):
+                          ("bw-ffpr", "BW FFPR"), ("indexed-ffpr", "Color FFPR; indexed 5 colors")):
         for policy in study.POLICIES:
             rows += [Combination(family, f"{policy}-{prediction}", policy,
                                  f"{label} + {names[policy]}" + (" + PNG prediction" if prediction == "png" else ""))
                      for prediction in ("plain", "png")]
         rows += [Combination(family, "jbig2", p,
-                             f"{label} + {'colored JBIG2' if family == 'indexed' else 'JBIG2'} + {names[p]} native"
-                             if family != "bw-ffpr" else "BW FFPR + JBIG2; optimized residual streams")
-                 for p in (("zopfli",) if family == "bw-ffpr" else ("zopfli", "brotli"))]
+                             f"{label} + {'colored JBIG2' if family.startswith('indexed') else 'JBIG2'}"
+                             + ("; optimized residual streams" if family.endswith("-ffpr") else f" + {names[p]} native"))
+                 for p in (("zopfli",) if family.endswith("-ffpr") else ("zopfli", "brotli"))]
+    for family, label in (("jpeg-q50", "JPEG q50"), ("jpx-r192", "JPEG2000 lossy r192"),
+                          ("jpx-lossless", "JPEG2000 lossless")):
+        ffpr = family + "-ffpr"
+        rows.append(Combination(ffpr, ffpr, "zopfli", f"Color FFPR + {label}; optimized residual streams"))
     return tuple(rows)
 
 
@@ -65,11 +70,11 @@ ROWS = combinations()
 
 def case_id(source, family):
     stem = Path(source).stem
-    if family == "indexed":
-        return f"{stem}.indexed.150dpi.5colors"
+    if family.startswith("indexed"):
+        return f"{stem}.{family}.{BENCHMARK_DPI}dpi.5colors"
     if family in ("bw-images", "bw-ffpr"):
         return f"{stem}.{family}.300dpi.otsu-180"
-    return f"{stem}.{family}"
+    return f"{stem}.{family}.{BENCHMARK_DPI}dpi"
 
 
 def file_digest(path):
@@ -134,13 +139,22 @@ def preparation_error(case, cache):
             if after - before:
                 return dict(validation_error=f"New native preparation diagnostics on page {pno+1}: {sorted(after-before)}",
                             validation_stage="shared-preparation", rejected_pdf=base["pdf"])
+        if not case.get("recipe", {}).get("force_raster"):
+            try:
+                with study.fitz.open(case["source"]) as original, study.fitz.open(base["pdf"]) as prepared:
+                    study.images.assert_no_retained_source_images(original, prepared)
+                    for before, after in zip(original, prepared):
+                        study.images.assert_native_text(before, after)
+            except AssertionError as error:
+                return dict(validation_error=f"Changed native preparation text: {error}",
+                            validation_stage="shared-preparation", rejected_pdf=base["pdf"])
     return None
 
 
 def prepare_case(document, family, folder, production, previous=None):
     source = Path(document.source)
-    if family in ("indexed", "bw-images", "bw-ffpr"):
-        dpi = 150 if family == "indexed" else 300
+    if family in ("indexed", "indexed-ffpr", "bw-images", "bw-ffpr"):
+        dpi = BENCHMARK_DPI
         prep = folder / "prepared-bitmaps" / case_id(source, family)
         imported = previous / "prepared-bitmaps" / prep.name if previous else None
         if imported and imported.exists():
@@ -153,7 +167,7 @@ def prepare_case(document, family, folder, production, previous=None):
             checkpoint = prep / "metrics.json"
             raw = json.loads(checkpoint.read_text()) if checkpoint.exists() else dict(
                 source=str(source), input_sha256=file_digest(source), mode=family, dpi=dpi,
-                colors=5 if family == "indexed" else None, threshold_method=None if family == "indexed" else "otsu",
+                colors=5 if family.startswith("indexed") else None, threshold_method=None if family.startswith("indexed") else "otsu",
                 threshold=None, prepared=[], results=[])
             if not raw["results"]:
                 failures = {variant: dict(validation_error=repr(error),
@@ -191,14 +205,15 @@ def prepare_case(document, family, folder, production, previous=None):
     if document.source not in production:
         production[document.source] = {next(iter(case["bases"])): case
                                       for case in study.production_cases([source], folder / "production",
-                                                                         resume=True, native_sources=[])}
+                                                                         resume=True, native_sources=[],
+                                                                         dpi=BENCHMARK_DPI, include_ffpr=True)}
     return production[document.source][family]
 
 
 def applicable(document, row):
     # This image-free fixture exercises native compression directly. Repeating
     # its unchanged result under an image-codec label would not test that codec.
-    return document.key != "native" or row.family in ("preserve-images", "bw-ffpr")
+    return document.key != "native" or row.family == "preserve-images" or row.family.endswith("-ffpr")
 
 
 def matrix_markdown(documents, rows, records):
@@ -235,7 +250,7 @@ def matrix_markdown(documents, rows, records):
 
 def run(folder, history_path, *, resume=False, reuse_overview=None):
     folder.mkdir(parents=True, exist_ok=resume)
-    history = load_history(history_path)
+    history = load_history(history_path) if history_path else {}
     production, records, diagnostics = {}, [], {}
     implementation = file_digest(__file__)
     imports = {}
@@ -320,8 +335,8 @@ def run(folder, history_path, *, resume=False, reuse_overview=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--label", default="representative-20261015")
-    parser.add_argument("--history", type=Path, default=Path(".tmp/integrated-compression/size-20261015-v2/metrics.json"))
+    parser.add_argument("--label", default="representative-300dpi-20261015")
+    parser.add_argument("--history", type=Path, help="Optional compatible, hash-verified prior measurements")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--reuse-overview", type=Path, help="Explicitly import verified completed cells/frozen preparations")
     args = parser.parse_args()

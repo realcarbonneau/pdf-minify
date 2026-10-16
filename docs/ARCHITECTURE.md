@@ -36,6 +36,12 @@ pdf-minimalist/
       threshold.py    # simple / otsu / adaptive / sauvola, pure numpy
       pdf_io.py       # open, page count, gray render, save with gc
       display.py      # exact read-only native PDF display, no AA/interpolation
+      canvas.py       # full-color composition, one final DPI resize
+      image_layers.py # native backdrop / transformed canvas / native overlay
+      native_layer.py # token edits preserving native Form/text state (B111)
+      marked_content.py # orphaned whitespace ActualText repair, native parser
+      defaults.py     # shared 300-DPI raster default
+      filter_defaults.py # one-time saved-DPI settings migration policy
       pipeline.py     # BW full-page raster + color JPEG recompress + gc copy
       algorithms.py   # editable six-codec image recipe choices, no preset lock
       stencils.py     # exact colored JBIG2 masks, shared by product/benchmark
@@ -222,8 +228,33 @@ No per-image RGB/mask rewrite, independent tiled resize or post-filter resize.
 BW retains its white composition backdrop; color includes actual flat page
 backdrops. Native text/vectors, page boxes, links and annotations remain;
 native-only pages do not gain a canvas. FFPR deliberately renders the entire
-page at target DPI instead. All modes still use `save_with_spec` and actual
+page instead. §224 extends this to every color codec as well as BW. Compose
+the full original page in RGB at at least target DPI (and higher if source
+bitmap density requires it), perform one final resize, then BW/palette/codec
+transforms. FFPR removes native painting even on image-free pages. §225 sets
+all built-in raster defaults and missing-DPI fallbacks to 300 DPI. §226 also
+migrates every saved/custom raster recipe once at settings load, before saved
+specs/artifacts are built. Persist the revision and migrated records; preserve
+UUID/name/order/non-DPI settings and later deliberate DPI edits. All modes still use `save_with_spec` and actual
 saved-file readback; no second GUI filter pipeline.
+
+The FFPR flag/page size are effective recipe inputs for color too; the single
+edit/debounce and artifact owner handle them without another processing path.
+Shared composition explicitly initializes native filter flags (B110), repairs
+only orphaned whitespace ActualText in derived native fragments (B109), and
+places palette stencils directly rather than through nested clipped page
+Forms (B108). Native foreground uses token-aware bitmap/backdrop removal,
+preserving original operators and Form text-state inheritance (B111).
+B112 keeps the original native page/first Form owners and their pruned
+resources, so MCIDs, MCR `/Stm` and ParentTree still describe the actual native
+overlay. New background/canvas content is prepended as an Artifact; no page-
+Form graft strands accessibility references or retains original photographs.
+Each file owns an explicit `NativeContext` for immutable Form inputs and
+equal-derivative reuse. Canvas preparation always reads a separate immutable
+original, including shared Forms on later pages. BW native mode keeps the
+original catalog/structure too. Incompatible tagged derivatives fail clearly
+instead of silently splitting their parent mapping. No final sanitize pass
+rewrites native operators. See `COMPRESSION.md` for validation boundaries.
 
 ### Layered-color JBIG2 study (§§192–194)
 

@@ -4,6 +4,7 @@ import numpy as np
 import threading
 
 from .cancel import CancelToken
+from .defaults import DEFAULT_DPI
 
 # MuPDF aborts under concurrent use from worker threads: serialize ALL fitz
 # access process-wide through this re-entrant lock (renders are milliseconds;
@@ -19,7 +20,7 @@ def page_count(doc: fitz.Document) -> int:
     return doc.page_count
 
 
-def render_gray(doc: fitz.Document, pageno: int, dpi: int = 200,
+def render_gray(doc: fitz.Document, pageno: int, dpi: int = DEFAULT_DPI,
                 token: CancelToken | None = None) -> np.ndarray:
     if token and token.cancelled:
         raise CancelledError()

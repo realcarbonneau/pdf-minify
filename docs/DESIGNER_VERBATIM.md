@@ -932,3 +932,13 @@ Superseded by §220: retain the paired predictor columns in the main tables.
 
 ## 223 — realistic combination rows over five representative PDF classes (verbatim, 2026-10-15)
 > Why does your table have columns like Z/B, etc?  We agreed that those are not realistic?  Same for F/Z.  These are useless.  Have one table with all the algo combos as rows and choose a 5 typical types of pdfs that cover the major styles.   Then we will have other table that goes into more details for specific scenarios, like color photos, scanned BW docs, mix images text, etc.  There are only a few major classes of pdfs that are load bearing to pdf compression algorithm analysis, no?
+
+## 224 — repair rejected preparations; include color FFPR at a common 300 DPI (verbatim, 2026-10-15)
+> what does "PREP FAILED", please fix, or is your flow or design implementation wrong??  Also, why don't you have FFPR for color documents, that is valid also.  I think you should do all at 300 dpi to make everything comparable.   JPEG compression at high levels is not so affected by the resolution.
+
+## 225 — default every filter to 300 DPI; avoid redundant DPI benchmark variants (verbatim, 2026-10-15)
+> I think we should also convert all the filters to 300dpi default for now.  We know that lower dpi will be smaller in general, it's not useful to have variations of this, it doesn't provide information and causes comparison problems.
+
+## 226 — migrate every existing saved filter to 300 DPI (verbatim, 2026-10-15)
+Clarification question: should existing saved filters that explicitly specify 150 or 200 DPI also be changed to 300 DPI, or should explicit saved values be preserved? Selected answer:
+> Change all saved filters to 300 DPI

@@ -80,7 +80,7 @@ def source_pdf(path, rotation):
 
 
 @pytest.mark.skipif(not shutil.which("jbig2"), reason="Actual size comparison requires JBIG2")
-@pytest.mark.parametrize("mode", ["indexed", "bw-images", "bw-ffpr"])
+@pytest.mark.parametrize("mode", ["indexed", "indexed-ffpr", "bw-images", "bw-ffpr"])
 @pytest.mark.parametrize("rotation", [0, 90])
 def test_all_eight_actual_pdf_variants_share_preparation_pixels_native_policy_and_sizes(tmp_path, monkeypatch, mode, rotation):
     source = tmp_path / "source.pdf"
@@ -102,7 +102,7 @@ def test_all_eight_actual_pdf_variants_share_preparation_pixels_native_policy_an
         assert study.pipeline._STREAM_POLICY.get() == "brotli"
     finally:
         study.pipeline._STREAM_POLICY.reset(context)
-    assert calls == ["palette" if mode == "indexed" else "threshold"] * (3 if mode == "bw-ffpr" else 2)
+    assert calls == ["palette" if mode.startswith("indexed") else "threshold"] * (3 if mode.endswith("-ffpr") else 2)
     assert [result["variant"] for result in report["results"]] == list(study.VARIANTS)
     assert report["native_stream_policy"] == "flate"
     assert source.read_bytes() == original
@@ -123,8 +123,8 @@ def test_all_eight_actual_pdf_variants_share_preparation_pixels_native_policy_an
         return shared_save(doc, path, no_new_id=True)
     monkeypatch.setattr(study.pipeline, "_save_optimized_pdf", controlled_save)
     study.pipeline.save_with_spec(str(source), str(product), dict(
-        mode="indexed" if mode == "indexed" else "bw-flate", colors=5,
-        dpi=72, dpi_cap=72, strategy="otsu", t=180, force_raster=mode == "bw-ffpr"),
+        mode="indexed" if mode.startswith("indexed") else "bw-flate", colors=5,
+        dpi=72, dpi_cap=72, strategy="otsu", t=180, force_raster=mode.endswith("-ffpr")),
         workdir=str(tmp_path))
     assert product.stat().st_size == report["results"][0]["complete_pdf_bytes"]
     serialized = study.json.dumps(report)

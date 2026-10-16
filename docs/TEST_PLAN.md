@@ -1,20 +1,89 @@
 # Test Plan
 
-## Current regression verification — 2026-10-15
+## Current regression verification — 2026-10-16
 
-Fresh full `./test.sh` run: **494 passed**, exit 0 / FULL SUITE GREEN.
-Ran at low priority with numerical thread limits; this is regression
+Fresh full-suite run (`QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q`):
+**552 passed**, exit 0. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
-removal is still pending in [TODO.md](TODO.md) §218; this suite does not
+removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
 
-## Representative integrated overview (§223)
+The final legacy-prototype stencil caller is aligned with direct placement.
+Two new 72/300-DPI fractional-page cases reproduced its clipping failure and
+pass after the change; its full 15-test module passes, followed by the fresh
+complete **552-test** run above. The current matrix's frozen saver hashes are
+unchanged by that separate prototype-tool correction.
+
+An additional full rerun was interrupted by SIGTERM before a test summary;
+it is not counted as a pass. The subsequent complete run above passed.
+
+## Uniform 300 DPI, color FFPR and native-layer repairs (§§224–226)
+
+`test_composition_repairs.py` and `test_native_layer.py` cover fractional
+page edges at 72/150/300 DPI with higher-resolution readback; poisoned native
+filter flags; repeated photo saves with no original photo-stream hashes or
+new output diagnostics; orphaned whitespace ActualText with retained MCIDs,
+Unicode metadata and real replacements; and all four color FFPR codecs,
+including rotation and native-only pages. FFPR uses the same full-color,
+one-resize preparation as production, not a separate benchmark renderer.
+
+B111 coverage reproduces hidden-to-visible Form text-state inheritance and
+asserts exact complete native-page pixels. Native foreground retains original
+operators rather than sanitizing them; tests also check binary inline samples
+containing false PDF keywords. The actual newspaper map and other pages retain
+glyphs, paint, positions and subset-renumbered vector outlines. A validator
+regression rejects invisible text even when extracted words are unchanged;
+another rejects deleting a real space glyph despite unchanged letter positions.
+Source extraction diagnostics are archived separately, cannot leak into the
+next image-decode stage, and cannot excuse a new output-only diagnostic.
+
+`test_filter_defaults.py` checks all six codecs, previous 72/150/200/600 DPI,
+active and retained DPI fields, saved built-in overrides and custom copies,
+stable UUID/name/non-DPI settings, one-time QSettings persistence, malformed
+migration markers and deliberate post-migration values surviving another load.
+All built-in/missing-DPI defaults are 300. No view-only sampling is treated as
+filtering. Explicit Zopfli has no elapsed cutoff; a controlled subprocess test
+verifies continuation beyond 120 seconds and cancellation/owned-process reaping.
+
+Color FFPR lifecycle tests verify real saved files, effective keys, one shared
+edit debounce, controls, dirty state and Revert. Offscreen
+`tools/shot.py examples/images.pdf --compression-state-only` passes at 100%
+and 2×. Full-window and 1:1 controls, panes, strip and junction captures were
+actually viewed. They include all four color FFPR choices, 300-DPI saved
+settings, native-mode restoration and saved BW FFPR Revert. Settings are
+isolated; the desktop application stays closed.
+Both offscreen state reviews were repeated after B112 at normal/2× scale,
+exited normally, and the full window, 1:1 controls/strip/junction and actual
+new tagged-map render were viewed.
+
+The complete-source 300-DPI assembly preflight passes Indexed and colored
+JBIG2 on all four image-bearing representatives, plus Flate/JBIG2 BW on the
+eight-page photo document. Decoded samples and all-page renders remain exact;
+source-native diagnostics stay separately attributed. Worker verification is
+not designer acceptance; B108–B111 remain OPEN pending explicit confirmation.
+
+Further 2026-10-16 audit: B112 exposed a gap in that first preflight. A valid
+painted-page comparison does not establish removal of images retained through
+the catalog structure tree. Its affected color measurements are not current
+compression evidence. `test_tagged_composition.py` now covers page and Form
+MCID scope, MCR `/Stm` ownership in the actual overlay, ParentTree, Alt text,
+metadata/bookmarks/attachments, semantic image-only containers, shared Forms
+across pages and incompatible tagged derivatives. A stale-tag fixture passes
+the one-page-image count but is rejected by the new whole-file image gate.
+Two targeted groups pass (62 tests each), followed by the fresh full
+**552-test** suite. The renewed complete-source 300-DPI preflight passes
+Indexed/colored JBIG2 for all four image-bearing representatives plus
+Flate/JBIG2 BW on all eight photo pages. No new PDF/UA certification or
+designer acceptance is implied.
+
+## Representative integrated overview (§§223–225)
 
 `tests/test_compression_overview.py`: 20 cases verify exactly five distinct
 repository inputs and their actual native/scan/photo/artwork/mixed structure,
-32 realistic combination rows, 138 applicable cells and 22 inapplicable
+42 realistic combination rows, 188 applicable cells and 22 inapplicable
 image-free cells. Packed pixels/native policies always use the same general
-compressor; FFPR + JBIG2 has one residual-stream row. Classic Flate is marked
+compressor; specialized-codec FFPR has one residual-stream row per recipe,
+including color JPEG/JPX/indexed/stencil cases. Classic Flate is marked
 reference. Descriptive transposed tables bold ties only within the same
 document and fidelity group; missing measurements are errors, not zero sizes.
 
@@ -26,15 +95,27 @@ does not hide independent valid variants. A rejected shared preparation is
 reported PREP FAILED, not as independently failed downstream codecs. New
 source-to-preparation diagnostics reject invalid production JPEG/JPX baselines
 even when later saves/imports perfectly preserve them. These are reporting
-and validation checks, not repairs of the open processing defects B108–B110.
+and validation checks; the shared production repairs are covered above.
 
 The runner reuses the original 14 strict integrated-encoder regressions
 below. Full suite after the final runner/failure-reporting changes:
-**494 passed**, exit 0 / FULL SUITE GREEN. No GUI/codecs/defaults changed;
-no desktop launch performed. Current published evidence and its exact counts
+**552 passed**, exit 0. `test_compression_scenarios.py`
+adds four scope/provenance cases for nine focused scenarios / 62 additional
+complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
+Current published evidence and its exact counts
 are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
-Completed representative run: 138 applicable dispositions, **114 valid final
+The repaired uniform run is complete: **188 verified overview PDFs**,
+**62 focused PDFs**, **250 distinct actual final outputs**, zero rejected
+cells and 22 explicitly inapplicable image-free cells. Every transformed
+case is 300 DPI; preserve-images controls are unresampled. All current source/
+preparation/output hashes, bytes and tied bold minima pass the independent
+publication audit. The same frozen saver/verifier hashes cover both studies.
+QPDF 12.2.0 syntax checks pass all 166 ordinary-format final PDFs; 84 known-
+unsupported Brotli outputs are excluded, not certified by that reader.
+No timing rankings, CSV delivery, desktop launch or designer issue acceptance.
+
+Historical mixed-DPI run, superseded by §§224/225: 138 applicable dispositions, **114 valid final
 PDFs / 24 rejected or preparation-blocked cells**, plus 22 inapplicable
 image-free cells. Thirty new valid outputs and 84 verified prior outputs;
 focused tables bring the publication to 195 distinct actual PDFs. All

@@ -33,7 +33,7 @@ def source_pdf(path):
 
 
 @pytest.mark.skipif(not shutil.which("jbig2"), reason="Genuine JBIG2 matrix")
-@pytest.mark.parametrize("mode", ["indexed", "bw-images", "bw-ffpr"])
+@pytest.mark.parametrize("mode", ["indexed", "indexed-ffpr", "bw-images", "bw-ffpr"])
 def test_all_21_real_combinations_preserve_prepared_image_and_native_data(tmp_path, mode):
     source = tmp_path / "source.pdf"
     source_pdf(source)

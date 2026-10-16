@@ -85,15 +85,29 @@ class _Factory(m.PdfFilterFactory2):
 
 
 def _filter(page, token, layer, *, backdrops=()):
+    if layer == "foreground":
+        from .native_layer import retain_native_foreground
+        return retain_native_foreground(page, token, backdrops)
     selector = _Selector(page, token, layer, backdrops)
     factory = _Factory(selector)
     options = m.PdfFilterOptions()
+    # MuPDF 1.28.2's wrapper leaves no_update uninitialized on reused storage
+    # despite advertising a zero-initializing default constructor. A random
+    # nonzero value runs all callbacks but silently keeps the original page.
+    # Specify the complete filtering policy, never depend on struct defaults.
+    options.recurse = 0  # preserve genuine native soft masks / Type 3 artwork
     options.instance_forms = 1
+    options.ascii = 0
+    options.no_update = 0
+    options.newlines = 0
     options.add_factory(factory.internal())
     native_doc = m.pdf_document_from_fz_document(page.parent.this)
     native_page = (page.this if isinstance(page.this, m.PdfPage)
                    else m.pdf_page_from_fz_page(page.this))
     m.pdf_filter_page_contents(native_doc, native_page, options)
+    if layer == "background":
+        from .marked_content import repair_native_tags
+        repair_native_tags(page, token)
     return selector.kept
 
 
@@ -105,7 +119,7 @@ def _copy_page(source, pno):
 
 
 def compose_page_images(doc, pno, strategy, threshold, dpi, token, encode, place,
-                        resample, *, directory=None):
+                        resample, *, directory=None, original=None, native_context=None):
     """Replace bitmap artwork with ONE BW canvas; preserve native overlays.
 
     The caller owns the one real saver; encode/place/resample are its shared
@@ -117,24 +131,32 @@ def compose_page_images(doc, pno, strategy, threshold, dpi, token, encode, place
         _check_cancel(token)
         place(out, page, page.rect, payload, codec, rgb.width, rgb.height)
     result = _compose_page(doc, pno, dpi, token, paint, resample,
-                           "images", directory)
+                           "images", directory, original, native_context)
     if result:
         log.info("page %d: one BW image canvas, original text/vectors overlaid", pno + 1)
     return result
 
 
-def _assemble_layers(doc, pno, prepared, token, canvas_layer, paint_canvas):
+def _assemble_layers(doc, pno, prepared, token, canvas_layer, paint_canvas, *, native_context=None):
     """One shared original-native + composite-canvas PDF assembly path."""
     backdrops = _page_backdrops(prepared[0])
     page = doc[pno]
     rotation = page.rotation
     page.set_rotation(0)
+    from .native_layer import retain_native_foreground
+    # Native content stays in its original page/Form owners. Moving it into a
+    # new show_pdf_page Form strands MCR /Stm pointers in the structure tree,
+    # retaining source images and disconnecting accessibility (B112).
+    retain_native_foreground(page, token, backdrops, context=native_context)
+    native_content = page.read_contents()
     empty = doc.get_new_xref()
     doc.update_object(empty, "<<>>")
     doc.update_stream(empty, b"")
     page.set_contents(empty)
+    # Keep the pruned native resources. Layer placement allocates free names
+    # alongside them; no textual resource-name rewriting or sanitizer needed.
     try:
-        for layer in ("background", canvas_layer, "foreground"):
+        for layer in ("background", canvas_layer):
             _check_cancel(token)
             with _copy_page(prepared, 0) as fragment:
                 kept = _filter(fragment[0], token, layer, backdrops=backdrops)
@@ -144,12 +166,18 @@ def _assemble_layers(doc, pno, prepared, token, canvas_layer, paint_canvas):
                     paint_canvas(doc, page, fragment[0])
                 else:
                     page.show_pdf_page(page.rect, fragment, 0, keep_proportion=False)
-        page.clean_contents()  # prune original image/mask resources
+        underlay = page.read_contents()
+        content = b"/Artifact BMC\nq\n" + underlay + b"\nQ\nEMC\n" + native_content
+        assembled = doc.get_new_xref()
+        doc.update_object(assembled, "<<>>")
+        doc.update_stream(assembled, content)
+        page.set_contents(assembled)
     finally:
         page.set_rotation(rotation)
 
 
-def compose_color_page(doc, pno, dpi, token, encode, place, resample, *, directory=None):
+def compose_color_page(doc, pno, dpi, token, encode, place, resample, *, directory=None,
+                       original=None, native_context=None):
     """Flatten full color first, resize once, then codec/palette transform.
 
     Native text/vector overlays follow §170/171. Original flat page backdrops
@@ -160,21 +188,23 @@ def compose_color_page(doc, pno, dpi, token, encode, place, resample, *, directo
         _check_cancel(token)
         place(out, page, page.rect, payload)
     result = _compose_page(doc, pno, dpi, token, paint, resample,
-                           "canvas", directory)
+                           "canvas", directory, original, native_context)
     if result:
         log.info("page %d: one color canvas, native text/vectors overlaid", pno + 1)
     return result
 
 
-def _compose_page(doc, pno, dpi, token, paint, resample, canvas_layer, directory):
+def _compose_page(doc, pno, dpi, token, paint, resample, canvas_layer, directory,
+                  original=None, native_context=None):
     """Shared compose-first RGB preparation; codec adapters run only afterward."""
     _check_cancel(token)
-    with _copy_page(doc, pno) as prepared:
+    with _copy_page(original if original is not None else doc, pno) as prepared:
         if not prepared[0].get_image_info():
             return 0
         def canvas(out, page, fragment):
             rgb = flatten_rgb(fragment, dpi, token, resample, directory=directory)
             _check_cancel(token)
             paint(out, page, rgb)
-        _assemble_layers(doc, pno, prepared, token, canvas_layer, canvas)
+        _assemble_layers(doc, pno, prepared, token, canvas_layer, canvas,
+                         native_context=native_context)
         return 1

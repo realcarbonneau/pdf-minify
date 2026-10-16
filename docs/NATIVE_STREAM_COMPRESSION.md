@@ -64,6 +64,11 @@ The UI's Flate uses zlib level 9; Brotli uses level 11. The benchmark also
 measures zlib level 1 and Brotli level 9 as effort comparisons, not extra
 product codecs. Each selected policy applies to every eligible nonempty
 native stream; it is not silently capped to a cheaper subset.
+Under §213's unconstrained encoding-time rule, explicit Zopfli encoding has
+no arbitrary elapsed-time deadline. Continue polling for user cancellation
+and terminate/reap its owned subprocess on cancellation or failure; never
+substitute a weaker encoder. The size-only 300-DPI study uses this same
+adapter, not a separate timeout/fallback implementation.
 
 General-purpose compressors such as Zstandard or LZMA/XZ cannot simply be
 renamed FlateDecode in a PDF. Do not add unsupported proprietary filters or

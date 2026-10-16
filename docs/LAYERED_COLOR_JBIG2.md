@@ -10,6 +10,12 @@ the optional production integration is tracked separately in TODO §206/B105
 and [COMPRESSION.md](COMPRESSION.md#editable-compression-selection-203).
 Production must reuse promoted core primitives, not import this benchmark tool.
 
+The original measurements below also predate uniform 300 DPI and the shared
+assembly/placement repairs (§§224–226, B108–B112). Current complete-file codec
+comparisons, including color FFPR, are in
+[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). Retain this prototype's
+explicit recipes as historical evidence, not current default-filter sizes.
+
 Related canon: [COMPRESSION.md](COMPRESSION.md) (compose/resize/quantize),
 [DESIGN.md](DESIGN.md) (native artwork and exact prepared files),
 [ARCHITECTURE.md](ARCHITECTURE.md) (one real saver),

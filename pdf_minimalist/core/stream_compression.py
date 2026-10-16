@@ -54,12 +54,9 @@ def _zopfli(data, directory, token):
         source.write_bytes(data)
         process = subprocess.Popen([binary, "--zlib", "-c", str(source)],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        started = time.monotonic()
         try:
             while True:
                 check_cancel(token)
-                if time.monotonic() - started > 120:
-                    raise RuntimeError("Zopfli stream encoding exceeded 120 seconds.")
                 try:
                     encoded, error = process.communicate(timeout=.05)
                     break

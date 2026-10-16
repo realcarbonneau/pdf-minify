@@ -17,8 +17,8 @@ def test_exactly_five_distinct_real_repository_classes():
 
 
 def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
-    assert len(overview.ROWS) == 32
-    assert len(set(overview.ROWS)) == 32
+    assert len(overview.ROWS) == 42
+    assert len(set(overview.ROWS)) == 42
     for row in overview.ROWS:
         if row.variant.startswith(("flate-", "zopfli-", "brotli-")):
             assert row.variant.split("-")[0] == row.native
@@ -27,8 +27,8 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
 
 
-def test_five_class_matrix_has_138_applicable_whole_file_cells():
-    assert sum(overview.applicable(d, row) for d in overview.DOCUMENTS for row in overview.ROWS) == 138
+def test_five_class_matrix_has_188_applicable_whole_file_cells():
+    assert sum(overview.applicable(d, row) for d in overview.DOCUMENTS for row in overview.ROWS) == 188
     native = overview.DOCUMENTS[0]
     assert not overview.applicable(native, next(r for r in overview.ROWS if r.family == "indexed"))
     assert overview.applicable(native, next(r for r in overview.ROWS if r.family == "bw-ffpr"))
@@ -150,7 +150,7 @@ def test_bad_preparation_does_not_hide_other_variants_or_relax_exact_pixels(tmp_
     prep = tmp_path / "prepared-bitmaps" / overview.case_id(document.source, "indexed")
     prep.mkdir(parents=True)
     raw = dict(source=document.source, input_sha256=overview.file_digest(document.source), mode="indexed",
-               dpi=150, colors=5, threshold_method=None, threshold=None, prepared=[], results=[])
+               dpi=300, colors=5, threshold_method=None, threshold=None, prepared=[], results=[])
     def saved_result(variant, path):
         return dict(variant=variant, pdf=str(path), pdf_sha256=overview.file_digest(path), complete_pdf_bytes=path.stat().st_size)
     base = prep / "flate-plain.pdf"

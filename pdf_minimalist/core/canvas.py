@@ -33,7 +33,8 @@ def _source_dpi(page):
     return math.ceil(dpi)
 
 
-def flatten_rgb(page, dpi, token, resample, *, directory=None, tile_pixels=8_000_000):
+def flatten_rgb(page, dpi, token, resample, *, directory=None, tile_pixels=8_000_000,
+                minimum_dpi=72):
     """Composite the original full-color layer, then resize to final DPI.
 
     No palette/threshold/codec runs until this function has completed; no
@@ -42,7 +43,7 @@ def flatten_rgb(page, dpi, token, resample, *, directory=None, tile_pixels=8_000
     """
     if dpi <= 0:
         raise ValueError("DPI must be positive")
-    source_scale = _source_dpi(page) / 72
+    source_scale = max(_source_dpi(page), minimum_dpi) / 72
     source_matrix = fitz.Matrix(source_scale, source_scale)
     renderer = DisplayPage(page)
     source = (page.rect * source_matrix).irect
