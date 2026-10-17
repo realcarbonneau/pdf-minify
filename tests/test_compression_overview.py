@@ -19,14 +19,31 @@ def test_six_distinct_real_repository_cases_include_the_complete_kepler_document
 
 
 def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
-    assert len(overview.ROWS) == 42
-    assert len(set(overview.ROWS)) == 42
+    assert len(overview.ROWS) == 34
+    assert len(set(overview.ROWS)) == 34
     for row in overview.ROWS:
         if row.variant.startswith(("flate-", "zopfli-", "brotli-")):
             assert row.variant.split("-")[0] == row.native
     residual = [r for r in overview.ROWS if r.family == "bw-ffpr" and r.variant == "jbig2"]
     assert len(residual) == 1 and residual[0].native == "zopfli"
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
+
+
+def test_only_the_eight_approved_overview_rows_are_removed():
+    removed = set(overview.ALL_ROWS) - set(overview.ROWS)
+    assert len(removed) == 8
+    assert {(r.family, r.variant, r.native) for r in removed} == {
+        (family, f"flate-{predictor}", "flate")
+        for family in ("bw-images", "bw-ffpr", "indexed", "indexed-ffpr")
+        for predictor in ("plain", "png")}
+    assert {r.family for r in overview.ROWS if r.native == "flate"} == {"preserve-images"}
+    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    main = report.split("## Overview — final complete-file bytes", 1)[1].split(overview.PNG_SECTION, 1)[0]
+    published = [line.split("|")[1].strip() for line in main.splitlines() if line.startswith("| ")]
+    assert not ({r.label for r in removed} & set(published))
+    assert {r.label for r in overview.primary_rows(overview.ROWS)} <= set(published)
+    assert not any("PNG prediction" in label for label in published)
+    assert len(published) == 31  # one header, four dividers, 26 baseline combinations
 
 
 def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
@@ -36,18 +53,34 @@ def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
     for row in overview.ROWS:
         assert "; keep native" not in row.label
         assert ("FFPR" in row.label) == row.family.endswith("-ffpr")
-        assert f"| {row.label} |" in report
+        if not row.variant.endswith("-png"):
+            assert f"| {row.label} |" in report
 
 
-def test_six_case_matrix_requires_all_252_whole_file_cells_even_if_redundant():
+def test_published_representatives_match_selected_whole_sources():
+    import pymupdf as fitz
+    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    scope = report.split("## Scope and six representative cases", 1)[1].split("These cases", 1)[0]
+    source_rows = [line for line in scope.splitlines() if line.startswith("| ") and ".pdf]" in line]
+    assert len(source_rows) == len(overview.DOCUMENTS) == 6
+    for document in overview.DOCUMENTS:
+        source = Path(document.source)
+        with fitz.open(source) as pdf:
+            pages = len(pdf)
+        expected = (f"| {document.label} | [{source.name}](../{source.as_posix()}) | "
+                    f"{pages} | {source.stat().st_size:,} |")
+        assert expected in source_rows, f"Published representative is stale: {document.key}"
+
+
+def test_six_case_matrix_requires_all_204_whole_file_cells_even_if_redundant():
     records = [dict(document=d.key, family=row.family,
                     result=dict(image_variant=row.variant, native_policy=row.native,
                                 complete_pdf_bytes=123456))
                for d in overview.DOCUMENTS for row in overview.ROWS]
-    assert len(records) == 252
+    assert len(records) == 204
     table = overview.matrix_markdown(overview.DOCUMENTS, overview.ROWS, records)
-    assert len(table.splitlines()) == 44
-    assert table.count("**123,456**") == 252
+    assert len(table.splitlines()) == 36
+    assert table.count("**123,456**") == 204
     assert "| Technical illustrations |" in table.splitlines()[0]
     assert all(len(line.split("|")[1:-1]) == 7 for line in table.splitlines())
     assert "—" not in table
@@ -97,7 +130,7 @@ def test_image_free_runner_saves_every_row_separately_even_with_identical_sizes(
         base = tmp_path / f"{family}.pdf"
         base.write_bytes(b"prepared native content")
         return dict(id=family, source=str(source), input_sha256=overview.file_digest(source),
-                    dpi=300, recipe=dict(mode="passthrough"),
+                    mode=family, dpi=300, recipe=dict(mode=family), prepared=[None],
                     bases={row.variant: dict(pdf=str(base), sha256=overview.file_digest(base))
                            for row in overview.ROWS if row.family == family})
 
@@ -118,7 +151,7 @@ def test_image_free_runner_saves_every_row_separately_even_with_identical_sizes(
     monkeypatch.setattr(overview.study, "run_case", save)
     monkeypatch.setattr(overview.study, "environment", lambda: dict(implementation={}))
     records = overview.run(tmp_path / "overview", None)
-    assert len(records) == len(saved) == len(set(saved)) == 42
+    assert len(records) == len(saved) == len(set(saved)) == 34
     assert len({record["result"]["complete_pdf_bytes"] for record in records}) == 1
     assert set(prepared) == {row.family for row in overview.ROWS}
     assert len(prepared) == len(set(prepared))
@@ -230,6 +263,28 @@ def test_changed_imported_overview_source_is_rejected(tmp_path):
         overview.run(tmp_path / "new", history, reuse_overview=manifest)
 
 
+@pytest.mark.parametrize("family", ["bw-images", "bw-ffpr", "indexed", "indexed-ffpr"])
+def test_overview_preparation_does_not_encode_removed_reference_variants(tmp_path, monkeypatch, family):
+    source = tmp_path / "source.pdf"
+    source.write_bytes(b"source")
+    document = overview.Document("art", "Artwork", str(source))
+    expected = {r.variant for r in overview.ROWS if r.family == family}
+    assert len(expected) == 5 and not any(v.startswith("flate-") for v in expected)
+    def prepare(source, folder, **settings):
+        assert set(settings["variants"]) == expected
+        folder.mkdir(parents=True)
+        results = []
+        for variant in settings["variants"]:
+            target = folder / f"{variant}.pdf"
+            target.write_bytes(variant.encode())
+            results.append(dict(variant=variant, pdf=str(target), pdf_sha256=overview.file_digest(target)))
+        return dict(source=str(source), input_sha256=overview.file_digest(source), mode=family,
+                    dpi=300, colors=5, threshold_method="otsu", threshold=None, prepared=[], results=results)
+    monkeypatch.setattr(overview.study.images, "run_case", prepare)
+    case = overview.prepare_case(document, family, tmp_path, {})
+    assert set(case["bases"]) == expected and not case["failures"]
+
+
 def test_bad_preparation_does_not_hide_other_variants_or_relax_exact_pixels(tmp_path, monkeypatch):
     import json
     document = overview.Document("scan", "scan", str(tmp_path / "source.pdf"))
@@ -240,9 +295,9 @@ def test_bad_preparation_does_not_hide_other_variants_or_relax_exact_pixels(tmp_
                dpi=300, colors=5, threshold_method=None, threshold=None, prepared=[], results=[])
     def saved_result(variant, path):
         return dict(variant=variant, pdf=str(path), pdf_sha256=overview.file_digest(path), complete_pdf_bytes=path.stat().st_size)
-    base = prep / "flate-plain.pdf"
+    base = prep / "zopfli-plain.pdf"
     base.write_bytes(b"verified reference")
-    raw["results"] = [saved_result("flate-plain", base)]
+    raw["results"] = [saved_result("zopfli-plain", base)]
     (prep / "metrics.json").write_text(json.dumps(raw))
     def interrupted(*a, **k):
         raise AssertionError("whole-page pixels differ")
@@ -257,7 +312,7 @@ def test_bad_preparation_does_not_hide_other_variants_or_relax_exact_pixels(tmp_
     monkeypatch.setattr(overview.study.images, "verify_variant", verify)
     monkeypatch.setattr(overview.study.images, "save_variant", save)
     case = overview.prepare_case(document, "indexed", tmp_path, {})
-    assert set(case["bases"]) == set(overview.study.VARIANTS) - {"jbig2"}
+    assert set(case["bases"]) == {r.variant for r in overview.ROWS if r.family == "indexed"} - {"jbig2"}
     assert "rightmost page column clipped" in case["failures"]["jbig2"]["validation_error"]
     assert "complete_pdf_bytes" not in case["failures"]["jbig2"]
 
@@ -273,7 +328,7 @@ def test_rejected_shared_preparation_is_not_reported_as_independent_codec_failur
     monkeypatch.setattr(overview.study.images, "run_case", failed)
     case = overview.prepare_case(document, family, tmp_path, {})
     assert not case["bases"]
-    assert set(case["failures"]) == set(overview.study.VARIANTS)
+    assert set(case["failures"]) == {r.variant for r in overview.ROWS if r.family == family}
     assert all(r["validation_stage"] == "shared-preparation" for r in case["failures"].values())
     row = next(r for r in overview.ROWS if r.family == family)
     result = dict(image_variant=row.variant, native_policy=row.native, **case["failures"][row.variant])

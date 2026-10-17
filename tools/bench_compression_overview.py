@@ -6,6 +6,7 @@ strict integrated saver, and publishes Markdown rather than a codec cross-produc
 
 import argparse
 from dataclasses import dataclass
+from decimal import Decimal
 import json
 from pathlib import Path
 import sys
@@ -66,7 +67,103 @@ def combinations():
     return tuple(rows)
 
 
-ROWS = combinations()
+ALL_ROWS = combinations()
+BITMAP_FAMILIES = ("indexed", "indexed-ffpr", "bw-images", "bw-ffpr")
+# §§236/237: retain the unresampled reference, not redundant bitmap encodings.
+# Focused scenarios share this selection, rather than reintroducing those rows.
+ROWS = tuple(row for row in ALL_ROWS if not (row.family in BITMAP_FAMILIES and row.native == "flate"))
+PNG_SECTION = "## PNG prediction — measured effect versus baseline"
+
+
+def primary_rows(rows):
+    """Prediction remains measured, but its effect is presented separately."""
+    return tuple(row for row in rows if not row.variant.endswith("-png"))
+
+
+def png_pairs(rows):
+    rows = tuple(rows)
+    by_key = {(r.family, r.variant, r.native): r for r in rows}
+    pairs = []
+    for row in rows:
+        if row.variant.endswith("-png"):
+            key = (row.family, row.variant.removesuffix("-png") + "-plain", row.native)
+            if key not in by_key:
+                raise ValueError(f"Missing plain baseline combination: {key}")
+            pairs.append((by_key[key], row))
+    return tuple(pairs)
+
+
+def png_effect_cell(baseline_bytes, png_bytes):
+    """Measured complete bytes and signed change; no inferred size/baseline."""
+    if any(type(size) is not int or size <= 0 for size in (baseline_bytes, png_bytes)):
+        raise ValueError("PNG comparison requires positive measured integer byte counts")
+    change = (100 * Decimal(png_bytes - baseline_bytes) / Decimal(baseline_bytes)).quantize(Decimal("0.1"))
+    if change == 0:
+        change = Decimal(0)  # Do not print a misleading negative zero after rounding.
+    size = f"{png_bytes:,}"
+    if png_bytes <= baseline_bytes:
+        size = f"**{size}**"
+    return f"{size} ({change:+.1f}%)"
+
+
+def png_prediction_markdown(documents, rows, records):
+    """One-factor effect table; callers verify source/output files before publishing."""
+    pairs = png_pairs(rows)
+    if not pairs:
+        return ""
+    by_key = {}
+    for record in records:
+        result = record["result"]
+        key = (record["document"], record["family"], result["image_variant"], result["native_policy"])
+        if key in by_key:
+            raise ValueError(f"Duplicate measured cell: {key}")
+        by_key[key] = record
+    lines = ["| Baseline combination | " + " | ".join(d.label for d in documents) + " |",
+             "|---|" + "---:|" * len(documents)]
+    signature = ("source", "input_sha256", "mode", "dpi", "recipe", "prepared")
+    for plain, png in pairs:
+        cells = []
+        for document in documents:
+            keys = [(document.key, r.family, r.variant, r.native) for r in (plain, png)]
+            if any(key not in by_key for key in keys):
+                raise ValueError(f"Missing measured PNG/plain pair: {keys}")
+            baseline, candidate = (by_key[key] for key in keys)
+            results = [r["result"] for r in (baseline, candidate)]
+            rejected = [r for r in results if r.get("validation_error")]
+            if rejected:
+                cells.append("PREP FAILED" if any(r.get("validation_stage") == "shared-preparation"
+                                                 for r in rejected) else "FAILED")
+                continue
+            cases = [r.get("case", {}) for r in (baseline, candidate)]
+            if any(any(field not in case for field in signature) for case in cases):
+                raise ValueError("Missing PNG/plain pair provenance")
+            if ({field: cases[0][field] for field in signature} !=
+                    {field: cases[1][field] for field in signature} or
+                    cases[0]["source"] != document.source):
+                raise ValueError("PNG comparison changes source, recipe or prepared pixels")
+            if not all(r.get(field) for r in results for field in
+                       ("exact_native", "exact_images", "exact_all_page_pixels")):
+                raise ValueError("Missing exact-output verification for PNG/plain pair")
+            if not all(r.get("pdf") for r in results) or results[0]["pdf"] == results[1]["pdf"]:
+                raise ValueError("PNG/plain pair requires independently saved PDFs")
+            cells.append(png_effect_cell(*(r["complete_pdf_bytes"] for r in results)))
+        lines.append("| " + plain.label + " | " + " | ".join(cells) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def bitmap_variants(rows):
+    wanted = {row.variant for row in rows}
+    return tuple(variant for variant in study.VARIANTS if variant in wanted)
+
+
+def bitmap_case(raw, identifier):
+    """One manifest shape for overview/focused preparations of any chosen subset."""
+    case = {key: raw[key] for key in ("source", "input_sha256", "mode", "dpi", "colors",
+                                    "threshold_method", "threshold", "prepared")}
+    case.update(id=identifier, family="paired-bitmap",
+                recipe={key: case[key] for key in ("mode", "dpi", "colors", "threshold_method", "threshold")},
+                bases={r["variant"]: dict(pdf=r["pdf"], sha256=r["pdf_sha256"]) for r in raw["results"]})
+    return case
 
 
 def case_id(source, family):
@@ -154,7 +251,10 @@ def preparation_error(case, cache):
 
 def prepare_case(document, family, folder, production, previous=None):
     source = Path(document.source)
-    if family in ("indexed", "indexed-ffpr", "bw-images", "bw-ffpr"):
+    if family in BITMAP_FAMILIES:
+        variants = bitmap_variants(row for row in ROWS if row.family == family)
+        if not variants:
+            raise ValueError(f"No selected bitmap variants for {family}")
         dpi = BENCHMARK_DPI
         prep = folder / "prepared-bitmaps" / case_id(source, family)
         imported = previous / "prepared-bitmaps" / prep.name if previous else None
@@ -163,7 +263,7 @@ def prepare_case(document, family, folder, production, previous=None):
         failures = {}
         try:
             raw = study.images.run_case(source, prep, mode=family, dpi=dpi, colors=5,
-                                       variants=study.VARIANTS, resume=prep.exists())
+                                       variants=variants, resume=prep.exists())
         except (AssertionError, RuntimeError) as error:
             checkpoint = prep / "metrics.json"
             raw = json.loads(checkpoint.read_text()) if checkpoint.exists() else dict(
@@ -172,8 +272,8 @@ def prepare_case(document, family, folder, production, previous=None):
                 threshold=None, prepared=[], results=[])
             if not raw["results"]:
                 failures = {variant: dict(validation_error=repr(error),
-                            validation_stage="shared-preparation", rejected_pdf=str(prep / "flate-plain.pdf"))
-                            for variant in study.VARIANTS}
+                            validation_stage="shared-preparation", rejected_pdf=str(prep / f"{variants[0]}.pdf"))
+                            for variant in variants}
             # A rejected variant must not hide valid measurements or become a
             # misleading small-file winner. Verify remaining variants separately
             # against the same first valid preparation, without relaxing pixels.
@@ -182,7 +282,7 @@ def prepare_case(document, family, folder, production, previous=None):
                 first = raw["results"][0]
                 _, expected = study.images.verify_variant(source, Path(first["pdf"]), bitmaps,
                                                           family, first["variant"], dpi)
-                for variant in study.VARIANTS:
+                for variant in variants:
                     if any(r["variant"] == variant for r in raw["results"]):
                         continue
                     target = prep / f"{variant}.pdf"
@@ -197,11 +297,8 @@ def prepare_case(document, family, folder, production, previous=None):
                 raise RuntimeError("Preparation failed without a reproducible rejected variant") from error
         manifest = prep / "manifest.json"
         manifest.write_text(json.dumps(dict(preparation=raw, failures=failures), indent=2)+"\n")
-        case = {key: raw[key] for key in ("source", "input_sha256", "mode", "dpi", "colors",
-                                         "threshold_method", "threshold", "prepared")}
-        case.update(id=prep.name, family="paired-bitmap", failures=failures,
-                    recipe={key: case[key] for key in ("mode", "dpi", "colors", "threshold_method", "threshold")},
-                    bases={r["variant"]: dict(pdf=r["pdf"], sha256=r["pdf_sha256"]) for r in raw["results"]})
+        case = bitmap_case(raw, prep.name)
+        case["failures"] = failures
         return case
     if document.source not in production:
         production[document.source] = {next(iter(case["bases"])): case
@@ -317,7 +414,10 @@ def run(folder, history_path, *, resume=False, reuse_overview=None):
             print(json.dumps(dict(document=document.key, combination=row.label,
                                   complete_pdf_bytes=result.get("complete_pdf_bytes"),
                                   validation_error=result.get("validation_error"), reused=bool(prior_result or imported))), flush=True)
-    (folder / "matrix.md").write_text(matrix_markdown(DOCUMENTS, ROWS, records))
+    (folder / "matrix.md").write_text(matrix_markdown(DOCUMENTS, primary_rows(ROWS), records))
+    png_table = png_prediction_markdown(DOCUMENTS, ROWS, records)
+    if png_table:
+        (folder / "png-prediction.md").write_text(PNG_SECTION + "\n\n" + png_table)
     failed = sum(bool(r["result"].get("validation_error")) for r in records)
     print(f"REPRESENTATIVE MATRIX COMPLETE: {len(records)-failed} verified, {failed} rejected cells", flush=True)
     return records

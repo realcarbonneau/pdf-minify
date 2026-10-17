@@ -43,9 +43,15 @@ studies above support the analysis, not substitute for it.
 lossless/lossy feature boundaries, refinement limitations and TODO §240's
 size-only optimization research. No additional switches or advanced GUI
 fields are implemented by that documentation. §233 selects non-JBIG2 CCITT
-TM972 for the main BW column; the runner/source guards are updated, while
-TODO §239 tracks the still-pending published-matrix refresh. Its historical
-pre-B114 numbers retain their actual source/version. §235 repairs the
+TM972 for the main BW column. TODO §239's fresh post-repair matrix is now
+published in the report; historical pre-B114 files retain their actual
+source/version. §§236/237 remove redundant Classic-Flate bitmap rows
+consistently from the overview and every focused section, retaining the
+unresampled reference. §§238–240 present the same 204 representative-study
+measurements as 156 baseline sizes and a separate 48-cell PNG-effect table,
+with signed changes against measured baselines. The 48 additional focused
+PDFs and residual-stream comparisons are unchanged pending PNG-only review.
+§235 repairs the
 already-JBIG2 JFK full-flow pixel/no-growth regression: all contracts now pass
 normally. B114 remains open only pending explicit designer confirmation.
 

@@ -139,8 +139,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   existing selectors. §224 subsequently authorizes color FFPR through the
   existing checkbox/saver. Never treat a worker recommendation as a designer
   ruling or silently migrate saved mixed-codec recipes.
-- §220 supersedes §219's documentation split: retain the plain and `+PNG`
-  columns together in the main bitmap-size tables. Explain that prediction
+- §220 supersedes §219's documentation split; §§238–240 now move the primary
+  integrated overview's PNG rows into a separate measured-effect table.
+  Retain the plain and PNG measurements. Explain that prediction
   precedes the same compressor; any percentage compares with that encoder's
   plain counterpart using complete PDF bytes. Preserve both wins and losses;
   do not assert universal growth. No benchmark variant or product behavior
@@ -191,7 +192,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   measured size or bold-minimum change is implied; focused Simple threshold
   columns remain explicitly labeled.
 - §229: benchmark every row against every input, including redundant no-image
-  cases. With §231 the 42 × 6 overview requires 252 measured cells, not
+  cases. With §§231/236 the 34 × 6 study requires 204 measured cells, not
   image-free N/A cells. NASA Kepler is a whole 12-page input, not an extract.
   Save/verify an actual complete output per row; do not copy another row's
   size or alias a control file. An unused image codec is a valid no-op while
@@ -199,7 +200,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   bitmap to exercise the encoder. Prior exact-row measurements may be reused
   only with strict compatible-code/source/preparation/output provenance.
 - §233: the main BW scan must not already use JBIG2. Use the complete
-  11-page CCITT `scan-naca-tm972.pdf`, keeping six columns and all 42 rows.
+  11-page CCITT `scan-naca-tm972.pdf`, keeping six columns and every retained row.
   Keep `scan-jfk-poor-copies.pdf` separately as B114's full-flow regression:
   unchanged-resolution lossless JBIG2 must preserve original samples/geometry
   and not increase complete-file bytes. Cover native/FFPR, compare a compatible
@@ -220,6 +221,23 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   JBIG2 must pass original-sample, all-page-pixel and complete-file no-growth
   checks normally, not as expected failures. Cover genuinely fractional DPI;
   refresh affected measurements without rewriting historical provenance.
+- §§236/237 narrow benchmark reference coverage: remove the eight Classic-Flate
+  BW/indexed native/FFPR overview rows and equivalent bitmap rows throughout
+  ALL focused tables, not just Logos/artwork. The measurement inventory is
+  34 × 6 = 204 actual cells, split for display under §§238–240 below.
+  Keep the unresampled Classic-Flate control,
+  Zopfli/Brotli predictor pairs, and full coverage of every retained row.
+  Share combination selection; do not reintroduce removed rows as supplemental
+  references. Preserve frozen supersets; document verified selections separately.
+- §§238–240: implement only the isolated PNG-prediction table first. Keep
+  residual-stream comparisons unchanged. The primary overview displays 26
+  baseline rows / 156 sizes; the PNG table displays eight baseline-labeled
+  rows × six PDFs / 48 measured sizes plus signed percentage change from
+  each matching measured baseline. Negative is smaller. Paired sources,
+  recipes, prepared pixels and native policies must match. No estimates or
+  fabricated/no-op replacements; retain independently measured no-image
+  controls and all 204 measured dispositions. Preserve focused-scenario data
+  and historical artifacts; change presentation, not encoding or strict reuse.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

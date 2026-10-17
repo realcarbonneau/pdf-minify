@@ -969,3 +969,56 @@ Clarification question: should existing saved filters that explicitly specify 15
 
 ## 235 — repair the JBIG2 same-DPI preparation bug (verbatim, 2026-10-16)
 > Please fix that bug
+
+## 236 — approve ten complete benchmark-row removals (verbatim excerpt, 2026-10-16)
+> ok, proceed.
+
+Approval refers to the following ten complete rows proposed immediately before
+this reply, not individual cells or all Classic-Flate references:
+
+- Overview / Black and white (BW + Otsu): `BW + Classic Flate (reference)`,
+  `BW + Classic Flate (reference) + PNG prediction`,
+  `BW FFPR + Classic Flate (reference)`, and
+  `BW FFPR + Classic Flate (reference) + PNG prediction`.
+- Overview / Indexed color — low palettes:
+  `Indexed 5 colors + Classic Flate (reference)`,
+  `Indexed 5 colors + Classic Flate (reference) + PNG prediction`,
+  `Color FFPR; indexed 5 colors + Classic Flate (reference)`, and
+  `Color FFPR; indexed 5 colors + Classic Flate (reference) + PNG prediction`.
+- Focused scenarios / Logos/artwork — palette count:
+  `Indexed + Classic Flate (reference)` and
+  `Indexed + Classic Flate (reference) + PNG prediction`.
+
+Keep the unresampled Classic-Flate control, other focused Classic-Flate rows,
+and the retained Zopfli/Brotli plain/predicted comparisons. This narrows §214's
+reference coverage, not its removal of Classic Flate from product choices.
+Every remaining overview combination still requires all six measured inputs
+under §229; archived measurements remain immutable.
+
+Superseded in focused scope by §237: remove the same redundant bitmap
+references consistently from every focused section, not Logos/artwork alone.
+
+## 237 — apply redundant-row removal consistently to focused tables (verbatim, 2026-10-16)
+> Obviously, if a row was considered redundant in the overview, is should also be dropped from the focused view, or else the statement that the row has low added values was incorrect.
+
+Apply §236's redundancy decision to every occurrence of the removed
+Classic-Flate bitmap combinations in focused tables. Do not reintroduce them
+as supplemental measurements. The unresampled preserve-images control is
+not one of those removed rows and remains a reference under §214. Keep
+Zopfli/Brotli prediction pairs and every representative input for retained rows.
+
+## 238 — isolate lossless optimization effects with measured baseline comparisons (verbatim, 2026-10-16)
+> Your analysis is not well structured.  When an optimization does not change the final pdf visualization, like PNG prediction and optimized residual streams, split them out into their own tables to make single changes tests, this is the scientific method.  So for all the combination where PNG optimization is relevant, make a new table, with the rows for each of the baseline (eg "Indexed 5 colors + Brotli", etc) and the six columns, but the result size in the table will be for the "PNG prediction" version and beside it put the % improvement over the baseline (eg -1.2%, or +2.5%, etc)  The -% is good.  DO you follow?
+
+## 239 — only measured complete-PDF sizes (verbatim, 2026-10-16)
+> There is no "predicted PDF bytes", no predicted.  Only measured.  Why did you say predicted?
+
+Sizes are actual saved-file bytes. PNG prediction names the reversible
+encoding operation, never a size estimate. The signed percentage is computed
+from the two measured complete-file sizes, not estimated component savings.
+
+## 240 — review PNG prediction before other optimization tables (verbatim, 2026-10-16)
+> Start with only "PNG prediction" so that I can review an make sure it is correct.
+
+PNG prediction is the current implementation scope. Leave residual-stream
+comparisons unchanged; further optimization-table restructuring follows review.

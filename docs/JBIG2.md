@@ -169,10 +169,11 @@ not ignore intentional resolution/threshold/appearance changes or substitute
 another codec under an explicit selection. Fidelity changes stay explicit.
 
 For the main conversion/compression comparison use whole eleven-page
-**CCITT** `scan-naca-tm972.pdf`, not an already-JBIG2 scan. The runner and source
-guards are updated; replacing/recomputing the published overview remains
-TODO §239. Its historical matrix is explicitly labeled pre-B114, not silently
-relabeled as repaired results. Keep the JFK source unchanged for regression.
+**CCITT** `scan-naca-tm972.pdf`, not an already-JBIG2 scan. The published
+overview and focused scan comparison now use fresh post-repair saves; all
+34 retained scan cells are actual verified outputs (TODO §§239/241).
+Historical files keep their original source/version, not repaired labels.
+Keep the JFK source unchanged for regression.
 Audit actual stored image `/Filter` values, not the PNG/TIFF export format
 returned by extraction (B115).
 

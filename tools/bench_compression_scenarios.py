@@ -48,12 +48,16 @@ def rows_for(scenario):
 def prepare(scenario, folder, resume):
     source = Path(scenario.source)
     if scenario.family != "preserve-images":
+        variants = overview.bitmap_variants(rows_for(scenario))
         raw = study.images.run_case(source, folder, mode=scenario.family, dpi=300,
                                     colors=scenario.colors, strategy=scenario.strategy,
-                                    threshold=scenario.threshold, variants=study.VARIANTS, resume=resume)
+                                    threshold=scenario.threshold, variants=variants, resume=resume)
         manifest = folder / "manifest.json"
         manifest.write_text(json.dumps([raw], indent=2) + "\n")
-        return next(study.bitmap_cases(manifest))
+        case = overview.bitmap_case(raw, folder.name)
+        if set(case["bases"]) != set(variants):
+            raise ValueError("Incomplete selected focused bitmap preparation")
+        return case
     folder.mkdir(parents=True, exist_ok=resume)
     base = folder / "base.pdf"
     recipe = dict(mode="passthrough")

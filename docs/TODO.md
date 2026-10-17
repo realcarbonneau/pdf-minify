@@ -2165,19 +2165,19 @@ See B114, `JBIG2.md` and `TEST_PLAN.md`. DONE means implementation verified,
 not designer acceptance; B114 remains OPEN. The historical main-matrix
 replacement/recomputation remains separately tracked in §239.
 
-## 239 — OPEN (designer §233: replace the overview scan with a non-JBIG2 PDF)
+## 239 — DONE (designer §233: replace the overview scan with a non-JBIG2 PDF)
 
-Use whole `scan-naca-tm972.pdf`: 11 pages, 374,461 bytes, eleven 300-DPI
-CCITT 1-bit images plus original OCR text. Audit actual PDF filters, repair
-the misleading extraction-format corpus classifier/README (B115), and guard
-the representative selection with tests. The runner/source guard and inventory
-repair are implemented. Measure all 42 new complete outputs with the repaired
-§235 compositor; recompute other affected preparations rather than relabeling
-their old measurements. Keep original files/hashes/provenance untouched. Update
-the continuous overview, focused scan comparison, minima, conclusions and
-reader/provenance totals from actual saved files; keep historical JFK outputs
-as diagnostic/regression evidence, not codec rankings. No time comparison.
-See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §233 and `TEST_PLAN.md`.
+~~Replace the main already-JBIG2 scan with whole non-JBIG2 CCITT TM972;
+repair the codec inventory and publish actual post-repair measurements.~~
+Stub: the report now uses all 11 pages / 374,461 bytes of
+`scan-naca-tm972.pdf`, including original OCR. All 42 scan combinations and
+other affected preparations were newly measured with the §235 repair;
+§§236/237 select the current 34 rows. Actual stored filters, corpus inventory,
+published source descriptors, saved sizes/hashes and tied minima are guarded
+and audited. Historical JFK files remain regression evidence, not main-table
+rankings. The full suite passes 605 tests. See `INTEGRATED_COMPRESSION.md`,
+`DESIGN.md` §233 and `TEST_PLAN.md`. Implementation verified; B114/B115 remain
+OPEN pending explicit designer confirmation.
 
 ## 240 — OPEN (designer §234: explore JBIG2 optimization features)
 
@@ -2229,3 +2229,33 @@ This is an exploration task, not authorization to enable lossy coding,
 install/change dependencies, replace current recipes, add advanced GUI fields,
 or silently change existing saved-filter results. See `JBIG2.md`, B114,
 `COMPRESSION.md` and `INTEGRATED_COMPRESSION.md`.
+
+## 241 — DONE (designer §§236/237: remove redundant benchmark rows consistently)
+
+~~Remove the eight main Classic-Flate bitmap rows and their equivalents
+throughout ALL focused tables; retain the unresampled reference.~~
+Stub: one shared selection drives 34 × six actual overview cells and nine
+focused scenarios / 48 additional PDFs. All four bitmap-focused sections
+drop equivalent redundant rows; future preparations encode only retained
+variants. The report audits 291 size cells against 252 distinct actual PDFs,
+with unchanged historical artifacts, recalculated predictor statistics and
+same-fidelity tied minima. Regression checks cover row absence/control
+retention, full no-image coverage and published source descriptors. Targeted
+80-test and actual 30-PDF subset checks pass, followed by the full 605-test
+suite. No GUI/default changes or designer defect acceptance. See
+`INTEGRATED_COMPRESSION.md`, `DESIGN.md` §§236/237 and `TEST_PLAN.md`.
+
+## 242 — DONE (designer §§238–240: isolate the measured PNG-prediction effect)
+
+~~Move PNG overview rows into a separate baseline-labeled six-document table;
+show measured PNG-PDF bytes plus signed change from measured plain baselines.~~
+Stub: 26 baseline rows / 156 sizes plus eight PNG rows / 48 measured effects,
+with unchanged source/recipe/pixels/native policy and negative meaning smaller.
+All original 204 measurements, 252 distinct PDFs and 291 displayed sizes stay
+accounted for. Reusable generation and 30 new tests cover pairing, byte counts,
+signs, denominator, rounding, wins/ties, failures and the published table.
+The 110-test focused run and full 635-test suite pass; an independent actual-
+file audit verifies sizes/hashes and signed changes. No new encoding or
+residual-stream restructuring; focused data is unchanged. Implementation is
+verified, **not designer acceptance**; the PNG-only table awaits review.
+See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §§238–240 and `TEST_PLAN.md`.

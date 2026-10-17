@@ -2,12 +2,15 @@
 
 ## Current regression verification — 2026-10-16
 
-Fresh full-suite run (`./test.sh`, offscreen): **593 passed**, exit 0 /
+Fresh full-suite run (`./test.sh`, offscreen): **635 passed**, exit 0 /
 FULL SUITE GREEN, with no expected failures. B114's five formerly failing
 contracts now pass normally after the shared density repair; their markers
 were removed. This includes the all-row coverage, B113 repair, PDF Minify
 rename, non-JBIG2 scan selection, fractional-density and corpus-codec
-inventory coverage described below. This is regression
+inventory coverage, plus consistent overview/focused row pruning, actual
+subset preparation, published-source guards and the 30 PNG-effect cases
+described below. The latest focused 110-test run passes; the earlier 80-test
+run and six-case / 30-PDF subset smoke also pass. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
@@ -62,10 +65,12 @@ The main BW comparison instead uses all eleven pages of
 `scan-naca-tm972.pdf`: actual `/CCITTFaxDecode`, one-bit grayscale, about
 300 DPI, scanned typewriting/annotations/diagrams with existing OCR text.
 Selection tests require this complete non-JBIG2 source and independently
-inspect stored filters. The overview refresh remains TODO §239: all 42
-replacement cells must be saved and verified, and every affected preparation
-must use the repaired implementation. Historical files/hashes stay untouched;
-the published matrix is labeled pre-B114 until that refresh is verified.
+inspect stored filters. TODO §239's complete post-repair refresh measures all
+42 replacement scan combinations before §§236/237 select the retained 34.
+Every affected preparation is newly generated using the repaired compositor;
+historical files/hashes stay untouched. All 291 retained displayed size cells
+and tied bold minima are independently audited against 252 distinct actual
+complete PDFs, including the new eleven-page source descriptor.
 
 `tests/test_corpus_codecs.py` covers real JBIG2, CCITT, Flate, JPEG and native-
 only sources while forbidding `extract_image()` for codec identification;
@@ -153,20 +158,21 @@ Indexed/colored JBIG2 for all four image-bearing representatives plus
 Flate/JBIG2 BW on all eight photo pages. No new PDF/UA certification or
 designer acceptance is implied.
 
-## Representative integrated overview (§§223–231)
+## Representative integrated overview (§§223–240)
 
-`tests/test_compression_overview.py`: 27 cases verify six distinct complete
+`tests/test_compression_overview.py`: 33 cases verify six distinct complete
 repository inputs and their actual native/scan/photo/artwork/mixed/technical
 structure, including Kepler's 12 text-bearing, ten vector-bearing and nine
 image-bearing pages (15 image placements). The formatter requires all
-42 realistic combination rows × six inputs = **252 measured cells**, including
+34 realistic combination rows × six inputs = **204 measured cells**, including
 redundant no-image recipes (§229 / TODO §234). Missing native-only measurements
-are errors, not N/A; the runner saves 42 distinct outputs for an image-free
+are errors, not N/A; the runner saves 34 distinct outputs for an image-free
 input even when every size is identical. Packed pixels/native policies use the same general
 compressor; specialized-codec FFPR has one residual-stream row per recipe,
-including color JPEG/JPX/indexed/stencil cases. Classic Flate is marked
-reference. Descriptive transposed tables bold ties only within the same
-document and fidelity group; missing measurements are errors, not zero sizes.
+including color JPEG/JPX/indexed/stencil cases. Classic Flate remains only as
+the unresampled reference under §§236/237. Descriptive transposed tables bold
+ties only within the same document and fidelity group; missing measurements
+are errors, not zero sizes.
 
 Four real no-image cases in `tests/test_image_stream_bench.py` cover both BW
 and indexed preparation, with plain and xref-stream source containers. Every
@@ -193,6 +199,36 @@ complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
 Current published evidence and its exact counts
 are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
+§§238–240 change only the PNG presentation: 26 baseline rows / 156 sizes and
+a separate eight-row × six-document effect table / 48 measured sizes, with
+signed percentage change against the matching measured baseline. The
+measurement inventory and all output files remain unchanged. Thirty new
+`tests/test_png_prediction_table.py` cases pin exact baseline denominators,
+positive/negative/zero signs, rounding, paired wins/ties, all six columns,
+same source/recipe/prepared pixels/native policy, independent files, missing
+or invalid sizes/provenance, rejected outputs and the published 48 cells.
+The 110-test focused run passes. An independent actual-file audit checks
+all 156 baseline cells and 48 PNG effects against the original 252 saved-PDF
+paths/sizes/hashes, confirms all signed changes, and requires focused data
+and residual-stream rows to remain unchanged. No encoding, new codec or
+residual-stream comparison is introduced before PNG-only designer review.
+The full post-split suite passes **635 tests**, with no expected failures.
+
+§§236/237 narrow the current scope consistently: 34 overview rows / 204 cells,
+and nine focused scenarios / 48 additional complete PDFs. The 33 overview
+and ten focused regression cases pin the eight removed overview combinations,
+absence of equivalent bitmap rows in every focused table, retention of the
+unresampled Classic-Flate control, and preparation of only the five remaining
+bitmap variants. The published whole-source descriptor must match the actual
+runner input filename, page count and on-disk bytes, preventing another stale
+JFK source row after a runner-only change. Prediction pairs and tied bold
+minima remain; all retained no-image rows still require independent outputs.
+A six-case actual subset-preparation smoke covers overview BW/indexed with
+native/FFPR and focused BW/indexed, saving 30 exact-verified PDFs without the
+removed variants. Preparation JSON no longer reports a first-variant
+percentage mislabeled as Classic Flate when that variant was not selected.
+No encoding, pixel, saver or standard import/resume verification is relaxed.
+
 Historical six-case baseline before the §233 scan replacement: **252 verified overview PDFs**,
 **62 focused PDFs**, **314 distinct actual final outputs**, zero rejected
 or excluded cells. Kepler adds 42 separately saved/verified 12-page outputs;
@@ -200,7 +236,7 @@ all 210 previous overview cells/files and every focused table remained intact
 at that stage. §233 replaces the scan, not the other five PDF inputs.
 The 22 formerly missing no-image cells are also independently saved, never
 filled by copying a control's size/file. Every transformed case is 300 DPI;
-preserve-images controls are unresampled. All current source/preparation/
+preserve-images controls are unresampled. At that stage all source/preparation/
 output hashes, actual bytes and tied bold minima pass the publication audit.
 The Markdown is one rendered table/header, four unnumbered title-only divider
 rows and 42 measurement rows with seven cells (algorithm + six PDF cases).
@@ -215,7 +251,7 @@ combined manifest explicitly marks mixed provenance, without relaxing the
 strict automatic cross-version import gate. A fresh full **572-test** suite
 passes after the six-case code change. QPDF 12.2.0 syntax checks pass all
 **207 ordinary-format final PDFs**; **107 Brotli outputs** are excluded from
-that unsupported reader check, not certified by it. Across all current tables,
+that unsupported reader check, not certified by it. Across those historical tables,
 93 plain/prediction pairs yield 12 wins, six no-image ties and 75 losses.
 No timing rankings, CSV delivery, desktop launch or designer issue acceptance.
 

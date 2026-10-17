@@ -129,6 +129,7 @@ def test_all_eight_actual_pdf_variants_share_preparation_pixels_native_policy_an
     assert product.stat().st_size == report["results"][0]["complete_pdf_bytes"]
     serialized = study.json.dumps(report)
     assert "seconds" not in serialized and "timing" not in serialized
+    assert "vs_current_flate_percent" not in serialized
     assert report["smallest"] in study.VARIANTS
 
 
@@ -194,8 +195,9 @@ def test_resume_revalidates_existing_pdfs_and_rejects_changed_preparation(tmp_pa
     source = tmp_path / "source.pdf"
     source_pdf(source, 0)
     folder = tmp_path / "case"
-    variants = ("current-flate", "brotli-png")
+    variants = ("zopfli-plain", "brotli-png")
     initial = study.run_case(source, folder, dpi=72, variants=variants)
+    assert "vs_current_flate_percent" not in study.json.dumps(initial)
     def forbidden(*a, **k):
         pytest.fail("A verified existing PDF must not be encoded again")
     monkeypatch.setattr(study, "save_variant", forbidden)

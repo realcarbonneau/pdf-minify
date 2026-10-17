@@ -139,6 +139,8 @@ tables. This supersedes §219's split. Compare prediction with the same
 encoder's plain output, retaining identical prepared pixels and complete PDF
 sizes. Sixty of 66 pairs grow; six BW pairs shrink; no algorithm winner
 changes in this corpus. All results remain in `IMAGE_STREAM_COMPRESSION.md`.
+§§238–240 subsequently separate the primary integrated overview's PNG
+effect table; that does not delete either variant or alter this component study.
 
 Use correct technical names directly in explanatory prose, without typo
 discussions, correction lists or mnemonic asides. Retain designer quotations
@@ -190,8 +192,8 @@ Designer §228 (verbatim):
 
 Present the primary overview in this order: **BW**, **indexed color / low
 palettes**, then **full color**. Retain every representative PDF column and
-add the sixth Kepler case (§231), keeping every measured combination,
-including classic-Flate references and plain/predicted
+add the sixth Kepler case (§231), keeping the combinations selected under
+§236, including the unresampled classic-Flate reference and plain/predicted
 pairs. Use one continuous Markdown table with one column-header row, not
 separate tables or numbered headings. Each group starts with an unnumbered
 divider row: a bold title in the far-left cell and otherwise blank measurement
@@ -203,7 +205,8 @@ FFPR belongs to indexed color, not full color. Preserve separate native/FFPR
 and lossy/lossless fidelity minima, including tied bold winners. Expected
 codec strengths guide interpretation, not changes to measurements, automatic
 codec selection or claims of a universal winner. This is a presentation-only
-refinement of §223; focused scenarios and benchmark artifacts remain intact.
+refinement of §223; §§236/237 subsequently remove redundant bitmap-reference
+rows throughout the analysis without deleting historical benchmark artifacts.
 See [the overview](INTEGRATED_COMPRESSION.md#overview--final-complete-file-bytes)
 and TODO §§232/233.
 
@@ -243,11 +246,11 @@ Use whole `scan-naca-tm972.pdf` (11 pages, 374,461 bytes) for the six-case
 overview's BW scan column. Its eleven 1-bit images use `/CCITTFaxDecode` at
 approximately 300 DPI, not JBIG2; it contains scanned typewriting, annotations,
 diagrams and an existing OCR layer. Keep the other five representatives and
-all 42 combinations. Verify actual stored `/Filter` values, never infer
-source compression from the PNG/TIFF returned by extraction (B115).
+all retained combinations (34 under §236). Verify actual stored `/Filter`
+values, never infer source compression from the PNG/TIFF returned by extraction (B115).
 Keep the JFK file and historical measurements untouched, outside the current
-codec-comparison tables. Replace, independently save and verify all 42 scan
-cells; never reuse the old scan's sizes under the new filename. Source/output
+codec-comparison tables. Replace, independently save and verify every retained
+scan cell; never reuse the old scan's sizes under the new filename. Source/output
 hashes, original reader limitations and common 300-DPI transformations remain
 required. This does not declare B114 fixed or authorize pixel changes to a
 same-DPI no-op. See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
@@ -288,11 +291,14 @@ prerequisite for promoting future optimization results.
 
 ### Complete matrix coverage (§229)
 
+Current row selection is narrowed by §236 below; complete six-input coverage
+continues to apply to every retained row.
+
 Designer §229 (verbatim):
 > please drop that rule, every row gets benchmarked, even if redundant, this is also a sanity check on the benchmarks.
 
-Benchmark every combination against every representative PDF: all 42 rows ×
-six inputs (§231), including image-free inputs with FFPR off. An unused image
+Benchmark every combination against every representative PDF: all 34 retained
+rows (§236) × six inputs (§231), including image-free inputs with FFPR off. An unused image
 codec is a valid no-op, not an inapplicable recipe; native/font/container compression
 still runs. Save and verify each row's actual complete PDF even when its size
 duplicates another row. Never fill a newly measured cell by copying a control
@@ -305,6 +311,69 @@ source/implementation/output verification and explicit provenance. Preserve
 continuous table. Failures remain explicit, never blanks or guessed sizes.
 See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) and TODO §234.
 
+### Remove redundant Classic-Flate benchmark rows (§§236/237)
+
+Designer §236 (verbatim excerpt):
+> ok, proceed.
+
+The approved ten-row list is recorded in [DESIGNER_VERBATIM.md](DESIGNER_VERBATIM.md#236--approve-ten-complete-benchmark-row-removals-verbatim-excerpt-2026-10-16).
+Remove eight complete Classic-Flate bitmap rows from the main overview
+(native/FFPR × BW/indexed × plain/predicted). Designer §237 extends the
+initial Logos/artwork-only focused scope consistently to all focused tables:
+
+> Obviously, if a row was considered redundant in the overview, is should also be dropped from the focused view, or else the statement that the row has low added values was incorrect.
+
+The measurement inventory is **34 rows × six complete inputs = 204 measured
+cells**. §§238–240 subsequently split its display into 26 baseline rows and
+eight isolated PNG-effect rows without dropping measurements.
+Remove equivalent Classic-Flate bitmap rows from Logos/artwork, Mixed
+text/images, Scanned BW text and Threshold sensitivity. Do not retain them
+as supplemental references. Preserve the unresampled Classic-Flate control
+in the overview and applicable photo/native-focused sections. This does not
+globally remove the encoder from older diagnostic tooling or authorize
+GUI/recipe changes.
+
+Keep Zopfli/Brotli predictor pairs, continuous fidelity groups, same-input
+bold minima, 300-DPI transforms, and actual complete-file measurements even
+for no-image cases. Recompute current coverage, conclusions and predictor
+statistics from the selected outputs. Historical full-scope artifacts retain
+their original files, hashes and scope; a verified selection is not a new
+encoding run. Use one shared combination selection for overview and focused
+tables so removed bitmap references cannot leak back into another section.
+See TODO §241.
+
+### Isolated PNG-prediction effect (§§238–240)
+
+Designer §238 requests a separate single-change comparison, §239 requires
+measured saved-file bytes only, and §240 limits the first implementation to:
+
+> Start with only "PNG prediction" so that I can review an make sure it is correct.
+
+Move the eight PNG-prediction rows out of the primary integrated overview
+into their own table. Its rows name the matching plain baseline; retain all
+six representative PDF columns. Each cell shows the measured PNG-prediction
+complete-PDF bytes and signed percentage change from the measured plain
+baseline: `100 × (PNG bytes − baseline bytes) / baseline bytes`. Negative
+means smaller, positive means larger. Keep the PDF source, prepared pixels,
+recipe, general compressor and native-stream policy identical within each
+pair; only reversible image-row prediction changes. No size estimation,
+payload-only comparison, guessed baseline or missing-cell substitution.
+
+The measurement scope stays 34 × six: 26 baseline overview rows / 156 size
+cells plus eight PNG effect rows / 48 size cells. No PDF is re-encoded for
+this presentation change. Preserve measured files, hashes, reader caveats,
+no-image sanity controls and the existing focused-scenario data. The new
+six-document effect table is the first review surface; do not restructure
+residual streams or add other optimization tables before that review.
+
+Overview bold minima are recalculated among its baseline rows within the
+same document/fidelity group. In the paired effect table, bold measured bytes
+mean the PNG result is no larger than its own baseline (including ties), not
+the smallest across unrelated documents/recipes. Show signed changes rounded
+to one decimal place and explain this distinct paired emphasis locally.
+This supersedes §220's placement of PNG rows in the primary overview, not
+the requirement to retain and verify both measured variants. See TODO §242.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview
@@ -316,8 +385,9 @@ multipage illustrated technical document and includes the designer's regular
 regression input. This is a practical additional stress case, not a claim
 that PDF composition has six exhaustive, mutually exclusive classes.
 
-Measure all 42 rows at the common 300-DPI transform resolution, with the same
-unresampled controls, native/FFPR distinction and reader limitations. Keep
+Measure all retained rows (34 under §236) at the common 300-DPI transform
+resolution, with the same unresampled controls, native/FFPR distinction and
+reader limitations. Keep
 all previous actual files/values; verify pinned implementation changes and
 their hashes instead of relabeling old measurements as freshly encoded.
 See `INTEGRATED_COMPRESSION.md`, `TEST_PLAN.md` and TODO §236.
@@ -340,6 +410,15 @@ lower-DPI scenario variations from the current analysis, retaining historical
 artifacts as evidence rather than mixing them into current rankings. Report
 actual complete-file bytes and maintain separate fidelity groups. A common
 DPI does not make JPEG/JPX quality settings or palette/BW transforms equivalent.
+
+**Preserve images** names an unresampled control that leaves the original
+encoded image data/codecs, dimensions, colors and masks unchanged. It does
+not mean other filters delete the pictures. Other rows intentionally compose
+and transform their bitmap representation (DPI, BW, palette or image codec)
+while retaining native text/vectors unless FFPR is selected. FFPR includes
+that native content in the page bitmap. Native/font/container optimization
+can change whole-file bytes even in the preserve-images control. Distinguish
+retaining pictorial content from preserving its original encoded representation.
 
 All built-in raster filter defaults and missing-DPI fallbacks become 300 DPI.
 §226 additionally authorizes migrating ALL existing saved raster filters,

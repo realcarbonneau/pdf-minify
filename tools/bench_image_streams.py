@@ -535,9 +535,9 @@ def run_case(source, folder, *, mode="indexed", dpi=300, colors=5, strategy="ots
         (folder / "metrics.json").write_text(json.dumps(row, indent=2)+"\n")
         print(json.dumps(dict(case=folder.name, **{key: result[key] for key in (
             "variant", "complete_pdf_bytes", "encoded_image_bytes", "actual_pages_exact", "reused_existing_pdf")})), flush=True)
-    baseline = row["results"][0]["complete_pdf_bytes"]
-    for result in row["results"]:
-        result["vs_current_flate_percent"] = round((result["complete_pdf_bytes"]/baseline-1)*100, 3)
+    # A selected subset need not contain Classic Flate. Report actual complete
+    # bytes; named paired comparisons belong to the publication, not an
+    # implicit first-variant baseline mislabeled as Classic Flate.
     row["smallest"] = min(row["results"], key=lambda item: item["complete_pdf_bytes"])["variant"]
     (folder / "metrics.json").write_text(json.dumps(row, indent=2)+"\n")
     return row

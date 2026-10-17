@@ -1528,8 +1528,9 @@ paths reproduce every original bitmap sample, page geometry and all-page
 pixels at 72/300 DPI, with **332,974 encoded image bytes**, equal to the
 original streams. Source SHA-256 remains unchanged. Evidence and exact source/
 output hashes: `.tmp/b114-fixed-verification/metrics.json`; normal/2× offscreen
-real-file previews are reviewed. The main historical size matrix is explicitly
-pre-repair, with replacement/recomputation tracked in TODO §239. Keep this
+real-file previews are reviewed. TODO §239's main matrix and focused scan
+comparison now use fresh post-repair CCITT TM972 saves, with every retained
+cell verified and historical faulty-flow evidence left unchanged. Keep this
 issue OPEN pending explicit designer confirmation; these checks are not
 designer acceptance.
 
