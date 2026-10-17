@@ -144,6 +144,7 @@ def test_no_prediction_rows_produce_no_empty_effect_table():
 
 
 def test_published_effect_table_matches_every_measured_baseline_and_has_correct_signed_percentages():
+    from tools import bench_png_extension as extension
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     primary, effects = report.split(overview.PNG_SECTION, 1)
     effects = effects.split("## Focused scenarios", 1)[0]
@@ -151,8 +152,8 @@ def test_published_effect_table_matches_every_measured_baseline_and_has_correct_
     baselines = {cells[0]: cells[1:] for line in primary.split("## Overview — final complete-file bytes", 1)[1].splitlines()
                  if line.startswith("| ") for cells in [parse(line)]}
     rows = [parse(line) for line in effects.splitlines() if line.startswith("| ")]
-    assert len(rows) == 9 and len(rows[0]) == 7  # one header and eight pairs
-    assert {row[0] for row in rows[1:]} == {b.label for b, _ in overview.png_pairs(overview.ROWS)}
+    assert len(rows) == 17 and len(rows[0]) == 7  # one header and sixteen pairs
+    assert {row[0] for row in rows[1:]} == {b.label for b, _ in overview.png_pairs(extension.publication_rows())}
     audited = 0
     for row in rows[1:]:
         assert len(row) == 7
@@ -167,4 +168,4 @@ def test_published_effect_table_matches_every_measured_baseline_and_has_correct_
             assert match[4] == f"{delta:+.1f}"
             assert bool(match[1]) == bool(match[3]) == (png <= plain)
             audited += 1
-    assert audited == 48
+    assert audited == 96

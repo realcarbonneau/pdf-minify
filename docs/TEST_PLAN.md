@@ -1,6 +1,25 @@
 # Test Plan
 
-## Current regression verification — 2026-10-16
+## Validation triggers (§241)
+
+Run the full suite after code-affecting changes, including test, dependency,
+build or configuration changes that affect execution. Documentation-only and
+comment-only edits need relevant checks (formatting, links or table/data
+consistency), not a full test run. Reuse a passing result when the tested code
+is unchanged; committing or pushing does not require repeating verification.
+
+## Current regression verification — 2026-10-17
+
+Full suite after the controlled-experiment code changes (`./test.sh`,
+offscreen): **654 passed**, exit 0 / FULL SUITE GREEN, no expected failures.
+The 19 new cases cover experiment scope, real saved-file pairs, compatible
+reuse, fixed-stream proofs, publication gates and measured table arithmetic.
+Production rendering, GUI behavior and defaults are unchanged. The independent
+publication audit passes all 362 saved files and 138 signed percentages.
+The later completion notes below are documentation-only; the tested code is
+unchanged and this passing suite is reused under §241.
+
+### Previous PNG-only stage — 2026-10-16
 
 Fresh full-suite run (`./test.sh`, offscreen): **635 passed**, exit 0 /
 FULL SUITE GREEN, with no expected failures. B114's five formerly failing
@@ -14,6 +33,51 @@ run and six-case / 30-PDF subset smoke also pass. This is regression
 verification, not a new compression-time benchmark. Classic-Flate option
 removal is still pending in [TODO.md](TODO.md) §217; this suite does not
 certify that unimplemented change.
+
+## Controlled experiment verification — 2026-10-17 (§242)
+
+New code is limited to benchmark scope, strict compatible reuse, paired
+report generation and tests; production rendering/UI/defaults are unchanged.
+`test_png_extension.py` covers the eight new PNG row pairs, separate 16/64
+palette and FFPR identities, exact metadata-only historical compatibility,
+full-recipe reuse matching, real four-variant 300-DPI saves and unchanged
+completed-job resume without re-encoding. Changed output hashes and partial
+or changed-identity checkpoints are rejected.
+
+`test_residual_stream_bench.py` checks the planned seven-row/42-pair scope,
+actual shared-saver Flate/Zopfli files, identical encoded image bytes/native
+decoding/300-DPI pixels, fixed-recipe gates, complete/missing/duplicate pairs
+and unchanged-job reuse. Native-stream tests hold image encoding fixed;
+they are not another image-codec comparison.
+
+`test_experiment_publication.py` verifies measured signed-byte statistics,
+reuse of pinned previous QPDF evidence, checking only missing supported
+outputs, incomplete-study rejection and all 42 published paired percentages.
+Direct actual-stream signatures distinguish a native-content change from
+fixed image payloads. Publication checks encoded native-stream equality in
+every PNG pair and encoded image-stream equality in every native A/B pair,
+without re-rendering already verified page pixels.
+The existing PNG publication test expands its byte/percentage/bold-emphasis
+audit from 48 to 96 cells, with visible plain baselines for every row.
+
+Corpus measurements are complete: 96 PNG pairs plus 42 native/residual pairs.
+The PNG extension saves 80 missing PDFs and reuses 16 compatible focused
+outputs; NATIVE-01 adds 30 actual Flate-reference PDFs. The independent audit
+checks all **362 complete files / 471 displayed sizes / 138 signed changes**,
+source/preparation/output hashes, same-fidelity bold minima and unchanged
+focused data. Direct signatures prove encoded native equality in all 96 PNG
+pairs and encoded-image equality in all 42 native pairs. QPDF checks pass 215
+supported outputs, reusing pinned earlier results; 147 Brotli outputs are
+excluded from that unsupported-reader check, not certified by it.
+
+Evidence: `.tmp/compression-experiments/publication-20261017/`, including
+`publication.json`, `final-publication.json`, `audit.json` and `qpdf.json`.
+The final publication retains the later committed prose corrections without
+changing any measured table or original producing identity. Full suite:
+**654 passed**. This is worker verification, **not designer acceptance** or
+all-reader certification. The desktop application was not launched.
+
+### Earlier prototype verification (historical)
 
 The earlier **552-test** verification aligned the final legacy-prototype
 stencil caller with direct placement.
@@ -211,7 +275,9 @@ The 110-test focused run passes. An independent actual-file audit checks
 all 156 baseline cells and 48 PNG effects against the original 252 saved-PDF
 paths/sizes/hashes, confirms all signed changes, and requires focused data
 and residual-stream rows to remain unchanged. No encoding, new codec or
-residual-stream comparison is introduced before PNG-only designer review.
+residual-stream comparison was introduced before PNG-only designer review.
+§242 subsequently authorizes expanded PNG coverage and the next controlled
+experiment, documented separately above and in `COMPRESSION_EXPERIMENTS.md`.
 The full post-split suite passes **635 tests**, with no expected failures.
 
 §§236/237 narrow the current scope consistently: 34 overview rows / 204 cells,

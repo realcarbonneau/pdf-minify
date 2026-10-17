@@ -43,7 +43,14 @@ def test_only_the_eight_approved_overview_rows_are_removed():
     assert not ({r.label for r in removed} & set(published))
     assert {r.label for r in overview.primary_rows(overview.ROWS)} <= set(published)
     assert not any("PNG prediction" in label for label in published)
-    assert len(published) == 31  # one header, four dividers, 26 baseline combinations
+    from tools import bench_png_extension as extension
+    assert {r.label for r in overview.primary_rows(extension.publication_rows())} <= set(published)
+    assert len(published) == 39  # one header, four dividers, 34 baseline combinations
+    native_palettes = [published.index(r.label) for r in extension.publication_rows()
+                       if r.family.startswith("indexed") and "ffpr" not in r.family and not r.variant.endswith("-png")]
+    ffpr_palettes = [published.index(r.label) for r in extension.publication_rows()
+                     if r.family.startswith("indexed") and "ffpr" in r.family and not r.variant.endswith("-png")]
+    assert max(native_palettes) < min(ffpr_palettes)
 
 
 def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():

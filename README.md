@@ -48,7 +48,7 @@ lossless palette flate, pyside6 gui, debian lxde.
 
 ```bash
 ./setup_local.sh
-./test.sh              # FULL suite (green before every ship)
+./test.sh              # FULL suite after code-affecting changes, not docs-only edits
 ./run.sh [file.pdf] [--debug]   # UI + stdout log in the OS temp directory
 xvfb-run -a ./.venv/bin/python tools/drag_smoke.py  # native DnD smoke (xdotool)
 QT_QPA_PLATFORM=offscreen ./.venv/bin/python tools/filter_smoke.py  # filter flow smoke
@@ -112,7 +112,8 @@ platforms and installers are not yet certified or built.
 - [docs/TODO.md](docs/TODO.md) — numbered project requirements and pending engineering work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
-- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — 42 realistic algorithm-combination rows across six complete PDFs, including NASA Kepler, then focused scenario tables; actual complete-file bytes only.
+- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — six complete PDFs, focused scenarios and isolated PNG/native-stream A/B tables; actual complete-file bytes only.
+- [Controlled compression experiments](docs/COMPRESSION_EXPERIMENTS.md) — single-factor plans, fixed recipes, provenance and validation protocol.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
 - [Bitmap component controls](docs/IMAGE_STREAM_COMPRESSION.md#results) — supporting equal-pixel indexed/BW study with native compression fixed.
 - `docs/NATIVE_STREAM_COMPRESSION.md` — supporting native-stream controls with image bytes fixed, plus reader limits.

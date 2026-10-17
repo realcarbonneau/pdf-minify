@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 230. Routine execution requests are not TODOs (§218).
+new TODO ID is 245. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2259,3 +2259,30 @@ file audit verifies sizes/hashes and signed changes. No new encoding or
 residual-stream restructuring; focused data is unchanged. Implementation is
 verified, **not designer acceptance**; the PNG-only table awaits review.
 See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §§238–240 and `TEST_PLAN.md`.
+
+## 243 — DONE (designer §242: expand PNG prediction combinations)
+
+~~Add 16/64-color native/FFPR PNG pairs with Zopfli-Flate/Brotli across all
+six whole PDFs at 300 DPI, with visible measured baselines and signed changes.~~
+Stub: expanded to 16 rows / 96 paired cells; 80 missing files saved, 16
+compatible focused outputs reused with original provenance. Sources, palettes,
+pixels, native streams and complete sizes are verified; no-image controls and
+scoped wins/ties/losses remain explicit. New runner and paired publication
+tests pass in the full 654-test suite. **Implementation verified 2026-10-17;
+not designer acceptance.** See `INTEGRATED_COMPRESSION.md`,
+`COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`, `tools/bench_png_extension.py`.
+
+## 244 — DONE (designer §242: next one-factor benchmark experiment)
+
+~~Plan and build the next binary/A-B complete-file table with one named
+factor, fixed recipes, measured references and signed baseline changes.~~
+Stub: NATIVE-01 compares standard-Flate reference with named optimized
+native/residual encoders: five specialized FFPR rows plus two native controls
+across all six sources, 42 pairs. Thirty missing reference PDFs are saved;
+candidate/control files are reused. Encoded images remain byte-identical;
+all-page rendering, native decoding, file hashes and visible paired arithmetic
+are verified. All 362 current files / 471 size cells pass the independent
+publication audit; the full 654-test suite passes. No UI/default changes.
+**Implementation verified 2026-10-17; not designer acceptance.** See
+`INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`,
+`tools/bench_residual_streams.py`, `tools/publish_compression_experiments.py`.

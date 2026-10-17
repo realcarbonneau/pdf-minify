@@ -1,9 +1,16 @@
 # Native PDF stream compression — design, benchmarks and compatibility
 
 Supporting component study: image bytes are fixed in this document.
-The primary final-file comparison uses realistic combination rows over five
+The primary final-file comparison uses realistic combination rows over six
 representative PDFs, followed by focused scenarios (§223):
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
+The current NATIVE-01 controlled experiment separates native/residual encoder
+effects from image compression, including the five specialized-codec FFPR
+cases. Its protocol is in [COMPRESSION_EXPERIMENTS.md](COMPRESSION_EXPERIMENTS.md#native-01--nativeresidual-stream-recompression);
+measured reference/candidate complete-file tables belong in the integrated
+report, not another duplicate analysis here. The earlier component results
+below retain their original scope and provenance.
 
 Designer §§204/205, 2026-10-15 (America/New_York); TODO §§207/208.
 Related: [COMPRESSION.md](COMPRESSION.md),

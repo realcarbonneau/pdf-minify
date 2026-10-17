@@ -11,6 +11,12 @@ explicit recipes and are not current default-filter sizes. Use the primary
 integrated overview and focused tables for repaired, uniformly 300-DPI
 comparisons; do not relabel these older mixed-DPI artifacts.
 
+The current single-factor PNG-prediction experiment and its 16/64-color,
+native/FFPR extension use the protocol in
+[COMPRESSION_EXPERIMENTS.md](COMPRESSION_EXPERIMENTS.md#png-02--palette-and-page-mode-coverage).
+Measured PNG-PDF bytes and signed changes from visible, measured plain
+baselines are centralized in the integrated report, not duplicated here.
+
 §233 moves the already-JBIG2 JFK scan out of the primary codec-comparison
 table and retains it as B114's full-flow regression. The old component rows
 below compare transformed pixels; they are not evidence of an improvement

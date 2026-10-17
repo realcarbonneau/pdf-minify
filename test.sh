@@ -1,5 +1,5 @@
 #!/bin/bash
-# Full test suite for the designer (ruling §59: run EVERY time before ship).
+# Full suite after code-affecting changes; docs-only edits do not require it (§241).
 # Usage: ./test.sh
 # Runs the whole pytest suite (headless + offscreen Qt) and fails loudly.
 set -e

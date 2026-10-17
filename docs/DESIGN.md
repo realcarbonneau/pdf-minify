@@ -374,6 +374,36 @@ to one decimal place and explain this distinct paired emphasis locally.
 This supersedes §220's placement of PNG rows in the primary overview, not
 the requirement to retain and verify both measured variants. See TODO §242.
 
+### Expanded controlled experiments (§242)
+
+Designer §242 requests more PNG combinations and the next binary experiment.
+Extend PNG coverage with up-to-16 and up-to-64-color indexed canvases, each
+native-preserving and FFPR, with matching Zopfli-Flate/Brotli policies over
+all six whole PDFs at 300 DPI. This adds eight baseline/prediction combinations
+and 48 paired cells. Publish the matching plain baseline sizes as well so
+every signed change has a visible measured denominator. Expanded coverage is
+34 baseline rows / 204 sizes plus 16 PNG rows / 96 effects. Do not invent PNG
+variants for already specialized JPEG, JPEG2000 or JBIG2 image payloads.
+
+Reuse compatible complete measurements with their original provenance;
+encode only missing cases. Normal strict resume/import checks remain intact.
+Record the bounded source-compatibility proof for explicit historical reuse,
+and never relabel imported PDFs as newly encoded. Preserve all-page decoded
+pixels, native content, image bytes across native-stream recompression, and
+whole-file hashes. Keep no-image cases as independent actual saves.
+
+Treat the Brotli observation as scoped to the measured corpus. Count wins,
+ties and regressions, retain counterexamples, and do not change product defaults
+from an empirical size table. The next experiment needs its own named A/B
+factor and plan before encoding. Method and scope are centralized in
+`COMPRESSION_EXPERIMENTS.md`; results stay in `INTEGRATED_COMPRESSION.md`.
+The next planned A/B factor is native/residual-stream encoder selection:
+standard Flate reference versus the named optimized encoder, with image
+payloads held byte-identical. Five specialized-codec FFPR rows and two native
+controls give 42 six-input pairs. This is a controlled reference experiment,
+not a reinstatement of classic Flate in the product menu.
+See TODO §§243/244.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

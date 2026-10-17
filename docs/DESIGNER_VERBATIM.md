@@ -1022,3 +1022,20 @@ from the two measured complete-file sizes, not estimated component savings.
 
 PNG prediction is the current implementation scope. Leave residual-stream
 comparisons unchanged; further optimization-table restructuring follows review.
+
+## 241 — full-suite trigger is code changes, not documentation or publication (verbatim, 2026-10-16)
+> This “full suite before every ship” is incorrect.  Full suite of test after code changed, not documentation changes, right?
+
+This clarifies the earlier §59 workflow: run the full suite after code-
+affecting changes. Documentation-only edits require relevant documentation
+checks, not a full test run. A commit/push of unchanged, already-tested code
+does not itself trigger another full suite.
+
+## 242 — expand PNG coverage and build the next controlled experiment (verbatim, 2026-10-16)
+> Add more combos with PNG Prediction testing, but so far, it looks like it's never beneficial with Brotli.    Then plan and build the next binary benchmark experiment table.
+
+Expand eligible packed-image PNG pairs; the current Brotli observation is
+corpus evidence, not proof that prediction can never help. Each next experiment
+must identify one changed factor, a matching measured baseline, fixed source/
+pixels/recipe and signed complete-file size changes. This authorizes proceeding
+beyond §240's PNG-only first review, not unrelated GUI/default changes.

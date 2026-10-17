@@ -229,8 +229,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Zopfli/Brotli predictor pairs, and full coverage of every retained row.
   Share combination selection; do not reintroduce removed rows as supplemental
   references. Preserve frozen supersets; document verified selections separately.
-- §§238–240: implement only the isolated PNG-prediction table first. Keep
-  residual-stream comparisons unchanged. The primary overview displays 26
+- §§238–240: the first review isolated PNG prediction only, keeping
+  residual-stream comparisons unchanged until §242 authorized the next study.
+  That initial overview displays 26
   baseline rows / 156 sizes; the PNG table displays eight baseline-labeled
   rows × six PDFs / 48 measured sizes plus signed percentage change from
   each matching measured baseline. Negative is smaller. Paired sources,
@@ -238,6 +239,17 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   fabricated/no-op replacements; retain independently measured no-image
   controls and all 204 measured dispositions. Preserve focused-scenario data
   and historical artifacts; change presentation, not encoding or strict reuse.
+- §242 expands PNG coverage to 16/64-color native/FFPR baselines with both
+  general compressors over all six PDFs. Add visible measured plain baselines,
+  retain signed full-file deltas and exact paired verification, and encode only
+  missing cases. Historical reuse needs explicit bounded compatibility proof
+  without relaxing normal resume gates. A no-win Brotli sample is not a
+  universal theorem. Plan each next controlled experiment with one named
+  changed factor. NATIVE-01 compares standard-Flate reference against named
+  optimized native/residual encoders, keeping image payloads byte-identical:
+  five specialized FFPR rows plus two native-content controls, all six sources.
+  Reference-only Classic Flate does not restore it as a product choice.
+  See `COMPRESSION_EXPERIMENTS.md` and TODO §§243/244.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image
@@ -308,8 +320,12 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   or filter/selection/processing state. See `ICON_LAB.md`.
 
 ## 5. Workflow
-- `./test.sh` (full `./.venv/bin/python -m pytest tests/ -q`) must stay green —
-  designer ruling §59: run the FULL suite every time, before every ship.
+- Designer §241 clarifies §59: run `./test.sh` (full
+  `./.venv/bin/python -m pytest tests/ -q`) after code-affecting changes,
+  including tests, dependencies, build or configuration changes that can
+  affect execution. Documentation-only edits, including comment-only changes,
+  need relevant documentation checks, not the full suite. Reuse a passing
+  result for unchanged code; committing/pushing is not a new test trigger.
 - Designer ruling §62: after every new build, stop the running app by its
   verified desktop PID, confirm it exited, then relaunch in a separate
   session. Use `setsid --wait ./run.sh …` in a retained execution session:

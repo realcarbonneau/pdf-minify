@@ -1,10 +1,10 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–240; TODO §§226–242. This is the primary integrated
+Designer §§210–214/220–242; TODO §§226–244. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
-verification: 2026-10-16 (America/New_York).
+verification: 2026-10-16–17 (America/New_York).
 
-**Current selected results after the B114 preparation repair.** The same **204 measured cells** are now presented as **156 baseline overview cells** and **48 isolated PNG-prediction effect cells**; focused scenarios use **48 additional complete PDFs**. All 252 distinct outputs come from the newly saved, verified post-repair study. Designer §§236/237 remove redundant Classic-Flate bitmap rows consistently from the overview and every focused section; no pre-fix measurements are reused. The BW source is now the eleven-page CCITT NACA TM972 scan, not the already-JBIG2 JFK regression fixture. B114's runtime repair is worker-verified, not designer-confirmed acceptance.
+**Current selected results after the B114 preparation repair.** The representative overview now has **204 baseline sizes** and **96 isolated PNG effects** across six PDFs. The next native/residual A/B experiment adds **42 paired comparisons**. Together with the unchanged focused scenarios, **362 distinct actual saved PDFs** support these tables. Compatible earlier outputs retain their original provenance; only missing cases were encoded. The BW representative is the eleven-page CCITT NACA TM972 scan, not the already-JBIG2 JFK regression fixture. B114 is worker-verified, not designer-confirmed acceptance.
 
 ## Scope and six representative cases
 
@@ -45,7 +45,8 @@ broadening coverage rather than implying six exclusive PDF categories.
 - **Zopfli-Flate** uses standard FlateDecode. **Classic Flate** is a labeled
   comparison reference, not an encoder-speed recommendation.
 - Packed BW/indexed images and native streams use the **same general
-  compressor**. Mixed general-compressor pairings are excluded. Specialized
+  compressor**. Mixed general-compressor pairings are excluded from the algorithm overview.
+  The isolated native-stream experiment deliberately holds image bytes fixed. Specialized
   JPEG/JPEG2000/JBIG2 retain meaningful native Zopfli/Brotli alternatives.
 - **PNG prediction** is reversible row prediction before the same image
   compressor, not a second image/codec. The overview shows plain baselines; the separate PNG table isolates its measured effect.
@@ -76,8 +77,9 @@ the original document catalog and semantic tags. The current FFPR writer
 creates new raster pages, not an accessible/native-preserving equivalent;
 its smaller metadata/font burden is another reason to keep it a separate group.
 
-Indexed uses **up to five total colors** in the overview; focused palette
-limits are 5/16/64. A source with fewer colors need not use every entry;
+Indexed uses **up to 5/16/64 total colors**, in separate fidelity groups.
+The expanded 16/64-color rows are paired PNG controls, not a complete
+specialized-codec search at each palette limit. A source with fewer colors need not use every entry;
 colored JBIG2 encodes only used non-white colors.
 BW uses **Otsu**, except the explicitly labeled Simple thresholds. JPEG uses
 **quality 50**; JPEG2000 uses **rate 192 (lossy)** or explicit **lossless**.
@@ -127,13 +129,13 @@ compose at full color, resize once to 300 DPI, then threshold, reduce
 colors or apply the selected image codec. Without FFPR, text/vectors
 remain native; with FFPR, they too become part of the page bitmap.
 Native-retaining rows precede FFPR rows within
-each algorithm group. Indexed canvases use up to five colors, including indexed
-FFPR; full-color rows use JPEG q50 or JPEG2000 lossy r192/lossless. Bold minima
+each algorithm group. Indexed canvases have separate 5/16/64-color groups,
+including indexed FFPR; full-color rows use JPEG q50 or JPEG2000 lossy r192/lossless. Bold minima
 remain separate for native/FFPR and lossy/lossless fidelity.
 The unresampled Classic-Flate reference remains. Designer §§236/237 remove
 eight repeated Classic-Flate bitmap rows here and their equivalents
 throughout all focused tables. Both Zopfli/Brotli variants remain measured;
-the eight PNG rows move to the isolated-effect table below (§§238–240).
+PNG variants appear in the isolated-effect table below (§§238–242).
 Divider rows contain no sizes.
 
 | Algorithm combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
@@ -155,9 +157,17 @@ Divider rows contain no sizes.
 | Indexed 5 colors + colored JBIG2 + Brotli native | **182,638** | **269,847** | 4,003,340 | 15,923 | 338,380 | 1,363,753 |
 | Indexed 5 colors + Zopfli-Flate | 187,455 | 578,965 | 3,769,149 | 28,012 | 359,179 | 1,683,086 |
 | Indexed 5 colors + Brotli | **182,638** | 413,380 | **3,277,883** | 22,083 | **331,829** | **1,334,257** |
+| Indexed 16 colors + Zopfli-Flate | 187,455 | 578,965 | 6,116,675 | 44,809 | 459,802 | 2,122,383 |
+| Indexed 16 colors + Brotli | **182,638** | **413,380** | **5,456,331** | **36,511** | **416,980** | **1,712,326** |
+| Indexed 64 colors + Zopfli-Flate | 187,455 | 578,965 | 9,338,434 | 63,305 | 578,231 | 2,774,044 |
+| Indexed 64 colors + Brotli | **182,638** | **413,380** | **8,276,637** | **52,556** | **513,744** | **2,247,520** |
 | Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** | **231,619** | 3,817,106 | **9,390** | **337,274** | **394,165** |
 | Color FFPR; indexed 5 colors + Zopfli-Flate | 688,882 | 538,257 | 4,501,917 | 21,713 | 783,305 | 912,904 |
 | Color FFPR; indexed 5 colors + Brotli | 531,549 | 375,018 | **3,733,876** | 15,529 | 602,501 | 676,529 |
+| Color FFPR; indexed 16 colors + Zopfli-Flate | 688,882 | 538,257 | 7,213,825 | 39,624 | 818,742 | 1,071,002 |
+| Color FFPR; indexed 16 colors + Brotli | **531,549** | **375,018** | **6,169,402** | **31,338** | **634,556** | **817,681** |
+| Color FFPR; indexed 64 colors + Zopfli-Flate | 688,882 | 538,257 | 11,133,100 | 58,350 | 862,205 | 1,327,080 |
+| Color FFPR; indexed 64 colors + Brotli | **531,549** | **375,018** | **9,679,562** | **47,405** | **661,335** | **991,656** |
 | **Full color** | | | | | | |
 | JPEG q50 + Zopfli-Flate native | 187,455 | 4,434,870 | 6,269,805 | **116,296** | 550,470 | 2,349,517 |
 | JPEG q50 + Brotli native | **182,638** | **4,432,704** | **6,168,309** | 116,450 | **542,907** | **2,098,443** |
@@ -186,9 +196,12 @@ are rounded to one decimal place. Bold bytes mean this result is no
 larger than its own baseline, including ties—not a cross-document minimum.
 
 Source PDF, prepared pixels/palette, DPI, threshold, native-stream
-compressor and save policy are unchanged within each pair. These are
+compressor and save policy are unchanged within each pair. The ON path
+uses the existing adaptive predictor-15 row selector (minimum absolute
+signed-byte sum across None/Sub/Up/Average/Paeth), held fixed throughout;
+these results do not test every possible row-filter selection strategy. These are
 two actual separately saved PDFs, never an estimated size or a copied
-control. The non-FFPR W-9 has no bitmap stage: its four independently
+control. The non-FFPR W-9 has no bitmap stage: its eight independently
 measured ties are no-op sanity controls, not evidence of predictor savings.
 
 | Baseline combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
@@ -201,9 +214,28 @@ measured ties are no-op sanity controls, not evidence of predictor savings.
 | Indexed 5 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 3,960,927 (+20.8%) | 28,415 (+28.7%) | 347,261 (+4.7%) | 1,441,081 (+8.0%) |
 | Color FFPR; indexed 5 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 5,129,371 (+13.9%) | 25,857 (+19.1%) | **754,689** (-3.7%) | 918,004 (+0.6%) |
 | Color FFPR; indexed 5 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 4,836,813 (+29.5%) | 22,344 (+43.9%) | 668,343 (+10.9%) | 809,612 (+19.7%) |
+| Indexed 16 colors + Zopfli-Flate | **187,455** (+0.0%) | **570,446** (-1.5%) | 7,085,037 (+15.8%) | 51,430 (+14.8%) | 478,813 (+4.1%) | 2,238,078 (+5.5%) |
+| Indexed 16 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 6,693,289 (+22.7%) | 47,209 (+29.3%) | 456,362 (+9.4%) | 1,920,000 (+12.1%) |
+| Color FFPR; indexed 16 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 8,453,609 (+17.2%) | 46,146 (+16.5%) | **801,933** (-2.1%) | 1,126,884 (+5.2%) |
+| Color FFPR; indexed 16 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 7,971,909 (+29.2%) | 42,487 (+35.6%) | 711,190 (+12.1%) | 998,963 (+22.2%) |
+| Indexed 64 colors + Zopfli-Flate | **187,455** (+0.0%) | **570,446** (-1.5%) | 11,082,610 (+18.7%) | 85,501 (+35.1%) | 640,060 (+10.7%) | 3,200,974 (+15.4%) |
+| Indexed 64 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 10,415,003 (+25.8%) | 76,912 (+46.3%) | 605,928 (+17.9%) | 2,790,622 (+24.2%) |
+| Color FFPR; indexed 64 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 13,762,557 (+23.6%) | 80,820 (+38.5%) | **837,023** (-2.9%) | 1,344,172 (+1.3%) |
+| Color FFPR; indexed 64 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 12,914,114 (+33.4%) | 72,759 (+53.5%) | 738,931 (+11.7%) | 1,201,121 (+21.1%) |
 
-This first review covers PNG prediction only. Residual-stream rows and
-the existing focused-scenario measurements below are unchanged.
+The table now covers **96 pairs**: BW/Otsu and 5/16/64-color palettes,
+native-preserving and FFPR, with both general compressors. The 16/64-color
+rows add coverage, not an exhaustive algorithm search at those palettes.
+Source palettes can use fewer entries; the BW scan is intentionally
+measured even when different palette limits produce identical samples.
+
+- **Zopfli-Flate**: 18 smaller, 4 tied, 26 larger out of 48 measured pairs.
+- **Brotli**: 0 smaller, 4 tied, 44 larger out of 48 measured pairs.
+
+These counts apply only to this corpus/settings. No-image ties are sanity
+controls, not image compression wins. The focused measurements below
+are unchanged; four native 16/64-color cases reuse the very same measured
+files now included in this expanded overview.
 
 ## Focused scenarios
 
@@ -303,12 +335,59 @@ repository PDFs, not extracted pages or combined component estimates.
 | Preserve images + Zopfli-Flate native | 187,455 | 854,321 | 2,016,866 |
 | Preserve images + Brotli native | **182,638** | **776,197** | **1,766,110** |
 
+## Native/residual streams — measured effect versus Flate reference
+
+Plan: **NATIVE-01**, [controlled experiments](COMPRESSION_EXPERIMENTS.md#native-01--nativeresidual-stream-recompression). One factor changes: standard level-9 Flate versus the named optimized
+**native/residual-stream encoder**. Encoded image streams, decoded native
+drawing, preparation, ID framing and final writer settings stay fixed.
+Classic Flate is a controlled reference, not a restored product option.
+These seven rows isolate the five specialized FFPR residual cases plus
+two native-content controls, not another image-codec cross-product.
+
+### Measured reference bytes — standard Flate native/residual streams
+
+Each row names the candidate; these cells are its **measured Flate-reference
+complete-file bytes**. The two preserve-images controls share the same
+already measured Flate reference for each source.
+
+| Candidate combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| Preserve images + Zopfli-Flate native | 188,447 | 367,630 | 4,641,959 | 1,493,125 | 502,235 | 2,188,983 |
+| Preserve images + Brotli native | 188,447 | 367,630 | 4,641,959 | 1,493,125 | 502,235 | 2,188,983 |
+| BW FFPR + JBIG2; optimized residual streams | 297,872 | 229,520 | 1,199,049 | 3,868 | 316,049 | 299,818 |
+| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | 299,531 | 231,619 | 3,817,113 | 9,390 | 337,274 | 394,165 |
+| Color FFPR + JPEG q50; optimized residual streams | 5,674,560 | 4,394,162 | 16,652,211 | 119,758 | 5,695,628 | 6,225,232 |
+| Color FFPR + JPEG2000 lossy r192; optimized residual streams | 790,654 | 1,212,968 | 2,322,153 | 132,374 | 1,186,046 | 1,581,087 |
+| Color FFPR + JPEG2000 lossless; optimized residual streams | 26,977,014 | 19,059,609 | 127,518,137 | 631,376 | 27,091,577 | 32,340,923 |
+
+### Measured candidate bytes and change from that reference
+
+Each cell is **measured candidate complete-file bytes** plus
+`100 × (candidate − reference) / reference`. Negative is smaller/better.
+Bold bytes mean no larger than its own reference, including ties.
+Rounding is to one decimal place; tiny byte differences can round to
++0.0%, so the exact reference and candidate counts remain visible.
+
+| Candidate combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| Preserve images + Zopfli-Flate native | **187,455** (-0.5%) | **366,695** (-0.3%) | **4,574,656** (-1.4%) | **1,492,980** (+0.0%) | **491,510** (-2.1%) | **2,016,866** (-7.9%) |
+| Preserve images + Brotli native | **182,638** (-3.1%) | **364,519** (-0.8%) | **4,472,657** (-3.6%) | 1,493,126 (+0.0%) | **483,963** (-3.6%) | **1,766,110** (-19.3%) |
+| BW FFPR + JBIG2; optimized residual streams | **297,872** (+0.0%) | **229,520** (+0.0%) | **1,199,049** (+0.0%) | **3,868** (+0.0%) | **316,049** (+0.0%) | **299,818** (+0.0%) |
+| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** (+0.0%) | **231,619** (+0.0%) | **3,817,106** (+0.0%) | **9,390** (+0.0%) | **337,274** (+0.0%) | **394,165** (+0.0%) |
+| Color FFPR + JPEG q50; optimized residual streams | **5,674,560** (+0.0%) | **4,394,162** (+0.0%) | **16,652,211** (+0.0%) | **119,758** (+0.0%) | **5,695,628** (+0.0%) | **6,225,232** (+0.0%) |
+| Color FFPR + JPEG2000 lossy r192; optimized residual streams | **790,654** (+0.0%) | **1,212,968** (+0.0%) | **2,322,153** (+0.0%) | **132,374** (+0.0%) | **1,186,046** (+0.0%) | **1,581,087** (+0.0%) |
+| Color FFPR + JPEG2000 lossless; optimized residual streams | **26,977,014** (+0.0%) | **19,059,609** (+0.0%) | **127,518,137** (+0.0%) | **631,376** (+0.0%) | **27,091,577** (+0.0%) | **32,340,923** (+0.0%) |
+
+Across the **30 FFPR pairs**, complete-file byte changes range from **-34 B** to **+0 B**: **2 smaller, 28 tied, 0 larger**. These are actual final-file differences, not residual-payload estimates. The 12 native-preserving controls give **11 smaller, 0 tied, 1 larger**; the largest growth is **+1 B**. They retain much more content to recompress; the table measures that
+contrast. Do not generalize these settings to
+every PDF. Brotli still requires a supporting reader.
+
 ## What the measurements establish
 
 - Five-color artwork: colored JBIG2 + Zopfli-native is **15,776 B**, versus **22,083 B** for shared Brotli without prediction. The complete mixed-paper counterparts are **345,953 B** and **331,829 B**. Representation/content changes the comparison.
 - On the eleven-page **CCITT** NACA TM972 scan, BW/JBIG2 + Zopfli-native is **270,228 B**, versus **413,105 B** for shared Brotli at identical prepared BW pixels. The unresampled Zopfli control is **366,695 B** and the original is **374,461 B**. The measured JBIG2 recipe is **27.84% smaller** than that original; this is not a universal ranking.
 - Crater Lake's native-preserving JPEG q50 + Zopfli-native is **6,269,805 B**; its full-page JPEG counterpart is **16,652,211 B**. Both target 300 DPI, but FFPR rasterizes text/vectors: their sizes are not equal-fidelity codec scores.
-- The [isolated PNG-prediction table](#png-prediction--measured-effect-versus-baseline) shows all **48 six-document pairs**, with measured bytes and signed change versus each matching baseline. The focused scenarios retain 14 additional pairs; they are not pooled into that six-document table. No new encoding or residual-stream comparison is introduced.
+- The [PNG-prediction table](#png-prediction--measured-effect-versus-baseline) shows **96 six-document pairs**. Four focused palette cases now reuse those same outputs; six other focused pairs remain outside this table. The [native/residual A/B experiment](#nativeresidual-streams--measured-effect-versus-flate-reference) holds encoded images fixed and reports **42 separate Flate-reference comparisons**.
 - The unresampled W-9 original is **140,815 B**; its smallest tested preserve-images rewrite is **182,638 B**. Being the smallest tested rewrite does not mean it beats the untouched source.
 - NASA Kepler: preserve-images + Zopfli native is **2,016,866 B**; Brotli native is **1,766,110 B**, versus the **2,262,602 B** original. Native-preserving BW/JBIG2 + Zopfli is **1,357,736 B**, while BW FFPR/JBIG2 is **299,818 B**. The last two have different native/text fidelity, not equivalent codec quality.
 - On identical prepared five-color Kepler pixels, shared Brotli is **1,334,257 B**, versus **1,363,753 B** for colored JBIG2 + Brotli native: the complete shared-Brotli PDF is **2.16% smaller** than that complete JBIG2 counterpart. Both retain the same native artwork and require a Brotli-capable reader; this is content-specific, not a universal codec ranking.
@@ -364,7 +443,7 @@ they cannot leak into the next image-decoding stage or excuse a new warning.
 
 ## Measurement and provenance
 
-The measurement inventory remains **34 combinations × six whole PDFs = 204 verified cells**, displayed as **26 baseline overview rows / 156 sizes** plus **eight PNG-effect rows / 48 sizes**, with zero excluded, unmeasured or rejected cells. Focused tables display another 87 cells, reusing 39 overview outputs and referencing **48 additional PDFs**: **291 displayed size cells / 252 distinct actual complete files** in total. Every no-image row is still independently saved and verified, not filled by copying a control.
+The representative inventory is **50 combinations × six PDFs = 300 verified measurements**: **34 baseline rows / 204 sizes** plus **16 PNG-effect rows / 96 sizes**. Focused tables still display 87 sizes. NATIVE-01 displays 42 reference and 42 candidate sizes. That is **471 displayed size cells / 362 distinct actual complete files**, with no rejected or unmeasured cells. The original selected study supplied 252 files; PNG coverage adds 80 newly saved files and reuses 16 focused outputs, while NATIVE-01 adds 30 reference files and reuses its candidates/controls. No-image treatments are independently saved, not filled by copying a control.
 
 The complete fresh post-B114 measurement superset remains immutable under `.tmp/integrated-compression/post-b114-300dpi-20261016/`: 252 overview and 62 focused outputs, all saved using one repaired compositor. Its `identity.json` pins source, tool, environment and saver/verifier/driver hashes; `refresh.py`, `overview.py`, `scenarios.py`, scoped job manifests and `complete.json` preserve the actual full measurement scope.
 
@@ -375,6 +454,8 @@ changes future scope/metadata, not the shared pixel/encoding/save operations;
 the current publication retains the actual measured implementation hashes.
 
 Designer §§236/237's reduced publication is a hash-verified **selection from that measured superset**, not a claim that it was re-encoded under the later row-selection code. `selected-237/metrics.json` records the exact selected paths, original per-output provenance, frozen-superset hashes and new selector scope. The redundant bitmap combinations are removed consistently from every table, not kept as supplemental references. Sixty-two superseded files stay archived but are not current analysis cells. No original source, saved PDF, measured byte count or strict import/resume gate is rewritten or relaxed.
+
+The §242 extensions are frozen under `.tmp/compression-experiments/`: `png-palettes-300dpi-20261017/` and `native-residual-300dpi-20261017/`. Their identities retain the producing implementation, source/tool hashes, original imported records and a bounded compatibility proof: the earlier bitmap driver's only core difference is removal of an unused JSON percentage field. No encoder, preparation, saver or validator changed. Normal changed-code resume remains forbidden. Publication inputs, sources, complete output hashes, paired statistics and current Markdown are frozen separately under `.tmp/compression-experiments/publication-20261017/`. See [experiment plans](COMPRESSION_EXPERIMENTS.md).
 
 Historical studies remain untouched under `.tmp/integrated-compression/representative-six-300dpi-20261016/`, `representative-complete-300dpi-20261016-v2/`, `representative-300dpi-20261016-v3/` and `scenarios-300dpi-20261016-v3/`. Their original files, historical namespace paths and compatibility proofs are not relabeled. The already-JBIG2 JFK measurements remain B114 regression/diagnostic evidence, not current codec-rank cells.
 
@@ -400,7 +481,8 @@ Reproduce from the repository root, using fresh labels:
 ```sh
 nice -n 10 ./.venv/bin/python tools/bench_compression_overview.py --label <overview-label>
 nice -n 10 ./.venv/bin/python tools/bench_compression_scenarios.py --label <focused-label>
-./test.sh
+nice -n 10 ./.venv/bin/python tools/bench_png_extension.py --label <png-label>
+nice -n 10 ./.venv/bin/python tools/bench_residual_streams.py --label <native-label> --existing <selected-manifest>
 ```
 
 Use `--resume` only for an unchanged interrupted run. Source, preparation,
@@ -411,7 +493,7 @@ The PNG-only presentation split is recorded under `.tmp/png-prediction-review-20
 
 ## Reader support
 
-QPDF 12.2.0 syntax checks pass all **145 selected ordinary-format outputs**; the **107 selected Brotli outputs** are excluded from that unsupported reader check, not certified by it.
+QPDF 12.2.0 syntax checks pass all **215 selected ordinary-format outputs**; the **147 selected Brotli outputs** are excluded from that unsupported reader check, not certified by it.
 
 Classic Flate and Zopfli-Flate require the same FlateDecode reader format.
 Brotli requires extension-aware readers whether used on pixels or native
@@ -427,10 +509,9 @@ are validated with the recorded MuPDF build. QPDF syntax success alone is
 not a visual, accessibility or all-reader certification.
 
 The B114 repair originally passed 593 tests; source publication and consistent
-row pruning then passed 605. The fresh full suite after the PNG-only split is
-**635 passed**, with no expected failures. The 30 PNG-table cases, latest
-110-test focused run, source-choice/publication coverage and earlier 30-PDF
-actual subset smoke are recorded in [TEST_PLAN.md](TEST_PLAN.md).
+row pruning then passed 605. The PNG-only split stage passed **635 tests**, with no expected failures.
+Current controlled-experiment regressions, complete-suite results, actual
+save smoke tests and publication audits are recorded in [TEST_PLAN.md](TEST_PLAN.md).
 All published bytes, actual output hashes, tied bold minima and source
 descriptors are independently audited. This headless study does not launch
 the desktop application or imply designer acceptance.
