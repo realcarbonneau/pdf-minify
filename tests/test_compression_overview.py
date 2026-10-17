@@ -40,15 +40,15 @@ def test_only_the_eight_approved_overview_rows_are_removed():
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     main = report.split("## Overview — final complete-file bytes", 1)[1].split(overview.PNG_SECTION, 1)[0]
     published = [line.split("|")[1].strip() for line in main.splitlines() if line.startswith("| ")]
-    assert not ({r.label for r in removed} & set(published))
-    assert {r.label for r in overview.primary_rows(overview.ROWS)} <= set(published)
+    assert not ({overview.display_label(r.label) for r in removed} & set(published))
+    assert {overview.display_label(r.label) for r in overview.primary_rows(overview.ROWS)} <= set(published)
     assert not any("PNG prediction" in label for label in published)
     from tools import bench_png_extension as extension
-    assert {r.label for r in overview.primary_rows(extension.publication_rows())} <= set(published)
+    assert {overview.display_label(r.label) for r in overview.primary_rows(extension.publication_rows())} <= set(published)
     assert len(published) == 39  # one header, four dividers, 34 baseline combinations
-    native_palettes = [published.index(r.label) for r in extension.publication_rows()
+    native_palettes = [published.index(overview.display_label(r.label)) for r in extension.publication_rows()
                        if r.family.startswith("indexed") and "ffpr" not in r.family and not r.variant.endswith("-png")]
-    ffpr_palettes = [published.index(r.label) for r in extension.publication_rows()
+    ffpr_palettes = [published.index(overview.display_label(r.label)) for r in extension.publication_rows()
                      if r.family.startswith("indexed") and "ffpr" in r.family and not r.variant.endswith("-png")]
     assert max(native_palettes) < min(ffpr_palettes)
 
@@ -61,7 +61,7 @@ def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
         assert "; keep native" not in row.label
         assert ("FFPR" in row.label) == row.family.endswith("-ffpr")
         if not row.variant.endswith("-png"):
-            assert f"| {row.label} |" in report
+            assert f"| {overview.display_label(row.label)} |" in report
 
 
 def test_published_representatives_match_selected_whole_sources():

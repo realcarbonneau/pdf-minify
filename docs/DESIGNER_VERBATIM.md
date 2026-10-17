@@ -1042,3 +1042,14 @@ beyond §240's PNG-only first review, not unrelated GUI/default changes.
 
 ## 243 — percentage-only PNG-prediction effect table (verbatim, 2026-10-17)
 > also, remove the sizes from the binary test table "PNG prediction — measured effect versus baseline"
+
+## 244 — annotate Brotli PNG results and assess overall winners (verbatim, 2026-10-17)
+> In that table, underline all the word "Brotli", as none were improved by PNG prediction, thus Brotli makes PNG prediction obsolete, right?    Also, what is the next binary experiment we can do?
+
+> Also, are there any cases where the "PNG prediction" version is the smallest of all algorithms?  This would tell use if "PNG Prediction" is completely superceeded.
+
+## 245 — compare Zopfli treatment against Brotli baseline; short table labels (verbatim, 2026-10-17)
+> It looks like Brotli is a bit bigger than Zopfli for single page documents, then Brotli is better for multiple pages.  Is this always true?  Can you make a new section and new table comparing Brotli as basline, with Zopfli as treatment?  Also, replace all Zopfli-flate in table with just Zopfli, is there any reason to keep the long version "Zopfli-flate" in the tables?  Does it permit distinction against anything else with same name?
+
+## 246 — restrict the comparison to FFPR with specialized codecs; explain regressions (verbatim, 2026-10-17)
+> I mean with FFPR and modern compressions, like J* of course, other than that, the page would have additional information that is expected to be compressible.  I am looking for the scenarios where Brotli is worse, which is not the null hypothesis, since it is supposed to be better.  And when worse is found, why?

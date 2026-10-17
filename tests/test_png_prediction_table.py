@@ -52,7 +52,7 @@ def test_split_preserves_the_full_measured_scope_and_has_no_specialized_codec_pr
     (100000, 99999, "**99,999** (+0.0%)"),
 ])
 def test_effect_uses_baseline_denominator_signed_change_and_measured_pair_emphasis(baseline, png, expected):
-    assert overview.png_effect_cell(baseline, png) == expected
+    assert overview.measured_effect_cell(baseline, png) == expected
 
 
 @pytest.mark.parametrize("baseline,png,expected", [
@@ -64,14 +64,14 @@ def test_effect_uses_baseline_denominator_signed_change_and_measured_pair_emphas
     (100000, 100001, "+0.0%"),
 ])
 def test_percentage_only_cells_keep_measured_pair_emphasis_even_when_rounded(baseline, png, expected):
-    assert overview.png_effect_cell(baseline, png, show_size=False) == expected
+    assert overview.measured_effect_cell(baseline, png, show_size=False) == expected
 
 
 @pytest.mark.parametrize("baseline,png", [(0, 1), (1, 0), (1.0, 1), (1, None), (1, True)])
 def test_missing_or_estimated_sizes_cannot_be_formatted_as_measurements(baseline, png):
     for show_size in (True, False):
         with pytest.raises(ValueError, match="measured integer"):
-            overview.png_effect_cell(baseline, png, show_size=show_size)
+            overview.measured_effect_cell(baseline, png, show_size=show_size)
 
 
 def test_table_names_plain_baselines_and_keeps_all_six_pdf_columns():
@@ -82,7 +82,9 @@ def test_table_names_plain_baselines_and_keeps_all_six_pdf_columns():
     assert all(len(line.split("|")[1:-1]) == 7 for line in table.splitlines())
     assert table.count("**-10.0%**") == 6
     assert "900" not in table
-    assert "| Indexed 5 colors + Brotli |" in table
+    assert "| Indexed 5 colors + <ins>Brotli</ins> |" in table
+    assert table.count("<ins>Brotli</ins>") == 1
+    assert all("<ins>" not in row.label for row in rows)  # identity/overview labels stay plain
     assert " + PNG prediction |" not in table
     assert all(document.label in table.splitlines()[0] for document in overview.DOCUMENTS)
 
@@ -167,7 +169,14 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
                  if line.startswith("| ") for cells in [parse(line)]}
     rows = [parse(line) for line in effects.splitlines() if line.startswith("| ")]
     assert len(rows) == 17 and len(rows[0]) == 7  # one header and sixteen pairs
-    assert {row[0] for row in rows[1:]} == {b.label for b, _ in overview.png_pairs(extension.publication_rows())}
+    assert sum("<ins>Brotli</ins>" in row[0] for row in rows[1:]) == 8
+    for row in rows[1:]:
+        if "Brotli" in row[0]:
+            assert "<ins>Brotli</ins>" in row[0]
+        else:
+            assert "<ins>" not in row[0]
+        row[0] = row[0].replace("<ins>", "").replace("</ins>", "")
+    assert {row[0] for row in rows[1:]} == {overview.display_label(b.label) for b, _ in overview.png_pairs(extension.publication_rows())}
     audited = 0
     for row in rows[1:]:
         assert len(row) == 7
@@ -182,4 +191,6 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     # Arithmetic is exercised above; changing this digest needs a fresh raw-
     # measurement audit, not inference of candidate sizes from rounded deltas.
     table = "\n".join(line for line in effects.splitlines() if line.startswith("|")) + "\n"
+    table = table.replace("<ins>", "").replace("</ins>", "")  # presentation-only annotation
+    table = table.replace("Zopfli", "Zopfli-Flate")  # frozen label, not a second encoder
     assert sha256(table.encode()).hexdigest() == "1fbeca0bcd483d05be176a5dc13d11bdf9e182973ae675e0aace211eb6d499d5"

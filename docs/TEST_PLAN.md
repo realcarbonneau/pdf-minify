@@ -10,6 +10,63 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+NATIVE-02 (§§245/246) verifies five FFPR/specialized-codec rows over six
+whole PDFs: thirty newly saved Brotli baselines versus thirty verified reused
+Zopfli files, with encoded images byte-identical and all-page 72/300-DPI
+pixels/native content exact. The corpus run performs no new image preparation
+or image encoding; unit tests create their own tiny real FFPR fixtures.
+Source, preparation, output and encoding-implementation hashes plus package/
+binary identities are checked; frozen producer identities remain unchanged.
+
+Measured stream accounting closes exactly in all thirty pairs: Brotli is
+100–271 bytes larger. Each difference equals native-payload change + 166
+declaration bytes + actual filter-name and Length-digit costs; image,
+container-stream and other-stream deltas are zero. Two metadata-only controls
+(one/six pages) isolate 166 declaration bytes with native/image payloads
+unchanged, and both pass QPDF. The specification recommends the declaration
+(SHOULD), not SHALL: this is current writer policy, not an unavoidable
+format minimum. New Brotli streams are MuPDF-verified, not QPDF-certified.
+
+Fourteen new tests cover the bounded FFPR scope, real two-page paired saves,
+exact accounting, metadata-only controls, reuse without encoding, rejected
+pairs, five-decimal precision, short display labels without identity changes,
+and all thirty published cells against a frozen actual-size fixture.
+The targeted reporting run passes **106 tests**. The fresh full suite
+(`./test.sh`, offscreen) passes **674 tests**, exit 0 / FULL SUITE GREEN,
+with no expected failures. Later completion notes/docstring clarification
+are documentation-only; this tested code result is reused under §241.
+The only later benchmark-source change is a docstring clarification of
+SHOULD versus SHALL; it does not alter encoding or rewrite the frozen runner.
+
+Evidence: `.tmp/compression-experiments/ffpr-brotli-zopfli-300dpi-20261017/`,
+the paired publication/audit in `ffpr-brotli-zopfli-publication-20261017/`,
+and `tests/fixtures/ffpr_compressor_sizes.json`. Existing table numbers are
+unchanged; labels shorten to Zopfli. The new table adds thirty percentage
+cells without new GUI behavior/defaults. JBIG2 `-d` remains proposed, not run.
+
+### Previous Brotli-annotation stage — 2026-10-17 (§244)
+
+The §244 update underlines all eight Brotli labels only in the PNG table.
+Generator/published-table tests retain plain baseline identities and the
+original audited percentage digest after removing presentation markup.
+The targeted PNG/publication run passes **41 tests**. The fresh full suite
+(`./test.sh`, offscreen) passes **660 tests**, exit 0 / FULL SUITE GREEN,
+with no expected failures. Final completion notes are documentation-only;
+the passing code result is reused under §241.
+
+A data-only overall-winner audit checks all 96 representative PNG candidates
+against measured same-fidelity minima: zero unique wins, four no-image ties,
+92 larger. Fourteen focused PNG records and 66 historical PNG records also
+have no minimum. These scopes overlap and are not pooled. Excluding Brotli
+leaves eight strict measured-subset minima; incomplete 16/64-color JBIG2
+coverage remains explicit. The noisy-BW counterexample's three actual file
+sizes/hashes confirm that prediction improves Brotli without winning overall.
+Evidence: `.tmp/compression-experiments/png-winner-review-20261017/audit.json`.
+No corpus encoding/rendering was repeated. The next JBIG2 `-d` study is a
+documented proposal only, not an executed benchmark or product/default change.
+
+### Previous percentage-only PNG stage — 2026-10-17 (§243)
+
 The §243 PNG presentation update removes byte counts only from that effect
 table. Its formatter and published snapshot keep 96 signed percentages,
 paired win/tie emphasis and six visible-baseline columns. Six added cases

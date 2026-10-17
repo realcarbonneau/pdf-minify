@@ -144,9 +144,9 @@ Fresh real production saves, 2026-10-16, all eight original pages:
 | Same source / unchanged 300 DPI | Complete PDF bytes | Original bitmap samples and page pixels at 72/300 DPI |
 |---|---:|---|
 | Untouched input | 349,667 | Reference |
-| Preserve images + Zopfli-Flate streams | 341,728 | Exact |
-| BW + Otsu + JBIG2 + Zopfli-Flate streams | 340,909 | Exact |
-| BW FFPR + Otsu + JBIG2 + Zopfli-Flate streams | 337,010 | Exact |
+| Preserve images + Zopfli streams | 341,728 | Exact |
+| BW + Otsu + JBIG2 + Zopfli streams | 340,909 | Exact |
+| BW FFPR + Otsu + JBIG2 + Zopfli streams | 337,010 | Exact |
 
 These are no-op regression results, not a codec ranking or evidence that FFPR
 is equivalent to native preservation for other documents. Each saved output's

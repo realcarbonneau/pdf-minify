@@ -38,7 +38,7 @@ def test_redundant_classic_flate_bitmap_rows_are_removed_from_every_focused_tabl
                                ("### Threshold sensitivity", "### Native-heavy files")):
         section = report.split(title, 1)[1].split(next_title, 1)[0]
         assert "Classic Flate (reference)" not in section
-        assert "Zopfli-Flate + PNG prediction" in section
+        assert "Zopfli + PNG prediction" in section
         assert "Brotli + PNG prediction" in section
 
 

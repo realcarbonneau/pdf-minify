@@ -70,8 +70,9 @@ def test_published_native_pair_percentages_use_the_visible_reference():
     parse = publication.cells
     reference = {parse(line)[0]: parse(line)[1:] for line in references.splitlines() if line.startswith("| ")}
     candidates = candidates.split("## What the measurements establish", 1)[0]
+    candidates = candidates.split("## FFPR residual compression", 1)[0]
     rows = [parse(line) for line in candidates.splitlines() if line.startswith("| ")][1:]
-    assert len(rows) == 7 and {r[0] for r in rows} == {r.label for r in publication.residual.ROWS}
+    assert len(rows) == 7 and {r[0] for r in rows} == {publication.overview.display_label(r.label) for r in publication.residual.ROWS}
     audited = 0
     for row in rows:
         assert len(row) == 7

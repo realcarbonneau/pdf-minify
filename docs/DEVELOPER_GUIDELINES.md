@@ -255,6 +255,21 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   emphasis, baseline labels and all six columns. Keep measured baseline sizes
   in the overview and exact byte evidence in frozen manifests. Update the
   reusable formatter; focused and native/residual size tables are unchanged.
+- §244 underlines Brotli labels in that PNG table only, without changing
+  shared row identities or measured percentages. Overall-winner claims must
+  compare actual same-fidelity complete files, distinguish unique wins/ties
+  and reader tiers, and preserve counterexamples. A corpus result is not
+  authority to remove prediction/codecs. The proposed next JBIG2 `-d` A/B
+  study remains unrun until requested; see `COMPRESSION_EXPERIMENTS.md`.
+- §§245/246 add a Brotli-baseline/Zopfli-treatment table for FFPR with five
+  specialized J* codecs over all six PDFs / 30 pairs. Hold image payloads
+  byte-identical; vary residual/native compression only. Reuse verified
+  Zopfli files and save missing Brotli baselines through the shared saver.
+  Explain regressions with measured stream/container/syntax accounting and
+  metadata-only controls; do not mistake page count for the changed factor.
+  Use Zopfli as the short table label, retaining the FlateDecode explanation
+  in prose. Shorten presentation only, not frozen measurement identities,
+  saved settings or GUI controls. See `COMPRESSION_EXPERIMENTS.md`.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

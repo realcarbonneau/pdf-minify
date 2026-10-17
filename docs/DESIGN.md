@@ -417,6 +417,48 @@ original provenance remain in frozen evidence; no encoding is repeated.
 Update reusable generation and tests. Focused and native/residual size
 tables are outside this change. See TODO §245.
 
+### Brotli annotation and PNG winner analysis (§244)
+
+Underline every Brotli row label in the PNG effect table only, using GitHub's
+`<ins>Brotli</ins>` syntax; retain all measurements and baseline identities.
+Explain the annotation with the measured corpus, not a universal obsolescence
+claim. Compare PNG candidates against every measured same-source/fidelity
+competitor, distinguishing unique wins from no-image ties and reader tiers.
+Retain evidence that prediction can improve a compressor without winning
+the overall complete-file comparison. No codec/predictor removal or default
+change is authorized by a question about the results.
+
+The next A/B recommendation is a proposal, not a benchmark execution request:
+JBIG2 generic repeated-row prediction `-d` off/on with identical samples,
+fixed save settings and reader gates. See `COMPRESSION_EXPERIMENTS.md`,
+`JBIG2.md`, existing optimization TODO §240 and presentation TODO §246.
+
+### Brotli baseline versus Zopfli treatment (§§245/246)
+
+Add a separate controlled comparison to the integrated report: Brotli is
+the measured baseline, Zopfli the treatment. Show signed complete-file
+percentage changes over the same six PDFs; negative means Zopfli is smaller.
+§246 clarifies the scope: FFPR with specialized JBIG2 BW, layered-color
+JBIG2, JPEG and JPEG2000 lossy/lossless. Hold source, exact encoded images,
+recipe and save policy fixed; change only native/residual-stream compression.
+Use five rows over six PDFs / 30 pairs, reusing verified Zopfli files and
+saving missing actual Brotli baselines through the shared integrated saver.
+Do not broaden this table to retained native artwork or packed-image codecs.
+Decompose every regression into measured stream and container/syntax bytes;
+use metadata-only controls to distinguish extension overhead from payload
+compression. No image re-encoding, guessed sizes or rewritten provenance.
+
+Investigate whether Brotli is worse and why; do not assume it must win or
+infer a page-count cutoff from unrelated documents. Cross-document page
+counts are descriptive, not a causal page-count experiment.
+
+Use **Zopfli** in development-document tables, not Zopfli-Flate. Explain once
+that it produces ordinary FlateDecode data, while Brotli needs a supporting
+reader. The longer label distinguishes encoder from format educationally,
+not a second Zopfli variant in these tables. Preserve frozen measurement
+identities, exact quotes, raw evidence and application settings/controls;
+shorten reporting labels only. See `COMPRESSION_EXPERIMENTS.md`, TODO §247.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

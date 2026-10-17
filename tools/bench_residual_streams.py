@@ -23,14 +23,14 @@ ROWS = tuple(row for family in FAMILIES for row in overview.ROWS if row.family =
               family in ("jpeg-q50-ffpr", "jpx-r192-ffpr", "jpx-lossless-ffpr")))
 
 
-def validate_pair(document, row, pair):
+def validate_pair(document, row, pair, *, reference_policy="flate"):
     reference, candidate = pair["reference"], pair["candidate"]
     signature = ("source", "input_sha256", "mode", "dpi", "recipe", "prepared", "bases")
     if (pair["document"] != document.key or pair["combination"] != asdict(row) or
             candidate["case"]["source"] != document.source or
             any(reference["case"].get(field) != candidate["case"].get(field) for field in signature)):
         raise ValueError("Native A/B comparison changes source, prepared images or recipe")
-    for record, policy in ((reference, "flate"), (candidate, row.native)):
+    for record, policy in ((reference, reference_policy), (candidate, row.native)):
         result = record["result"]
         if result["native_policy"] != policy or result["image_variant"] != row.variant:
             raise ValueError("Native A/B comparison has wrong image variant or native policy")
@@ -60,33 +60,35 @@ def tables(documents, rows, pairs):
             validate_pair(document, row, pair)
             baseline, candidate = (pair[name]["result"]["complete_pdf_bytes"] for name in ("reference", "candidate"))
             baseline_cells.append(f"{baseline:,}")
-            effect_cells.append(overview.png_effect_cell(baseline, candidate))
-        references.append("| " + row.label + " | " + " | ".join(baseline_cells) + " |")
-        effects.append("| " + row.label + " | " + " | ".join(effect_cells) + " |")
+            effect_cells.append(overview.measured_effect_cell(baseline, candidate))
+        references.append("| " + overview.display_label(row.label) + " | " + " | ".join(baseline_cells) + " |")
+        effects.append("| " + overview.display_label(row.label) + " | " + " | ".join(effect_cells) + " |")
     return "\n".join(references) + "\n", "\n".join(effects) + "\n"
 
 
-def measure_pair(document, row, candidate, reference, folder, identity, resume=False):
+def measure_pair(document, row, candidate, reference, folder, identity, resume=False, *, reference_policy="flate"):
     folder = Path(folder)
     checkpoint = folder / "metrics.json"
     expected = dict(run=identity, document=asdict(document), combination=asdict(row),
                     candidate=candidate, imported_reference=reference)
+    if reference_policy != "flate":
+        expected["reference_policy"] = reference_policy
     if resume and checkpoint.exists():
         previous = json.loads(checkpoint.read_text())
         if previous["identity"] != expected:
             raise ValueError("Changed native A/B job identity")
-        validate_pair(document, row, previous["pair"])
+        validate_pair(document, row, previous["pair"], reference_policy=reference_policy)
         return previous["pair"]
     folder.mkdir(parents=True, exist_ok=resume)
     if reference is None:
         case = deepcopy(candidate["case"])
         destination = folder / "reference"
-        report = study.run_case(case, destination, policies=("flate",),
+        report = study.run_case(case, destination, policies=(reference_policy,),
                                 resume=resume and destination.exists())
         reference = dict(document=document.key, family=row.family, case=case,
                          result=report["results"][0], origin=str(destination / "metrics.json"))
     pair = dict(document=document.key, combination=asdict(row), reference=reference, candidate=candidate)
-    validate_pair(document, row, pair)
+    validate_pair(document, row, pair, reference_policy=reference_policy)
     checkpoint.write_text(json.dumps(dict(identity=expected, pair=pair), indent=2) + "\n")
     print(json.dumps(dict(completed=document.key, combination=row.label,
                           baseline_bytes=reference["result"]["complete_pdf_bytes"],

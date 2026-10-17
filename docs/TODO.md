@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 246. Routine execution requests are not TODOs (§218).
+new TODO ID is 248. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2298,3 +2298,31 @@ reusable generation preserves this presentation. A data-only audit checks
 41-test and full 660-test runs pass. **Implementation verified 2026-10-17;
 not designer acceptance.** See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §243,
 `TEST_PLAN.md`, `tools/bench_compression_overview.py`.
+
+## 246 — DONE (designer §244: Brotli annotation and PNG overall-winner analysis)
+
+~~Underline Brotli in the PNG table; audit overall winners and recommend
+the next controlled experiment.~~
+Stub: all eight labels are underlined, with shared identities and all measured
+numbers unchanged. Audited unrestricted, focused/historical and non-Brotli
+comparisons distinguish no-image ties, real compressor gains and incomplete
+reader-tier coverage. JBIG2 `-d` OFF/ON is documented as a 24-pair proposal,
+not run or promoted to a product setting. Targeted 41-test and full 660-test
+runs pass. **Implementation verified 2026-10-17; not designer acceptance.**
+See `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, `DESIGN.md`
+§244, `TEST_PLAN.md` and existing JBIG2 optimization TODO §240.
+
+## 247 — DONE (designer §§245/246: FFPR Zopfli versus Brotli and short labels)
+
+~~Compare FFPR/J* residuals with Brotli baseline and Zopfli treatment;
+explain regressions and shorten table labels.~~
+Stub: five rows / thirty pairs use actual newly saved Brotli files and
+verified reused Zopfli files, with encoded images and all-page pixels exact.
+Brotli is 100–271 B larger in all cases. Accounting closes per pair; two
+metadata-only controls isolate 166 B of current writer declaration overhead
+(specification SHOULD, not SHALL), alongside actual payload/filter/Length
+costs. Labels shorten to Zopfli without changing identities or old numeric
+tables. Targeted 106-test and full 674-test runs pass. **Implementation
+verified 2026-10-17; not designer acceptance.** See `INTEGRATED_COMPRESSION.md`,
+`COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`, `DESIGN.md` §§245/246,
+`tools/bench_ffpr_compressors.py`. No GUI/default change.

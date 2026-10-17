@@ -93,20 +93,32 @@ def png_pairs(rows):
     return tuple(pairs)
 
 
-def png_effect_cell(baseline_bytes, png_bytes, *, show_size=True):
+def display_label(label):
+    """Short table labels without rewriting frozen measurement identities."""
+    return label.replace("Zopfli-Flate", "Zopfli")
+
+
+def short_table_labels(markdown):
+    return "".join(display_label(line) if line.startswith("|") else line
+                   for line in markdown.splitlines(keepends=True))
+
+
+def measured_effect_cell(baseline_bytes, candidate_bytes, *, show_size=True, places=1):
     """Signed change from measured bytes, optionally including candidate size."""
-    if any(type(size) is not int or size <= 0 for size in (baseline_bytes, png_bytes)):
-        raise ValueError("PNG comparison requires positive measured integer byte counts")
-    change = (100 * Decimal(png_bytes - baseline_bytes) / Decimal(baseline_bytes)).quantize(Decimal("0.1"))
+    if any(type(size) is not int or size <= 0 for size in (baseline_bytes, candidate_bytes)):
+        raise ValueError("Comparison requires positive measured integer byte counts")
+    if type(places) is not int or not 0 <= places <= 9:
+        raise ValueError("Percentage precision must be an integer from zero to nine")
+    change = (100 * Decimal(candidate_bytes - baseline_bytes) / Decimal(baseline_bytes)).quantize(Decimal(1).scaleb(-places))
     if change == 0:
         change = Decimal(0)  # Do not print a misleading negative zero after rounding.
     if not show_size:
-        percentage = f"{change:+.1f}%"
-        return f"**{percentage}**" if png_bytes <= baseline_bytes else percentage
-    size = f"{png_bytes:,}"
-    if png_bytes <= baseline_bytes:
+        percentage = f"{change:+.{places}f}%"
+        return f"**{percentage}**" if candidate_bytes <= baseline_bytes else percentage
+    size = f"{candidate_bytes:,}"
+    if candidate_bytes <= baseline_bytes:
         size = f"**{size}**"
-    return f"{size} ({change:+.1f}%)"
+    return f"{size} ({change:+.{places}f}%)"
 
 
 def png_prediction_markdown(documents, rows, records):
@@ -149,8 +161,11 @@ def png_prediction_markdown(documents, rows, records):
                 raise ValueError("Missing exact-output verification for PNG/plain pair")
             if not all(r.get("pdf") for r in results) or results[0]["pdf"] == results[1]["pdf"]:
                 raise ValueError("PNG/plain pair requires independently saved PDFs")
-            cells.append(png_effect_cell(*(r["complete_pdf_bytes"] for r in results), show_size=False))
-        lines.append("| " + plain.label + " | " + " | ".join(cells) + " |")
+            cells.append(measured_effect_cell(*(r["complete_pdf_bytes"] for r in results), show_size=False))
+        label = display_label(plain.label)
+        if plain.native == "brotli":
+            label = label.replace("Brotli", "<ins>Brotli</ins>")
+        lines.append("| " + label + " | " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 
 
@@ -336,7 +351,7 @@ def matrix_markdown(documents, rows, records):
                 raise ValueError(f"Missing measured cell: {key}")
             value = values[key]
             cells.append(f"**{value:,}**" if value == minima[(document.key, row.family)] else f"{value:,}")
-        lines.append("| " + row.label + " | " + " | ".join(cells) + " |")
+        lines.append("| " + display_label(row.label) + " | " + " | ".join(cells) + " |")
     return "\n".join(lines)+"\n"
 
 
