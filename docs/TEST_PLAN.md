@@ -10,6 +10,30 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+Brotli declaration (§§251/252): defaults are OFF in legacy/new filter recipes,
+the core saver and benchmark generators. The compatibility checkbox is hidden
+for non-Brotli compressors. Tests cover effective identity, exact output/image/
+native data, direct/indirect extension dictionaries and mixed arrays, preservation
+of unrelated entries/source versions, repeated opt-in, restored save contexts,
+benchmark declaration identities/resume rejection, the single edit debounce,
+real-file preview, Save/load and Cancel/Discard/Save As/Revert transactions.
+Targeted Brotli checks: **47 passed**. The final full suite after the exact
+**(Compatibility)** label update (`./test.sh`, offscreen) passes **701 tests**,
+exit 0 / FULL SUITE GREEN, with no expected failures. Environment checks pass
+in both interpreters; required application packages are in the project venv.
+Later completion notes are documentation-only and reuse this result (§241).
+
+`tools/shot.py --brotli-compatibility-only` passes with real completed files.
+Viewed captures `.tmp/shot-compatibility-{flate-hidden,brotli-default-off,
+brotli-opt-in,zopfli-hidden}.png` and their 1:1 panels show the native unchecked/
+checked control only for Brotli, with no non-Brotli placeholder and no label
+clipping, including the exact **(Compatibility)** label. Settings are isolated;
+no desktop app was launched.
+Frozen declaration-ON benchmark tables retain their actual sizes/provenance;
+this feature change does not pretend those are new declaration-OFF results.
+
+### Previous percentage-presentation stage — 2026-10-17 (§§247–249)
+
 Percentage presentation (§§247–249): signed changes use two decimals computed
 from original measured bytes; exact ties and changes rounded to zero are never
 bold. The full FFPR Brotli-baseline/Zopfli-treatment section immediately follows

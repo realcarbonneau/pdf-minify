@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–249. The primary measured-size tables are in
+Designer §§238–251. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -27,6 +27,14 @@ pair. This proves the supposedly fixed side stayed fixed, not merely that
 both saved files passed their individual preparation checks.
 Keep failure diagnostics, no-image controls and reader-support limits visible.
 No compute-time rankings, payload estimates, new GUI settings or default changes.
+
+§251 subsequently changes the shared save default: omit the Brotli extension
+declaration unless compatibility metadata is explicitly requested. Record this
+setting in new benchmark identities and reject incompatible resume artifacts.
+The completed PNG/NATIVE-01/NATIVE-02 datasets below used declaration ON;
+their frozen files and measured tables remain historical evidence, not new
+default-OFF measurements. Metadata-only controls explicitly opt in. This ruling
+supersedes the old instruction to retain automatic declaration in new saves.
 
 Implementation: `tools/bench_png_extension.py` and
 `tools/bench_residual_streams.py` call the existing shared bitmap preparation,
@@ -168,7 +176,8 @@ native-payload differences. Never substitute payload estimates for final
 size; diagnostics explain the measured whole-file outcome. The extension's
 §4 recommends the declaration (SHOULD), not an unconditional SHALL; distinguish
 current writer overhead from a format-imposed minimum. Retain the existing
-declaration policy in this experiment, without changing application behavior.
+declaration policy in the frozen experiment. New saves follow §251's opt-in
+default; do not relabel the old results as declaration-OFF measurements.
 
 The corpus contains one one-page input and five multipage inputs. Their
 content differs: this is not a controlled test of page count. Compression operates on

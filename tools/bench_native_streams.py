@@ -103,7 +103,7 @@ def qpdf_check(path, doc):
                 diagnostics=(check.stderr+read.stderr).decode(errors="replace"))
 
 
-def run_case(source, folder, policies, repeat):
+def run_case(source, folder, policies, repeat, *, brotli_declaration=False):
     baseline = folder / f"{source.stem}.baseline.pdf"
     pipeline.gc_copy(str(source), str(baseline))
     with fitz.open(baseline) as doc:
@@ -119,7 +119,9 @@ def run_case(source, folder, policies, repeat):
         for policy in policies[::1 if number % 2 == 0 else -1]:
             target = folder / f"{source.stem}.{policy}.pdf"
             with fitz.open(baseline) as doc:
-                stats = recompress_native_streams(doc, policy, directory=str(folder))
+                declaration = bool(brotli_declaration and policy.startswith("brotli"))
+                stats = recompress_native_streams(doc, policy, directory=str(folder),
+                                                  brotli_declaration=declaration)
                 start = time.perf_counter()
                 doc.save(target, garbage=4, deflate=False, use_objstms=True, compression_effort=100)
                 save_time = time.perf_counter()-start
@@ -132,6 +134,7 @@ def run_case(source, folder, policies, repeat):
                 assert [digest(DisplayPage(page).render().samples) for page in doc] == expected_pixels
                 reader = qpdf_check(target, doc) if number == repeat-1 else None
             item = dict(policy=policy, complete_pdf_bytes=target.stat().st_size,
+                        brotli_declaration=declaration,
                         save_seconds=save_time, decode_seconds=decode_time, **stats)
             if number == repeat-1:
                 item["qpdf"] = reader
@@ -163,6 +166,8 @@ def main():
     parser.add_argument("--policies", nargs="+", choices=POLICIES, default=list(POLICIES))
     parser.add_argument("--repeat", type=int, default=2)
     parser.add_argument("--label", default="main")
+    parser.add_argument("--brotli-declaration", action="store_true",
+                        help="Opt in to Brotli extension compatibility metadata (default: omitted)")
     args = parser.parse_args()
     if Path(args.label).name != args.label or args.label in (".", ".."):
         parser.error("label must be a single directory name")
@@ -172,7 +177,8 @@ def main():
     fixture(synthetic)
     reports = []
     for source in [*(Path(file) for file in args.files), synthetic]:
-        reports.append(run_case(source, folder, args.policies, args.repeat))
+        reports.append(run_case(source, folder, args.policies, args.repeat,
+                                brotli_declaration=args.brotli_declaration))
         (folder / "metrics.json").write_text(json.dumps(reports, indent=2)+"\n")
     print("NATIVE STREAM BENCHMARK GREEN", flush=True)
 

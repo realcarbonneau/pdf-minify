@@ -7,7 +7,8 @@ from .algorithms import BW_MODES, COLOR_MODES, PALETTE_MODES
 def preset_spec(preset: dict) -> dict:
     prm = preset.get("params", {})
     mode = preset["mode"]
-    spec = {"mode": mode, "stream_compression": prm.get("stream_compression", "flate")}
+    spec = {"mode": mode, "stream_compression": prm.get("stream_compression", "flate"),
+            "brotli_declaration": bool(prm.get("brotli_declaration", False))}
     if mode in BW_MODES:
         spec.update(strategy=prm.get("strategy", "otsu"), t=int(prm.get("t", 180)),
                     dpi=int(prm.get("dpi", DEFAULT_DPI)),
@@ -33,7 +34,9 @@ def spec_key(spec: dict) -> tuple:
     An automatic strategy ignores T; unforced BW ignores page reshaping;
     lossless JPEG2000 ignores its lossy rate. Equivalent copies share results.
     """
-    return (*_image_spec_key(spec), spec.get("stream_compression", "flate"))
+    policy = spec.get("stream_compression", "flate")
+    return (*_image_spec_key(spec), policy,
+            bool(spec.get("brotli_declaration", False)) if policy == "brotli" else False)
 
 
 def _image_spec_key(spec):

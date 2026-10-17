@@ -56,8 +56,8 @@ def test_all_21_real_combinations_preserve_prepared_image_and_native_data(tmp_pa
         assert result["complete_pdf_bytes"] == Path(result["pdf"]).stat().st_size
         assert result["exact_images"] and result["exact_native"] and result["exact_all_page_pixels"]
         with fitz.open(result["pdf"]) as doc:
-            if result["native_policy"] == "brotli" or result["image_variant"].startswith("brotli"):
-                assert doc.xref_get_key(doc.pdf_catalog(), "Extensions/PDFa/ExtensionRevision")[1] == "2026"
+            assert not study.streams.brotli_declaration_present(doc)
+            assert result["brotli_declaration"] is False
     assert "seconds" not in json.dumps(report)
     study.export([report], tmp_path)
     assert "complete_pdf_bytes" in (tmp_path / "matrix.csv").read_text()
@@ -84,6 +84,24 @@ def test_resume_verifies_outputs_without_encoding_and_rejects_tampering(tmp_path
     output.write_bytes(output.read_bytes()+b"\nchanged")
     with pytest.raises(ValueError, match="Changed saved integrated"):
         study.run_case(case, folder, resume=True)
+
+
+@pytest.mark.parametrize("declaration", [False, True])
+def test_declaration_is_explicit_measured_and_part_of_resume_identity(tmp_path, declaration):
+    case = production_case(tmp_path)
+    folder = tmp_path / "compatibility"
+    report = study.run_case(case, folder, policies=("brotli",), brotli_declaration=declaration)
+    assert report["identity"]["brotli_declaration"] is declaration
+    result = report["results"][0]
+    assert result["brotli_declaration"] is declaration
+    with fitz.open(result["pdf"]) as doc:
+        assert study.streams.brotli_declaration_present(doc) is declaration
+    resumed = study.run_case(case, folder, policies=("brotli",), resume=True,
+                             brotli_declaration=declaration)
+    assert resumed["results"][0]["reused"]
+    with pytest.raises(ValueError, match="changed integrated"):
+        study.run_case(case, folder, policies=("brotli",), resume=True,
+                       brotli_declaration=not declaration)
 
 
 @pytest.mark.parametrize("change", ["source", "prepared", "environment"])

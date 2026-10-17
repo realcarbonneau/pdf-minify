@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 250. Routine execution requests are not TODOs (§218).
+new TODO ID is 251. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2348,3 +2348,20 @@ section anchors and all measured cells remain unchanged. Documentation checks
 verify exact wording, placement and unchanged table data. No code or benchmark
 changes; reuse the existing 679-test result under §241. Title wording approved
 by the designer 2026-10-17. See `DESIGN.md` §250 and `INTEGRATED_COMPRESSION.md`.
+
+## 250 — DONE (designer §§251/252: opt-in Brotli compatibility declaration)
+
+~~Default filters and benchmark/tests to no Brotli declaration; add a persisted
+**Include Brotli extension declaration (Compatibility)** checkbox visible only
+for Brotli.~~
+Stub: one shared structural metadata policy removes inherited Brotli entries
+by default and adds them only on explicit opt-in, preserving unrelated entries
+and source versions. Recipe/cache identity, dirty/debounce, preview/export and
+Save/load/Save As/Revert/Cancel/Discard share the existing lifecycle. Benchmark
+identities/validators enforce the actual setting; old declared results remain
+frozen and labeled, not adjusted by estimates. Targeted 47-test and final full
+701-test runs pass; all four offscreen states are captured/viewed with the exact
+label. **Implementation verified 2026-10-17; not designer acceptance.** No desktop
+launch or dependency change. See `DESIGN.md` §§251/252,
+`NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`, core `stream_compression.py`
+and `tools/shot.py --brotli-compatibility-only`.

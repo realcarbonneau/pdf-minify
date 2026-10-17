@@ -93,9 +93,10 @@ def metadata_control(pair, folder):
     declared, target = folder / "declared-base.pdf", folder / "zopfli-with-brotli-declaration.pdf"
     if not target.exists():
         with study.images.open_for_id_change(base) as doc:
-            study.streams._declare_brotli(doc)
+            study.streams.set_brotli_declaration(doc, True)
             doc.save(declared, no_new_id=True)
-        study.save_combination(declared, target, case, variant, "zopfli", folder)
+        study.save_combination(declared, target, case, variant, "zopfli", folder,
+                               brotli_declaration=True)
     actual, original = stream_accounting(target), stream_accounting(pair["candidate"]["result"]["pdf"])
     if any(actual[k + "_signature"] != original[k + "_signature"] for k in ("images", "native")):
         raise ValueError("Metadata-only control changed encoded content")

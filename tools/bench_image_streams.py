@@ -198,7 +198,7 @@ def open_for_id_change(target):
     return fitz.open(stream=data, filetype="pdf")
 
 
-def stabilize_existing_id(source_hash, prepared, variant, target, folder):
+def stabilize_existing_id(source_hash, prepared, variant, target, folder, *, brotli_declaration=False):
     first = source_hash[:16]
     second = digest(json.dumps(prepared, sort_keys=True).encode()+variant.encode())[:16]
     with fitz.open(target) as previous:
@@ -212,21 +212,25 @@ def stabilize_existing_id(source_hash, prepared, variant, target, folder):
             raise FileExistsError("Refusing to overwrite an ID-normalization archive")
         work_context = pipeline._ENCODE_WORKDIR.set(str(folder))
         stream_context = pipeline._STREAM_POLICY.set("flate")
+        declaration_context = pipeline._BROTLI_DECLARATION.set(bool(brotli_declaration))
         try:
             pipeline._save_optimized_pdf(doc, str(stable), no_new_id=True)
         finally:
             pipeline._STREAM_POLICY.reset(stream_context)
+            pipeline._BROTLI_DECLARATION.reset(declaration_context)
             pipeline._ENCODE_WORKDIR.reset(work_context)
     target.replace(original)
     stable.replace(target)
 
 
-def save_variant(source, target, bitmaps, mode, variant, folder):
+def save_variant(source, target, bitmaps, mode, variant, folder, *, brotli_declaration=False):
     """One shared native page assembler and optimizer; no alternative saver."""
     token = CancelToken()
     from pdf_minify.core.native_layer import NativeContext
     work_context = pipeline._ENCODE_WORKDIR.set(str(folder))
     stream_context = pipeline._STREAM_POLICY.set("flate")
+    declaration_context = pipeline._BROTLI_DECLARATION.set(
+        bool(brotli_declaration and variant.startswith("brotli")))
     try:
         with fitz.open(source) as original:
             # An untouched xref-stream document needs a direct trailer before
@@ -252,13 +256,12 @@ def save_variant(source, target, bitmaps, mode, variant, folder):
                             image_layers._assemble_layers(doc, pno, prepared, token,
                                                          "canvas" if mode == "indexed" else "images", paint,
                                                          native_context=native_context)
-                if variant.startswith("brotli"):
-                    streams._declare_brotli(doc)
                 set_pdf_id(doc, digest(source.read_bytes()),
                            [bitmap.description() if bitmap else None for bitmap in bitmaps], variant)
                 pipeline._save_optimized_pdf(doc, str(target), no_new_id=True)
     finally:
         pipeline._STREAM_POLICY.reset(stream_context)
+        pipeline._BROTLI_DECLARATION.reset(declaration_context)
         pipeline._ENCODE_WORKDIR.reset(work_context)
 
 
@@ -501,7 +504,7 @@ def verify_variant(source, target, bitmaps, mode, variant, dpi, expected=None):
 
 
 def run_case(source, folder, *, mode="indexed", dpi=300, colors=5, strategy="otsu", threshold=180,
-             variants=VARIANTS, resume=False):
+             variants=VARIANTS, resume=False, brotli_declaration=False):
     folder.mkdir(parents=True, exist_ok=resume)
     bitmaps = prepare(source, mode, dpi, colors, strategy, threshold, folder)
     row = dict(source=str(source), input_bytes=source.stat().st_size,
@@ -513,21 +516,31 @@ def run_case(source, folder, *, mode="indexed", dpi=300, colors=5, strategy="ots
                threshold_method=strategy if not mode.startswith("indexed") else None,
                threshold=threshold if not mode.startswith("indexed") and strategy == "simple" else None,
                pages=len(bitmaps), native_stream_policy="flate", repetitions=1, id_policy="fixed-ascii16-v1",
+               brotli_declaration=bool(brotli_declaration),
                prepared=[bitmap.description() if bitmap else None for bitmap in bitmaps], results=[])
     if resume and (folder / "metrics.json").exists():
         prior = json.loads((folder / "metrics.json").read_text())
+        if prior.get("brotli_declaration") != row["brotli_declaration"]:
+            raise ValueError("Cannot reuse changed benchmark input: Brotli declaration setting")
         for field in ("input_sha256", "environment", "mode", "dpi", "colors", "threshold_method", "threshold", "prepared"):
             if prior[field] != row[field]:
                 raise ValueError(f"Cannot reuse changed benchmark input: {field}")
     expected = None
     for variant in variants:
+        declaration = bool(brotli_declaration and variant.startswith("brotli"))
         target = folder / f"{variant}.pdf"
         reused = resume and target.exists()
         if reused:
-            stabilize_existing_id(row["input_sha256"], row["prepared"], variant, target, folder)
+            stabilize_existing_id(row["input_sha256"], row["prepared"], variant, target, folder,
+                                  brotli_declaration=declaration)
         else:
-            save_variant(source, target, bitmaps, mode, variant, folder)
+            save_variant(source, target, bitmaps, mode, variant, folder,
+                         brotli_declaration=declaration)
         result, signatures = verify_variant(source, target, bitmaps, mode, variant, dpi, expected)
+        with fitz.open(target) as doc:
+            if streams.brotli_declaration_present(doc) != declaration:
+                raise ValueError("Wrong Brotli extension declaration setting")
+        result["brotli_declaration"] = declaration
         result["reused_existing_pdf"] = reused
         if expected is None:
             expected = signatures
@@ -574,6 +587,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--label", default="size-main")
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--brotli-declaration", action="store_true",
+                        help="Opt in to Brotli extension compatibility metadata (default: omitted)")
     parser.add_argument("--resume", action="store_true", help="revalidate unchanged existing PDFs; encode only missing ones")
     args = parser.parse_args()
     if Path(args.label).name != args.label or args.label in (".", ".."):
@@ -585,7 +600,8 @@ def main():
         suffix = (f"{params['colors']}colors" if params["mode"] == "indexed" else
                   f"{params.get('strategy', 'otsu')}-{params.get('threshold', 180)}")
         label = f"{source.stem}.{params['mode']}.{params['dpi']}dpi.{suffix}"
-        rows.append(run_case(source, folder / label, resume=args.resume, **params))
+        rows.append(run_case(source, folder / label, resume=args.resume,
+                             brotli_declaration=args.brotli_declaration, **params))
         (folder / "metrics.json").write_text(json.dumps(rows, indent=2)+"\n")
     print("IMAGE STREAM SIZE BENCHMARK GREEN", flush=True)
 

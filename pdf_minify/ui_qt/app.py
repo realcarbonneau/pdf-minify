@@ -842,6 +842,12 @@ class MainWindow(QMainWindow):
                                      "older readers may show missing content.")
         self.stream_warning.setWordWrap(True)
         self.stream_warning.hide()
+        self.brotli_declaration = QCheckBox("Include Brotli extension declaration (Compatibility)")
+        self.brotli_declaration.setToolTip(
+            "Include PDF 2.0 Brotli extension metadata for readers that use it. "
+            "Off by default to minimize file size. This does not add Brotli decoding "
+            "support to an incompatible reader.")
+        self.brotli_declaration.hide()
         self.strategy = QComboBox()
         self.strategy.addItems(["otsu", "simple", "adaptive", "sauvola"])
         self.strategy.setAccessibleName("Threshold method")
@@ -926,6 +932,7 @@ class MainWindow(QMainWindow):
         streamRow.addWidget(streamLabel)
         streamRow.addWidget(self.stream_compression, 1)
         right.addLayout(streamRow)
+        right.addWidget(self.brotli_declaration)
         right.addWidget(self.stream_warning)
         right.addWidget(QLabel("Filter details:"))
         right.addWidget(self.details)
@@ -1057,6 +1064,7 @@ class MainWindow(QMainWindow):
                                 (self.lossless_box, "toggled"), (self.strategy, "currentTextChanged"),
                                 (self.compression, "currentIndexChanged"),
                                 (self.stream_compression, "currentIndexChanged"),
+                                (self.brotli_declaration, "toggled"),
                                 (self.dpi, "currentIndexChanged"), (self.page_size, "currentIndexChanged"),
                                 (self.force_raster, "toggled")):
             getattr(control, signal).connect(self._filter_edited)
@@ -1215,13 +1223,14 @@ class MainWindow(QMainWindow):
         self._loading_controls = True
         try:
             with ExitStack() as stack:
-                for widget in (self.compression, self.stream_compression, self.strategy,
+                for widget in (self.compression, self.stream_compression, self.brotli_declaration, self.strategy,
                                self.threshold_control, self.dpi, self.colors_control,
                                self.lossless_box, self.force_raster, self.page_size):
                     stack.enter_context(QSignalBlocker(widget))
                 self.compression.setCurrentIndex(self.compression.findData(spec["mode"]))
                 self.stream_compression.setCurrentIndex(self.stream_compression.findData(
                     spec.get("stream_compression", "flate")))
+                self.brotli_declaration.setChecked(spec.get("brotli_declaration", False))
                 self.strategy.setCurrentText(spec.get("strategy", "otsu"))
                 self.threshold_control.setValue(spec.get("t", 180))
                 dpi_field = "dpi" if spec["mode"] in BW_MODES else "dpi_cap"
@@ -1241,6 +1250,7 @@ class MainWindow(QMainWindow):
         if mode != spec["mode"]:
             spec = with_algorithm(spec, mode)
         spec["stream_compression"] = self.stream_compression.currentData()
+        spec["brotli_declaration"] = self.brotli_declaration.isChecked()
         if mode in BW_MODES:
             spec.update(strategy=self.strategy.currentText(), t=self.slider.value(),
                         dpi=self.dpi.currentData(), force_raster=self.force_raster.isChecked(),
@@ -1445,7 +1455,9 @@ class MainWindow(QMainWindow):
 
         Controls without a choice stay visible but grey, showing the correct
         fixed state (§100) — and live controls that change nothing stay
-        disabled (this also stops pointless identical-output jobs)."""
+        disabled (this also stops pointless identical-output jobs). §251's
+        Brotli declaration compatibility checkbox is the explicit exception:
+        hide it entirely for other compressors."""
         pid = self._active_pid or self.preset.currentData()
         mode = self._spec_for(pid)["mode"]
         bw = mode in BW_MODES
@@ -1475,7 +1487,9 @@ class MainWindow(QMainWindow):
         self.strategy_label.setEnabled(bw)
         self.force_raster.setEnabled(mode in ALGORITHM_LABELS)
         self.page_size.setEnabled(mode in ALGORITHM_LABELS and self.force_raster.isChecked())
-        self.stream_warning.setVisible(self._spec_for(pid).get("stream_compression") == "brotli")
+        brotli = self._spec_for(pid).get("stream_compression") == "brotli"
+        self.brotli_declaration.setVisible(brotli)
+        self.stream_warning.setVisible(brotli)
 
     def _sync_threshold_enabled(self):
         self._sync_filter_controls()
@@ -1557,6 +1571,9 @@ class MainWindow(QMainWindow):
                 "gc + deflate only — pixels unchanged",
             ]
         lines.append("PDF streams: " + STREAM_LABELS[spec.get("stream_compression", "flate")])
+        if spec.get("stream_compression") == "brotli":
+            lines.append("Brotli extension declaration: " +
+                         ("On (Compatibility)" if spec.get("brotli_declaration", False) else "Off"))
         self.details.setText("\n".join(lines))
         for _cb in (self.preset, self.strategy, self.dpi, self.page_size):
             _cur = _cb.itemText(_cb.currentIndex())

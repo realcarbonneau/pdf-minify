@@ -28,6 +28,7 @@ from .canvas import flatten_rgb
 log = logging.getLogger("pdf_minify")
 _ENCODE_WORKDIR = ContextVar("encoder_workdir", default=None)
 _STREAM_POLICY = ContextVar("stream_compression", default="flate")
+_BROTLI_DECLARATION = ContextVar("brotli_declaration", default=False)
 _SAVE_TOKEN = ContextVar("save_token", default=None)
 
 # points (1/72 in). Letter = 8.5x11in, A4 = 210x297mm.
@@ -609,7 +610,8 @@ def _save_optimized_pdf(doc: "fitz.Document", out_path: str, *, no_new_id: bool 
         doc.subset_fonts()
     policy = _STREAM_POLICY.get()
     stats = recompress_native_streams(doc, policy, directory=_ENCODE_WORKDIR.get(),
-                                     token=_SAVE_TOKEN.get())
+                                     token=_SAVE_TOKEN.get(),
+                                     brotli_declaration=_BROTLI_DECLARATION.get())
     # Native streams are already explicitly encoded; the writer must not
     # replace that choice. Image streams stay byte-identical; object/xref
     # generation remains the native writer's ordinary compatible optimization.
@@ -697,12 +699,15 @@ def save_with_spec(in_path: str, out_path: str, spec: dict,
         raise ValueError(f"Unknown PDF stream compression: {policy}")
     context = _ENCODE_WORKDIR.set(workdir)
     stream_context = _STREAM_POLICY.set(policy)
+    declaration_context = _BROTLI_DECLARATION.set(
+        policy == "brotli" and bool(spec.get("brotli_declaration", False)))
     token_context = _SAVE_TOKEN.set(token)
     try:
         return _save_recipe(in_path, out_path, spec, token, progress)
     finally:
         _ENCODE_WORKDIR.reset(context)
         _STREAM_POLICY.reset(stream_context)
+        _BROTLI_DECLARATION.reset(declaration_context)
         _SAVE_TOKEN.reset(token_context)
 
 

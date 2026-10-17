@@ -1,8 +1,14 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–250; TODO §§226–249. This is the primary integrated
+Designer §§210–214/220–251; TODO §§226–250. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
+
+**Declaration policy:** these frozen tables used the earlier automatic Brotli
+extension declaration. Designer §251 changes new filters/tests/benchmarks to
+declaration **OFF by default**, with an explicit Brotli-only compatibility
+option. The numbers below retain their original declaration-ON provenance;
+they are not remeasured default-OFF results or metadata-subtraction estimates.
 
 **Current selected results after the B114 preparation repair.** The representative overview now has **204 baseline sizes** and **96 isolated PNG effects** across six PDFs. The native/residual A/B experiment adds **42 paired comparisons**; the FFPR Brotli-baseline/Zopfli-treatment study adds **30 pairs**. Together with the unchanged focused scenarios, **392 distinct actual saved PDFs** support these tables, including 30 new FFPR Brotli baselines. Two additional metadata-only diagnostic outputs are not ranked. Compatible earlier outputs retain their original provenance; only missing cases were encoded. The BW representative is the eleven-page CCITT NACA TM972 scan, not the already-JBIG2 JFK regression fixture. B114 is worker-verified, not designer-confirmed acceptance.
 
@@ -306,9 +312,9 @@ The complete-file growth is the sum of:
   controls keep the Zopfli image AND native stream payloads byte-identical
   and add just that declaration. Both the one-page artwork and six-page W-9
   grow by exactly 166 bytes. The extension specification recommends it
-  (**SHOULD**, not SHALL); this is our current writer's declaration policy,
-  not an unavoidable 166-byte minimum imposed by the format. We keep that
-  policy fixed rather than silently remove metadata from the comparison.
+  (**SHOULD**, not SHALL); this was the study's writer declaration policy,
+  not an unavoidable 166-byte minimum imposed by the format. That policy
+  stays fixed in these frozen results; new saves default OFF under §251.
 - **One extra filter-name byte per native stream:** `/BrotliDecode` is one
   byte longer than `/FlateDecode`.
 - **The actual native-payload difference and any extra `/Length` digits.**

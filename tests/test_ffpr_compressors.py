@@ -47,7 +47,7 @@ def test_real_pair_keeps_images_exact_and_accounting_closes(actual_pair):
     assert account["brotli"]["images_signature"] == account["zopfli"]["images_signature"]
     assert account["zopfli_minus_brotli"]["images"] == 0
     assert sum(account["zopfli_minus_brotli"].values()) == account["complete_byte_change"]
-    assert account["brotli"]["brotli_declaration"] == "2026"
+    assert account["brotli"]["brotli_declaration"] == "null"
     assert account["zopfli"]["brotli_declaration"] == "null"
 
 

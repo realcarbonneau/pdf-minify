@@ -43,6 +43,15 @@ include this input. Legacy recipes with no policy mean Flate. The image codec
 and encoded image bytes must not change when only native compression changes.
 Missing/failing selected encoders fail clearly, never silently fall back.
 
+Designer §251 (2026-10-17) makes the Brotli developer-extension declaration
+**opt-in, off by default**, including existing filters with no explicit field.
+The `brotli_declaration` recipe boolean applies only to Brotli. Its checkbox,
+**Include Brotli extension declaration (Compatibility)** (§252), is completely hidden
+for other stream compressors, rather than disabled. It participates in normal
+dirty/debounce/save/revert/copy behavior, without an independent processing path.
+This is metadata for readers that use the declaration; it cannot give a reader
+a Brotli decoder. Keep the limited-support warning independent of the checkbox.
+
 §209 subsequently requests a separate SIZE-ONLY bitmap comparison:
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). The native-only
 figures here do not compare Brotli images with Indexed Flate or BW/colored
@@ -107,8 +116,12 @@ Zopfli label; record measured full-workload cost and optional dependency.
 
 Brotli uses the bundled MuPDF encoder/decoder, if available; no extra Python
 package is assumed. Standard standalone streams, no external dictionaries or
-shared framing. Add catalog PDF 2.0 version and PDFa developer-extension
-declaration (level 1/revision 2026) while preserving unrelated extensions.
+shared framing. Under §251, add catalog PDF 2.0 version and the PDFa
+developer-extension declaration (level 1/revision 2026) only when explicitly
+requested. Default saves remove an inherited Brotli declaration but preserve
+unrelated developer extensions and legitimate source version information.
+Handle direct/indirect dictionaries and extension arrays structurally, not
+with string/regex deletion. Repeated opt-in saves must not duplicate entries.
 Keep container/xref streams conventionally compressed so readers can discover
 the extension. Display an explicit limited-support warning in the UI. This
 does not confer PDF/A or all-viewer certification.
@@ -140,6 +153,11 @@ returned zero. Explicitly preserve masks/encoded image bytes. Runtime versions
 and repeat counts accompany actual results below; no invented numbers.
 
 ## Measured results — 2026-10-15
+
+These frozen measurements used the earlier automatic declaration-ON policy.
+They are not measurements of §251's new declaration-OFF default. Preserve
+their actual byte counts and provenance; new runs default OFF and must record
+the setting. No sizes are inferred by subtracting historical metadata costs.
 
 Reproduce from the repository root:
 
@@ -251,8 +269,8 @@ Brotli is a genuinely different decoder requirement and can improve native-
 heavy sizes; retain its visible support warning. The intended distinction is
 broad Flate compatibility versus allowing a supporting modern reader, not
 "fast versus slow". A modern-reader requirement alone does not mean every
-stream/file should be forced to Brotli: the existing image-heavy native case
-is one byte larger with Brotli after overhead. Explicit codec labels still
+stream/file should be forced to Brotli: the frozen declaration-ON image-heavy
+native case is one byte larger with Brotli after overhead. Explicit codec labels still
 mean those codecs; an automatic cross-format policy requires a separate design
 decision. LZW/RunLength remain losing benchmark controls, not product options.
 

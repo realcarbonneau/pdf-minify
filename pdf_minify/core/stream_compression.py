@@ -19,6 +19,7 @@ STREAM_POLICIES = (
 )
 STREAM_LABELS = dict(STREAM_POLICIES)
 DEFAULT_STREAM_POLICY = "flate"
+_BROTLI_EXTENSION_URL = "https://pdfa.org/resource/extension-brotli"
 
 
 def check_cancel(token):
@@ -188,23 +189,87 @@ def native_stream_xrefs(doc):
 
 
 def _declare_brotli(doc):
-    catalog = doc.pdf_catalog()
-    doc.xref_set_key(catalog, "Version", "/2.0")
-    entry = ("<< /Type /DeveloperExtensions /BaseVersion /2.0 /ExtensionLevel 1 "
-             "/ExtensionRevision (2026) /URL (https://pdfa.org/resource/extension-brotli) >>")
-    kind, previous = doc.xref_get_key(catalog, "Extensions/PDFa")
-    if kind == "xref":
-        previous = doc.xref_object(int(previous.split()[0]))
-    if "https://pdfa.org/resource/extension-brotli" in previous:
+    m = fitz.mupdf
+    native = m.pdf_document_from_fz_document(doc.this)
+    root, extensions, previous = _brotli_extension_objects(doc)
+    if m.pdf_version(native) < 20:
+        doc.xref_set_key(doc.pdf_catalog(), "Version", "/2.0")
+    if brotli_declaration_present(doc):
         return
-    if kind != "null":
-        previous = previous.strip()
-        entry = (previous[:-1]+" "+entry+"]" if previous.startswith("[")
-                 else "["+previous+" "+entry+"]")
-    doc.xref_set_key(catalog, "Extensions/PDFa", entry)
+    if not m.pdf_is_dict(extensions):
+        extensions = m.pdf_new_dict(native, 1)
+        m.pdf_dict_puts(root, "Extensions", extensions)
+    entry = m.pdf_new_dict(native, 5)
+    for key, value in (("Type", m.pdf_new_name("DeveloperExtensions")),
+                       ("BaseVersion", m.pdf_new_name("2.0")),
+                       ("ExtensionLevel", m.pdf_new_int(1)),
+                       ("ExtensionRevision", m.pdf_new_text_string("2026")),
+                       ("URL", m.pdf_new_text_string(_BROTLI_EXTENSION_URL))):
+        m.pdf_dict_puts(entry, key, value)
+    if m.pdf_is_array(previous):
+        m.pdf_array_push(previous, entry)
+    elif not m.pdf_is_null(previous):
+        entries = m.pdf_new_array(native, 2)
+        m.pdf_array_push(entries, previous)
+        m.pdf_array_push(entries, entry)
+        m.pdf_dict_puts(extensions, "PDFa", entries)
+    else:
+        m.pdf_dict_puts(extensions, "PDFa", entry)
 
 
-def recompress_native_streams(doc, policy, *, directory=None, token=None):
+def _brotli_extension_objects(doc):
+    m = fitz.mupdf
+    native = m.pdf_document_from_fz_document(doc.this)
+    root = m.pdf_dict_gets(m.pdf_trailer(native), "Root")
+    extensions = m.pdf_dict_gets(root, "Extensions")
+    return root, extensions, m.pdf_dict_gets(extensions, "PDFa")
+
+
+def _is_brotli_declaration(entry):
+    m = fitz.mupdf
+    return bool(m.pdf_is_dict(entry) and
+                m.pdf_to_text_string(m.pdf_dict_gets(entry, "URL")) == _BROTLI_EXTENSION_URL)
+
+
+def brotli_declaration_present(doc):
+    """Recognize only Brotli's entry, including indirect dictionaries/arrays."""
+    m = fitz.mupdf
+    with FITZ_LOCK:
+        _, _, entry = _brotli_extension_objects(doc)
+        return (any(_is_brotli_declaration(m.pdf_array_get(entry, i))
+                    for i in range(m.pdf_array_len(entry))) if m.pdf_is_array(entry)
+                else _is_brotli_declaration(entry))
+
+
+def set_brotli_declaration(doc, enabled=False):
+    """Opt-in metadata; remove only Brotli entries, never other extensions.
+
+    Do not downgrade source PDF versions: an inherited /Version may describe
+    unrelated PDF 2.0 features, not just a former Brotli declaration.
+    """
+    with FITZ_LOCK:
+        if enabled:
+            _declare_brotli(doc)
+            return
+        m = fitz.mupdf
+        root, extensions, entry = _brotli_extension_objects(doc)
+        removed = False
+        if m.pdf_is_array(entry):
+            for i in reversed(range(m.pdf_array_len(entry))):
+                if _is_brotli_declaration(m.pdf_array_get(entry, i)):
+                    m.pdf_array_delete(entry, i)
+                    removed = True
+            if removed and not m.pdf_array_len(entry):
+                m.pdf_dict_dels(extensions, "PDFa")
+        elif _is_brotli_declaration(entry):
+            m.pdf_dict_dels(extensions, "PDFa")
+            removed = True
+        if removed and not m.pdf_dict_len(extensions):
+            m.pdf_dict_dels(root, "Extensions")
+
+
+def recompress_native_streams(doc, policy, *, directory=None, token=None,
+                              brotli_declaration=False):
     """Exact per-stream readback before the one final PDF/container save."""
     token = token or CancelToken()
     count = raw_total = encoded_total = 0
@@ -227,7 +292,6 @@ def recompress_native_streams(doc, policy, *, directory=None, token=None):
             count += 1
             raw_total += len(data)
             encoded_total += len(encoded)
-        if policy.startswith("brotli"):
-            _declare_brotli(doc)
+        set_brotli_declaration(doc, brotli_declaration)
     return dict(streams=count, raw_bytes=raw_total, encoded_bytes=encoded_total,
                 encode_seconds=time.perf_counter()-started)

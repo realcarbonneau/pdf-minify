@@ -495,6 +495,34 @@ after the explanatory prose. Keep section headings/anchors, cell values,
 two-decimal precision and emphasis unchanged. This is documentation-only;
 no new benchmark encoding or full-suite run is needed (§241). See TODO §249.
 
+### Brotli declaration is opt-in compatibility metadata (§251)
+
+> Also, we should remove the "extension specification" for all the tests and filters by default, but add it as a compatibility option when Brotli is selected.  Only show that option for Brotli, which is different than our existing pattern to always show the option by grey it out when not applicable.
+
+Default `brotli_declaration` to false for existing/missing-field recipes, new
+filters, headless saves and benchmark/test outputs. The shared saver omits the
+Brotli developer-extension entry by default, including an inherited entry in a
+prepared/source PDF; preserve unrelated extension entries and legitimate source
+version information. With the option on, add the existing PDF 2.0/catalog
+declaration once, preserving other declarations. This metadata option does not
+change compressed samples/operators or supply missing reader decoder support.
+
+Expose **Include Brotli extension declaration (Compatibility)** (§252) as an unchecked
+checkbox beside the stream-compression settings. Show it only when Brotli is
+selected; hide it entirely otherwise, explicitly excepting this one control
+from the always-visible/disabled convention. Retain an inactive choice when
+switching codecs, but exclude it from non-Brotli effective cache identity.
+For Brotli, include it in identity, dirty state, the single 300ms debounce,
+Save/Save As/load, Revert/Discard/Cancel and exact saved-file preview/export.
+Never auto-enable it for legacy Brotli filters that omit the new field.
+
+Benchmark generation/verification uses the same opt-in policy; identity/resume
+checks must not mistake declaration-ON artifacts for default-OFF measurements.
+Explicit declaration compatibility tests and metadata-only controls may opt in.
+Preserve frozen old artifacts/numbers with their declaration-ON provenance;
+measure new complete files before publishing replacement results. See
+`NATIVE_STREAM_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md` and TODO §250.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

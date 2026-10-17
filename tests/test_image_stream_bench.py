@@ -112,8 +112,8 @@ def test_all_eight_actual_pdf_variants_share_preparation_pixels_native_policy_an
         assert result["pdf_sha256"] == study.digest(output.read_bytes())
         assert result["decoded_samples_exact"] and result["actual_pages_exact"]
         with fitz.open(output) as doc:
-            if result["variant"].startswith("brotli"):
-                assert doc.xref_get_key(doc.pdf_catalog(), "Extensions/PDFa/ExtensionRevision")[1] == "2026"
+            assert not study.streams.brotli_declaration_present(doc)
+            assert result["brotli_declaration"] is False
             for xref in study.streams.native_stream_xrefs(doc):
                 assert doc.xref_get_key(xref, "Filter")[1] in ("/FlateDecode", "null")
     product = tmp_path / "product.pdf"
@@ -207,6 +207,25 @@ def test_resume_revalidates_existing_pdfs_and_rejects_changed_preparation(tmp_pa
         item["complete_pdf_bytes"] for item in initial["results"]]
     with pytest.raises(ValueError, match="changed benchmark input"):
         study.run_case(source, folder, dpi=72, colors=16, variants=variants, resume=True)
+
+
+@pytest.mark.parametrize("declaration", [False, True])
+def test_image_declaration_is_opt_in_and_cannot_reuse_a_different_setting(tmp_path, declaration):
+    source = tmp_path / "source.pdf"
+    source_pdf(source, 0)
+    folder = tmp_path / "compatibility"
+    variants = ("zopfli-plain", "brotli-plain")
+    report = study.run_case(source, folder, dpi=72, variants=variants,
+                            brotli_declaration=declaration)
+    assert report["brotli_declaration"] is declaration
+    for result in report["results"]:
+        included = declaration and result["variant"].startswith("brotli")
+        with fitz.open(result["pdf"]) as doc:
+            assert study.streams.brotli_declaration_present(doc) is included
+        assert result["brotli_declaration"] is included
+    with pytest.raises(ValueError, match="declaration setting"):
+        study.run_case(source, folder, dpi=72, variants=variants, resume=True,
+                       brotli_declaration=not declaration)
 
 
 def test_existing_malformed_native_path_is_recorded_not_hidden_or_misclassified(tmp_path):

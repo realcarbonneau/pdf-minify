@@ -1012,6 +1012,8 @@ def test_changed_algorithm_and_native_compression_save_and_reload_builtin_overri
     w.compression.setCurrentIndex(w.compression.findData("layered-jbig2"))
     w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
     assert not w.stream_warning.isHidden()
+    assert not w.brotli_declaration.isChecked() and not w.brotli_declaration.isHidden()
+    w.brotli_declaration.setChecked(True)
     wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
     result = w._artifacts.results[w._result_key("bw-t180")]
     w.save_filter()
@@ -1019,6 +1021,7 @@ def test_changed_algorithm_and_native_compression_save_and_reload_builtin_overri
     persisted = next(p for p in w._custom_store().value("customPresets") if p["id"] == "bw-t180")
     assert persisted["mode"] == "layered-jbig2" and persisted["uuid"] == uid
     assert persisted["params"]["stream_compression"] == "brotli"
+    assert persisted["params"]["brotli_declaration"] is True
     assert w._artifacts.results[w._result_key("bw-t180")] is result
     # A fresh process starts from built-in templates, NOT the modified globals.
     presets.PRESETS[:] = copy.deepcopy(_defaults)
@@ -1027,11 +1030,95 @@ def test_changed_algorithm_and_native_compression_save_and_reload_builtin_overri
         choose(loaded, "bw-t180")
         assert loaded.compression.currentData() == "layered-jbig2"
         assert loaded.stream_compression.currentData() == "brotli"
+        assert loaded.brotli_declaration.isChecked() and not loaded.brotli_declaration.isHidden()
         assert loaded.colors_value.value() == 5 and loaded.colors_control.isEnabled()
         assert not loaded.strategy.isEnabled() and not loaded._draft_specs
         assert presets.get("bw-t180")["uuid"] == uid
     finally:
         loaded.close()
+
+
+def test_brotli_compatibility_is_hidden_elsewhere_and_shares_the_real_edit_debounce(window, monkeypatch):
+    from pdf_minify.core.stream_compression import brotli_declaration_present
+
+    w = window
+    choose(w, "bw-t180")
+    assert w.brotli_declaration.isHidden() and not w.brotli_declaration.isChecked()
+    assert w.brotli_declaration.text() == "Include Brotli extension declaration (Compatibility)"
+    calls = []
+    start = w._artifacts.start
+    def record(key, path, spec, *args, **kwargs):
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None:
+            calls.append(dict(spec))
+        return worker
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
+    assert w.brotli_declaration.isVisible() and w.brotli_declaration.isEnabled()
+    assert not w.brotli_declaration.isChecked()
+    QTest.qWait(40)
+    w.brotli_declaration.setChecked(True)
+    QTest.qWait(40)
+    w.brotli_declaration.setChecked(False)
+    QTest.qWait(40)
+    w.brotli_declaration.setChecked(True)
+    assert not calls and w._preview_timer.isActive()
+    assert w._filter_display_name(w._active_pid).endswith(" *")
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(calls) == 1 and calls[0]["brotli_declaration"] is True
+    enabled = w._artifacts.results[w._result_key(w._active_pid)]
+    with fitz.open(enabled.pdf_path) as doc:
+        assert brotli_declaration_present(doc)
+    w.save_filter()  # protect this completed saved artifact while editing its draft
+    w.brotli_declaration.setChecked(False)
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    default = w._artifacts.results[w._result_key(w._active_pid)]
+    with fitz.open(default.pdf_path) as doc:
+        assert not brotli_declaration_present(doc)
+    assert default.nbytes < enabled.nbytes
+    assert w.after._pdf_source.path == default.pdf_path
+    w.brotli_declaration.setChecked(True)  # exact completed artifact is reusable
+    assert w._artifacts.results[w._result_key(w._active_pid)] is enabled
+    assert len(calls) == 2
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    assert w.brotli_declaration.isHidden() and w.brotli_declaration.isChecked()
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
+    assert w.brotli_declaration.isVisible() and w.brotli_declaration.isChecked()
+    choose(w, "color-max")  # clean switch to another default-OFF filter
+    assert w.brotli_declaration.isHidden() and not w.brotli_declaration.isChecked()
+    assert not w._draft_specs
+
+
+@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
+def test_brotli_declaration_uses_existing_unsaved_switch_transaction(window, monkeypatch, choice):
+    w = window
+    choose(w, "bw-t180")
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    w.save_filter()
+    saved_key = w._result_key("bw-t180")
+    w.brotli_declaration.setChecked(True)
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    draft = w._artifacts.results[w._result_key("bw-t180")]
+    monkeypatch.setattr(w, "_ask_unsaved_filter", lambda pid: choice)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Brotli compatibility copy", True))
+    w.preset.setCurrentIndex(w.preset.findData("color-max"))
+    assert w._saved_specs["bw-t180"]["brotli_declaration"] is False
+    if choice == "cancel":
+        assert w._active_pid == "bw-t180" and w.brotli_declaration.isChecked()
+        assert Path(draft.pdf_path).is_file() and w._draft_specs
+        w.revert_filter()
+        assert w._result_key("bw-t180") == saved_key and not w.brotli_declaration.isChecked()
+    elif choice == "discard":
+        assert w._active_pid == "color-max" and w.brotli_declaration.isHidden()
+        assert not w._draft_specs
+    else:
+        assert w._active_pid not in ("bw-t180", "color-max")
+        assert not w._draft_specs and w.brotli_declaration.isChecked()
+        assert presets.get(w._active_pid)["params"]["brotli_declaration"] is True
+        wait_until(lambda: not w._artifacts.pending and w._result_key(w._active_pid) in w._artifacts.results)
+        copied = w._artifacts.results[w._result_key(w._active_pid)]
+        assert copied.nbytes == draft.nbytes and copied.pdf_path != draft.pdf_path
 
 
 @pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])

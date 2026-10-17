@@ -86,7 +86,7 @@ def canonical_value(doc, value, seen=()):
     return re.sub(r"\b(\d+)\s+\d+\s+R\b", reference, value)
 
 
-def verify(path, expected, dpi, policy):
+def verify(path, expected, dpi, policy, *, brotli_declaration=False):
     actual = snapshot(path, dpi)
     for key in ("images", "native", "pages", "metadata", "toc", "attachments"):
         if actual[key] != expected[key]:
@@ -105,17 +105,17 @@ def verify(path, expected, dpi, policy):
             wanted = "null" if not data else "/BrotliDecode" if policy == "brotli" else "/FlateDecode"
             if doc.xref_get_key(xref, "Filter")[1] != wanted:
                 raise RuntimeError(f"Wrong actual native filter: {path}, {xref}")
-        if policy == "brotli":
-            if doc.xref_get_key(doc.pdf_catalog(), "Extensions/PDFa/ExtensionRevision")[1] != "2026":
-                raise RuntimeError("Missing Brotli extension declaration")
+        if streams.brotli_declaration_present(doc) != bool(brotli_declaration):
+            raise RuntimeError("Wrong Brotli extension declaration setting")
     return dict(page_diagnostics=actual["diagnostics"],
                 pre_validation_diagnostics=actual["prior_diagnostics"])
 
 
-def save_combination(base, target, case, variant, policy, folder):
+def save_combination(base, target, case, variant, policy, folder, *, brotli_declaration=False):
     """Use the real shared native/font/container saver for every matrix cell."""
     work = pipeline._ENCODE_WORKDIR.set(str(folder))
     native = pipeline._STREAM_POLICY.set(policy)
+    declaration = pipeline._BROTLI_DECLARATION.set(bool(brotli_declaration))
     try:
         with images.open_for_id_change(base) as doc:
             images.set_pdf_id(doc, case["input_sha256"], case.get("prepared", case["recipe"]),
@@ -125,12 +125,14 @@ def save_combination(base, target, case, variant, policy, folder):
             pipeline._save_optimized_pdf(doc, str(target), no_new_id=True, subset_fonts=False)
     finally:
         pipeline._STREAM_POLICY.reset(native)
+        pipeline._BROTLI_DECLARATION.reset(declaration)
         pipeline._ENCODE_WORKDIR.reset(work)
 
 
-def run_case(case, folder, *, policies=POLICIES, resume=False):
+def run_case(case, folder, *, policies=POLICIES, resume=False, brotli_declaration=False):
     folder.mkdir(parents=True, exist_ok=resume)
-    expected_identity = dict(case=case, environment=environment(), policies=list(policies))
+    expected_identity = dict(case=case, environment=environment(), policies=list(policies),
+                             brotli_declaration=bool(brotli_declaration))
     checkpoint = folder / "metrics.json"
     previous = json.loads(checkpoint.read_text()) if resume and checkpoint.exists() else None
     if previous and previous["identity"] != expected_identity:
@@ -146,6 +148,8 @@ def run_case(case, folder, *, policies=POLICIES, resume=False):
             raise ValueError("Changed prepared image artifact")
         expected = snapshot(base, case["dpi"])
         for policy in policies:
+            declaration = bool(brotli_declaration and
+                               (policy.startswith("brotli") or variant.startswith("brotli")))
             target = folder / f"{variant}--native-{policy}.pdf"
             prior = old.get((variant, policy))
             reused = bool(resume and target.exists() and prior)
@@ -156,9 +160,12 @@ def run_case(case, folder, *, policies=POLICIES, resume=False):
             else:
                 if target.exists():
                     raise FileExistsError(f"Unowned existing output: {target}")
-                save_combination(base, target, case, variant, policy, folder)
-            diagnostics = verify(target, expected, case["dpi"], policy)
+                save_combination(base, target, case, variant, policy, folder,
+                                 brotli_declaration=declaration)
+            diagnostics = verify(target, expected, case["dpi"], policy,
+                                 brotli_declaration=declaration)
             result = dict(image_variant=variant, native_policy=policy,
+                          brotli_declaration=declaration,
                           complete_pdf_bytes=target.stat().st_size,
                           pdf_sha256=digest(target.read_bytes()), pdf=str(target),
                           exact_images=True, exact_native=True, exact_all_page_pixels=True,
@@ -309,6 +316,8 @@ def main():
     parser.add_argument("--label", default="size-20261015")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--paired-only", action="store_true")
+    parser.add_argument("--brotli-declaration", action="store_true",
+                        help="Opt in to Brotli extension compatibility metadata (default: omitted)")
     parser.add_argument("--prepared-production", type=Path,
                         help="Explicitly import hash-verified frozen production preparations")
     args = parser.parse_args()
@@ -326,7 +335,8 @@ def main():
         jobs += list(production_cases(sources, folder, args.resume))
     reports = []
     for case in jobs:
-        reports.append(run_case(case, folder / case["id"], resume=args.resume))
+        reports.append(run_case(case, folder / case["id"], resume=args.resume,
+                                brotli_declaration=args.brotli_declaration))
         (folder / "metrics.json").write_text(json.dumps(reports, indent=2)+"\n")
         export(reports, folder)
     print("INTEGRATED COMPLETE-PDF SIZE MATRIX GREEN", flush=True)

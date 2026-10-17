@@ -283,6 +283,15 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   FFPR Brotli–Zopfli percentage-effect table, after the explanatory prose.
   Use the approved level-three headings in `DESIGN.md`; preserve section
   anchors, measurements, precision and emphasis. This is documentation-only.
+- §251 supersedes automatic Brotli declaration: `brotli_declaration` defaults
+  OFF in legacy/new recipes, core saves and benchmarks/tests. Remove only the
+  Brotli declaration when off, preserving unrelated extension entries/source
+  versions. The opt-in compatibility checkbox is visible ONLY for Brotli, an
+  explicit exception to the visible-but-disabled convention. Label it
+  **Include Brotli extension declaration (Compatibility)** (§252). Persist its
+  choice, but include it in effective identity/debounced edits only for Brotli. Share
+  the saver and strict provenance gates; frozen declaration-ON measurements
+  remain historical, never relabeled/reduced by estimated overhead subtraction.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

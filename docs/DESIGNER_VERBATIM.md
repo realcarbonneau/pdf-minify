@@ -1070,3 +1070,9 @@ The designer approved the two proposed titles (verbatim approval excerpt):
 > ok, proceed
 
 Approved wording is recorded in `DESIGN.md` §250.
+
+## 251 — opt-in Brotli declaration and Brotli-only compatibility control (verbatim, 2026-10-17)
+> Also, we should remove the "extension specification" for all the tests and filters by default, but add it as a compatibility option when Brotli is selected.  Only show that option for Brotli, which is different than our existing pattern to always show the option by grey it out when not applicable.
+
+## 252 — explicit Compatibility label (verbatim, 2026-10-17)
+> Mark that option as "(Compatibility)" for clarity.

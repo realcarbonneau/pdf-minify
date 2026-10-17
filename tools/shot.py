@@ -229,6 +229,29 @@ def compression_samples(w):
     assert not w._draft_specs and not w._artifacts.pending
 
 
+def brotli_compatibility_samples(w):
+    """Real saved outputs; the compatibility checkbox is absent outside Brotli."""
+    from pdf_minify.core.stream_compression import brotli_declaration_present
+    for policy, enabled, name in (("flate", False, "flate-hidden"),
+                                  ("brotli", False, "brotli-default-off"),
+                                  ("brotli", True, "brotli-opt-in"),
+                                  ("zopfli", True, "zopfli-hidden")):
+        w.stream_compression.setCurrentIndex(w.stream_compression.findData(policy))
+        if policy == "brotli":
+            w.brotli_declaration.setChecked(enabled)
+        wait_job(w)
+        settle_view(w)
+        assert w.brotli_declaration.isVisible() is (policy == "brotli")
+        result = w._artifacts.results[w._result_key(w._active_pid)]
+        with fitz.open(result.pdf_path) as doc:
+            assert brotli_declaration_present(doc) is (policy == "brotli" and enabled)
+        assert w.after._pdf_source.path == result.pdf_path
+        capture(w, f"compatibility-{name}")
+        w.panelScroll.widget().grab().save(f".tmp/shot-compatibility-{name}-panel.png")
+    w.revert_filter()
+    assert not w._draft_specs
+
+
 def compression_state_samples(w):
     """All color FFPR codecs are effective edits with actual saved readback."""
     tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
@@ -356,6 +379,8 @@ def main():
                         help="capture real image/native compression choices and completed files")
     parser.add_argument("--compression-state-only", action="store_true",
                         help="capture actual BW/color FFPR and native-preserving state/revert")
+    parser.add_argument("--brotli-compatibility-only", action="store_true",
+                        help="capture default-off/opt-in Brotli metadata and hidden non-Brotli controls")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -373,6 +398,8 @@ def main():
         review_settings.setValue(key, value)
     review_settings.sync()
     pdf = args.pdf
+    if args.brotli_compatibility_only and pdf == "examples/images.pdf":
+        pdf = layout_document(1)
     w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
     w.show()
@@ -382,6 +409,13 @@ def main():
         icon_lab_samples(w)
         close_review_window(w)
         print("ICON LAB SHOTS GREEN")
+        return
+
+    if args.brotli_compatibility_only:
+        wait_job(w)
+        brotli_compatibility_samples(w)
+        close_review_window(w)
+        print("BROTLI COMPATIBILITY SHOTS GREEN")
         return
 
     if args.compression_only or args.compression_state_only:

@@ -201,12 +201,14 @@ def test_lzw_width_boundaries_and_dictionary_reset(size):
 
 
 @pytest.mark.parametrize("policy", ["flate", "zopfli", "brotli"])
-def test_native_policy_never_changes_images_metadata_attachments_or_rendering(tmp_path, policy):
+@pytest.mark.parametrize("declaration", [False, True])
+def test_native_policy_never_changes_images_metadata_attachments_or_rendering(tmp_path, policy, declaration):
     from tools.bench_native_streams import image_signature, native_signature
     source, baseline, output = (tmp_path / name for name in ("source.pdf", "baseline.pdf", "out.pdf"))
     source_pdf(source)
     pipeline.save_with_spec(str(source), str(baseline), recipe("indexed"))
-    pipeline.save_with_spec(str(source), str(output), dict(recipe("indexed"), stream_compression=policy))
+    pipeline.save_with_spec(str(source), str(output), dict(recipe("indexed"), stream_compression=policy,
+                                                         brotli_declaration=declaration))
     with fitz.open(baseline) as before, fitz.open(output) as after:
         assert image_signature(after) == image_signature(before)
         assert native_signature(after) == native_signature(before)
@@ -219,20 +221,97 @@ def test_native_policy_never_changes_images_metadata_attachments_or_rendering(tm
                 continue
             assert after.xref_get_key(xref, "Filter")[1] == (
                 "/BrotliDecode" if policy == "brotli" else "/FlateDecode")
-        if policy == "brotli":
-            catalog = after.pdf_catalog()
+        assert streams.brotli_declaration_present(after) is (policy == "brotli" and declaration)
+        catalog = after.pdf_catalog()
+        if policy == "brotli" and declaration:
             assert after.xref_get_key(catalog, "Version")[1] == "/2.0"
             assert after.xref_get_key(catalog, "Extensions/PDFa/ExtensionLevel")[1] == "1"
+        else:
+            assert after.xref_get_key(catalog, "Version")[0] == "null"
 
 
 def test_brotli_declaration_preserves_unrelated_extensions():
     with fitz.open() as doc:
         doc.new_page().insert_text((10, 30), "Keep extensions")
         doc.xref_set_key(doc.pdf_catalog(), "Extensions/ADBE", "<< /BaseVersion /1.7 /ExtensionLevel 3 >>")
-        streams.recompress_native_streams(doc, "brotli")
+        streams.recompress_native_streams(doc, "brotli", brotli_declaration=True)
         assert doc.xref_get_key(doc.pdf_catalog(), "Extensions/ADBE/ExtensionLevel")[1] == "3"
-        streams.recompress_native_streams(doc, "brotli")
+        streams.recompress_native_streams(doc, "brotli", brotli_declaration=True)
         assert doc.xref_get_key(doc.pdf_catalog(), "Extensions/PDFa")[1].count("extension-brotli") == 1
+
+
+@pytest.mark.parametrize("policy", ["flate", "zopfli", "brotli"])
+def test_declaration_recipe_defaults_and_only_brotli_effective_identity(policy):
+    legacy = preset_spec(dict(mode="indexed", params=dict(stream_compression=policy)))
+    assert legacy["brotli_declaration"] is False
+    assert spec_key(legacy) == spec_key({k: v for k, v in legacy.items() if k != "brotli_declaration"})
+    enabled = dict(legacy, brotli_declaration=True)
+    assert (spec_key(legacy) != spec_key(enabled)) is (policy == "brotli")
+
+
+@pytest.mark.parametrize("form", ["direct", "indirect", "array", "indirect-array", "indirect-extensions"])
+def test_default_removes_inherited_brotli_declaration_structurally_and_keeps_other_extensions(form):
+    with fitz.open() as doc:
+        doc.new_page().insert_text((10, 30), "Keep other extensions")
+        catalog = doc.pdf_catalog()
+        streams.set_brotli_declaration(doc, True)
+        entry = doc.xref_get_key(catalog, "Extensions/PDFa")[1]
+        if "array" in form:
+            entry = f"[{entry} << /URL (https://example.com/other-extension) /ExtensionLevel 7 >>]"
+        if form in ("indirect", "indirect-array"):
+            xref = doc.get_new_xref()
+            doc.update_object(xref, entry)
+            entry = f"{xref} 0 R"
+        doc.xref_set_key(catalog, "Extensions/PDFa", entry)
+        doc.xref_set_key(catalog, "Extensions/ADBE", "<< /BaseVersion /1.7 /ExtensionLevel 3 >>")
+        if form == "indirect-extensions":
+            xref = doc.get_new_xref()
+            doc.update_object(xref, doc.xref_get_key(catalog, "Extensions")[1])
+            doc.xref_set_key(catalog, "Extensions", f"{xref} 0 R")
+        assert streams.brotli_declaration_present(doc)
+        streams.recompress_native_streams(doc, "brotli")
+        assert not streams.brotli_declaration_present(doc)
+        assert doc.xref_get_key(catalog, "Extensions/ADBE/ExtensionLevel")[1] == "3"
+        assert doc.xref_get_key(catalog, "Version")[1] == "/2.0"  # never downgrade legitimate source versions
+        def extension_text():
+            kind, value = doc.xref_get_key(catalog, "Extensions/PDFa")
+            return doc.xref_object(int(value.split()[0])) if kind == "xref" else value
+        if "array" in form:
+            assert "https://example.com/other-extension" in extension_text()
+        else:
+            assert doc.xref_get_key(catalog, "Extensions/PDFa")[0] == "null"
+        streams.set_brotli_declaration(doc, True)
+        streams.set_brotli_declaration(doc, True)
+        assert streams.brotli_declaration_present(doc)
+        assert extension_text().count("extension-brotli") == 1
+
+
+def test_default_removes_empty_brotli_extension_container_without_downgrading_pdf():
+    with fitz.open() as doc:
+        doc.new_page()
+        streams.set_brotli_declaration(doc, True)
+        streams.set_brotli_declaration(doc)
+        assert doc.xref_get_key(doc.pdf_catalog(), "Extensions")[0] == "null"
+        assert doc.xref_get_key(doc.pdf_catalog(), "Version")[1] == "/2.0"
+
+
+@pytest.mark.parametrize("failure", [False, True])
+def test_saver_owns_declaration_context_and_restores_it_on_success_or_failure(tmp_path, failure):
+    source, output = tmp_path / "source.pdf", tmp_path / "output.pdf"
+    source_pdf(source)
+    previous = pipeline._BROTLI_DECLARATION.set(True)
+    try:
+        spec = dict(mode="invalid" if failure else "passthrough", stream_compression="brotli")
+        if failure:
+            with pytest.raises(ValueError, match="Unknown filter mode"):
+                pipeline.save_with_spec(str(source), str(output), spec)
+        else:
+            pipeline.save_with_spec(str(source), str(output), spec)
+            with fitz.open(output) as doc:
+                assert not streams.brotli_declaration_present(doc)
+        assert pipeline._BROTLI_DECLARATION.get() is True
+    finally:
+        pipeline._BROTLI_DECLARATION.reset(previous)
 
 
 @pytest.mark.parametrize("policy", ["zopfli", "brotli"])
