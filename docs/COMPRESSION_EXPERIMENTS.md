@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–242. The primary measured-size tables are in
+Designer §§238–243. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -50,9 +50,12 @@ PDF dispositions. Four native artwork/mixed palette cases already have
 compatible focused-study pairs; reuse those verified files with provenance
 instead of encoding them again. Remaining cells require new actual saves.
 
-Publish measured plain baseline rows in the overview and PNG version bytes
-with signed change in the PNG table. Keep palette targets as separate
-fidelity groups; actual palettes may contain fewer colors. Never apply PNG
+Publish measured plain baseline rows in the overview. Under §243, the PNG
+table shows only signed percentage changes computed from measured complete
+files, with paired win/tie emphasis; retain exact byte counts in frozen
+measurement evidence. Focused and native/residual sizes are unchanged.
+Keep palette targets as separate fidelity groups; actual palettes may contain
+fewer colors. Never apply PNG
 row prediction to an already JPEG/JPEG2000/JBIG2-encoded image payload.
 
 The initial table's Brotli results show no reduction in this corpus. Expand

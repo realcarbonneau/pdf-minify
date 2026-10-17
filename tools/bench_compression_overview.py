@@ -93,13 +93,16 @@ def png_pairs(rows):
     return tuple(pairs)
 
 
-def png_effect_cell(baseline_bytes, png_bytes):
-    """Measured complete bytes and signed change; no inferred size/baseline."""
+def png_effect_cell(baseline_bytes, png_bytes, *, show_size=True):
+    """Signed change from measured bytes, optionally including candidate size."""
     if any(type(size) is not int or size <= 0 for size in (baseline_bytes, png_bytes)):
         raise ValueError("PNG comparison requires positive measured integer byte counts")
     change = (100 * Decimal(png_bytes - baseline_bytes) / Decimal(baseline_bytes)).quantize(Decimal("0.1"))
     if change == 0:
         change = Decimal(0)  # Do not print a misleading negative zero after rounding.
+    if not show_size:
+        percentage = f"{change:+.1f}%"
+        return f"**{percentage}**" if png_bytes <= baseline_bytes else percentage
     size = f"{png_bytes:,}"
     if png_bytes <= baseline_bytes:
         size = f"**{size}**"
@@ -146,7 +149,7 @@ def png_prediction_markdown(documents, rows, records):
                 raise ValueError("Missing exact-output verification for PNG/plain pair")
             if not all(r.get("pdf") for r in results) or results[0]["pdf"] == results[1]["pdf"]:
                 raise ValueError("PNG/plain pair requires independently saved PDFs")
-            cells.append(png_effect_cell(*(r["complete_pdf_bytes"] for r in results)))
+            cells.append(png_effect_cell(*(r["complete_pdf_bytes"] for r in results), show_size=False))
         lines.append("| " + plain.label + " | " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 

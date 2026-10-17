@@ -174,6 +174,13 @@ def publish(before, old_path, png_path, native_path, folder):
     scope = text.split(overview.PNG_SECTION, 1)[1].split("## Focused scenarios", 1)[0]
     old_table = "\n".join(line for line in scope.splitlines() if line.startswith("|")) + "\n"
     changed = scope.replace(old_table, effects)
+    changed = changed.replace(
+        "**measured complete saved PDF bytes with PNG prediction**, followed by\n"
+        "the signed change from that baseline's measured complete PDF bytes.",
+        "**signed percentage change in measured complete saved PDF bytes**\n"
+        "from that baseline. Candidate byte counts are omitted here (§243);\n"
+        "exact counts remain in the frozen measurement manifests.")
+    changed = changed.replace("Bold bytes mean this result is no", "Bold percentages mean this result is no")
     changed = changed.replace("compressor and save policy are unchanged within each pair.",
         "compressor and save policy are unchanged within each pair. The ON path\n"
         "uses the existing adaptive predictor-15 row selector (minimum absolute\n"
@@ -231,7 +238,7 @@ def publish(before, old_path, png_path, native_path, folder):
         "contrast. Do not generalize these settings to\n"
         "every PDF. Brotli still requires a supporting reader.\n\n")
     text = text.replace("## What the measurements establish", native_section + "## What the measurements establish", 1)
-    text = text.replace("Designer §§210–214/220–240; TODO §§226–242.", "Designer §§210–214/220–242; TODO §§226–244.")
+    text = text.replace("Designer §§210–214/220–240; TODO §§226–242.", "Designer §§210–214/220–243; TODO §§226–245.")
     text = text.replace("verification: 2026-10-16 (America/New_York).", "verification: 2026-10-16–17 (America/New_York).")
     old_intro = next(line for line in text.splitlines() if line.startswith("**Current selected results"))
     text = text.replace(old_intro,
@@ -262,9 +269,10 @@ def publish(before, old_path, png_path, native_path, folder):
     inventory = next(line for line in text.splitlines() if line.startswith("The measurement inventory remains"))
     text = text.replace(inventory,
         "The representative inventory is **50 combinations × six PDFs = 300 verified measurements**: "
-        "**34 baseline rows / 204 sizes** plus **16 PNG-effect rows / 96 sizes**. "
+        "**34 baseline rows / 204 sizes** plus **16 PNG-effect rows / 96 percentages**. "
         "Focused tables still display 87 sizes. NATIVE-01 displays 42 reference and 42 candidate sizes. "
-        f"That is **471 displayed size cells / {len(by_path)} distinct actual complete files**, with no rejected or unmeasured cells. "
+        "That is **375 displayed byte-count cells plus 96 percentage-only cells = 471 result cells**, "
+        f"supported by **{len(by_path)} distinct actual complete files**, with no rejected or unmeasured cells. "
         "The original selected study supplied 252 files; PNG coverage adds 80 newly saved files "
         "and reuses 16 focused outputs, while NATIVE-01 adds 30 reference files and reuses its candidates/controls. "
         "No-image treatments are independently saved, not filled by copying a control.")
@@ -304,7 +312,8 @@ def publish(before, old_path, png_path, native_path, folder):
                     native_summary=dict(ffpr=ffpr_summary, controls=control_summary),
                     pair_validation=pair_validation,
                     before_sha256=shared.study.digest(before.encode()), after_sha256=shared.study.digest(text.encode()),
-                    counts=dict(distinct_pdfs=len(by_path), displayed_sizes=471, baseline_sizes=204,
+                    counts=dict(distinct_pdfs=len(by_path), displayed_sizes=375, baseline_sizes=204,
+                                png_percentages=96, result_cells=471,
                                 png_pairs=96, native_pairs=42, qpdf_passed=checks["checked"],
                                 qpdf_unsupported=checks["unsupported"]))
     (folder / "publication.json").write_text(json.dumps(manifest, indent=2) + "\n")

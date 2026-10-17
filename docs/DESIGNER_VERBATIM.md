@@ -1039,3 +1039,6 @@ corpus evidence, not proof that prediction can never help. Each next experiment
 must identify one changed factor, a matching measured baseline, fixed source/
 pixels/recipe and signed complete-file size changes. This authorizes proceeding
 beyond §240's PNG-only first review, not unrelated GUI/default changes.
+
+## 243 — percentage-only PNG-prediction effect table (verbatim, 2026-10-17)
+> also, remove the sizes from the binary test table "PNG prediction — measured effect versus baseline"

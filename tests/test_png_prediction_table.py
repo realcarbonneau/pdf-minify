@@ -1,7 +1,7 @@
 """Measured PNG sizes versus a matching plain baseline, one factor at a time."""
 
 from copy import deepcopy
-from decimal import Decimal
+from hashlib import sha256
 from pathlib import Path
 import re
 
@@ -55,10 +55,23 @@ def test_effect_uses_baseline_denominator_signed_change_and_measured_pair_emphas
     assert overview.png_effect_cell(baseline, png) == expected
 
 
+@pytest.mark.parametrize("baseline,png,expected", [
+    (1000, 900, "**-10.0%**"),
+    (1000, 1025, "+2.5%"),
+    (2000, 1800, "**-10.0%**"),
+    (1000, 1000, "**+0.0%**"),
+    (100000, 99999, "**+0.0%**"),
+    (100000, 100001, "+0.0%"),
+])
+def test_percentage_only_cells_keep_measured_pair_emphasis_even_when_rounded(baseline, png, expected):
+    assert overview.png_effect_cell(baseline, png, show_size=False) == expected
+
+
 @pytest.mark.parametrize("baseline,png", [(0, 1), (1, 0), (1.0, 1), (1, None), (1, True)])
 def test_missing_or_estimated_sizes_cannot_be_formatted_as_measurements(baseline, png):
-    with pytest.raises(ValueError, match="measured integer"):
-        overview.png_effect_cell(baseline, png)
+    for show_size in (True, False):
+        with pytest.raises(ValueError, match="measured integer"):
+            overview.png_effect_cell(baseline, png, show_size=show_size)
 
 
 def test_table_names_plain_baselines_and_keeps_all_six_pdf_columns():
@@ -67,7 +80,8 @@ def test_table_names_plain_baselines_and_keeps_all_six_pdf_columns():
     table = overview.png_prediction_markdown(overview.DOCUMENTS, rows, records)
     assert len(table.splitlines()) == 3
     assert all(len(line.split("|")[1:-1]) == 7 for line in table.splitlines())
-    assert table.count("**900** (-10.0%)") == 6
+    assert table.count("**-10.0%**") == 6
+    assert "900" not in table
     assert "| Indexed 5 colors + Brotli |" in table
     assert " + PNG prediction |" not in table
     assert all(document.label in table.splitlines()[0] for document in overview.DOCUMENTS)
@@ -105,7 +119,7 @@ def test_no_image_controls_still_use_two_independently_saved_measured_pdfs():
     records = records_for(documents, rows, png_bytes=1000)
     for record in records:
         record["case"]["prepared"] = [None]
-    assert "**1,000** (+0.0%)" in overview.png_prediction_markdown(documents, rows, records)
+    assert "**+0.0%**" in overview.png_prediction_markdown(documents, rows, records)
     records[1]["result"]["pdf"] = records[0]["result"]["pdf"]
     with pytest.raises(ValueError, match="independently saved"):
         overview.png_prediction_markdown(documents, rows, records)
@@ -143,7 +157,7 @@ def test_no_prediction_rows_produce_no_empty_effect_table():
     assert overview.png_prediction_markdown(overview.DOCUMENTS, overview.ROWS[:3], []) == ""
 
 
-def test_published_effect_table_matches_every_measured_baseline_and_has_correct_signed_percentages():
+def test_published_effect_table_is_percentage_only_and_retains_audited_measured_changes():
     from tools import bench_png_extension as extension
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     primary, effects = report.split(overview.PNG_SECTION, 1)
@@ -158,14 +172,14 @@ def test_published_effect_table_matches_every_measured_baseline_and_has_correct_
     for row in rows[1:]:
         assert len(row) == 7
         for cell, baseline in zip(row[1:], baselines[row[0]]):
-            match = re.fullmatch(r"(\*\*)?([\d,]+)(\*\*)? \(([+-]\d+\.\d)%\)", cell)
+            match = re.fullmatch(r"(\*\*)?([+-]\d+\.\d%)(\*\*)?", cell)
             assert match, cell
-            png = int(match[2].replace(",", ""))
-            plain = int(baseline.replace("*", "").replace(",", ""))
-            delta = (Decimal(png - plain) * 100 / Decimal(plain)).quantize(Decimal("0.1"))
-            if delta == 0:
-                delta = Decimal(0)
-            assert match[4] == f"{delta:+.1f}"
-            assert bool(match[1]) == bool(match[3]) == (png <= plain)
+            assert int(baseline.replace("*", "").replace(",", "")) > 0
+            assert bool(match[1]) == bool(match[3])
             audited += 1
     assert audited == 96
+    # Frozen projection of the verified 2026-10-17 complete-file measurements.
+    # Arithmetic is exercised above; changing this digest needs a fresh raw-
+    # measurement audit, not inference of candidate sizes from rounded deltas.
+    table = "\n".join(line for line in effects.splitlines() if line.startswith("|")) + "\n"
+    assert sha256(table.encode()).hexdigest() == "1fbeca0bcd483d05be176a5dc13d11bdf9e182973ae675e0aace211eb6d499d5"

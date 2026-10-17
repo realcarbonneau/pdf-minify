@@ -250,6 +250,11 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   five specialized FFPR rows plus two native-content controls, all six sources.
   Reference-only Classic Flate does not restore it as a product choice.
   See `COMPRESSION_EXPERIMENTS.md` and TODO §§243/244.
+- §243 makes the PNG-prediction effect table percentage-only: remove candidate
+  byte counts, retaining signed measured full-file changes, paired win/tie
+  emphasis, baseline labels and all six columns. Keep measured baseline sizes
+  in the overview and exact byte evidence in frozen manifests. Update the
+  reusable formatter; focused and native/residual size tables are unchanged.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

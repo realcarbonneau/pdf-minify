@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–242; TODO §§226–244. This is the primary integrated
+Designer §§210–214/220–243; TODO §§226–245. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
 
@@ -187,12 +187,13 @@ automatically an improvement over that original.
 
 Only **image-row PNG prediction** changes within each pair. The row
 names its plain baseline in the overview above. Each cell shows the
-**measured complete saved PDF bytes with PNG prediction**, followed by
-the signed change from that baseline's measured complete PDF bytes.
+**signed percentage change in measured complete saved PDF bytes**
+from that baseline. Candidate byte counts are omitted here (§243);
+exact counts remain in the frozen measurement manifests.
 
 `Change (%) = 100 × (PNG-prediction bytes − baseline bytes) / baseline bytes`.
 **Negative is smaller/better; positive is larger/worse.** Percentages
-are rounded to one decimal place. Bold bytes mean this result is no
+are rounded to one decimal place. Bold percentages mean this result is no
 larger than its own baseline, including ties—not a cross-document minimum.
 
 Source PDF, prepared pixels/palette, DPI, threshold, native-stream
@@ -206,22 +207,22 @@ measured ties are no-op sanity controls, not evidence of predictor savings.
 
 | Baseline combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|
-| BW + Zopfli-Flate | **187,455** (+0.0%) | **570,171** (-1.5%) | 2,001,217 (+1.4%) | 21,477 (+3.4%) | 323,698 (+0.1%) | 1,428,260 (+0.3%) |
-| BW + Brotli | **182,638** (+0.0%) | 530,018 (+28.3%) | 1,855,119 (+6.1%) | 18,450 (+24.2%) | 308,565 (+1.2%) | 1,145,936 (+1.7%) |
-| BW FFPR + Zopfli-Flate | **649,984** (-5.6%) | **529,463** (-1.6%) | **2,325,936** (-4.5%) | 16,434 (+4.3%) | **701,446** (-5.7%) | **710,872** (-1.8%) |
-| BW FFPR + Brotli | 578,653 (+8.9%) | 491,656 (+31.2%) | 2,217,193 (+16.5%) | 13,429 (+40.3%) | 625,834 (+8.9%) | 624,793 (+18.4%) |
-| Indexed 5 colors + Zopfli-Flate | **187,455** (+0.0%) | **570,446** (-1.5%) | 4,215,578 (+11.8%) | 32,639 (+16.5%) | 367,102 (+2.2%) | 1,747,647 (+3.8%) |
-| Indexed 5 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 3,960,927 (+20.8%) | 28,415 (+28.7%) | 347,261 (+4.7%) | 1,441,081 (+8.0%) |
-| Color FFPR; indexed 5 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 5,129,371 (+13.9%) | 25,857 (+19.1%) | **754,689** (-3.7%) | 918,004 (+0.6%) |
-| Color FFPR; indexed 5 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 4,836,813 (+29.5%) | 22,344 (+43.9%) | 668,343 (+10.9%) | 809,612 (+19.7%) |
-| Indexed 16 colors + Zopfli-Flate | **187,455** (+0.0%) | **570,446** (-1.5%) | 7,085,037 (+15.8%) | 51,430 (+14.8%) | 478,813 (+4.1%) | 2,238,078 (+5.5%) |
-| Indexed 16 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 6,693,289 (+22.7%) | 47,209 (+29.3%) | 456,362 (+9.4%) | 1,920,000 (+12.1%) |
-| Color FFPR; indexed 16 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 8,453,609 (+17.2%) | 46,146 (+16.5%) | **801,933** (-2.1%) | 1,126,884 (+5.2%) |
-| Color FFPR; indexed 16 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 7,971,909 (+29.2%) | 42,487 (+35.6%) | 711,190 (+12.1%) | 998,963 (+22.2%) |
-| Indexed 64 colors + Zopfli-Flate | **187,455** (+0.0%) | **570,446** (-1.5%) | 11,082,610 (+18.7%) | 85,501 (+35.1%) | 640,060 (+10.7%) | 3,200,974 (+15.4%) |
-| Indexed 64 colors + Brotli | **182,638** (+0.0%) | 530,293 (+28.3%) | 10,415,003 (+25.8%) | 76,912 (+46.3%) | 605,928 (+17.9%) | 2,790,622 (+24.2%) |
-| Color FFPR; indexed 64 colors + Zopfli-Flate | **650,134** (-5.6%) | **529,738** (-1.6%) | 13,762,557 (+23.6%) | 80,820 (+38.5%) | **837,023** (-2.9%) | 1,344,172 (+1.3%) |
-| Color FFPR; indexed 64 colors + Brotli | 578,803 (+8.9%) | 491,931 (+31.2%) | 12,914,114 (+33.4%) | 72,759 (+53.5%) | 738,931 (+11.7%) | 1,201,121 (+21.1%) |
+| BW + Zopfli-Flate | **+0.0%** | **-1.5%** | +1.4% | +3.4% | +0.1% | +0.3% |
+| BW + Brotli | **+0.0%** | +28.3% | +6.1% | +24.2% | +1.2% | +1.7% |
+| BW FFPR + Zopfli-Flate | **-5.6%** | **-1.6%** | **-4.5%** | +4.3% | **-5.7%** | **-1.8%** |
+| BW FFPR + Brotli | +8.9% | +31.2% | +16.5% | +40.3% | +8.9% | +18.4% |
+| Indexed 5 colors + Zopfli-Flate | **+0.0%** | **-1.5%** | +11.8% | +16.5% | +2.2% | +3.8% |
+| Indexed 5 colors + Brotli | **+0.0%** | +28.3% | +20.8% | +28.7% | +4.7% | +8.0% |
+| Color FFPR; indexed 5 colors + Zopfli-Flate | **-5.6%** | **-1.6%** | +13.9% | +19.1% | **-3.7%** | +0.6% |
+| Color FFPR; indexed 5 colors + Brotli | +8.9% | +31.2% | +29.5% | +43.9% | +10.9% | +19.7% |
+| Indexed 16 colors + Zopfli-Flate | **+0.0%** | **-1.5%** | +15.8% | +14.8% | +4.1% | +5.5% |
+| Indexed 16 colors + Brotli | **+0.0%** | +28.3% | +22.7% | +29.3% | +9.4% | +12.1% |
+| Color FFPR; indexed 16 colors + Zopfli-Flate | **-5.6%** | **-1.6%** | +17.2% | +16.5% | **-2.1%** | +5.2% |
+| Color FFPR; indexed 16 colors + Brotli | +8.9% | +31.2% | +29.2% | +35.6% | +12.1% | +22.2% |
+| Indexed 64 colors + Zopfli-Flate | **+0.0%** | **-1.5%** | +18.7% | +35.1% | +10.7% | +15.4% |
+| Indexed 64 colors + Brotli | **+0.0%** | +28.3% | +25.8% | +46.3% | +17.9% | +24.2% |
+| Color FFPR; indexed 64 colors + Zopfli-Flate | **-5.6%** | **-1.6%** | +23.6% | +38.5% | **-2.9%** | +1.3% |
+| Color FFPR; indexed 64 colors + Brotli | +8.9% | +31.2% | +33.4% | +53.5% | +11.7% | +21.1% |
 
 The table now covers **96 pairs**: BW/Otsu and 5/16/64-color palettes,
 native-preserving and FFPR, with both general compressors. The 16/64-color
@@ -443,7 +444,7 @@ they cannot leak into the next image-decoding stage or excuse a new warning.
 
 ## Measurement and provenance
 
-The representative inventory is **50 combinations × six PDFs = 300 verified measurements**: **34 baseline rows / 204 sizes** plus **16 PNG-effect rows / 96 sizes**. Focused tables still display 87 sizes. NATIVE-01 displays 42 reference and 42 candidate sizes. That is **471 displayed size cells / 362 distinct actual complete files**, with no rejected or unmeasured cells. The original selected study supplied 252 files; PNG coverage adds 80 newly saved files and reuses 16 focused outputs, while NATIVE-01 adds 30 reference files and reuses its candidates/controls. No-image treatments are independently saved, not filled by copying a control.
+The representative inventory is **50 combinations × six PDFs = 300 verified measurements**: **34 baseline rows / 204 sizes** plus **16 PNG-effect rows / 96 percentages**. Focused tables still display 87 sizes. NATIVE-01 displays 42 reference and 42 candidate sizes. That is **375 displayed byte-count cells plus 96 percentage-only cells = 471 result cells**, supported by **362 distinct actual complete files**, with no rejected or unmeasured cells. The original selected study supplied 252 files; PNG coverage adds 80 newly saved files and reuses 16 focused outputs, while NATIVE-01 adds 30 reference files and reuses its candidates/controls. No-image treatments are independently saved, not filled by copying a control.
 
 The complete fresh post-B114 measurement superset remains immutable under `.tmp/integrated-compression/post-b114-300dpi-20261016/`: 252 overview and 62 focused outputs, all saved using one repaired compositor. Its `identity.json` pins source, tool, environment and saver/verifier/driver hashes; `refresh.py`, `overview.py`, `scenarios.py`, scoped job manifests and `complete.json` preserve the actual full measurement scope.
 

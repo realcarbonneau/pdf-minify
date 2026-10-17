@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 245. Routine execution requests are not TODOs (§218).
+new TODO ID is 246. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2286,3 +2286,15 @@ publication audit; the full 654-test suite passes. No UI/default changes.
 **Implementation verified 2026-10-17; not designer acceptance.** See
 `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`,
 `tools/bench_residual_streams.py`, `tools/publish_compression_experiments.py`.
+
+## 245 — DONE (designer §243: percentage-only PNG effect table)
+
+~~Remove byte counts from the PNG effect table, keeping signed percentages
+and measured-baseline comparisons.~~
+Stub: all 96 cells are percentage-only, with six columns and paired win/tie
+emphasis. Overview, focused and native/residual sizes remain unchanged;
+reusable generation preserves this presentation. A data-only audit checks
+192 saved files against original measurements, without re-encoding. Targeted
+41-test and full 660-test runs pass. **Implementation verified 2026-10-17;
+not designer acceptance.** See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §243,
+`TEST_PLAN.md`, `tools/bench_compression_overview.py`.

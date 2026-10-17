@@ -404,6 +404,19 @@ controls give 42 six-input pairs. This is a controlled reference experiment,
 not a reinstatement of classic Flate in the product menu.
 See TODO §§243/244.
 
+### Percentage-only PNG effect table (§243)
+
+> also, remove the sizes from the binary test table "PNG prediction — measured effect versus baseline"
+
+Supersede only the PNG effect table's byte-count presentation above: show
+signed percentage changes alone, computed from the same measured complete
+files. Keep all 16 rows / 96 pairs, six columns, visible overview baselines
+and one-decimal rounding. Bold the percentage when the actual candidate is
+no larger than its paired baseline, including ties. Exact byte counts and
+original provenance remain in frozen evidence; no encoding is repeated.
+Update reusable generation and tests. Focused and native/residual size
+tables are outside this change. See TODO §245.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

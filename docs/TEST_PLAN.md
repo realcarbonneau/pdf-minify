@@ -10,6 +10,27 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+The §243 PNG presentation update removes byte counts only from that effect
+table. Its formatter and published snapshot keep 96 signed percentages,
+paired win/tie emphasis and six visible-baseline columns. Six added cases
+cover percentage-only formatting, exact ties and tiny gains/losses that round
+to zero; byte-plus-percentage formatting remains covered for NATIVE-01.
+The targeted PNG/publication run passes **41 tests**. The fresh full suite
+(`./test.sh`, offscreen) passes **660 tests**, exit 0 / FULL SUITE GREEN,
+with no expected failures. Subsequent completion notes are documentation-only;
+this passing code result is reused under §241. The desktop app stays closed.
+
+The data-only projection independently checks all 96 pairs against the
+original measured bytes and 192 actual output sizes/hashes. Overview,
+focused and native/residual tables are unchanged. The report now displays
+375 byte counts plus 96 percentage-only cells; all 362 measured PDFs and
+their original provenance remain intact. No corpus encoding or rendering
+was repeated. Projection proof is frozen in
+`.tmp/compression-experiments/png-percentages-20261017/projection.json`;
+the portable publication test pins its audited percentage-table digest.
+
+### Previous controlled-experiment stage — 2026-10-17
+
 Full suite after the controlled-experiment code changes (`./test.sh`,
 offscreen): **654 passed**, exit 0 / FULL SUITE GREEN, no expected failures.
 The 19 new cases cover experiment scope, real saved-file pairs, compatible
