@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–249; TODO §§226–248. This is the primary integrated
+Designer §§210–214/220–250; TODO §§226–249. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
 
@@ -212,6 +212,8 @@ two actual separately saved PDFs, never an estimated size or a copied
 control. The non-FFPR W-9 has no bitmap stage: its eight independently
 measured ties are no-op sanity controls, not evidence of predictor savings.
 
+### Enable PNG prediction — final PDF size change (%) versus prediction OFF
+
 | Baseline combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|
 | BW + Zopfli | +0.00% | **-1.47%** | +1.41% | +3.41% | +0.13% | +0.29% |
@@ -276,6 +278,8 @@ only, rounded to two decimal places. Bold marks displayed negative changes;
 changes that round to +0.00% are not bold, even when the actual file is smaller.
 Actual complete-file sizes are retained in the measured evidence and
 [regression fixture](../tests/fixtures/ffpr_compressor_sizes.json).
+
+### Replace Brotli with Zopfli for FFPR residual streams — final PDF size change (%)
 
 | FFPR image encoding | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|

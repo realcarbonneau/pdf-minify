@@ -482,6 +482,19 @@ preserve all measurements, source identities, reader caveats and other section
 order. These are presentation changes, not authority to rerun encoding or
 change application settings. See TODO §248 and `COMPRESSION_EXPERIMENTS.md`.
 
+### Treatment titles directly above effect tables (§250)
+
+Designer §250 requests concise titles immediately before both percentage-effect
+tables and approves these exact titles:
+
+- **Enable PNG prediction — final PDF size change (%) versus prediction OFF**
+- **Replace Brotli with Zopfli for FFPR residual streams — final PDF size change (%)**
+
+Use level-three Markdown headings directly above the corresponding tables,
+after the explanatory prose. Keep section headings/anchors, cell values,
+two-decimal precision and emphasis unchanged. This is documentation-only;
+no new benchmark encoding or full-suite run is needed (§241). See TODO §249.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

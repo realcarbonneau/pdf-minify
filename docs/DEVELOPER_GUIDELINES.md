@@ -279,6 +279,10 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   FFPR Brotli-baseline/Zopfli-treatment section immediately after PNG prediction,
   before focused scenarios. Preserve measurements/identities and Brotli
   underlines; do not re-encode or rerender the corpus for presentation changes.
+- §250: put a concise treatment/baseline title directly above each PNG and
+  FFPR Brotli–Zopfli percentage-effect table, after the explanatory prose.
+  Use the approved level-three headings in `DESIGN.md`; preserve section
+  anchors, measurements, precision and emphasis. This is documentation-only.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

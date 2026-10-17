@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 249. Routine execution requests are not TODOs (§218).
+new TODO ID is 250. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2338,3 +2338,13 @@ measurement identities remain intact. Targeted 117-test and full 679-test runs
 pass. **Implementation verified 2026-10-17; not designer acceptance.** No corpus
 encoding/rendering or GUI/default change. See `DESIGN.md` §§247–249,
 `COMPRESSION_EXPERIMENTS.md`, `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 249 — DONE (designer §250: explicit treatment titles above effect tables)
+
+~~Put concise experimental-treatment titles directly above the PNG and
+FFPR Brotli–Zopfli percentage tables, using the approved wording.~~
+Stub: both approved level-three headings sit immediately above their tables;
+section anchors and all measured cells remain unchanged. Documentation checks
+verify exact wording, placement and unchanged table data. No code or benchmark
+changes; reuse the existing 679-test result under §241. Title wording approved
+by the designer 2026-10-17. See `DESIGN.md` §250 and `INTEGRATED_COMPRESSION.md`.

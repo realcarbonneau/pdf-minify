@@ -1062,3 +1062,11 @@ beyond §240's PNG-only first review, not unrelated GUI/default changes.
 
 ## 249 — leave all rounded-zero percentage changes unbolded (verbatim, 2026-10-17)
 > if it rounds to 0.00%, no bold please
+
+## 250 — treatment titles directly above effect tables (verbatim, 2026-10-17)
+> You need to put a table title directly before those two table that clearly and concisely states the experimental treatment in the cells of the table.  Show me here first for headers, the I will confirm.
+
+The designer approved the two proposed titles (verbatim approval excerpt):
+> ok, proceed
+
+Approved wording is recorded in `DESIGN.md` §250.
