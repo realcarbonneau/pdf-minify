@@ -80,7 +80,7 @@ def effect_table(documents, rows, pairs):
             pair = indexed[key]
             residual.validate_pair(document, row, pair, reference_policy="brotli")
             a, b = (pair[k]["result"]["complete_pdf_bytes"] for k in ("reference", "candidate"))
-            cells.append(overview.measured_effect_cell(a, b, show_size=False, places=5))
+            cells.append(overview.measured_effect_cell(a, b, show_size=False))
         lines.append("| " + labels.get(row.family, overview.display_label(row.label)) + " | " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 

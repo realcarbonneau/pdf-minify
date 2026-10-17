@@ -1,7 +1,8 @@
 """Measured PNG sizes versus a matching plain baseline, one factor at a time."""
 
 from copy import deepcopy
-from hashlib import sha256
+from decimal import Decimal
+import json
 from pathlib import Path
 import re
 
@@ -45,25 +46,29 @@ def test_split_preserves_the_full_measured_scope_and_has_no_specialized_codec_pr
 
 
 @pytest.mark.parametrize("baseline,png,expected", [
-    (1000, 900, "**900** (-10.0%)"),
-    (1000, 1025, "1,025 (+2.5%)"),
-    (2000, 1800, "**1,800** (-10.0%)"),
-    (1000, 1000, "**1,000** (+0.0%)"),
-    (100000, 99999, "**99,999** (+0.0%)"),
+    (1000, 900, "**900** (-10.00%)"),
+    (1000, 1025, "1,025 (+2.50%)"),
+    (2000, 1800, "**1,800** (-10.00%)"),
+    (1000, 1000, "**1,000** (+0.00%)"),
+    (100000, 99999, "**99,999** (+0.00%)"),
 ])
 def test_effect_uses_baseline_denominator_signed_change_and_measured_pair_emphasis(baseline, png, expected):
     assert overview.measured_effect_cell(baseline, png) == expected
 
 
 @pytest.mark.parametrize("baseline,png,expected", [
-    (1000, 900, "**-10.0%**"),
-    (1000, 1025, "+2.5%"),
-    (2000, 1800, "**-10.0%**"),
-    (1000, 1000, "**+0.0%**"),
-    (100000, 99999, "**+0.0%**"),
-    (100000, 100001, "+0.0%"),
+    (1000, 900, "**-10.00%**"),
+    (1000, 1025, "+2.50%"),
+    (2000, 1800, "**-10.00%**"),
+    (1000, 1000, "+0.00%"),
+    (100000, 99999, "+0.00%"),
+    (100000, 100001, "+0.00%"),
+    (100000, 99996, "+0.00%"),
+    (100000, 99994, "**-0.01%**"),
+    (100000, 100004, "+0.00%"),
+    (100000, 100006, "+0.01%"),
 ])
-def test_percentage_only_cells_keep_measured_pair_emphasis_even_when_rounded(baseline, png, expected):
+def test_percentage_only_cells_use_two_decimals_and_never_bold_rounded_zero(baseline, png, expected):
     assert overview.measured_effect_cell(baseline, png, show_size=False) == expected
 
 
@@ -80,7 +85,7 @@ def test_table_names_plain_baselines_and_keeps_all_six_pdf_columns():
     table = overview.png_prediction_markdown(overview.DOCUMENTS, rows, records)
     assert len(table.splitlines()) == 3
     assert all(len(line.split("|")[1:-1]) == 7 for line in table.splitlines())
-    assert table.count("**-10.0%**") == 6
+    assert table.count("**-10.00%**") == 6
     assert "900" not in table
     assert "| Indexed 5 colors + <ins>Brotli</ins> |" in table
     assert table.count("<ins>Brotli</ins>") == 1
@@ -121,7 +126,9 @@ def test_no_image_controls_still_use_two_independently_saved_measured_pdfs():
     records = records_for(documents, rows, png_bytes=1000)
     for record in records:
         record["case"]["prepared"] = [None]
-    assert "**+0.0%**" in overview.png_prediction_markdown(documents, rows, records)
+    table = overview.png_prediction_markdown(documents, rows, records)
+    assert table.endswith("| +0.00% |\n")
+    assert "**" not in table
     records[1]["result"]["pdf"] = records[0]["result"]["pdf"]
     with pytest.raises(ValueError, match="independently saved"):
         overview.png_prediction_markdown(documents, rows, records)
@@ -163,7 +170,11 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     from tools import bench_png_extension as extension
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     primary, effects = report.split(overview.PNG_SECTION, 1)
-    effects = effects.split("## Focused scenarios", 1)[0]
+    effects = effects.split("\n## ", 1)[0]
+    # Original measured bytes, not reconstructed from previously rounded deltas.
+    fixture = json.loads(Path("tests/fixtures/png_prediction_sizes.json").read_text())
+    assert fixture["publication_sha256"] == "9864f717f7ea0f1f879f8a3d7537229ffe9e62d6817228dc510945d6adc9e7e9"
+    assert fixture["documents"] == [d.key for d in overview.DOCUMENTS]
     parse = lambda line: [cell.strip() for cell in line.split("|")[1:-1]]
     baselines = {cells[0]: cells[1:] for line in primary.split("## Overview — final complete-file bytes", 1)[1].splitlines()
                  if line.startswith("| ") for cells in [parse(line)]}
@@ -178,19 +189,17 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
         row[0] = row[0].replace("<ins>", "").replace("</ins>", "")
     assert {row[0] for row in rows[1:]} == {overview.display_label(b.label) for b, _ in overview.png_pairs(extension.publication_rows())}
     audited = 0
-    for row in rows[1:]:
+    for row, expected in zip(rows[1:], fixture["rows"], strict=True):
         assert len(row) == 7
-        for cell, baseline in zip(row[1:], baselines[row[0]]):
-            match = re.fullmatch(r"(\*\*)?([+-]\d+\.\d%)(\*\*)?", cell)
+        assert row[0] == expected["label"]
+        for cell, baseline, a, b in zip(row[1:], baselines[row[0]], expected["baseline"], expected["png"], strict=True):
+            match = re.fullmatch(r"(\*\*)?([+-]\d+\.\d{2}%)(\*\*)?", cell)
             assert match, cell
-            assert int(baseline.replace("*", "").replace(",", "")) > 0
-            assert bool(match[1]) == bool(match[3])
+            assert int(baseline.replace("*", "").replace(",", "")) == a > 0
+            change = (Decimal(b - a) * 100 / Decimal(a)).quantize(Decimal("0.01"))
+            if change == 0:
+                change = Decimal(0)
+            assert match[2] == f"{change:+.2f}%"
+            assert bool(match[1]) == bool(match[3]) == (change < 0)
             audited += 1
     assert audited == 96
-    # Frozen projection of the verified 2026-10-17 complete-file measurements.
-    # Arithmetic is exercised above; changing this digest needs a fresh raw-
-    # measurement audit, not inference of candidate sizes from rounded deltas.
-    table = "\n".join(line for line in effects.splitlines() if line.startswith("|")) + "\n"
-    table = table.replace("<ins>", "").replace("</ins>", "")  # presentation-only annotation
-    table = table.replace("Zopfli", "Zopfli-Flate")  # frozen label, not a second encoder
-    assert sha256(table.encode()).hexdigest() == "1fbeca0bcd483d05be176a5dc13d11bdf9e182973ae675e0aace211eb6d499d5"

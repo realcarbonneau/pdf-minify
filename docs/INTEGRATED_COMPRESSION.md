@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–246; TODO §§226–247. This is the primary integrated
+Designer §§210–214/220–249; TODO §§226–248. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
 
@@ -49,6 +49,9 @@ broadening coverage rather than implying six exclusive PDF categories.
   compressor**. Mixed general-compressor pairings are excluded from the algorithm overview.
   The isolated native-stream experiment deliberately holds image bytes fixed. Specialized
   JPEG/JPEG2000/JBIG2 retain meaningful native Zopfli/Brotli alternatives.
+- Percentage differences use **two decimal places**, computed from original
+  measured bytes. Rounded zero is `+0.00%` and is never bold; it can hide a
+  tiny actual change, so raw byte evidence remains authoritative.
 - **PNG prediction** is reversible row prediction before the same image
   compressor, not a second image/codec. The overview shows plain baselines; the separate PNG table isolates its measured effect.
 - **Bold** is the minimum within the **same PDF column and recipe/fidelity
@@ -194,8 +197,9 @@ exact counts remain in the frozen measurement manifests.
 
 `Change (%) = 100 × (PNG-prediction bytes − baseline bytes) / baseline bytes`.
 **Negative is smaller/better; positive is larger/worse.** Percentages
-are rounded to one decimal place. Bold percentages mean this result is no
-larger than its own baseline, including ties—not a cross-document minimum.
+are rounded to two decimal places. Bold percentages mark displayed
+negative reductions only—not a cross-document minimum. Exact ties and
+changes that round to +0.00% are not bold.
 Underlined Brotli labels flag its zero improvements in these 48 pairs, not
 a universal claim that prediction is obsolete.
 
@@ -210,22 +214,22 @@ measured ties are no-op sanity controls, not evidence of predictor savings.
 
 | Baseline combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|
-| BW + Zopfli | **+0.0%** | **-1.5%** | +1.4% | +3.4% | +0.1% | +0.3% |
-| BW + <ins>Brotli</ins> | **+0.0%** | +28.3% | +6.1% | +24.2% | +1.2% | +1.7% |
-| BW FFPR + Zopfli | **-5.6%** | **-1.6%** | **-4.5%** | +4.3% | **-5.7%** | **-1.8%** |
-| BW FFPR + <ins>Brotli</ins> | +8.9% | +31.2% | +16.5% | +40.3% | +8.9% | +18.4% |
-| Indexed 5 colors + Zopfli | **+0.0%** | **-1.5%** | +11.8% | +16.5% | +2.2% | +3.8% |
-| Indexed 5 colors + <ins>Brotli</ins> | **+0.0%** | +28.3% | +20.8% | +28.7% | +4.7% | +8.0% |
-| Color FFPR; indexed 5 colors + Zopfli | **-5.6%** | **-1.6%** | +13.9% | +19.1% | **-3.7%** | +0.6% |
-| Color FFPR; indexed 5 colors + <ins>Brotli</ins> | +8.9% | +31.2% | +29.5% | +43.9% | +10.9% | +19.7% |
-| Indexed 16 colors + Zopfli | **+0.0%** | **-1.5%** | +15.8% | +14.8% | +4.1% | +5.5% |
-| Indexed 16 colors + <ins>Brotli</ins> | **+0.0%** | +28.3% | +22.7% | +29.3% | +9.4% | +12.1% |
-| Color FFPR; indexed 16 colors + Zopfli | **-5.6%** | **-1.6%** | +17.2% | +16.5% | **-2.1%** | +5.2% |
-| Color FFPR; indexed 16 colors + <ins>Brotli</ins> | +8.9% | +31.2% | +29.2% | +35.6% | +12.1% | +22.2% |
-| Indexed 64 colors + Zopfli | **+0.0%** | **-1.5%** | +18.7% | +35.1% | +10.7% | +15.4% |
-| Indexed 64 colors + <ins>Brotli</ins> | **+0.0%** | +28.3% | +25.8% | +46.3% | +17.9% | +24.2% |
-| Color FFPR; indexed 64 colors + Zopfli | **-5.6%** | **-1.6%** | +23.6% | +38.5% | **-2.9%** | +1.3% |
-| Color FFPR; indexed 64 colors + <ins>Brotli</ins> | +8.9% | +31.2% | +33.4% | +53.5% | +11.7% | +21.1% |
+| BW + Zopfli | +0.00% | **-1.47%** | +1.41% | +3.41% | +0.13% | +0.29% |
+| BW + <ins>Brotli</ins> | +0.00% | +28.30% | +6.14% | +24.23% | +1.22% | +1.67% |
+| BW FFPR + Zopfli | **-5.63%** | **-1.58%** | **-4.54%** | +4.30% | **-5.68%** | **-1.82%** |
+| BW FFPR + <ins>Brotli</ins> | +8.89% | +31.20% | +16.49% | +40.34% | +8.88% | +18.37% |
+| Indexed 5 colors + Zopfli | +0.00% | **-1.47%** | +11.84% | +16.52% | +2.21% | +3.84% |
+| Indexed 5 colors + <ins>Brotli</ins> | +0.00% | +28.28% | +20.84% | +28.67% | +4.65% | +8.01% |
+| Color FFPR; indexed 5 colors + Zopfli | **-5.62%** | **-1.58%** | +13.94% | +19.09% | **-3.65%** | +0.56% |
+| Color FFPR; indexed 5 colors + <ins>Brotli</ins> | +8.89% | +31.18% | +29.54% | +43.89% | +10.93% | +19.67% |
+| Indexed 16 colors + Zopfli | +0.00% | **-1.47%** | +15.83% | +14.78% | +4.13% | +5.45% |
+| Indexed 16 colors + <ins>Brotli</ins> | +0.00% | +28.28% | +22.67% | +29.30% | +9.44% | +12.13% |
+| Color FFPR; indexed 16 colors + Zopfli | **-5.62%** | **-1.58%** | +17.19% | +16.46% | **-2.05%** | +5.22% |
+| Color FFPR; indexed 16 colors + <ins>Brotli</ins> | +8.89% | +31.18% | +29.22% | +35.58% | +12.08% | +22.17% |
+| Indexed 64 colors + Zopfli | +0.00% | **-1.47%** | +18.68% | +35.06% | +10.69% | +15.39% |
+| Indexed 64 colors + <ins>Brotli</ins> | +0.00% | +28.28% | +25.84% | +46.34% | +17.94% | +24.16% |
+| Color FFPR; indexed 64 colors + Zopfli | **-5.62%** | **-1.58%** | +23.62% | +38.51% | **-2.92%** | +1.29% |
+| Color FFPR; indexed 64 colors + <ins>Brotli</ins> | +8.89% | +31.18% | +33.42% | +53.48% | +11.73% | +21.12% |
 
 The table now covers **96 pairs**: BW/Otsu and 5/16/64-color palettes,
 native-preserving and FFPR, with both general compressors. The 16/64-color
@@ -257,6 +261,84 @@ does not establish that PNG prediction is universally superseded. Details
 and the proposed next **JBIG2 repeated-row prediction OFF/ON** experiment
 are in [the experiment plan](COMPRESSION_EXPERIMENTS.md#proposed-next--jbig2-01-repeated-row-prediction-offon).
 No algorithm or product option has been removed.
+
+## FFPR residual compression — Zopfli versus Brotli baseline
+
+**NATIVE-02 — designer §§245/246.** Every cell uses FFPR with the named
+specialized image codec; columns describe the original input classes, not
+retained native text. Encoded images, prepared samples, 300 DPI and save
+settings are fixed. Only residual/native-stream compression changes:
+**Brotli is the baseline; Zopfli is the treatment**. No image is re-encoded.
+
+`Change (%) = 100 × (Zopfli bytes − Brotli bytes) / Brotli bytes`.
+**Negative favors Zopfli; positive favors Brotli.** Cells show percentages
+only, rounded to two decimal places. Bold marks displayed negative changes;
+changes that round to +0.00% are not bold, even when the actual file is smaller.
+Actual complete-file sizes are retained in the measured evidence and
+[regression fixture](../tests/fixtures/ffpr_compressor_sizes.json).
+
+| FFPR image encoding | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| BW + JBIG2 | **-0.06%** | **-0.08%** | **-0.01%** | **-4.19%** | **-0.05%** | **-0.06%** |
+| 5 colors + layered JBIG2 | **-0.09%** | **-0.11%** | +0.00% | **-1.84%** | **-0.06%** | **-0.06%** |
+| Color + JPEG q50 | +0.00% | +0.00% | +0.00% | **-0.14%** | +0.00% | +0.00% |
+| Color + JPEG2000 lossy r192 | **-0.02%** | **-0.01%** | **-0.01%** | **-0.13%** | **-0.01%** | **-0.01%** |
+| Color + JPEG2000 lossless | +0.00% | +0.00% | +0.00% | **-0.03%** | +0.00% | +0.00% |
+
+**Result: Brotli is larger in all 30 pairs, by 100–271 complete-file bytes.**
+This includes every multipage source: six-page W-9, eleven-page TM972,
+eight-page newspaper, nine-page research paper and twelve-page Kepler.
+This is evidence for these FFPR recipes, not a theorem that Brotli always
+loses on residual streams. The sources differ; this is not a page-count-only
+experiment or a basis for an automatic page-count cutoff.
+
+### Why Brotli is worse here
+
+The byte accounting closes exactly in every pair. Encoded image bytes,
+object/xref-container stream bytes and other stream bytes are unchanged.
+The complete-file growth is the sum of:
+
+- **166 bytes for our writer's Brotli extension declaration.** Metadata-only
+  controls keep the Zopfli image AND native stream payloads byte-identical
+  and add just that declaration. Both the one-page artwork and six-page W-9
+  grow by exactly 166 bytes. The extension specification recommends it
+  (**SHOULD**, not SHALL); this is our current writer's declaration policy,
+  not an unavoidable 166-byte minimum imposed by the format. We keep that
+  policy fixed rather than silently remove metadata from the comparison.
+- **One extra filter-name byte per native stream:** `/BrotliDecode` is one
+  byte longer than `/FlateDecode`.
+- **The actual native-payload difference and any extra `/Length` digits.**
+  In BW/JPEG/JPEG2000 FFPR cases, only 35–245 decoded drawing-command bytes
+  remain per document; Brotli's encoded payload is 1–7 bytes larger here.
+  Many identical page drawing programs are deduplicated: the six-page W-9
+  has ONE shared 43-byte program. More pages need not mean more compressible
+  residual data. Five-color layered JBIG2 has more drawing commands and can
+  favor either payload encoder, but its savings never repay the overhead.
+
+For example, artwork/JBIG2 is **4,037 B with Brotli versus 3,868 B with
+Zopfli**: 166 declaration + 1 filter-name + 2 payload bytes = **169 B**.
+The six-page W-9/JBIG2 has that same 169-byte difference, despite six times
+as many pages. In eight-page newspaper/layered-JBIG2, Brotli actually saves
+**74 native-payload bytes**, but adds **174 syntax bytes**: the complete
+PDF is still **100 B larger** (3,817,206 versus 3,817,106 B).
+
+This is a small-stream and whole-PDF overhead effect, not worse compression
+of the J* images: their encoded payloads are proven identical. No encoder or
+format is guaranteed to win every input. These results favor Zopfli for
+these FFPR residuals; no application setting/default changes in this benchmark.
+
+The [shared per-stream saver](../pdf_minify/core/stream_compression.py)
+explains the implementation boundary; the
+[Brotli PDF extension, §4](https://pdfa.org/download-area/publications/pdf-extension-brotli.pdf) specifies
+its declaration. The longer label Zopfli-Flate is unnecessary in tables:
+**Zopfli** here always means standard FlateDecode data, not a second format.
+See [the Zopfli project](https://github.com/google/zopfli#readme).
+
+Evidence: `.tmp/compression-experiments/ffpr-brotli-zopfli-300dpi-20261017/`.
+Thirty Brotli baselines are newly saved and pass the shared exact native,
+image and all-page 72/300-DPI checks; thirty verified Zopfli files are reused
+with their original provenance. Both metadata-only controls pass QPDF checks;
+that does not certify Brotli decoding. No compute-time comparison is made.
 
 ## Focused scenarios
 
@@ -386,100 +468,22 @@ already measured Flate reference for each source.
 Each cell is **measured candidate complete-file bytes** plus
 `100 × (candidate − reference) / reference`. Negative is smaller/better.
 Bold bytes mean no larger than its own reference, including ties.
-Rounding is to one decimal place; tiny byte differences can round to
-+0.0%, so the exact reference and candidate counts remain visible.
+Rounding is to two decimal places; tiny byte differences can round to
++0.00%, so the exact reference and candidate counts remain visible.
 
 | Candidate combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|
-| Preserve images + Zopfli native | **187,455** (-0.5%) | **366,695** (-0.3%) | **4,574,656** (-1.4%) | **1,492,980** (+0.0%) | **491,510** (-2.1%) | **2,016,866** (-7.9%) |
-| Preserve images + Brotli native | **182,638** (-3.1%) | **364,519** (-0.8%) | **4,472,657** (-3.6%) | 1,493,126 (+0.0%) | **483,963** (-3.6%) | **1,766,110** (-19.3%) |
-| BW FFPR + JBIG2; optimized residual streams | **297,872** (+0.0%) | **229,520** (+0.0%) | **1,199,049** (+0.0%) | **3,868** (+0.0%) | **316,049** (+0.0%) | **299,818** (+0.0%) |
-| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** (+0.0%) | **231,619** (+0.0%) | **3,817,106** (+0.0%) | **9,390** (+0.0%) | **337,274** (+0.0%) | **394,165** (+0.0%) |
-| Color FFPR + JPEG q50; optimized residual streams | **5,674,560** (+0.0%) | **4,394,162** (+0.0%) | **16,652,211** (+0.0%) | **119,758** (+0.0%) | **5,695,628** (+0.0%) | **6,225,232** (+0.0%) |
-| Color FFPR + JPEG2000 lossy r192; optimized residual streams | **790,654** (+0.0%) | **1,212,968** (+0.0%) | **2,322,153** (+0.0%) | **132,374** (+0.0%) | **1,186,046** (+0.0%) | **1,581,087** (+0.0%) |
-| Color FFPR + JPEG2000 lossless; optimized residual streams | **26,977,014** (+0.0%) | **19,059,609** (+0.0%) | **127,518,137** (+0.0%) | **631,376** (+0.0%) | **27,091,577** (+0.0%) | **32,340,923** (+0.0%) |
+| Preserve images + Zopfli native | **187,455** (-0.53%) | **366,695** (-0.25%) | **4,574,656** (-1.45%) | **1,492,980** (-0.01%) | **491,510** (-2.14%) | **2,016,866** (-7.86%) |
+| Preserve images + Brotli native | **182,638** (-3.08%) | **364,519** (-0.85%) | **4,472,657** (-3.65%) | 1,493,126 (+0.00%) | **483,963** (-3.64%) | **1,766,110** (-19.32%) |
+| BW FFPR + JBIG2; optimized residual streams | **297,872** (+0.00%) | **229,520** (+0.00%) | **1,199,049** (+0.00%) | **3,868** (+0.00%) | **316,049** (+0.00%) | **299,818** (+0.00%) |
+| Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams | **299,497** (-0.01%) | **231,619** (+0.00%) | **3,817,106** (+0.00%) | **9,390** (+0.00%) | **337,274** (+0.00%) | **394,165** (+0.00%) |
+| Color FFPR + JPEG q50; optimized residual streams | **5,674,560** (+0.00%) | **4,394,162** (+0.00%) | **16,652,211** (+0.00%) | **119,758** (+0.00%) | **5,695,628** (+0.00%) | **6,225,232** (+0.00%) |
+| Color FFPR + JPEG2000 lossy r192; optimized residual streams | **790,654** (+0.00%) | **1,212,968** (+0.00%) | **2,322,153** (+0.00%) | **132,374** (+0.00%) | **1,186,046** (+0.00%) | **1,581,087** (+0.00%) |
+| Color FFPR + JPEG2000 lossless; optimized residual streams | **26,977,014** (+0.00%) | **19,059,609** (+0.00%) | **127,518,137** (+0.00%) | **631,376** (+0.00%) | **27,091,577** (+0.00%) | **32,340,923** (+0.00%) |
 
 Across the **30 FFPR pairs**, complete-file byte changes range from **-34 B** to **+0 B**: **2 smaller, 28 tied, 0 larger**. These are actual final-file differences, not residual-payload estimates. The 12 native-preserving controls give **11 smaller, 0 tied, 1 larger**; the largest growth is **+1 B**. They retain much more content to recompress; the table measures that
 contrast. Do not generalize these settings to
 every PDF. Brotli still requires a supporting reader.
-
-## FFPR residual compression — Zopfli versus Brotli baseline
-
-**NATIVE-02 — designer §§245/246.** Every cell uses FFPR with the named
-specialized image codec; columns describe the original input classes, not
-retained native text. Encoded images, prepared samples, 300 DPI and save
-settings are fixed. Only residual/native-stream compression changes:
-**Brotli is the baseline; Zopfli is the treatment**. No image is re-encoded.
-
-`Change (%) = 100 × (Zopfli bytes − Brotli bytes) / Brotli bytes`.
-**Negative favors Zopfli; positive favors Brotli.** Cells show percentages
-only, rounded to five decimals so small real changes do not disappear in
-large PDFs. Bold means the actual treatment is no larger than its baseline.
-Actual complete-file sizes are retained in the measured evidence and
-[regression fixture](../tests/fixtures/ffpr_compressor_sizes.json).
-
-| FFPR image encoding | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
-|---|---:|---:|---:|---:|---:|---:|
-| BW + JBIG2 | **-0.05670%** | **-0.07836%** | **-0.01401%** | **-4.18628%** | **-0.05344%** | **-0.05634%** |
-| 5 colors + layered JBIG2 | **-0.09040%** | **-0.11342%** | **-0.00262%** | **-1.83985%** | **-0.05867%** | **-0.06136%** |
-| Color + JPEG q50 | **-0.00298%** | **-0.00410%** | **-0.00101%** | **-0.14092%** | **-0.00297%** | **-0.00271%** |
-| Color + JPEG2000 lossy r192 | **-0.02137%** | **-0.01484%** | **-0.00723%** | **-0.12751%** | **-0.01425%** | **-0.01069%** |
-| Color + JPEG2000 lossless | **-0.00063%** | **-0.00094%** | **-0.00013%** | **-0.02676%** | **-0.00062%** | **-0.00052%** |
-
-**Result: Brotli is larger in all 30 pairs, by 100–271 complete-file bytes.**
-This includes every multipage source: six-page W-9, eleven-page TM972,
-eight-page newspaper, nine-page research paper and twelve-page Kepler.
-This is evidence for these FFPR recipes, not a theorem that Brotli always
-loses on residual streams. The sources differ; this is not a page-count-only
-experiment or a basis for an automatic page-count cutoff.
-
-### Why Brotli is worse here
-
-The byte accounting closes exactly in every pair. Encoded image bytes,
-object/xref-container stream bytes and other stream bytes are unchanged.
-The complete-file growth is the sum of:
-
-- **166 bytes for our writer's Brotli extension declaration.** Metadata-only
-  controls keep the Zopfli image AND native stream payloads byte-identical
-  and add just that declaration. Both the one-page artwork and six-page W-9
-  grow by exactly 166 bytes. The extension specification recommends it
-  (**SHOULD**, not SHALL); this is our current writer's declaration policy,
-  not an unavoidable 166-byte minimum imposed by the format. We keep that
-  policy fixed rather than silently remove metadata from the comparison.
-- **One extra filter-name byte per native stream:** `/BrotliDecode` is one
-  byte longer than `/FlateDecode`.
-- **The actual native-payload difference and any extra `/Length` digits.**
-  In BW/JPEG/JPEG2000 FFPR cases, only 35–245 decoded drawing-command bytes
-  remain per document; Brotli's encoded payload is 1–7 bytes larger here.
-  Many identical page drawing programs are deduplicated: the six-page W-9
-  has ONE shared 43-byte program. More pages need not mean more compressible
-  residual data. Five-color layered JBIG2 has more drawing commands and can
-  favor either payload encoder, but its savings never repay the overhead.
-
-For example, artwork/JBIG2 is **4,037 B with Brotli versus 3,868 B with
-Zopfli**: 166 declaration + 1 filter-name + 2 payload bytes = **169 B**.
-The six-page W-9/JBIG2 has that same 169-byte difference, despite six times
-as many pages. In eight-page newspaper/layered-JBIG2, Brotli actually saves
-**74 native-payload bytes**, but adds **174 syntax bytes**: the complete
-PDF is still **100 B larger** (3,817,206 versus 3,817,106 B).
-
-This is a small-stream and whole-PDF overhead effect, not worse compression
-of the J* images: their encoded payloads are proven identical. No encoder or
-format is guaranteed to win every input. These results favor Zopfli for
-these FFPR residuals; no application setting/default changes in this benchmark.
-
-The [shared per-stream saver](../pdf_minify/core/stream_compression.py)
-explains the implementation boundary; the
-[Brotli PDF extension, §4](https://pdfa.org/download-area/publications/pdf-extension-brotli.pdf) specifies
-its declaration. The longer label Zopfli-Flate is unnecessary in tables:
-**Zopfli** here always means standard FlateDecode data, not a second format.
-See [the Zopfli project](https://github.com/google/zopfli#readme).
-
-Evidence: `.tmp/compression-experiments/ffpr-brotli-zopfli-300dpi-20261017/`.
-Thirty Brotli baselines are newly saved and pass the shared exact native,
-image and all-page 72/300-DPI checks; thirty verified Zopfli files are reused
-with their original provenance. Both metadata-only controls pass QPDF checks;
-that does not certify Brotli decoding. No compute-time comparison is made.
 
 ## What the measurements establish
 

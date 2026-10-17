@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 248. Routine execution requests are not TODOs (§218).
+new TODO ID is 249. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2326,3 +2326,15 @@ tables. Targeted 106-test and full 674-test runs pass. **Implementation
 verified 2026-10-17; not designer acceptance.** See `INTEGRATED_COMPRESSION.md`,
 `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`, `DESIGN.md` §§245/246,
 `tools/bench_ffpr_compressors.py`. No GUI/default change.
+
+## 248 — DONE (designer §§247–249: consistent percentage presentation and table order)
+
+~~Use two decimals for percentage differences, leave rounded zeros unbolded,
+and place the Brotli comparison immediately after PNG prediction.~~
+Stub: shared formatters and all 168 displayed differences use original measured
+bytes, with normalized unbolded zero; all ten byte-count tables are unchanged.
+The complete FFPR explanation moves with its table; Brotli underlines and raw
+measurement identities remain intact. Targeted 117-test and full 679-test runs
+pass. **Implementation verified 2026-10-17; not designer acceptance.** No corpus
+encoding/rendering or GUI/default change. See `DESIGN.md` §§247–249,
+`COMPRESSION_EXPERIMENTS.md`, `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.

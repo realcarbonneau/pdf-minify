@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–246. The primary measured-size tables are in
+Designer §§238–249. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -11,6 +11,13 @@ prepared raster samples/palette, 300-DPI transform, threshold/quality,
 native drawing, save/ID policy and all other compressor choices constant.
 Report actual complete saved PDF bytes and
 `100 × (candidate bytes − baseline bytes) / baseline bytes`; negative is smaller.
+Display signed percentage differences with exactly two decimal places, computed
+from the original measured bytes. Normalize rounded zero to `+0.00%`; never bold
+a percentage that rounds to zero. Percentage-only cells bold displayed negative
+changes only. Exact byte-count emphasis remains based on the measured bytes.
+Keep raw sizes/differences in the evidence when small changes round to zero.
+In the results report, place NATIVE-02 immediately after PNG-02, before focused
+scenarios, with its explanation intact (§§247–249).
 Each side is a real, separately saved file. Freeze input/preparation/output
 hashes, recipe, tool/package versions and the actual producing implementation.
 Verify decoded images/native streams and every page at 72 and 300 DPI.
@@ -55,7 +62,7 @@ instead of encoding them again. Remaining cells require new actual saves.
 
 Publish measured plain baseline rows in the overview. Under §243, the PNG
 table shows only signed percentage changes computed from measured complete
-files, with paired win/tie emphasis; retain exact byte counts in frozen
+files, with the shared precision/emphasis rules above; retain exact byte counts in frozen
 measurement evidence. Focused and native/residual sizes are unchanged.
 Keep palette targets as separate fidelity groups; actual palettes may contain
 fewer colors. Never apply PNG row prediction to an already
@@ -141,12 +148,12 @@ source/preparation/output hashes rather than relaxing normal resume checks.
 
 The table reports
 `100 × (Zopfli bytes − Brotli bytes) / Brotli bytes`;
-negative favors Zopfli, positive favors Brotli. Bold treatment percentages
-when the actual Zopfli byte count is no larger, including ties. A rounded
-+0.0% is not necessarily an exact tie; retain raw sizes and paired evidence.
+negative favors Zopfli, positive favors Brotli. Bold displayed negative
+percentages only. A rounded +0.00% is not necessarily an exact tie; leave it
+unbolded and retain raw sizes and paired evidence (§§248/249).
 
-Use sufficient decimal precision to expose tiny complete-file changes in
-large image-dominated PDFs. Preserve raw baseline/treatment byte counts in
+Use the shared two-decimal precision, including for tiny complete-file changes
+in large image-dominated PDFs. Preserve raw baseline/treatment byte counts in
 frozen evidence. Verify exact decoded native/image data, encoded image
 signatures and all-page 72/300-DPI pixels with the existing shared validator.
 Completed Zopfli renders remain reusable; new Brotli saves pass their own

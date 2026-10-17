@@ -65,7 +65,7 @@ def test_table_names_brotli_baseline_and_completed_pairs_do_not_encode_again(act
     folder, document, row, pair, candidate = actual_pair
     table = ffpr.effect_table((document,), (row,), [pair])
     assert "JPEG q50" in table and "Two-page FFPR" in table
-    assert re.search(r"[+-]\d+\.\d{5}%", table)
+    assert re.search(r"[+-]\d+\.\d{2}%", table)
     monkeypatch.setattr(study, "run_case", lambda *a, **k: pytest.fail("re-encoded completed pair"))
     assert ffpr.measure(document, row, candidate, folder / "pair", {"fixed": True}, True) == pair
 
@@ -87,12 +87,12 @@ def test_missing_duplicate_aliased_and_wrong_policy_pairs_cannot_publish(actual_
 
 
 @pytest.mark.parametrize("baseline,candidate,expected", [
-    (1000, 900, "**-10.00000%**"),
-    (127518301, 127518137, "**-0.00013%**"),
-    (1000, 1001, "+0.10000%"),
+    (1000, 900, "**-10.00%**"),
+    (127518301, 127518137, "+0.00%"),
+    (1000, 1001, "+0.10%"),
 ])
-def test_precision_keeps_tiny_measured_residual_changes_visible(baseline, candidate, expected):
-    assert overview.measured_effect_cell(baseline, candidate, show_size=False, places=5) == expected
+def test_ffpr_percentages_use_the_shared_precision_and_do_not_bold_rounded_zero(baseline, candidate, expected):
+    assert overview.measured_effect_cell(baseline, candidate, show_size=False) == expected
 
 
 @pytest.mark.parametrize("places", [True, -1, 10])
@@ -116,18 +116,32 @@ def test_published_ffpr_effects_match_the_measured_sizes_fixture():
 
     fixture = json.loads(Path("tests/fixtures/ffpr_compressor_sizes.json").read_text())
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    section = report.split(ffpr.SECTION, 1)[1].split("## What the measurements establish", 1)[0]
+    section = report.split(ffpr.SECTION, 1)[1].split("\n## ", 1)[0]
     parsed = [[cell.strip() for cell in line.split("|")[1:-1]]
               for line in section.splitlines() if line.startswith("| ")][1:]
     assert len(parsed) == 5
     for row, expected in zip(parsed, fixture["rows"], strict=True):
         assert row[0] == expected["label"]
         for cell, baseline, candidate in zip(row[1:], expected["brotli"], expected["zopfli"], strict=True):
-            change = (100 * Decimal(candidate-baseline)/Decimal(baseline)).quantize(Decimal("0.00001"))
+            change = (100 * Decimal(candidate-baseline)/Decimal(baseline)).quantize(Decimal("0.01"))
             if change == 0:
                 change = Decimal(0)
-            percent = f"{change:+.5f}%"
-            assert cell == (f"**{percent}**" if candidate <= baseline else percent)
+            percent = f"{change:+.2f}%"
+            assert cell == (f"**{percent}**" if change < 0 else percent)
+
+
+def test_brotli_comparison_immediately_follows_png_with_all_zero_percentages_unbolded():
+    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    headings = [line for line in report.splitlines() if line.startswith("## ")]
+    png = headings.index(overview.PNG_SECTION)
+    assert headings[png + 1] == ffpr.SECTION
+    assert headings[png + 2] == "## Focused scenarios"
+    assert not re.search(r"\*\*[+-]0\.00%\*\*", report)
+    for line in report.splitlines():
+        if line.startswith("|"):
+            for percent in re.findall(r"[+-]\d+\.\d+%", line):
+                assert re.fullmatch(r"[+-]\d+\.\d{2}%", percent), percent
+                assert percent != "-0.00%"
 
 
 def test_development_document_tables_use_short_zopfli_labels():

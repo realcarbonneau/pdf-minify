@@ -103,7 +103,7 @@ def short_table_labels(markdown):
                    for line in markdown.splitlines(keepends=True))
 
 
-def measured_effect_cell(baseline_bytes, candidate_bytes, *, show_size=True, places=1):
+def measured_effect_cell(baseline_bytes, candidate_bytes, *, show_size=True, places=2):
     """Signed change from measured bytes, optionally including candidate size."""
     if any(type(size) is not int or size <= 0 for size in (baseline_bytes, candidate_bytes)):
         raise ValueError("Comparison requires positive measured integer byte counts")
@@ -114,7 +114,7 @@ def measured_effect_cell(baseline_bytes, candidate_bytes, *, show_size=True, pla
         change = Decimal(0)  # Do not print a misleading negative zero after rounding.
     if not show_size:
         percentage = f"{change:+.{places}f}%"
-        return f"**{percentage}**" if candidate_bytes <= baseline_bytes else percentage
+        return f"**{percentage}**" if change < 0 else percentage
     size = f"{candidate_bytes:,}"
     if candidate_bytes <= baseline_bytes:
         size = f"**{size}**"

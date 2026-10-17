@@ -1053,3 +1053,12 @@ beyond §240's PNG-only first review, not unrelated GUI/default changes.
 
 ## 246 — restrict the comparison to FFPR with specialized codecs; explain regressions (verbatim, 2026-10-17)
 > I mean with FFPR and modern compressions, like J* of course, other than that, the page would have additional information that is expected to be compressible.  I am looking for the scenarios where Brotli is worse, which is not the null hypothesis, since it is supposed to be better.  And when worse is found, why?
+
+## 247 — leave zero PNG-effect percentages unbolded (verbatim, 2026-10-17)
+> Don't bold 0% in the "PNG Prediction" table please
+
+## 248 — standardize percentage precision and order the comparison tables (verbatim, 2026-10-17)
+> Decide on a stanard number of decimals for percentage diff.  Let's use 2 decimals.  And move the brotli table after png.
+
+## 249 — leave all rounded-zero percentage changes unbolded (verbatim, 2026-10-17)
+> if it rounds to 0.00%, no bold please

@@ -77,13 +77,13 @@ def test_published_native_pair_percentages_use_the_visible_reference():
     for row in rows:
         assert len(row) == 7
         for baseline, cell in zip(reference[row[0]], row[1:]):
-            match = re.fullmatch(r"(\*\*)?([\d,]+)(\*\*)? \(([+-]\d+\.\d)%\)", cell)
+            match = re.fullmatch(r"(\*\*)?([\d,]+)(\*\*)? \(([+-]\d+\.\d{2})%\)", cell)
             assert match
             a, b = int(baseline.replace(",", "")), int(match[2].replace(",", ""))
-            change = (Decimal(b - a) * 100 / Decimal(a)).quantize(Decimal("0.1"))
+            change = (Decimal(b - a) * 100 / Decimal(a)).quantize(Decimal("0.01"))
             if change == 0:
                 change = Decimal(0)
-            assert match[4] == f"{change:+.1f}"
+            assert match[4] == f"{change:+.2f}"
             assert bool(match[1]) == bool(match[3]) == (b <= a)
             audited += 1
     assert audited == 42

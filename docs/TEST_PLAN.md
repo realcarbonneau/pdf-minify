@@ -10,6 +10,27 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+Percentage presentation (§§247–249): signed changes use two decimals computed
+from original measured bytes; exact ties and changes rounded to zero are never
+bold. The full FFPR Brotli-baseline/Zopfli-treatment section immediately follows
+PNG prediction. Tests cover tiny gains/losses on both sides of the rounding
+boundary, unchanged exact byte-count emphasis, all 96 PNG pairs against a frozen
+original-size fixture, all 30 FFPR pairs against their existing fixture, and
+42 native/residual changes against visible reference/candidate byte counts.
+No corpus encoding/rendering or application behavior changes are needed.
+Targeted reporting checks: **117 passed**. The full suite (`./test.sh`, offscreen)
+passes **679 tests**, exit 0 / FULL SUITE GREEN, with no expected failures.
+All ten byte-count tables retain their original counts/emphasis; all 168
+percentage differences use two decimals, with rounded zeros unbolded.
+Later completion notes are documentation-only; reuse this passing result (§241).
+
+The PNG fixture records its original publication manifest hash
+(`9864f717f7ea0f1f879f8a3d7537229ffe9e62d6817228dc510945d6adc9e7e9`);
+historical measurement files/identities remain unchanged. Section-order and
+published-table checks prevent bold zeros or mixed precision from returning.
+
+### Previous FFPR Brotli–Zopfli stage — 2026-10-17 (§§245/246)
+
 NATIVE-02 (§§245/246) verifies five FFPR/specialized-codec rows over six
 whole PDFs: thirty newly saved Brotli baselines versus thirty verified reused
 Zopfli files, with encoded images byte-identical and all-page 72/300-DPI

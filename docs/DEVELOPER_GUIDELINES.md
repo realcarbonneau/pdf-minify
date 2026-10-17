@@ -251,8 +251,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Reference-only Classic Flate does not restore it as a product choice.
   See `COMPRESSION_EXPERIMENTS.md` and TODO §§243/244.
 - §243 makes the PNG-prediction effect table percentage-only: remove candidate
-  byte counts, retaining signed measured full-file changes, paired win/tie
-  emphasis, baseline labels and all six columns. Keep measured baseline sizes
+  byte counts, retaining signed measured full-file changes, paired-effect
+  emphasis (updated by §§247–249), baseline labels and all six columns.
+  Keep measured baseline sizes
   in the overview and exact byte evidence in frozen manifests. Update the
   reusable formatter; focused and native/residual size tables are unchanged.
 - §244 underlines Brotli labels in that PNG table only, without changing
@@ -270,6 +271,14 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Use Zopfli as the short table label, retaining the FlateDecode explanation
   in prose. Shorten presentation only, not frozen measurement identities,
   saved settings or GUI controls. See `COMPRESSION_EXPERIMENTS.md`.
+- §§247–249 standardize signed percentage differences to two decimal places,
+  computed from original measured complete-file bytes. Normalize rounded zero
+  to `+0.00%` and never bold a zero percentage, even for a tiny actual reduction.
+  Percentage-only effect tables bold displayed negative changes only; exact
+  byte-count emphasis and raw evidence remain independent. Place the full
+  FFPR Brotli-baseline/Zopfli-treatment section immediately after PNG prediction,
+  before focused scenarios. Preserve measurements/identities and Brotli
+  underlines; do not re-encode or rerender the corpus for presentation changes.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

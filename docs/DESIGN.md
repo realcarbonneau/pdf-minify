@@ -369,8 +369,8 @@ residual streams or add other optimization tables before that review.
 Overview bold minima are recalculated among its baseline rows within the
 same document/fidelity group. In the paired effect table, bold measured bytes
 mean the PNG result is no larger than its own baseline (including ties), not
-the smallest across unrelated documents/recipes. Show signed changes rounded
-to one decimal place and explain this distinct paired emphasis locally.
+the smallest across unrelated documents/recipes. Explain this distinct paired
+emphasis locally; §§247–249 below supersede the original rounding and tie styling.
 This supersedes §220's placement of PNG rows in the primary overview, not
 the requirement to retain and verify both measured variants. See TODO §242.
 
@@ -411,8 +411,7 @@ See TODO §§243/244.
 Supersede only the PNG effect table's byte-count presentation above: show
 signed percentage changes alone, computed from the same measured complete
 files. Keep all 16 rows / 96 pairs, six columns, visible overview baselines
-and one-decimal rounding. Bold the percentage when the actual candidate is
-no larger than its paired baseline, including ties. Exact byte counts and
+and the rounding/emphasis rules in §§247–249 below. Exact byte counts and
 original provenance remain in frozen evidence; no encoding is repeated.
 Update reusable generation and tests. Focused and native/residual size
 tables are outside this change. See TODO §245.
@@ -458,6 +457,30 @@ reader. The longer label distinguishes encoder from format educationally,
 not a second Zopfli variant in these tables. Preserve frozen measurement
 identities, exact quotes, raw evidence and application settings/controls;
 shorten reporting labels only. See `COMPRESSION_EXPERIMENTS.md`, TODO §247.
+
+### Percentage precision and comparison order (§§247–249)
+
+> Don't bold 0% in the "PNG Prediction" table please
+
+> Decide on a stanard number of decimals for percentage diff.  Let's use 2 decimals.  And move the brotli table after png.
+
+> if it rounds to 0.00%, no bold please
+
+Use exactly two decimal places for signed percentage differences in the
+integrated comparison tables and their reusable formatters. Compute from the
+original measured complete-file byte counts, never by padding or re-rounding
+previously displayed percentages. Normalize rounded negative zero to `+0.00%`.
+In percentage-only tables, bold only displayed negative reductions; leave exact
+ties and any changes that round to zero unbolded. Preserve the Brotli underlines.
+Byte-count emphasis in other tables still reflects actual measured bytes;
+rounded zero does not prove an exact tie. Retain exact byte differences in
+the evidence/explanation rather than adding extra percentage precision.
+
+Place the complete FFPR Zopfli-versus-Brotli section immediately after the PNG
+section, before focused scenarios. Keep its explanation with its table and
+preserve all measurements, source identities, reader caveats and other section
+order. These are presentation changes, not authority to rerun encoding or
+change application settings. See TODO §248 and `COMPRESSION_EXPERIMENTS.md`.
 
 ### Sixth representative: technical illustrations (§231)
 

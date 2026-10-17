@@ -171,7 +171,7 @@ def publish(before, old_path, png_path, native_path, folder):
             updated.extend(item for item in baseline.splitlines()[2:] if cells(item)[0] in extra_ffpr)
         updated.append(measured.get(label, line))
     text = text.replace(primary_scope, "\n".join(updated).rstrip() + "\n\n", 1)
-    scope = text.split(overview.PNG_SECTION, 1)[1].split("## Focused scenarios", 1)[0]
+    scope = text.split(overview.PNG_SECTION, 1)[1].split("\n## ", 1)[0]
     old_table = "\n".join(line for line in scope.splitlines() if line.startswith("|")) + "\n"
     changed = scope.replace(old_table, effects)
     changed = changed.replace(
@@ -186,6 +186,12 @@ def publish(before, old_path, png_path, native_path, folder):
         "Underlined Brotli labels identify that compressor's measured pairs;\n"
         "the observed win/tie/loss counts below are corpus-specific, not a\n"
         "universal claim that prediction is obsolete.")
+    changed = changed.replace(
+        "are rounded to one decimal place. Bold percentages mean this result is no\n"
+        "larger than its own baseline, including ties—not a cross-document minimum.",
+        "are rounded to two decimal places. Bold percentages mark displayed\n"
+        "negative reductions only—not a cross-document minimum. Exact ties and\n"
+        "changes that round to +0.00% are not bold.")
     changed = changed.replace("compressor and save policy are unchanged within each pair.",
         "compressor and save policy are unchanged within each pair. The ON path\n"
         "uses the existing adaptive predictor-15 row selector (minimum absolute\n"
@@ -232,8 +238,8 @@ def publish(before, old_path, png_path, native_path, folder):
         "Each cell is **measured candidate complete-file bytes** plus\n"
         "`100 × (candidate − reference) / reference`. Negative is smaller/better.\n"
         "Bold bytes mean no larger than its own reference, including ties.\n"
-        "Rounding is to one decimal place; tiny byte differences can round to\n"
-        "+0.0%, so the exact reference and candidate counts remain visible.\n\n" + native_effects + "\n"
+        "Rounding is to two decimal places; tiny byte differences can round to\n"
+        "+0.00%, so the exact reference and candidate counts remain visible.\n\n" + native_effects + "\n"
         f"Across the **30 FFPR pairs**, complete-file byte changes range from **{min(ffpr_changes):+,} B** "
         f"to **{max(ffpr_changes):+,} B**: **{ffpr_summary['smaller']} smaller, {ffpr_summary['tied']} tied, "
         f"{ffpr_summary['larger']} larger**. These are actual final-file differences, not residual-payload estimates. "
