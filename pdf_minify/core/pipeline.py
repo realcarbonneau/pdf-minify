@@ -21,7 +21,7 @@ from .pdf_io import CancelledError, render_gray, FITZ_LOCK
 from . import threshold as T
 from .image_layers import compose_page_images, compose_color_page
 from .algorithms import BW_MODES, COLOR_MODES
-from .stream_compression import STREAM_LABELS, recompress_native_streams
+from .stream_compression import STREAM_LABELS, permits_brotli, recompress_native_streams
 from .defaults import DEFAULT_DPI
 from .canvas import flatten_rgb
 
@@ -276,6 +276,11 @@ def deflate_best(data: bytes) -> bytes:
     100KB (fast either way); above that zlib-9. Zopfli's default gzip wrapper
     is NOT a PDF Flate stream. Roundtrip validation rejects wrong containers.
     """
+    if _STREAM_POLICY.get() == "best":
+        # Preparation transport only. Best will run both full encoders ONCE
+        # on these same samples; do not run the old opportunistic Zopfli path
+        # first and then encode them again during measured final selection.
+        return zlib.compress(data, 9)
     if len(data) <= 100_000 and zopfli_binary() is not None:
         fd, tmp = tempfile.mkstemp(prefix="encode-zopfli-", dir=_ENCODE_WORKDIR.get())
         try:
@@ -609,17 +614,30 @@ def _save_optimized_pdf(doc: "fitz.Document", out_path: str, *, no_new_id: bool 
     if subset_fonts:
         doc.subset_fonts()
     policy = _STREAM_POLICY.get()
-    stats = recompress_native_streams(doc, policy, directory=_ENCODE_WORKDIR.get(),
-                                     token=_SAVE_TOKEN.get(),
-                                     brotli_declaration=_BROTLI_DECLARATION.get())
-    # Native streams are already explicitly encoded; the writer must not
-    # replace that choice. Image streams stay byte-identical; object/xref
-    # generation remains the native writer's ordinary compatible optimization.
-    doc.save(out_path, garbage=4, deflate=False, deflate_fonts=False,
-             use_objstms=True, compression_effort=100, no_new_id=no_new_id)
+    if policy == "best":
+        from .best_streams import save_best_streams
+        stats = save_best_streams(doc, out_path, writer=_write_optimized_pdf,
+                                  directory=_ENCODE_WORKDIR.get(), token=_SAVE_TOKEN.get(),
+                                  brotli_declaration=_BROTLI_DECLARATION.get(), no_new_id=no_new_id)
+        log.info("Best PDF streams: %s; candidates=%s; Brotli=%d; packed images=%d",
+                 stats["winner"], stats["candidate_bytes"], stats["brotli_streams"],
+                 stats["image_streams"])
+    else:
+        stats = recompress_native_streams(doc, policy, directory=_ENCODE_WORKDIR.get(),
+                                         token=_SAVE_TOKEN.get(),
+                                         brotli_declaration=_BROTLI_DECLARATION.get())
+        _write_optimized_pdf(doc, out_path, no_new_id=no_new_id)
     log.info("PDF streams: %s, %d streams, %d -> %d bytes, %.3fs",
              policy, stats["streams"], stats["raw_bytes"], stats["encoded_bytes"],
              stats["encode_seconds"])
+
+
+def _write_optimized_pdf(doc, out_path, *, no_new_id=False):
+    """One final container writer for explicit policies and every Best trial."""
+    # All selected streams are explicitly encoded; never replace their codec.
+    # Object/xref generation remains the writer's compatible optimization.
+    doc.save(out_path, garbage=4, deflate=False, deflate_fonts=False,
+             use_objstms=True, compression_effort=100, no_new_id=no_new_id)
 
 
 @_fitz_locked
@@ -700,7 +718,7 @@ def save_with_spec(in_path: str, out_path: str, spec: dict,
     context = _ENCODE_WORKDIR.set(workdir)
     stream_context = _STREAM_POLICY.set(policy)
     declaration_context = _BROTLI_DECLARATION.set(
-        policy == "brotli" and bool(spec.get("brotli_declaration", False)))
+        permits_brotli(policy) and bool(spec.get("brotli_declaration", False)))
     token_context = _SAVE_TOKEN.set(token)
     try:
         return _save_recipe(in_path, out_path, spec, token, progress)

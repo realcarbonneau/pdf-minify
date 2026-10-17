@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–251. The primary measured-size tables are in
+Designer §§238–254. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -31,10 +31,12 @@ No compute-time rankings, payload estimates, new GUI settings or default changes
 §251 subsequently changes the shared save default: omit the Brotli extension
 declaration unless compatibility metadata is explicitly requested. Record this
 setting in new benchmark identities and reject incompatible resume artifacts.
-The completed PNG/NATIVE-01/NATIVE-02 datasets below used declaration ON;
-their frozen files and measured tables remain historical evidence, not new
-default-OFF measurements. Metadata-only controls explicitly opt in. This ruling
-supersedes the old instruction to retain automatic declaration in new saves.
+The original PNG/NATIVE-01/NATIVE-02 datasets used declaration ON and remain
+immutable historical evidence. §254 requires the current tables to use
+actually re-encoded, measured declaration-OFF Brotli outputs across all three
+studies and their supporting component studies. Metadata-only ON controls stay
+separate diagnostics, not current default-size entries. This ruling supersedes
+the old instruction to retain automatic declaration in new saves.
 
 Implementation: `tools/bench_png_extension.py` and
 `tools/bench_residual_streams.py` call the existing shared bitmap preparation,
@@ -50,6 +52,39 @@ encoding implementation are compatible. Keep the original implementation
 identity and proof; the current reporting/selection code is not retroactively
 the encoder. Refuse arbitrary changed-code resume. Encoding a missing cell
 does not require re-encoding compatible completed cells.
+
+## Declaration-OFF Brotli refresh (§254)
+
+§254 authorizes refreshing all integrated results for declaration OFF, not
+just retaining historical ON tables in the primary analysis. Save new actual
+complete files through the shared saver, rerunning every published Brotli
+image/native encoding while holding prepared samples and other codecs fixed.
+This includes supporting image/native studies, plain/PNG and measured levels
+9/11. Record source/prepared/producer/output identities. Verify
+unchanged rendered object graphs and raw stream signatures before reusing
+the earlier all-page rendering evidence. Restore a forced catalog version
+marker only with explicit old-producer/source proof; retain legitimate source
+versions. No rasterization/filter preparation or assumed byte subtraction is
+needed. A run-local cache may reuse freshly encoded identical stream inputs
+at the same policy; no historical compressed payload substitutes for a current
+Brotli encoding. Report only size, not compute-time comparisons.
+Refresh overview/focused minima and both percentage tables from these measured
+files; preserve old artifacts and publication manifests separately.
+
+Implementation: `tools/refresh_brotli_tables.py` enumerates the 229 distinct
+published Brotli files (177 integrated, 44 bitmap-component and eight
+native-component), reruns their actual Brotli encodings and freezes per-output
+proof. `tools/publish_brotli_refresh.py` validates the completed inventory,
+normalizes only the old producer's proven absent-version marker, saves and
+measures through the shared optimizer, and emits a patch for all tables and
+regression fixtures. That metadata-only final save reuses this rerun's fresh
+encoded streams. Never serialize an absent version as `/Version null`: remove
+the dictionary key. Preserve actual source versions. `update_stream` also clears
+image decoding parameters: restore existing PNG parameters, but do not add a
+null `DecodeParms` entry to plain images. Tests cover both paths. A bounded,
+hash-pinned import can reuse successful current-encoder checkpoints from an
+interrupted attempt only after repeating graph/image/hash checks; rejected or
+partial outputs are never imported or ranked.
 
 ## PNG-02 — palette and page-mode coverage
 
@@ -71,7 +106,8 @@ instead of encoding them again. Remaining cells require new actual saves.
 Publish measured plain baseline rows in the overview. Under §243, the PNG
 table shows only signed percentage changes computed from measured complete
 files, with the shared precision/emphasis rules above; retain exact byte counts in frozen
-measurement evidence. Focused and native/residual sizes are unchanged.
+measurement evidence. Focused and native/residual size tables remain separate;
+§254 refreshes their Brotli cells too.
 Keep palette targets as separate fidelity groups; actual palettes may contain
 fewer colors. Never apply PNG row prediction to an already
 JPEG/JPEG2000/JBIG2-encoded image payload.
@@ -80,8 +116,9 @@ The expanded table's 48 Brotli pairs have zero reductions, four no-image
 ties and 44 increases. Under §244, underline its Brotli labels as a corpus
 annotation, not a decoder limitation or universal obsolescence claim.
 The earlier [noisy-BW control](IMAGE_STREAM_COMPRESSION.md#what-these-sizes-show)
-is a real counterexample: Brotli changes from 83,432 to 81,018 bytes with
-prediction (-2.89%), but JBIG2 is still smaller at 63,075 bytes.
+is a real counterexample: the refreshed default-OFF Brotli files change from
+83,266 to 80,852 bytes with prediction (-2.90%), but JBIG2 is still smaller
+at 63,075 bytes.
 
 Across all measured same-fidelity algorithms in the current representative
 study, none of the 96 PNG candidates is a unique minimum: 92 are larger than
@@ -176,8 +213,10 @@ native-payload differences. Never substitute payload estimates for final
 size; diagnostics explain the measured whole-file outcome. The extension's
 §4 recommends the declaration (SHOULD), not an unconditional SHALL; distinguish
 current writer overhead from a format-imposed minimum. Retain the existing
-declaration policy in the frozen experiment. New saves follow §251's opt-in
-default; do not relabel the old results as declaration-OFF measurements.
+declaration policy in the original frozen experiment. New saves follow §251's
+opt-in default. §254 supplies newly encoded/measured default-OFF replacements
+for current tables; it does not relabel old files. In the refreshed 30 pairs,
+the declaration is absent on both sides, with exact accounting still required.
 
 The corpus contains one one-page input and five multipage inputs. Their
 content differs: this is not a controlled test of page count. Compression operates on

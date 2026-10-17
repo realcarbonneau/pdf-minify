@@ -2,6 +2,7 @@
 
 from .pipeline import DEFAULT_DPI, DEFAULT_PAGE_SIZE
 from .algorithms import BW_MODES, COLOR_MODES, PALETTE_MODES
+from .stream_compression import permits_brotli
 
 
 def preset_spec(preset: dict) -> dict:
@@ -36,7 +37,7 @@ def spec_key(spec: dict) -> tuple:
     """
     policy = spec.get("stream_compression", "flate")
     return (*_image_spec_key(spec), policy,
-            bool(spec.get("brotli_declaration", False)) if policy == "brotli" else False)
+            bool(spec.get("brotli_declaration", False)) if permits_brotli(policy) else False)
 
 
 def _image_spec_key(spec):

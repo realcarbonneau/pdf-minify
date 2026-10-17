@@ -52,7 +52,7 @@ def recipe(mode, **params):
 
 def test_six_algorithms_have_distinct_effective_identities_and_legacy_defaults():
     assert [label for _, label in ALGORITHMS] == [
-        "JBIG2 BW", "JBIG2 Color", "Flate BW", "Flate Color (palette)", "JPEG2000", "JPEG"]
+        "JBIG2 BW", "JBIG2 Color", "Packed BW", "Indexed color", "JPEG2000", "JPEG"]
     assert len({spec_key(recipe(mode)) for mode, _ in ALGORITHMS}) == 6
     for mode, _ in ALGORITHMS:
         spec = recipe(mode)
@@ -296,12 +296,13 @@ def test_default_removes_empty_brotli_extension_container_without_downgrading_pd
 
 
 @pytest.mark.parametrize("failure", [False, True])
-def test_saver_owns_declaration_context_and_restores_it_on_success_or_failure(tmp_path, failure):
+@pytest.mark.parametrize("policy", ["brotli", "best"])
+def test_saver_owns_declaration_context_and_restores_it_on_success_or_failure(tmp_path, failure, policy):
     source, output = tmp_path / "source.pdf", tmp_path / "output.pdf"
     source_pdf(source)
     previous = pipeline._BROTLI_DECLARATION.set(True)
     try:
-        spec = dict(mode="invalid" if failure else "passthrough", stream_compression="brotli")
+        spec = dict(mode="invalid" if failure else "passthrough", stream_compression=policy)
         if failure:
             with pytest.raises(ValueError, match="Unknown filter mode"):
                 pipeline.save_with_spec(str(source), str(output), spec)
@@ -371,7 +372,7 @@ def test_zopfli_has_no_elapsed_cutoff_but_reaps_on_cancellation(tmp_path, monkey
     assert not list(tmp_path.iterdir())
 
 
-@pytest.mark.parametrize("policy", [name for name, _ in streams.STREAM_POLICIES])
+@pytest.mark.parametrize("policy", [name for name, _ in streams.STREAM_POLICIES if name != "best"])
 def test_empty_native_stream_needs_no_filter_and_cannot_create_invalid_brotli(policy):
     assert streams.encode_stream(b"", policy) == (b"", None)
     with fitz.open() as doc:

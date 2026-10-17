@@ -5,11 +5,19 @@ The primary final-file comparison uses realistic combination rows over six
 representative PDFs, followed by focused scenarios (§223):
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
 
-Historical component measurements below predate the uniform 300-DPI ruling
+The component preparations below predate the uniform 300-DPI ruling
 and shared assembly repairs (§§224–226, B108–B112). They retain the original
 explicit recipes and are not current default-filter sizes. Use the primary
 integrated overview and focused tables for repaired, uniformly 300-DPI
 comparisons; do not relabel these older mixed-DPI artifacts.
+
+§254 refreshes **all 44 Brotli outputs** (plain/PNG) with actual new encodings
+and measured complete files, **declaration OFF**, on 2026-10-17. The other 132
+component files retain their original measurements and checked hashes.
+No pixels, palettes, DPI or thresholds were reprocessed; unchanged rendered
+graphs/stream signatures preserve the original pixel-validation evidence.
+This controlled metadata-policy refresh does not turn the old preparations
+into measurements of the later compositor or new default recipes.
 
 The current single-factor PNG-prediction experiment and its 16/64-color,
 native/FFPR extension use the protocol in
@@ -43,8 +51,8 @@ No encode/decode times are collected or compared in this study. Process
 timeouts are safety limits, not performance data. Work runs sequentially
 with numerical thread limits.
 
-The earlier native-stream benchmark deliberately preserved image bytes. Its
-19.32% NASA Brotli saving cannot be used as an image-compression result.
+The native-stream benchmark deliberately preserves image bytes. Its NASA
+native-stream saving cannot be used as an image-compression result.
 Here the native compression remains ordinary Flate for EVERY candidate;
 only bitmap encodings/representation vary. Palette reduction and BW
 thresholding happen once per case, never separately for each encoder.
@@ -66,8 +74,10 @@ Row prediction is a reversible byte transform, not display smoothing or a
 second image filter. Use predictor 15, Colors 1, actual BitsPerComponent and
 Columns; packed-row padding remains exact. Declare all decode parameters.
 Brotli is the image's actual filter, never a wrapper around encoded JBIG2.
-The existing core native Brotli encoder and PDF extension metadata are reused;
-the production native-stream selector still excludes image XObjects.
+The existing core native Brotli encoder and optional extension policy are reused;
+the existing fixed native policies still exclude image XObjects. §§255/256
+later add Best for packed-image/native streams; this fixed-encoder component
+study and its frozen measurements do not become Best measurements.
 
 ## Correctness, size accounting and limits
 
@@ -81,7 +91,7 @@ small/odd-width fixtures and real multipage outputs. No silent substitutions.
 Failed decode/timeout is NOT a valid small-file result.
 
 Full-PDF comparisons include palette/mask/white-base/content/container overhead
-and Brotli's extension declaration. Within packed-stream alternatives, retain
+with the Brotli declaration **OFF** in current tables. Within packed-stream alternatives, retain
 the identical native assembly. Colored JBIG2 necessarily uses different image
 paint operators, so compare retained native artwork and complete output, not
 require identical canvas-paint bytes across different representations.
@@ -121,9 +131,10 @@ the existing optional prediction parameters. Image XObjects are applicable.
 
 ## Results
 
-Measured **2026-10-15**: **22 paired cases, 176 final PDFs, 600 candidate
-pages** (75 case-pages × eight encodings). Every final candidate was checked
-again after identifier control, without re-encoding its image data. All
+Original preparation/validation **2026-10-15**, all 44 Brotli files re-encoded
+and remeasured **2026-10-17**: **22 paired cases, 176 final PDFs, 600 candidate
+pages** (75 case-pages × eight encodings). The original identifier-control
+pass checked every final candidate without re-encoding its image data. All
 stored samples/mask reconstructions and actual no-AA page pixels match at
 72dpi AND recipe DPI. Input/output hashes, encoded image byte counts, exact
 dimensions and diagnostics accompany the actual PDFs in the combined JSON.
@@ -152,18 +163,18 @@ DPIs are different prepared images, not an equal-quality contest.
 
 | Source / DPI / colors | Flate | Flate+PNG | Zopfli | Zopfli+PNG | Brotli | Brotli+PNG | Colored JBIG2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| images / 150 / 5 | 19,598 | 20,912 | 18,284 | 19,118 | 15,100 | 17,551 | **13,320** |
-| images / 150 / 16 | 29,039 | 31,815 | 26,986 | 28,696 | **22,488** | 26,874 | 24,814 |
-| images / 150 / 64 | 34,550 | 46,550 | 31,108 | 40,785 | **27,259** | 38,609 | 46,557 |
-| GAN / 150 / 5 | 344,069 | 347,428 | 339,419 | 341,833 | **330,312** | 338,060 | 338,703 |
-| GAN / 150 / 16 | 378,991 | 388,336 | 373,255 | 378,806 | **361,219** | 373,583 | 389,741 |
-| GAN / 150 / 64 | 429,411 | 459,529 | 419,203 | 441,977 | **405,276** | 433,448 | 478,968 |
-| images / 300 / 5 | 32,293 | 40,180 | 29,509 | 35,127 | 23,741 | 30,686 | **18,543** |
-| images / 300 / 16 | 50,951 | 60,783 | 45,315 | 51,758 | 37,026 | 47,564 | **35,412** |
-| Synthetic flat / 150 / 5 | 3,103 | 3,776 | 2,788 | 3,578 | **2,347** | 2,874 | 3,415 |
-| Synthetic flat / 150 / 16 | 3,103 | 3,776 | 2,788 | 3,578 | **2,347** | 2,874 | 3,415 |
-| Synthetic noise / 150 / 5 | 115,567 | 152,625 | 108,454 | 151,581 | **107,798** | 149,562 | 145,977 |
-| Synthetic noise / 150 / 16 | 115,567 | 152,625 | 108,454 | 151,581 | **107,798** | 149,562 | 145,977 |
+| images / 150 / 5 | 19,598 | 20,912 | 18,284 | 19,118 | 14,934 | 17,385 | **13,320** |
+| images / 150 / 16 | 29,039 | 31,815 | 26,986 | 28,696 | **22,322** | 26,708 | 24,814 |
+| images / 150 / 64 | 34,550 | 46,550 | 31,108 | 40,785 | **27,093** | 38,443 | 46,557 |
+| GAN / 150 / 5 | 344,069 | 347,428 | 339,419 | 341,833 | **330,146** | 337,894 | 338,703 |
+| GAN / 150 / 16 | 378,991 | 388,336 | 373,255 | 378,806 | **361,053** | 373,417 | 389,741 |
+| GAN / 150 / 64 | 429,411 | 459,529 | 419,203 | 441,977 | **405,110** | 433,282 | 478,968 |
+| images / 300 / 5 | 32,293 | 40,180 | 29,509 | 35,127 | 23,575 | 30,520 | **18,543** |
+| images / 300 / 16 | 50,951 | 60,783 | 45,315 | 51,758 | 36,860 | 47,398 | **35,412** |
+| Synthetic flat / 150 / 5 | 3,103 | 3,776 | 2,788 | 3,578 | **2,181** | 2,708 | 3,415 |
+| Synthetic flat / 150 / 16 | 3,103 | 3,776 | 2,788 | 3,578 | **2,181** | 2,708 | 3,415 |
+| Synthetic noise / 150 / 5 | 115,567 | 152,625 | 108,454 | 151,581 | **107,632** | 149,396 | 145,977 |
+| Synthetic noise / 150 / 16 | 115,567 | 152,625 | 108,454 | 151,581 | **107,632** | 149,396 | 145,977 |
 
 Both controls have FIVE actual colors even when 16 are requested, so their
 5/16 rows intentionally have identical pixels/bytes; they are not independent
@@ -180,16 +191,16 @@ content as though those were the same rendered image.
 
 | Source / mode / threshold | Flate | Flate+PNG | Zopfli | Zopfli+PNG | Brotli | Brotli+PNG | BW JBIG2 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| images / image layer / Otsu | 22,605 | 24,096 | 21,051 | 21,637 | 15,158 | 18,342 | **10,133** |
-| images / image layer / T=180 | 23,451 | 24,888 | 21,853 | 22,344 | 15,852 | 19,230 | **10,410** |
-| images / image layer / T=210 | 26,843 | 28,550 | 24,670 | 25,452 | 18,289 | 22,644 | **11,244** |
-| GAN / image layer / Otsu | 337,441 | 338,931 | 334,900 | 335,319 | 324,046 | 328,099 | **319,797** |
-| JFK poor copies / image layer / Otsu | 709,790 | 818,583 | 634,911 | 740,164 | 581,140 | 706,763 | **350,007** |
-| NACA formulas / image layer / Otsu | 440,623 | 443,514 | 402,184 | 390,412 | 299,426 | 366,834 | **198,920** |
-| images / FFPR / Otsu | 17,976 | 19,777 | 16,136 | 16,930 | 10,003 | 13,903 | **4,095** |
-| GAN / FFPR / Otsu | 786,664 | 776,860 | 732,409 | 693,876 | 563,226 | 624,740 | **321,295** |
-| Synthetic flat / image layer / Otsu | 3,479 | 4,489 | 3,256 | 4,269 | 2,555 | 3,399 | **2,094** |
-| Synthetic noise / image layer / Otsu | 102,092 | 98,119 | 91,217 | 86,029 | 83,432 | 81,018 | **63,075** |
+| images / image layer / Otsu | 22,605 | 24,096 | 21,051 | 21,637 | 14,992 | 18,176 | **10,133** |
+| images / image layer / T=180 | 23,451 | 24,888 | 21,853 | 22,344 | 15,686 | 19,064 | **10,410** |
+| images / image layer / T=210 | 26,843 | 28,550 | 24,670 | 25,452 | 18,123 | 22,478 | **11,244** |
+| GAN / image layer / Otsu | 337,441 | 338,931 | 334,900 | 335,319 | 323,880 | 327,933 | **319,797** |
+| JFK poor copies / image layer / Otsu | 709,790 | 818,583 | 634,911 | 740,164 | 580,974 | 706,597 | **350,007** |
+| NACA formulas / image layer / Otsu | 440,623 | 443,514 | 402,184 | 390,412 | 299,260 | 366,668 | **198,920** |
+| images / FFPR / Otsu | 17,976 | 19,777 | 16,136 | 16,930 | 9,837 | 13,737 | **4,095** |
+| GAN / FFPR / Otsu | 786,664 | 776,860 | 732,409 | 693,876 | 563,060 | 624,574 | **321,295** |
+| Synthetic flat / image layer / Otsu | 3,479 | 4,489 | 3,256 | 4,269 | 2,389 | 3,233 | **2,094** |
+| Synthetic noise / image layer / Otsu | 102,092 | 98,119 | 91,217 | 86,029 | 83,266 | 80,852 | **63,075** |
 
 ### What these sizes show
 
@@ -203,7 +214,7 @@ content as though those were the same rendered image.
   proof for all possible BW input/threshold combinations.
 - **Payload size alone gives wrong rankings.** At images/150/16, colored
   JBIG2's image payload is 13,241 B versus Brotli's 14,128 B, yet its COMPLETE
-  file is 24,814 B versus 22,488 B. Fifteen masks plus paint/resources cost
+  file is 24,814 B versus 22,322 B. Fifteen masks plus paint/resources cost
   more than the payload saving. At 64 colors there are 63 masks, not one.
 - **Prediction is not automatically an improvement.** Against the same
   encoder WITHOUT prediction, 60 of 66 predicted PDFs are larger, including
@@ -211,7 +222,7 @@ content as though those were the same rendered image.
   GAN-FFPR/Flate or Zopfli, and the noisy control with all three compressors.
   Each percentage is `100 × (plain bytes - predicted bytes) / plain bytes`;
   none changes the winning algorithm. The best Brotli BW-noise result is the
-  predicted 81,018 B, still above JBIG2's 63,075 B. All variants remain visible.
+  predicted 80,852 B, still above JBIG2's 63,075 B. All variants remain visible.
 - Native text/fonts/vectors dominate some retained-native files, especially
   GAN, so whole-file gains can be much smaller than bitmap-payload gains.
   Conversely, a processed 300dpi scan need not be smaller than its original
@@ -224,25 +235,28 @@ default policy, saved filter identity or UI controls were changed by this
 study. The shared saver only gained an optional identifier-preservation
 argument; ordinary product saves keep the previous default behavior.
 
-Final dataset: `.tmp/image-stream-compression/size-20261015/metrics.json`.
-Each case's sibling `metrics.json` and named actual PDFs contain the same
-figures. Initial source-warning interruption and pre-control ID files are
+Original dataset: `.tmp/image-stream-compression/size-20261015/metrics.json`.
+Each original case's sibling `metrics.json` and PDFs retain the old declared
+figures, not the refreshed Brotli table values. Initial source-warning interruption and pre-control ID files are
 retained as diagnostic history; only final validated paths listed in JSON
 are the 176 candidates. The final normalization pass reused EVERY encoded
 candidate and returned `IMAGE STREAM SIZE BENCHMARK GREEN`. The full-suite
-handoff evidence is in [TEST_PLAN.md](TEST_PLAN.md).
+handoff evidence is in [TEST_PLAN.md](TEST_PLAN.md). Current Brotli replacements,
+actual final hashes/sizes and the unchanged-control audit are frozen in
+`.tmp/compression-experiments/brotli-default-off-publication-20261017/`
+(`measurements.json`, `analysis.json`, `component-controls.json`). Original
+declaration-ON files remain unchanged; no table value is an estimated deduction.
 
-Final complete suite: **460 passed**, `./test.sh`, exit 0. The 31 new
+Original component-stage complete suite: **460 passed**, `./test.sh`, exit 0. The 31 new
 benchmark tests pass, including source diagnostics, controlled read-back
-trailer IDs and strict actual-pixel comparisons. The initially failing old
-ghost oracle was diagnosed and synchronized to its existing view-reframe
-timer; no production ghost or pixel tolerance changed. This is verification,
-not designer acceptance. The desktop app was not relaunched.
+trailer IDs and strict actual-pixel comparisons. Current §254 regression and
+full-suite evidence is in [TEST_PLAN.md](TEST_PLAN.md); verification is not
+designer acceptance.
 
 ## Reproduction and corpus
 
 ```sh
-nice -n 10 ./.venv/bin/python tools/bench_image_streams.py --label size-20261015
+nice -n 10 ./.venv/bin/python tools/bench_image_streams.py --label <new-component-label>
 ./.venv/bin/python -m pytest tests/test_image_stream_bench.py -q
 ```
 

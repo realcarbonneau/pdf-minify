@@ -20,8 +20,9 @@ Related: [COMPRESSION.md](COMPRESSION.md),
 
 Latest product ruling §213 removes encoder speed/cost as a reason to keep
 weaker choices. Optimized Flate is ONE reader format regardless of zlib or
-Zopfli encoding. The current three-way selector described below remains in
-code pending TODO §217; historical timings/bytes are evidence, not a continuing
+Zopfli encoding. The three existing fixed choices remain alongside the new
+Best policy; further old encoder/default alignment is pending TODO §217.
+Historical timings/bytes are evidence, not a continuing
 instruction to offer fast encoding. See the product-decision section below.
 
 ## Scope and independent choices
@@ -29,28 +30,32 @@ instruction to offer fast encoding. See the product-decision section below.
 PDF text is font/glyph references plus drawing operators, not just prose.
 Compress native page/Form/pattern content, font programs, character maps and
 other native non-image resource streams losslessly. Never quantize/rasterize
-text/vectors, change fonts to win a benchmark, or recompress bitmap payloads
-with this control. Preserve embedded files/metadata and leave PDF object/xref
+text/vectors or change fonts to win a benchmark. Explicit fixed policies and
+the component measurements below preserve bitmap payloads; §§255/256 extend
+the new Best policy to eligible packed-image streams, as specified below.
+Preserve embedded files/metadata and leave PDF object/xref
 stream generation to the shared container optimizer. Font subsetting, garbage
 collection and object-stream packing remain shared for every policy.
 
 Image compression and **PDF stream compression** are independent recipe inputs.
-Implemented choices are Flate (default), Flate (Zopfli, slow) and Brotli
+Existing fixed choices are Flate (default), Flate (Zopfli, slow) and Brotli
 (limited reader support), with installed-runtime results recorded below.
 Changing either uses the one shared 300ms edit timer, dirty star and existing
 saved/draft lifecycle. Keys, Save/Save As/load and actual-file readback/export
 include this input. Legacy recipes with no policy mean Flate. The image codec
-and encoded image bytes must not change when only native compression changes.
+and encoded image bytes must not change when a fixed native policy changes.
 Missing/failing selected encoders fail clearly, never silently fall back.
 
 Designer §251 (2026-10-17) makes the Brotli developer-extension declaration
 **opt-in, off by default**, including existing filters with no explicit field.
-The `brotli_declaration` recipe boolean applies only to Brotli. Its checkbox,
+The `brotli_declaration` recipe boolean applies to Brotli-capable policies
+(explicit Brotli and Best). Its checkbox,
 **Include Brotli extension declaration (Compatibility)** (§252), is completely hidden
 for other stream compressors, rather than disabled. It participates in normal
 dirty/debounce/save/revert/copy behavior, without an independent processing path.
 This is metadata for readers that use the declaration; it cannot give a reader
-a Brotli decoder. Keep the limited-support warning independent of the checkbox.
+a Brotli decoder. Under §253, keep the limited-support warning in native
+tooltips/accessibility help, not an inline label (`TOOLTIPS.md`).
 
 §209 subsequently requests a separate SIZE-ONLY bitmap comparison:
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). The native-only
@@ -62,8 +67,51 @@ selector does not silently change the selected image codec.
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md). It inventories
 the tiny native painting stream in actual FFPR/JBIG2 files and proposes
 shared general compression for packed images and an inactive general control
-for FFPR + specialized codecs. Those changes are NOT implemented or approved;
-the current native-only selector and saved-recipe semantics above still apply.
+for FFPR + specialized codecs. The earlier automatic/disabled FFPR control is
+not approved. §256 now approves shared packed-image/native encoding for Best
+only; preserve the existing explicit policies and saved-recipe semantics.
+
+## Best (Zopfli/Brotli) — native and packed-image streams (§§255/256)
+
+The new selector value compares the two encoders for each native stream AND
+eligible general-compressed image stream: packed BW, palette indices, raw or
+Flate/Brotli sample images and masks. It excludes the specialized JPEG,
+JPEG2000 and JBIG2 payloads, including lossless JPEG2000 and colored JBIG2
+stencils. It does not automatically select image codecs or change DPI, palette, JPEG
+quality or FFPR. Shared fonts/resources mean this is per stream, not an
+independent rewrite of each page. Explicit policies and existing recipes
+remain available and unchanged. Empty streams stay plain; both encoders are
+required for nonempty data, with no cheaper/failing-encoder substitution.
+
+Encode unique stream bytes once per encoder, verify each representation and
+choose a local assignment including dictionary overhead. Save and measure
+that mixed assignment plus the homogeneous Zopfli and Brotli controls through
+the same optimized writer. Preparation/font subsetting happens once, encoded
+samples/palettes/predictors remain fixed, J* encoded payloads stay identical,
+and PDF IDs use identical framing in every candidate.
+Return the smallest actual complete file, preferring fewer Brotli streams
+on exact ties; do not claim exhaustive global optimization. Failed/canceled
+work does not replace a completed output. Candidate files belong to the
+existing encoding work directory and are cleaned up after selection.
+Cache encoded alternatives on disk; retain only stream metadata/digests across
+inputs, with exact decoded-byte comparisons before accepting either encoding.
+
+Best can produce Brotli and therefore requires a supporting reader when it
+does. Native tooltip/accessibility help explains that scope. The existing
+default-OFF declaration option is visible for both Brotli-capable policies;
+add its metadata only when the chosen candidate uses Brotli. It participates
+in normal effective recipe identity and the shared 300ms edit lifecycle.
+
+The completed [binary Zopfli-versus-Brotli experiment](INTEGRATED_COMPRESSION.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)
+remains a fixed-encoder comparison of 30 measured FFPR pairs, not a claim
+that Best has already been benchmarked across that corpus. No old size or
+producing identity is overwritten by this feature.
+
+All source images still undergo the selected production composition, one
+final-DPI resize and transformation before encoding. Do not preserve a source
+CCITT/PNG/JPEG merely because of its source codec. CCITT is not a product
+output option. The untouched Original pane and explicitly unresampled
+benchmark reference controls are separate from normal filter conversion.
 
 ## Algorithms and reader support (reviewed 2026-10-15)
 
@@ -75,6 +123,7 @@ the current native-only selector and saved-recipe semantics above still apply.
 | LZW | LZWDecode | Standard historical lossless filter; benchmark/control only unless results justify exposing it. |
 | RunLength | RunLengthDecode | Standard lossless run-length coding; useful for repeated bytes, not a general promise of good text compression. Benchmark/control only. |
 | Uncompressed | none | Diagnostic baseline, not a compression recommendation. |
+| Best (Zopfli/Brotli) | FlateDecode and/or BrotliDecode | New native/packed-image measured-choice policy (§§255/256); may need a Brotli-capable reader. Excludes specialized J* payloads. |
 
 The UI's Flate uses zlib level 9; Brotli uses level 11. The benchmark also
 measures zlib level 1 and Brotli level 9 as effort comparisons, not extra
@@ -123,7 +172,7 @@ unrelated developer extensions and legitimate source version information.
 Handle direct/indirect dictionaries and extension arrays structurally, not
 with string/regex deletion. Repeated opt-in saves must not duplicate entries.
 Keep container/xref streams conventionally compressed so readers can discover
-the extension. Display an explicit limited-support warning in the UI. This
+the extension. Provide explicit limited-support tooltip help (§253). This
 does not confer PDF/A or all-viewer certification.
 
 Validation exposed MuPDF 1.28.2 returning zero encoded bytes for empty Brotli
@@ -152,26 +201,35 @@ warnings or wrong output are incompatibility, not a success because a process
 returned zero. Explicitly preserve masks/encoded image bytes. Runtime versions
 and repeat counts accompany actual results below; no invented numbers.
 
-## Measured results — 2026-10-15
+## Measured results — original controls 2026-10-15, Brotli refresh 2026-10-17
 
-These frozen measurements used the earlier automatic declaration-ON policy.
-They are not measurements of §251's new declaration-OFF default. Preserve
-their actual byte counts and provenance; new runs default OFF and must record
-the setting. No sizes are inferred by subtracting historical metadata costs.
+Both Brotli levels, **all eight complete files**, are actually re-encoded and
+measured with **declaration OFF** under §254. The other 24 files remain
+unchanged controls. Original declared artifacts and reader/timing evidence
+remain historical; the size table below uses the new default-OFF files.
+No size is inferred by subtracting historical metadata costs. Fresh native
+stream readback and unchanged rendered graphs/image payloads preserve the
+earlier all-page pixel proof, without repeating image processing or timing.
 
-Reproduce from the repository root:
+Original study command from the repository root (collects historical-style
+timing too; it was not rerun for §254). The current size-only refresh uses
+the commands in [integrated provenance](INTEGRATED_COMPRESSION.md#measurement-and-provenance):
 
 ```sh
-./.venv/bin/python tools/bench_native_streams.py --repeat 2 --label main
+./.venv/bin/python tools/bench_native_streams.py --repeat 2 --label <new-component-label>
 ./.venv/bin/python -m pytest tests/test_compression.py -q
 ```
 
-Actual PDFs, all-page Poppler PNGs and full per-run diagnostics/timings are
+Original PDFs, all-page Poppler PNGs and full per-run diagnostics/timings are
 in `.tmp/native-stream-compression/main/metrics.json` and its sibling files.
 Python 3.13.5, PyMuPDF/MuPDF 1.28.2, QPDF 12.2.0, Poppler 25.03.0 and the
 installed `/usr/bin/zopfli`; no dependency was installed. The fixture is real
 native text/line artwork plus an embedded subset font and an untouched JPEG,
 not a plain-text string mislabeled as a PDF. Image payloads are UNCHANGED.
+Current Brotli replacements and measured hashes/sizes are in
+`.tmp/compression-experiments/brotli-default-off-publication-20261017/measurements.json`;
+`component-controls.json` checks the reused controls' actual sizes and freezes
+their current hashes (the original native manifest did not record output hashes).
 
 | Source | Pages | Eligible streams | Native decoded B | Original PDF B |
 |---|---:|---:|---:|---:|
@@ -193,18 +251,23 @@ not object packing or image compression.
 | Flate/zlib-1 | 1,493,232 | 511,692 | 2,511,983 | 59,040 |
 | Flate/zlib-9 (default) | 1,493,157 | 502,267 | 2,189,015 | 56,071 |
 | Flate/Zopfli | 1,493,012 | 491,542 | 2,016,898 | 54,146 |
-| Brotli-9 | 1,493,263 | 493,557 | 2,106,394 | 53,749 |
-| Brotli-11 | 1,493,158 | 483,995 | 1,766,142 | 53,290 |
+| Brotli-9 | 1,493,097 | 493,391 | 2,106,228 | 53,583 |
+| Brotli-11 | 1,492,992 | 483,829 | 1,765,976 | 53,124 |
 | LZW | 1,494,373 | 614,491 | 3,585,912 | 72,830 |
 | RunLength | 1,495,332 | 675,044 | 8,908,640 | 120,574 |
 
 Relative to default Flate, Zopfli saves 2.14% on the paper, 7.86% on NASA and
-3.43% on the fixture. Brotli-11 saves 3.64%, 19.32% and 4.96%, respectively.
-On image-heavy images.pdf, Zopfli saves only 145 B, while Brotli-11 is 1 B
-LARGER after extension/dictionary overhead despite a smaller native payload.
+3.43% on the fixture. Brotli-11 now saves 3.67%, 19.33% and 5.26%, respectively.
+On image-heavy images.pdf, Zopfli saves 145 B, while Brotli-11 saves 165 B
+and is 20 B smaller than Zopfli. The old one-byte growth was declaration
+overhead, not evidence that Brotli's native payload was larger.
 Do not present a native-payload percentage as the whole-document saving.
 
 ### Median native encoding/readback time (seconds, two repeats)
+
+Historical 2026-10-15 observations only; these times were **not rerun** and
+do not describe the new declaration-OFF size measurements. No compute-time
+comparison was requested for §254.
 
 The encoder time includes per-stream native decode, encoding and exact
 immediate readback. Saving/whole-file decoding are separate JSON fields. Runs
@@ -269,13 +332,16 @@ Brotli is a genuinely different decoder requirement and can improve native-
 heavy sizes; retain its visible support warning. The intended distinction is
 broad Flate compatibility versus allowing a supporting modern reader, not
 "fast versus slow". A modern-reader requirement alone does not mean every
-stream/file should be forced to Brotli: the frozen declaration-ON image-heavy
-native case is one byte larger with Brotli after overhead. Explicit codec labels still
-mean those codecs; an automatic cross-format policy requires a separate design
-decision. LZW/RunLength remain losing benchmark controls, not product options.
+stream/file should be forced to Brotli: the current FFPR study still has
+29 small-stream regressions without a declaration, with one layered-color
+exception ([measured effect](INTEGRATED_COMPRESSION.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)). Explicit codec labels still
+mean those codecs; §§255/256 now authorize the separately named Best policy,
+not silent substitutions in explicit recipes. LZW/RunLength remain losing
+benchmark controls, not product options.
 
-This documentation records the ruling; the current three-way selector/default
-and fast encoder paths have NOT yet been changed. TODO §217 tracks integration
+Best is added alongside the existing three fixed choices/default; it bypasses
+the old opportunistic image-encoding path but does not silently change old
+explicit recipes. TODO §217 tracks remaining legacy default/encoder alignment
 and validation. Previously measured timings remain historical, not selection
 criteria; no new timing run is requested or reported here.
 

@@ -115,6 +115,8 @@ def test_published_ffpr_effects_match_the_measured_sizes_fixture():
     from decimal import Decimal
 
     fixture = json.loads(Path("tests/fixtures/ffpr_compressor_sizes.json").read_text())
+    assert fixture["publication_sha256"] == "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d"
+    assert fixture["brotli_declaration"] is False
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     section = report.split(ffpr.SECTION, 1)[1].split("\n## ", 1)[0]
     parsed = [[cell.strip() for cell in line.split("|")[1:-1]]

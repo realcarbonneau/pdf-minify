@@ -120,21 +120,31 @@ real transparency or convert original color photos into BW.
 
 §§203/204 add a labeled **Image compression** dropdown immediately after the filter
 name/actions, before the recipe readout. Six choices: JBIG2 BW, JBIG2 Color,
-Flate BW, Flate Color (palette), JPEG2000, JPEG. Every filter can select any
+Packed BW, Indexed color, JPEG2000, JPEG. §§255/256 give the former Flate
+BW/Color choices representation labels because Best can store Brotli; their
+internal mode IDs and saved recipes remain compatible. Every filter can select any
 choice; its seed preset does not lock controls. Label the threshold dropdown
 **Threshold method:** (not Strategy): it includes automatic and manual methods.
 Existing 4px spacing, native overflow, header/frame alignment and dirty-edit
 transactions apply. Readouts and control enabled/fixed states derive from the
 actual saved/draft recipe. No automatic filter additions or icon changes.
 §205 adds **PDF stream compression:** as a separate dropdown (Flate,
-Flate/Zopfli, Brotli with an explicit limited-support warning). This controls
-native non-image text/vector/font streams, never the Image compression choice.
-The extra warning is in the native scrollable panel, not a modal on every edit.
+Flate/Zopfli, Brotli with an explicit limited-support warning). §§255/256 add
+**Best (Zopfli/Brotli)** for native AND packed-image streams, excluding J*
+payloads and leaving sample/quality settings unchanged. Fixed policies retain
+their native-only semantics; no existing recipe is migrated.
+§253 moves the reader explanation to native tooltip/accessibility/keyboard
+help and removes its inline label and layout space. Keep the visible
+"Brotli (limited support)" choice; use the shared [tooltip convention](TOOLTIPS.md),
+not a modal on every edit. The declaration checkbox is visible for Brotli and
+Best only, off by
+default, labeled **Include Brotli extension declaration (Compatibility)**
+(§§251/252).
 
 §213 supersedes the product rationale for separate zlib-versus-Zopfli speed
 choices: target one optimized Flate choice and Brotli's genuine reader-support
-distinction. The three-choice panel above is the CURRENT implementation,
-not the updated target. TODO §217 tracks alignment; no new control layout
+distinction. Best is added without removing the existing three fixed choices.
+TODO §217 tracks the remaining old encoder/default alignment; no new control layout
 or cross-codec automatic profile is implied by this policy ruling.
 
 §§210/211 request a table and review of combined versus separate controls:

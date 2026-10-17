@@ -55,6 +55,7 @@ or `code` names offer no required benefit for this rename. See the
       algorithms.py   # editable six-codec image recipe choices, no preset lock
       stencils.py     # exact colored JBIG2 masks, shared by product/benchmark
       stream_compression.py # independent lossless native content/font encoders
+      best_streams.py  # measured native/packed Zopfli/Brotli choice, J* untouched
       presets.py      # opinionated starting recipes, view modes, apply helpers
     ui_qt/            # Qt GUI only
       app.py          # DnD, pages, presets, main panes, save worker, ESC
@@ -286,6 +287,18 @@ after font subsetting and before the shared container save. Its policy is an
 effective cache input and uses the same dirty/edit/lifecycle controller.
 Explicit codecs never silently substitute another encoder. See
 `COMPRESSION.md` and [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
+§§255/256 add `core/best_streams.py`: after the same once-only preparation and
+font subsetting, encode native and eligible packed-image streams with both
+Zopfli/Brotli, verify exact readback, and cache encoded alternatives in scratch
+files. Compare actual mixed/all-Zopfli/all-Brotli saves through the one
+`pipeline._write_optimized_pdf` writer with stable PDF-ID framing. Reopen each
+candidate to verify decoded streams and protected J* bytes before atomically
+publishing the smallest file. Predictors and image samples remain unchanged;
+source CCITT still undergoes normal conversion. Best's declaration metadata is
+default-OFF and included on opt-in only when the winning output uses Brotli.
+The existing fixed policies/defaults/saved recipes are not migrated. Representation
+labels Packed BW/Indexed color avoid falsely promising Flate under Best; mode
+IDs remain compatible. The GUI uses the existing shared edit/artifact lifecycle.
 The paragraph below describes the historical study boundary, not a prohibition
 on this later separately requested integration.
 

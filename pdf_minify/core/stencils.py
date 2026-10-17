@@ -74,7 +74,7 @@ def place_stencils(doc, page, rect, canvas, token=None, *, mask_encoder=None):
     mask_encoder = mask_encoder or encode_mask
     check_cancel(token)
     if canvas.nonwhite_colors and pipeline.jbig2_binary() is None:
-        raise RuntimeError("JBIG2 Color unavailable: install jbig2 or choose Flate Color (palette).")
+        raise RuntimeError("JBIG2 Color unavailable: install jbig2 or choose Indexed color.")
     resources = _own_dictionary(doc, page.xref, "Resources")
     images = _own_dictionary(doc, resources, "XObject")
     spaces = _own_dictionary(doc, resources, "ColorSpace")

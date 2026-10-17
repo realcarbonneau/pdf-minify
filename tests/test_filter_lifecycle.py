@@ -11,9 +11,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 import fitz
 import numpy as np
 import pytest
-from PySide6.QtCore import QModelIndex, QSettings, QTimer, Qt
+from PySide6.QtCore import QModelIndex, QSettings, QTimer, Qt, QEvent
+from PySide6.QtGui import QHelpEvent
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QApplication, QFileDialog, QInputDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QInputDialog, QMessageBox, QToolTip
 
 from pdf_minify.core import presets, pipeline
 from pdf_minify.core.recipes import preset_spec, spec_key
@@ -1005,13 +1006,14 @@ def test_color_ffpr_uses_one_debounced_real_file_and_revert_reuses_saved_result(
     assert not w.force_raster.isChecked() and len(starts) == 1
 
 
-def test_changed_algorithm_and_native_compression_save_and_reload_builtin_override(window):
+@pytest.mark.parametrize("policy", ["brotli", "best"])
+def test_changed_algorithm_and_native_compression_save_and_reload_builtin_override(window, policy):
     w = window
     choose(w, "bw-t180")
     uid = presets.get("bw-t180")["uuid"]
     w.compression.setCurrentIndex(w.compression.findData("layered-jbig2"))
-    w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
-    assert not w.stream_warning.isHidden()
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData(policy))
+    assert w.stream_compression.toolTip() == ui.STREAM_HELP[policy]
     assert not w.brotli_declaration.isChecked() and not w.brotli_declaration.isHidden()
     w.brotli_declaration.setChecked(True)
     wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
@@ -1020,7 +1022,7 @@ def test_changed_algorithm_and_native_compression_save_and_reload_builtin_overri
     assert not w._draft_specs and presets.get("bw-t180")["mode"] == "layered-jbig2"
     persisted = next(p for p in w._custom_store().value("customPresets") if p["id"] == "bw-t180")
     assert persisted["mode"] == "layered-jbig2" and persisted["uuid"] == uid
-    assert persisted["params"]["stream_compression"] == "brotli"
+    assert persisted["params"]["stream_compression"] == policy
     assert persisted["params"]["brotli_declaration"] is True
     assert w._artifacts.results[w._result_key("bw-t180")] is result
     # A fresh process starts from built-in templates, NOT the modified globals.
@@ -1029,7 +1031,7 @@ def test_changed_algorithm_and_native_compression_save_and_reload_builtin_overri
     try:
         choose(loaded, "bw-t180")
         assert loaded.compression.currentData() == "layered-jbig2"
-        assert loaded.stream_compression.currentData() == "brotli"
+        assert loaded.stream_compression.currentData() == policy
         assert loaded.brotli_declaration.isChecked() and not loaded.brotli_declaration.isHidden()
         assert loaded.colors_value.value() == 5 and loaded.colors_control.isEnabled()
         assert not loaded.strategy.isEnabled() and not loaded._draft_specs
@@ -1089,11 +1091,35 @@ def test_brotli_compatibility_is_hidden_elsewhere_and_shares_the_real_edit_debou
     assert not w._draft_specs
 
 
-@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
-def test_brotli_declaration_uses_existing_unsaved_switch_transaction(window, monkeypatch, choice):
+def test_brotli_warning_is_native_contextual_help_without_inline_space_or_processing(window):
     w = window
     choose(w, "bw-t180")
     w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    combo = w.stream_compression
+    assert not hasattr(w, "stream_warning")
+    assert combo.toolTip() == combo.accessibleDescription() == ui.STREAM_HELP["brotli"]
+    assert combo.whatsThis().startswith(combo.toolTip())
+    for policy, _ in ui.STREAM_POLICIES:
+        assert combo.itemData(combo.findData(policy), Qt.ToolTipRole) == ui.STREAM_HELP[policy]
+    snapshot = (w._gen, dict(w._artifacts.results), dict(w._draft_specs), w._active_pid)
+    local = combo.rect().center()
+    _app.sendEvent(combo, QHelpEvent(QEvent.ToolTip, local, combo.mapToGlobal(local)))
+    _app.processEvents()
+    assert QToolTip.isVisible() and QToolTip.text() == ui.STREAM_HELP["brotli"]
+    QToolTip.hideText()
+    assert snapshot == (w._gen, dict(w._artifacts.results), dict(w._draft_specs), w._active_pid)
+    assert not w._preview_timer.isActive() and not w._artifacts.pending
+    w.revert_filter()
+    assert combo.toolTip() == combo.accessibleDescription() == ui.STREAM_HELP["flate"]
+
+
+@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
+@pytest.mark.parametrize("policy", ["brotli", "best"])
+def test_brotli_declaration_uses_existing_unsaved_switch_transaction(window, monkeypatch, choice, policy):
+    w = window
+    choose(w, "bw-t180")
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData(policy))
     wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
     w.save_filter()
     saved_key = w._result_key("bw-t180")
@@ -1116,9 +1142,58 @@ def test_brotli_declaration_uses_existing_unsaved_switch_transaction(window, mon
         assert w._active_pid not in ("bw-t180", "color-max")
         assert not w._draft_specs and w.brotli_declaration.isChecked()
         assert presets.get(w._active_pid)["params"]["brotli_declaration"] is True
+        assert presets.get(w._active_pid)["params"]["stream_compression"] == policy
         wait_until(lambda: not w._artifacts.pending and w._result_key(w._active_pid) in w._artifacts.results)
         copied = w._artifacts.results[w._result_key(w._active_pid)]
         assert copied.nbytes == draft.nbytes and copied.pdf_path != draft.pdf_path
+
+
+def test_best_and_packed_image_edits_share_one_debounce_and_real_file_reuse(window, monkeypatch):
+    from pdf_minify.core.stream_compression import brotli_declaration_present
+
+    w = window
+    choose(w, "bw-t180")
+    starts = []
+    start = w._artifacts.start
+
+    def record(key, path, spec, *args, **kwargs):
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None:
+            starts.append(dict(spec))
+        return worker
+
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    w.dpi.setCurrentIndex(w.dpi.findData(150))
+    w.force_raster.setChecked(True)
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("best"))
+    assert w.stream_compression.currentText() == "Best (Zopfli/Brotli)"
+    assert w.brotli_declaration.isVisible() and not w.brotli_declaration.isChecked()
+    QTest.qWait(40)
+    w.brotli_declaration.setChecked(True)
+    QTest.qWait(40)
+    w.colors_value.setValue(5)
+    assert not starts and w._preview_timer.isActive()
+    assert w._filter_display_name(w._active_pid).endswith(" *")
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(starts) == 1 and starts[0]["stream_compression"] == "best"
+    result = w._artifacts.results[w._result_key(w._active_pid)]
+    with fitz.open(result.pdf_path) as doc:
+        images = [x for x in range(1, doc.xref_length()) if doc.xref_is_stream(x)
+                  and doc.xref_get_key(x, "Subtype")[1] == "/Image"]
+        assert images
+        assert all(doc.xref_get_key(x, "Filter")[1] in ("/FlateDecode", "/BrotliDecode") for x in images)
+        has_brotli = any(doc.xref_is_stream(x) and "/BrotliDecode" in doc.xref_get_key(x, "Filter")[1]
+                         for x in range(1, doc.xref_length()))
+        assert brotli_declaration_present(doc) is has_brotli
+    assert result.nbytes == Path(result.pdf_path).stat().st_size
+    assert w.after._pdf_source.path == result.pdf_path
+    w.save_filter()
+    choose(w, "color-max")
+    choose(w, "bw-t180")
+    assert w._artifacts.results[w._result_key("bw-t180")] is result
+    assert len(starts) == 1 and not w._draft_specs
+    assert w.stream_compression.currentData() == "best"
 
 
 @pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])

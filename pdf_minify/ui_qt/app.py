@@ -23,7 +23,7 @@ from ..core import pdf_io, threshold as T
 from ..core import presets
 from ..core.recipes import preset_spec, spec_key, recipe_params
 from ..core.algorithms import ALGORITHMS, ALGORITHM_LABELS, BW_MODES, PALETTE_MODES, with_algorithm
-from ..core.stream_compression import STREAM_POLICIES, STREAM_LABELS
+from ..core.stream_compression import STREAM_POLICIES, STREAM_LABELS, permits_brotli
 from ..core.identity import canonical_uuid, new_filter_uuid, repair_filter_uuids
 from ..core.pdf_io import CancelledError
 from ..core.display import render_display_page
@@ -37,6 +37,7 @@ from .artifacts import ArtifactStore
 from .lab import open_progress_lab, open_buttons_lab
 from .icon_lab import IconLab
 from .settings import app_settings, configure_application
+from .tooltips import set_control_help
 
 import fitz
 
@@ -44,6 +45,18 @@ log = logging.getLogger("pdf_minify")
 
 PREVIEW_DPI = 150
 FILTER_EDIT_DEBOUNCE_MS = 300
+STREAM_HELP = {
+    "flate": "Compress native text, vectors and fonts losslessly without changing image bytes.",
+    "zopfli": "Compress native streams as standard Flate data using the Zopfli encoder.",
+    "brotli": "Requires a compatible PDF reader; older readers may show missing content.",
+    "best": "Optimize native and packed-image streams; may require a Brotli-capable reader.",
+}
+STREAM_HELP_DETAILS = (
+    "Fixed policies compress native streams only. Best also compresses packed "
+    "BW/palette image streams, leaving JPEG, JPEG2000 and JBIG2 payloads unchanged. "
+    "No pixels, DPI or quality settings change. Brotli requires "
+    "a supporting reader. Its optional extension declaration is off by default "
+    "and supplies metadata, not decoder support.")
 
 
 @dataclass(frozen=True)
@@ -681,7 +694,7 @@ def _preset_algo(pid: str, spec: dict | None = None) -> str:
     page_handling = "FFPR · " if recipe.get("force_raster") else ""
     if mode in BW_MODES:
         strategy, dpi = recipe["strategy"], recipe["dpi"]
-        codec = "JBIG2" if mode == "bw" else "Flate BW"
+        codec = "JBIG2" if mode == "bw" else "Packed BW"
         return page_handling + (f"simple T{recipe.get('t', 180)}" if strategy == "simple" else strategy) + f" · {dpi}dpi · {codec}"
     if mode == "color":
         return page_handling + f"JPEG q{recipe['jpeg_q']} · {recipe['dpi_cap']}dpi"
@@ -835,18 +848,14 @@ class MainWindow(QMainWindow):
         self.stream_compression.setAccessibleName("PDF stream compression")
         for policy, label in STREAM_POLICIES:
             self.stream_compression.addItem(label, policy)
-        self.stream_compression.setToolTip("Lossless native text/vector/font streams only; "
-                                          "image bytes and image compression stay unchanged. "
-                                          "Zopfli is slower; Brotli needs compatible readers.")
-        self.stream_warning = QLabel("Brotli requires a compatible PDF 2.0 reader; "
-                                     "older readers may show missing content.")
-        self.stream_warning.setWordWrap(True)
-        self.stream_warning.hide()
+            self.stream_compression.setItemData(self.stream_compression.count() - 1,
+                                                STREAM_HELP[policy], Qt.ToolTipRole)
         self.brotli_declaration = QCheckBox("Include Brotli extension declaration (Compatibility)")
-        self.brotli_declaration.setToolTip(
-            "Include PDF 2.0 Brotli extension metadata for readers that use it. "
-            "Off by default to minimize file size. This does not add Brotli decoding "
-            "support to an incompatible reader.")
+        set_control_help(self.brotli_declaration,
+            "Add Brotli extension metadata for readers that use it; this does not add Brotli decoder support.",
+            "Off by default to minimize file size. Available for Brotli and Best; "
+            "Best adds it only if the selected output actually uses Brotli. "
+            "This changes metadata, not image fidelity.")
         self.brotli_declaration.hide()
         self.strategy = QComboBox()
         self.strategy.addItems(["otsu", "simple", "adaptive", "sauvola"])
@@ -860,7 +869,7 @@ class MainWindow(QMainWindow):
         self.colors = self.colors_control.slider  # §67: forced palette count
         self.colors_value = self.colors_control.number
         self.colors_control.setToolTip("Maximum bitmap palette colors, including white: "
-                                      "JBIG2 Color and Flate Color (palette). No dithering.")
+                                      "JBIG2 Color and Indexed color. No dithering.")
         self.c_label = QLabel("&Colors:")
         self.c_label.setBuddy(self.colors_value)
         self.lossless_box = QCheckBox("Lossless")  # §100: JPX reversible
@@ -933,7 +942,6 @@ class MainWindow(QMainWindow):
         streamRow.addWidget(self.stream_compression, 1)
         right.addLayout(streamRow)
         right.addWidget(self.brotli_declaration)
-        right.addWidget(self.stream_warning)
         right.addWidget(QLabel("Filter details:"))
         right.addWidget(self.details)
         stratRow = spaced(QHBoxLayout())
@@ -1457,7 +1465,7 @@ class MainWindow(QMainWindow):
         fixed state (§100) — and live controls that change nothing stay
         disabled (this also stops pointless identical-output jobs). §251's
         Brotli declaration compatibility checkbox is the explicit exception:
-        hide it entirely for other compressors."""
+        hide it entirely for policies that cannot use Brotli."""
         pid = self._active_pid or self.preset.currentData()
         mode = self._spec_for(pid)["mode"]
         bw = mode in BW_MODES
@@ -1487,9 +1495,10 @@ class MainWindow(QMainWindow):
         self.strategy_label.setEnabled(bw)
         self.force_raster.setEnabled(mode in ALGORITHM_LABELS)
         self.page_size.setEnabled(mode in ALGORITHM_LABELS and self.force_raster.isChecked())
-        brotli = self._spec_for(pid).get("stream_compression") == "brotli"
+        brotli = permits_brotli(self._spec_for(pid).get("stream_compression"))
         self.brotli_declaration.setVisible(brotli)
-        self.stream_warning.setVisible(brotli)
+        set_control_help(self.stream_compression,
+                         STREAM_HELP[self.stream_compression.currentData()], STREAM_HELP_DETAILS)
 
     def _sync_threshold_enabled(self):
         self._sync_filter_controls()
@@ -1571,9 +1580,12 @@ class MainWindow(QMainWindow):
                 "gc + deflate only — pixels unchanged",
             ]
         lines.append("PDF streams: " + STREAM_LABELS[spec.get("stream_compression", "flate")])
-        if spec.get("stream_compression") == "brotli":
-            lines.append("Brotli extension declaration: " +
-                         ("On (Compatibility)" if spec.get("brotli_declaration", False) else "Off"))
+        if permits_brotli(spec.get("stream_compression")):
+            declaration = "Off"
+            if spec.get("brotli_declaration", False):
+                declaration = ("When used (Compatibility)" if spec.get("stream_compression") == "best"
+                               else "On (Compatibility)")
+            lines.append("Brotli extension declaration: " + declaration)
         self.details.setText("\n".join(lines))
         for _cb in (self.preset, self.strategy, self.dpi, self.page_size):
             _cur = _cb.itemText(_cb.currentIndex())

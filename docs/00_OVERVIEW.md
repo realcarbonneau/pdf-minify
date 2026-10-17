@@ -29,6 +29,15 @@ Every filter can now edit Image compression independently of its name/template.
 §205 adds independent PDF stream compression (Flate, Zopfli-Flate or limited-
 reader-support Brotli). Design, measured full-PDF results and actual reader
 limits: [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
+§§255/256 add **Best (Zopfli/Brotli)**: measure actual complete homogeneous and
+mixed candidates for native AND packed-image streams, without changing image
+samples, quality or J* payloads. The two non-J* image choices are labeled Packed
+BW and Indexed color; existing mode IDs/defaults and fixed-policy recipes stay
+compatible. All source imagery still passes through the selected conversion.
+§§251–254 make the Brotli declaration opt-in **(Compatibility)** metadata,
+off by default, with the reader explanation in native tooltip/accessibility
+help. The shared [tooltip convention](TOOLTIPS.md) keeps that help view-only
+and removes inline explanatory layout space.
 §209 separately benchmarks image compression at equal pixels, size-only:
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). Native-only
 Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
@@ -70,7 +79,8 @@ Designer §213 subsequently rules that encoding cost is not a product constraint
 use the best validated encoding and drop superseded encoder choices. Zopfli
 needs only the existing Flate decoder, so the target is one optimized Flate
 format versus genuinely different reader-support requirements such as Brotli.
-The current three-way selector has not yet been aligned (TODO §217). This
+The three fixed choices/defaults have not yet been fully aligned (TODO §217);
+Best is now an additional measured-choice policy, not a silent migration. This
 supersedes the historical Max/Balanced/Fast effort brief, not fidelity rules.
 
 HISTORICAL BRIEF BELOW — original JPEG defaults, DPI-ceiling wording,

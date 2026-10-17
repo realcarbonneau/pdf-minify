@@ -173,7 +173,9 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     effects = effects.split("\n## ", 1)[0]
     # Original measured bytes, not reconstructed from previously rounded deltas.
     fixture = json.loads(Path("tests/fixtures/png_prediction_sizes.json").read_text())
-    assert fixture["publication_sha256"] == "9864f717f7ea0f1f879f8a3d7537229ffe9e62d6817228dc510945d6adc9e7e9"
+    assert fixture["original_publication_sha256"] == "9864f717f7ea0f1f879f8a3d7537229ffe9e62d6817228dc510945d6adc9e7e9"
+    assert fixture["publication_sha256"] == "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d"
+    assert fixture["brotli_declaration"] is False
     assert fixture["documents"] == [d.key for d in overview.DOCUMENTS]
     parse = lambda line: [cell.strip() for cell in line.split("|")[1:-1]]
     baselines = {cells[0]: cells[1:] for line in primary.split("## Overview — final complete-file bytes", 1)[1].splitlines()

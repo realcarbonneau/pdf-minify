@@ -5,8 +5,8 @@ from .defaults import DEFAULT_DPI
 ALGORITHMS = (
     ("bw", "JBIG2 BW"),
     ("layered-jbig2", "JBIG2 Color"),
-    ("bw-flate", "Flate BW"),
-    ("indexed", "Flate Color (palette)"),
+    ("bw-flate", "Packed BW"),
+    ("indexed", "Indexed color"),
     ("jpx", "JPEG2000"),
     ("color", "JPEG"),
 )

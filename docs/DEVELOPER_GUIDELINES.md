@@ -134,7 +134,8 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   `NATIVE_STREAM_COMPRESSION.md`.
 - §§210/211 request a compression-combination table and UI recommendation,
   not implementation. `COMPRESSION_COMBINATIONS.md` marks current versus
-  proposed capabilities explicitly. Shared image/native general compression,
+  proposed capabilities explicitly. §256 later approves Best's shared
+  packed-image/native encoding only. Other shared fixed-policy changes and
   FFPR fixed general-compression states are not approved replacements for the
   existing selectors. §224 subsequently authorizes color FFPR through the
   existing checkbox/saver. Never treat a worker recommendation as a designer
@@ -289,9 +290,37 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   versions. The opt-in compatibility checkbox is visible ONLY for Brotli, an
   explicit exception to the visible-but-disabled convention. Label it
   **Include Brotli extension declaration (Compatibility)** (§252). Persist its
-  choice, but include it in effective identity/debounced edits only for Brotli. Share
+  choice, but include it in effective identity/debounced edits only for Brotli
+  (extended to Best under §§255/256 below). Share
   the saver and strict provenance gates; frozen declaration-ON measurements
   remain historical, never relabeled/reduced by estimated overhead subtraction.
+- §§253/254: remove inline Brotli help/layout space and use native contextual
+  tooltips with keyboard/accessibility equivalents (`TOOLTIPS.md`). Remeasure
+  actual declaration-OFF complete files and update all affected tables/minima/
+  conclusions, not just a historical-policy banner. Reuse verified prepared
+  samples and rerun every published Brotli image/native encoding, including
+  supporting studies and plain/PNG/9/11 variants. Verify the rendered graph;
+  metadata-only finalization may reuse this rerun's fresh encoded streams.
+  Never guess new bytes by subtracting metadata or repeat image processing.
+- §§255/256 add **Best (Zopfli/Brotli)** to PDF streams. It covers native
+  streams AND general-compressed packed BW/indexed image streams (including
+  eligible raw/sample images and masks), but never JPEG/JPEG2000/JBIG2 payloads.
+  The normal compose/resize/transform pipeline converts all source imagery;
+  there is no source-CCITT preservation exception or new CCITT output option.
+  Keep sample bytes, dimensions, palettes, opacity, native geometry, FFPR and
+  visual settings unchanged during this lossless encoding stage. Preserve
+  existing image predictors, rather than silently adding/removing prediction.
+  Compare both encoders per eligible stream
+  and actual complete all-Zopfli/all-Brotli/mixed candidates with stable IDs;
+  retain the smallest measured file, preferring fewer Brotli streams on ties.
+  Empty streams remain plain. Missing/failed selected encoders are errors,
+  not fallback. Existing explicit policies/defaults/recipes remain unchanged.
+  Best is Brotli-capable: show its opt-in Compatibility checkbox, include it
+  in effective identity and use native reader-support help. Add the declaration
+  only when the selected output actually uses Brotli. Follow the one shared
+  edit/artifact lifecycle and keep original binary studies separate. Existing
+  explicit policies retain their native-only saved-recipe semantics; adding
+  Best does not silently migrate recipes or remove packed-image options.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

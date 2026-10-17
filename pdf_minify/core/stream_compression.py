@@ -16,10 +16,16 @@ STREAM_POLICIES = (
     ("flate", "Flate"),
     ("zopfli", "Flate (Zopfli, slow)"),
     ("brotli", "Brotli (limited support)"),
+    ("best", "Best (Zopfli/Brotli)"),
 )
 STREAM_LABELS = dict(STREAM_POLICIES)
 DEFAULT_STREAM_POLICY = "flate"
 _BROTLI_EXTENSION_URL = "https://pdfa.org/resource/extension-brotli"
+
+
+def permits_brotli(policy):
+    """Policies whose result can require a Brotli-capable PDF reader."""
+    return policy in ("brotli", "best")
 
 
 def check_cancel(token):

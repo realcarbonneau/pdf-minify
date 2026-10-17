@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 251. Routine execution requests are not TODOs (§218).
+new TODO ID is 254. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2365,3 +2365,40 @@ label. **Implementation verified 2026-10-17; not designer acceptance.** No deskt
 launch or dependency change. See `DESIGN.md` §§251/252,
 `NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`, core `stream_compression.py`
 and `tools/shot.py --brotli-compatibility-only`.
+
+## 251 — DONE (designer §253: tooltip-only Brotli help and shared convention)
+
+~~Remove inline Brotli help/space and establish a shared native-tooltip convention.~~
+Implemented selected/item help, accessibility and keyboard equivalents without
+processing or custom styling/timers. Actual tooltip and all four compact
+policy/control panels captured and viewed. Full suite: 718 passed.
+**Implementation verified 2026-10-17; not designer acceptance.** See
+`TOOLTIPS.md`, `DESIGN.md` §253 and `TEST_PLAN.md`.
+
+## 252 — DONE (designer §254: refresh measured declaration-OFF tables)
+
+~~Rerun every published Brotli case and replace historical ON table entries with measured default-OFF results.~~
+229 outputs re-encoded/saved/measured: 177 integrated, 44 image-component,
+eight native-component, including plain/PNG/9/11. Prepared samples reused;
+graphs/streams/hashes verified; all tables, minima, fixtures and conclusions
+refreshed. FFPR: 29 Brotli increases of 2–105 B, one 66 B reduction, explained
+by exact payload/syntax accounting with no declaration cost. Full suite:
+718 passed. **Implementation verified 2026-10-17; not designer acceptance.**
+See `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, supporting
+component documents and `TEST_PLAN.md`. Frozen ON artifacts remain historical.
+
+## 253 — DONE (designer §§255/256: Best Zopfli/Brotli stream compression)
+
+~~Add Best (Zopfli/Brotli) for native/packed-image streams, excluding J* payloads,
+with actual complete-file selection and the existing filter lifecycle.~~
+Both full encoders run once per distinct input; encoded alternatives are
+disk-backed and verified. Actual homogeneous/mixed saves share the final
+writer and stable IDs; saved-file readback precedes atomic publication of the
+smallest candidate. Image samples/palettes/predictors, J* bytes and existing
+explicit recipes/defaults remain intact. Source CCITT undergoes conversion.
+Packed BW/Indexed color labels avoid a false Flate promise. Best is persisted
+through the shared debounce, dirty/Save/load/copy/revert/cancel lifecycle;
+its declaration is default-OFF and conditional on actual Brotli use.
+Full suite: **767 passed**. Menu/panels/native tooltip captured and viewed.
+**Implementation verified 2026-10-17; not designer acceptance.** See
+`DESIGN.md` §§255/256, `NATIVE_STREAM_COMPRESSION.md` and `TEST_PLAN.md`.

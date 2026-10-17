@@ -10,6 +10,63 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+§§255/256 Best: **767 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no
+expected failures, 2026-10-17. Focused core checks pass **100 tests**, and
+selected Best/Brotli GUI lifecycle checks pass **11 tests**. `test_best_streams.py` covers actual
+mixed/homogeneous file-size selection and metadata-overhead reversals, stable
+binary PDF IDs (including xref-stream sources), disk-backed reuse, empty input,
+missing/corrupt encoders, cancellation/atomic publication and saved-file
+readback rejection. Exact page renders, native geometry, samples/predictors,
+soft masks and protected J* bytes are compared across native/FFPR modes and
+lossy/lossless JPEG2000. A genuine decoded CCITT input must convert in every
+image mode, not survive as an invented exception. GUI tests cover the single
+debounce, exact completed-file reuse, persistence and existing unsaved-filter
+transactions. `tools/shot.py --best-streams-only` captures actual packed results,
+the menu, Compatibility states and native tooltip. The successful captures
+and 1:1 panels/tooltip were viewed; Packed BW/Indexed color avoid promising
+Flate while Best may select Brotli. Both environment checks pass in their
+documented system/venv roles. Implementation verification is not designer acceptance.
+The fixed-encoder binary experiment below remains complete, not a new corpus
+benchmark of Best. Completion-document edits reuse this tested code result;
+there is no additional full-suite trigger for documentation-only changes.
+
+### Previous tooltip and complete Brotli refresh stage (§§253/254)
+
+§§253/254: **718 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected
+failures. The completed all-Brotli rerun covers **229 distinct actual outputs**:
+177 integrated, 44 bitmap-component and eight native-component (levels 9/11).
+Image samples/palettes/thresholds were reused, every Brotli encoding reran,
+and all final default-OFF files were actually saved/measured. No encoding
+timings, guessed metadata deductions or newly rasterized corpus were used.
+The current publication pins SHA-256
+`9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d`;
+both percentage fixtures explicitly assert declaration OFF. All 215 integrated
+ordinary controls retain checked hashes; 156 supporting controls have checked
+sizes and recorded hashes, without inventing hashes absent from the old native
+manifest. Fixed-side signatures pass 96 PNG native-stream pairs and 72 native
+A/B image pairs. Graph/stream proof preserves earlier all-page pixels; it is
+not a claim that pixels or unsupported readers were freshly rerun.
+
+The focused reporting/rerun checks pass **75 tests**. New regressions cover
+fresh real encodings, binary-string graph fidelity, PNG decoding parameters,
+no artificial null metadata, strict pinned imports/output hashes, immutable
+controls, complete replacement scope, actual table arithmetic and reader-tier
+winner counts. FFPR byte accounting closes in all thirty default-OFF pairs:
+Brotli is 2–105 B larger in 29, 66 B smaller in one, with no exact ties.
+Original declaration-ON evidence is preserved, not relabeled.
+
+Tooltip help is native Qt, concise, context-specific and exposed through
+accessibility and keyboard What's This. Tests verify no dirty/selection/
+artifact/processing change from help, and unchanged platform font/palette/
+duration. `tools/shot.py --brotli-compatibility-only` passes; the real native
+tooltip `.tmp/shot-brotli-reader-tooltip.png` and all four policy/control panels
+were viewed. The inline warning and its layout space are absent. The exact
+**(Compatibility)** label and hidden non-Brotli behavior remain unchanged.
+Implementation verification is not designer acceptance. Subsequent completion
+notes are documentation-only and reuse this passing full-suite result (§241).
+
+### Previous opt-in declaration stage — 2026-10-17 (§§251/252)
+
 Brotli declaration (§§251/252): defaults are OFF in legacy/new filter recipes,
 the core saver and benchmark generators. The compatibility checkbox is hidden
 for non-Brotli compressors. Tests cover effective identity, exact output/image/

@@ -523,6 +523,72 @@ Preserve frozen old artifacts/numbers with their declaration-ON provenance;
 measure new complete files before publishing replacement results. See
 `NATIVE_STREAM_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md` and TODO §250.
 
+### Contextual help and refreshed default-OFF measurements (§§253/254)
+
+Remove the inline Brotli reader-warning label, including its layout space.
+Put the short warning in the Brotli selection's native Qt tooltip and expose
+equivalent help for keyboard/accessibility users. Keep the visible "limited
+support" choice label and the Brotli-only (Compatibility) checkbox. Use the
+shared convention in `TOOLTIPS.md`; do not retheme tooltips or add private
+hover timers, and never dispatch filtering for a help interaction.
+
+Remeasure actual complete PDFs under the declaration-OFF policy, updating all
+affected overview/focused/reference/effect cells and conclusions together.
+Reuse verified prepared image data; do not repeat rasterization, thresholding
+or palette transforms. Rerun all Brotli image/native encodings in the published
+integrated and supporting studies, including plain/PNG and levels 9/11 where
+measured. Non-Brotli controls may be reused with their actual provenance.
+Save new complete files with the shared saver, verify exact rendered
+object graphs/stream bytes and source/output hashes, and retain original
+declaration-ON provenance separately. Restore only catalog version markers
+proven to have been forced by the old declaration producer, never legitimate
+source version information. Measure sizes; do not subtract assumed overhead.
+When the proven original has no catalog version entry, delete the old
+producer's entry structurally; do not serialize an artificial `/Version null`.
+Preserve two decimals, unbolded rounded zeros, baseline/treatment directions
+and the approved adjacent titles. See TODO §§251/252.
+
+### Best stream compression (§§255/256)
+
+Add **Best (Zopfli/Brotli)** to the existing PDF streams selector. It compares
+those two lossless encoders for native streams (drawing/text/font resources)
+AND packed BW/indexed image streams. Eligible sample-based images and masks
+use the same lossless encoding; specialized JPEG, JPEG2000 (including lossless)
+and JBIG2 BW/color payloads are excluded. This does not choose image codecs or
+visual/quality settings. The normal composition/conversion pipeline still runs
+for every source image; CCITT is an input format, not a preservation exception
+or an output choice. Choose per stream, since pages
+can share resources and one page can contain multiple streams. Empty streams
+remain plain under the existing safety rule; this named option does not add
+another general compressor or change explicit saved recipes/defaults.
+
+Encode each distinct input with both existing full-workload adapters, verify
+readback, and account encoded bytes plus filter/Length dictionary costs.
+Keep reusable encoded candidates in the existing scratch work directory,
+not all decoded image samples in an unbounded in-memory cache.
+Compare actual complete saved all-Zopfli, all-Brotli and mixed candidates with
+identical once-prepared image samples/palettes/predictors, fonts, content and
+PDF-ID framing; specialized J* payload bytes stay identical. Publish the
+smallest measured candidate, preferring fewer Brotli streams on exact ties.
+This is best among evaluated assignments, not a mathematical global optimum.
+Do not rerender/filter images in this encoding stage or silently skip a
+missing/failing encoder. Existing explicit policies remain native-only; the
+new Best policy is the approved shared packed-image/native choice. Do not
+remove Flate BW/Color or silently migrate their saved recipes.
+Use representation labels **Packed BW** and **Indexed color** for those two
+existing image choices; they cannot promise Flate when Best may store Brotli.
+Keep internal mode IDs `bw-flate`/`indexed`, defaults and saved recipes intact.
+Retain existing manual choices/legacy recipes; no automatic migration is
+approved. The fixed-encoder binary table remains measured historical evidence
+with unchanged encoder policies, not a benchmark of the new Best policy.
+
+Best explicitly permits Brotli and therefore needs reader-support help under
+the shared native tooltip convention. Its default-OFF (Compatibility) checkbox
+is visible as it is for explicit Brotli, and effective in its recipe identity.
+Only add the optional declaration when a saved candidate actually uses Brotli.
+Use the existing dirty/debounce/Save/Save As/Revert/Discard/Cancel and real-file
+preview/export lifecycle; no separate best-mode GUI processing path.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

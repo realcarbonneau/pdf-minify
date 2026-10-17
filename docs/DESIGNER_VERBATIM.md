@@ -1076,3 +1076,30 @@ Approved wording is recorded in `DESIGN.md` §250.
 
 ## 252 — explicit Compatibility label (verbatim, 2026-10-17)
 > Mark that option as "(Compatibility)" for clarity.
+
+## 253 — Brotli help in tooltips; standard tooltip convention (verbatim, 2026-10-17)
+> Remove the text under Brotli, put that in a tooltip please, plan a standard tooltip as per modern GUI best practices
+
+## 254 — remeasure the tables after changing the Brotli default (verbatim, 2026-10-17)
+> Did you redo the tables?  Why is brotli still larger?
+
+The designer approved remeasuring affected Brotli cases and updating the
+published tables, reusing verified prepared images (verbatim approval excerpt):
+> Yes
+
+> You have to rerun everything brotli...
+
+## 255 — best Zopfli/Brotli choice for non-image PDF streams (verbatim, 2026-10-17)
+> ok, this is fine the way it is, can we add an algorithm that chooses the best for each page?
+
+> Not good, because we are not automatically selecting all options, just the pdf outer data (not images), right?
+
+> Best (Zopli/Brotli) In the "PDF Streams:" dropdown please.
+
+## 256 — Best includes packed-image streams, not J* payloads (verbatim, 2026-10-17)
+
+> Why limite to non-image streams?  Don't they also compress PNGs?  Please explain.
+
+> I don't think we will be supporting anything other than the three J*.  Why are you mentionning "CCITT fax images", did we not rule that all images get converted?
+
+> yes, but those would be compressed with Best, but J* are excluded.

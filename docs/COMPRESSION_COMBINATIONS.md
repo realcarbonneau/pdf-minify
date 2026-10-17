@@ -3,14 +3,14 @@
 This is the capability/UI design table, not a measured file-size matrix.
 Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) for the primary
 comparison of actual complete saved PDFs: realistic combinations as rows
-over five representative PDF classes, followed by focused scenarios (§223).
+over six representative PDF classes, followed by focused scenarios (§§223/231).
 
 Design review requested by designer §§210–212, followed by the opinionated
 encoding ruling §213, 2026-10-15 (America/New_York). The best-encoding/reader-
 support policy is now a designer ruling. §§224/225 separately authorize color
-FFPR and uniform 300-DPI defaults. The proposed shared-compressor control
-layout and automatic residual policy are not implemented. Current code is
-explicitly identified.
+FFPR and uniform 300-DPI defaults. §§255/256 authorize Best for native/packed
+streams; fixed policies retain their prior semantics. Current code versus
+remaining proposals is explicitly identified.
 
 ## Combination table
 
@@ -21,18 +21,18 @@ rasterization. This is the target policy; current integration gaps are noted.
 
 | Page handling | Image encoding | Reasonable general-compression choice | What the general compressor affects | Availability today |
 |---|---|---|---|---|
-| Keep native text/vectors | Packed 1-bit BW | Optimized Flate / Brotli, shared by bitmap and native streams | Packed BW pixels plus native drawing/font streams | Flate image mode exists; unified full-workload optimized Flate/Brotli image choices are benchmarked only. |
-| Keep native text/vectors | Packed indexed color | Optimized Flate / Brotli, shared by bitmap and native streams | Packed palette indices plus native drawing/font streams | Indexed Flate image mode exists; unified full-workload optimized Flate/Brotli image choices are benchmarked only. |
+| Keep native text/vectors | Packed 1-bit BW | Best (Zopfli/Brotli), shared by bitmap and native streams | Packed BW pixels plus native drawing/font streams | Best implemented; fixed-policy recipes retain the existing Flate image encoding. |
+| Keep native text/vectors | Packed indexed color | Best (Zopfli/Brotli), shared by bitmap and native streams | Packed palette indices plus native drawing/font streams | Best implemented; fixed-policy recipes retain the existing Flate image encoding. |
 | Keep native text/vectors | JBIG2 BW | Optimized Flate / Brotli for native streams only | Native drawing/font streams; JBIG2 already compresses the BW pixels | Implemented with independent native selection; redundant encoder choice still needs removal. |
 | Keep native text/vectors | JBIG2 Color | Optimized Flate / Brotli for native streams only | Native drawing/font streams and stencil painting; each colored mask uses JBIG2 | Implemented with independent native selection; redundant encoder choice still needs removal. |
 | Keep native text/vectors | JPEG | Optimized Flate / Brotli for native streams only | Native drawing/font streams; JPEG compresses the composed color image | Implemented; JPEG encoding is lossy. |
 | Keep native text/vectors | JPEG2000 | Optimized Flate / Brotli for native streams only | Native drawing/font streams; JPEG2000 compresses the composed color image | Implemented; lossy or lossless encoding. |
-| FFPR: flatten whole page | Packed 1-bit BW | Optimized Flate / Brotli; control remains active | The full-page BW raster, plus its small painting stream | BW FFPR + Flate exists; unified optimized Flate/Brotli image choices are benchmarked only. |
-| FFPR: flatten whole page | Packed indexed color | Optimized Flate / Brotli; control remains active | The full-page palette raster, plus its small painting stream | Flate Color FFPR implemented (§224); unified optimized-Flate/Brotli bitmap policy remains benchmark-only. |
-| FFPR: flatten whole page | JBIG2 BW | Automatic optimized residual streams; general control inactive | Only tiny placement/drawing instructions; no original native text/fonts/vectors remain | BW FFPR + JBIG2 exists; automatic/disabled general control is proposed, not implemented. |
-| FFPR: flatten whole page | JBIG2 Color | Automatic optimized residual streams; general control inactive | Colored-stencil painting instructions, not the JBIG2 masks | Color FFPR implemented (§224); native selection still explicit, automatic/disabled policy remains proposed. |
-| FFPR: flatten whole page | JPEG | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG compresses the full page | Color FFPR implemented (§224); text becomes lossy raster content. Automatic residual selection remains proposed. |
-| FFPR: flatten whole page | JPEG2000 | Automatic optimized residual streams; general control inactive | Only placement/drawing instructions; JPEG2000 compresses the full page | Color FFPR implemented (§224); lossless does not restore native text/vector precision. Automatic residual selection remains proposed. |
+| FFPR: flatten whole page | Packed 1-bit BW | Best (Zopfli/Brotli); control remains active | The full-page BW raster, plus its small painting stream | Best implemented; fixed-policy recipes retain the existing Flate image encoding. |
+| FFPR: flatten whole page | Packed indexed color | Best (Zopfli/Brotli); control remains active | The full-page palette raster, plus its small painting stream | Best implemented; fixed-policy recipes retain the existing Flate image encoding. |
+| FFPR: flatten whole page | JBIG2 BW | Best for residual streams; control remains active | Only tiny placement/drawing instructions; no original native text/fonts/vectors remain | Best implemented alongside the unchanged explicit native policies. |
+| FFPR: flatten whole page | JBIG2 Color | Best for residual streams; control remains active | Colored-stencil painting instructions, not the JBIG2 masks | Best implemented; colored masks stay JBIG2. |
+| FFPR: flatten whole page | JPEG | Best for residual streams; control remains active | Only placement/drawing instructions; JPEG compresses the full page | Best implemented; text is already part of the selected lossy raster. |
+| FFPR: flatten whole page | JPEG2000 | Best for residual streams; control remains active | Only placement/drawing instructions; JPEG2000 compresses the full page | Best implemented; lossless does not restore native text/vector precision. |
 
 "Keep native" follows the established composed-image canvas + native overlay
 policy, not exact original image/native interleaving. FFPR deliberately removes
@@ -40,12 +40,24 @@ native text selectability and vector/font geometry. Lossless encoding only
 preserves the prepared raster: DPI changes, thresholding and palette reduction
 can already have discarded information.
 
-Current implementation remains six Image compression choices plus an
-independent PDF streams choice (§§203–205). The native selector currently
-NEVER changes image bytes, including for Flate BW/Color. Indexed's existing
+§§255/256 approve adding **Best (Zopfli/Brotli)** to the PDF streams selector,
+covering native streams AND packed-image streams, while excluding specialized
+JPEG/JPEG2000/JBIG2 payloads. All source imagery still passes through the
+selected composition/resize/transform pipeline; there is no source-CCITT
+preservation exception. Keep the six image choices and existing explicit
+native-only policies/recipes. Best changes lossless storage only, not samples,
+palettes/predictors, DPI, opacity, FFPR or image quality. This approval does
+not implement the earlier proposed inactive FFPR general-compressor control.
+See `NATIVE_STREAM_COMPRESSION.md` and TODO §253 for implementation status.
+
+The implementation retains six Image compression choices plus an independent
+PDF streams choice (§§203–205). The three FIXED native policies never change
+image bytes; Best now covers packed images too. Indexed's legacy explicit-policy
 automatic small-stream Zopfli path still stores FlateDecode; it is not a
-user-selectable, full-workload Zopfli image policy. The combined policy in
-this table would require explicit integration, recipe compatibility and tests.
+user-selectable, full-workload Zopfli image policy. Best bypasses that preparation
+shortcut, encoding both complete workloads at final selection. Its two packed
+image labels are now **Packed BW** / **Indexed color**, not promises of Flate;
+internal mode IDs and existing explicit recipes remain unchanged.
 FFPR is enabled for all six image codecs (§224), including on native-only
 pages. All built-in raster defaults are 300 DPI (§225). §226 migrates all
 saved/custom raster recipes once to 300 DPI; later deliberate DPI edits remain
@@ -111,9 +123,11 @@ lossless additions from that review remain suggestions, not approved features.
   conventionally using Flate. A Brotli document can legitimately contain
   those Flate streams. The proposed general control is not a command to
   replace every PDF filter, metadata stream or attachment.
-- Any effective Brotli use requires a supporting reader and the PDF 2.0
-  extension declaration. Choosing JPEG/JBIG2 for its images does not remove
-  that requirement. Installed Poppler/QPDF failures remain documented in
+- Any effective Brotli use requires a reader supporting the PDF Brotli
+  extension. The extension declaration is optional compatibility metadata,
+  **OFF by default** under §§251/252; it cannot supply decoder support.
+  Choosing JPEG/JBIG2 for the images does not remove the reader requirement.
+  Installed Poppler/QPDF failures remain documented in
   [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
 
 ## What remains after FFPR + a specialized image codec?
@@ -146,7 +160,8 @@ eligible native-stream data. This inventory introduces no timing comparison
 or new encode run.
 
 There is essentially nothing for a user-selected native compressor to win
-in these two examples. Brotli's declaration can exceed any stream saving.
+in these two examples. An opt-in Brotli declaration can exceed a small stream
+saving; the current default-OFF experiment excludes that metadata cost.
 This supports automatically handling the residual streams in FFPR + a
 specialized codec, rather than offering nearly identical general-compression choices.
 It does NOT mean all FFPR files have exactly 35 bytes of painting commands:
@@ -163,29 +178,28 @@ itself, not just those instructions.
 | Separate page, image and general-compression controls | Makes each choice's purpose clear; preserves independent preferences; shows which settings apply | Needs one shared capability resolver, explicit scope text and correct disabled states | Recommended, pending designer approval. |
 | Existing named filter presets + separate editable controls | One-click combinations without a second competing preset catalog | Preset name alone must not hide the effective recipe | Keep this existing pattern; do not lock codecs to presets. |
 
-Suggested control structure, not an implemented UI:
+Implemented control structure after §§255/256:
 
 1. **Force full-page rasterization**: retain the existing per-filter checkbox;
    this controls whether text/vectors survive. §224 authorizes and implements
    it for every existing image codec, not just BW.
 2. **Image encoding**: JBIG2 BW, JBIG2 Color, Packed BW, Indexed color,
-   JPEG2000, JPEG. Packed modes inherit the general compressor, so their
-   labels must not continue to promise "Flate" after choosing Brotli.
-3. **General compression**: Flate (optimized), Brotli (limited support).
-   Show its scope in nearby text: "Images and native PDF streams" for packed
-   modes, "Native PDF streams only" for specialized codecs with FFPR off,
-   or "Automatic — page painting only" for FFPR + a specialized codec.
+   JPEG2000, JPEG. Existing mode IDs persist; only representation labels avoid
+   promising Flate when Best chooses Brotli.
+3. **PDF streams**: existing Flate, Zopfli and Brotli choices plus
+   **Best (Zopfli/Brotli)**. Fixed choices retain native-only semantics; Best
+   also encodes packed image samples. J* payloads never enter this competition.
+   Contextual native help/accessibility states the scope and reader limitation;
+   no inline working/help label is added (§253).
 
-Keep inactive controls visible and disabled with their EFFECTIVE fixed value,
-not a stale selected value. This follows the designer's existing fixed-state
-lossless-control ruling (§100). Show the reason as readable nearby help, not
-only a tooltip or color change. In the proposed FFPR + JBIG2 case, display
-disabled "Automatic" while remembering the prior per-filter general
-preference separately. Restoring a mode restores that preference; merely
-loading or refreshing controls does not edit the recipe or schedule work.
-Choose the smallest valid representation for the tiny residual streams,
-including plain storage if its COMPLETE overhead beats compressed storage;
-this is a size decision, not a performance cutoff. No new UI option is needed.
+The earlier disabled-Automatic FFPR proposal is superseded by the explicitly
+selected Best policy: keep the PDF streams control active, including FFPR +
+specialized images, and preserve the chosen recipe. No implicit mode change,
+default migration or remembered hidden alternative is introduced. Best tries
+only its two named encoders; empty streams stay plain under the safety rule.
+For other inapplicable controls, retain visible/disabled effective values under
+§100. The default-OFF Compatibility checkbox is the explicit visibility
+exception: show it only for Brotli-capable policies (Brotli and Best).
 
 Threshold method applies only to BW; manual T only to Simple; palette count
 only to the two palette modes; JPEG quality only to JPEG; JPEG2000 rate only
@@ -196,9 +210,9 @@ the last benchmark or make their applicability jump from page to page.
 
 A read-only summary gives the convenient combined name without a huge menu,
 for example: "Images: JBIG2 BW · Native streams: Brotli · Text/vectors kept"
-or "FFPR · JPEG2000 lossless · Remaining streams: automatic". These examples
-describe the proposed automatic-compressor presentation. Color FFPR itself is
-supported; automatic residual selection is not implemented.
+or "FFPR · JPEG2000 lossless · PDF streams: Best (Zopfli/Brotli)". The recipe
+readout reflects the selected policy, not a claim that every stream uses the
+same decoder. Best's opt-in declaration readout is conditional on actual use.
 
 ## Compatibility, evidence and implementation boundary
 

@@ -18,10 +18,10 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import fitz  # noqa: E402
-from PySide6.QtCore import QPoint, QRect, QSettings  # noqa: E402
-from PySide6.QtGui import QColor, QIcon, QPalette  # noqa: E402
+from PySide6.QtCore import QPoint, QRect, QSettings, QEvent, Qt  # noqa: E402
+from PySide6.QtGui import QColor, QIcon, QPalette, QHelpEvent  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
-from PySide6.QtWidgets import QApplication, QToolBar  # noqa: E402
+from PySide6.QtWidgets import QApplication, QToolBar, QToolTip  # noqa: E402
 from pdf_minify.ui_qt.app import MainWindow, setup_logging, FILTER_PROGRESS_ROLE  # noqa: E402
 from pdf_minify.ui_qt.icons import ICON_NAMES  # noqa: E402
 from pdf_minify import APP_ID  # noqa: E402
@@ -248,6 +248,57 @@ def brotli_compatibility_samples(w):
         assert w.after._pdf_source.path == result.pdf_path
         capture(w, f"compatibility-{name}")
         w.panelScroll.widget().grab().save(f".tmp/shot-compatibility-{name}-panel.png")
+        if policy == "brotli" and not enabled:
+            control = w.stream_compression
+            local = control.rect().center()
+            app.sendEvent(control, QHelpEvent(QEvent.ToolTip, local, control.mapToGlobal(local)))
+            app.processEvents()
+            assert QToolTip.isVisible() and QToolTip.text() == control.toolTip()
+            tip = next(widget for widget in app.topLevelWidgets()
+                       if widget.windowType() == Qt.ToolTip and widget.isVisible())
+            tip.grab().save(".tmp/shot-brotli-reader-tooltip.png")
+            QToolTip.hideText()
+    w.revert_filter()
+    assert not w._draft_specs
+
+
+def best_stream_samples(w):
+    """Best's actual packed-image result, native tooltip, menu and opt-in state."""
+    from pdf_minify.core.stream_compression import brotli_declaration_present
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    w.colors_value.setValue(5)
+    dpi_index = w.dpi.findData(150)
+    assert dpi_index >= 0
+    w.dpi.setCurrentIndex(dpi_index)
+    w.force_raster.setChecked(True)
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("best"))
+    for enabled, name in ((False, "default-off"), (True, "opt-in")):
+        w.brotli_declaration.setChecked(enabled)
+        wait_job(w)
+        settle_view(w)
+        assert w.brotli_declaration.isVisible()
+        result = w._artifacts.results[w._result_key(w._active_pid)]
+        with fitz.open(result.pdf_path) as doc:
+            has_brotli = any(doc.xref_is_stream(x) and
+                             "/BrotliDecode" in doc.xref_get_key(x, "Filter")[1]
+                             for x in range(1, doc.xref_length()))
+            assert brotli_declaration_present(doc) is (enabled and has_brotli)
+        assert w.after._pdf_source.path == result.pdf_path
+        capture(w, f"best-{name}")
+        w.panelScroll.widget().grab().save(f".tmp/shot-best-{name}-panel.png")
+    control = w.stream_compression
+    local = control.rect().center()
+    app.sendEvent(control, QHelpEvent(QEvent.ToolTip, local, control.mapToGlobal(local)))
+    app.processEvents()
+    assert QToolTip.isVisible() and QToolTip.text() == control.toolTip()
+    tip = next(widget for widget in app.topLevelWidgets()
+               if widget.windowType() == Qt.ToolTip and widget.isVisible())
+    tip.grab().save(".tmp/shot-best-reader-tooltip.png")
+    QToolTip.hideText()
+    w.stream_compression.showPopup()
+    app.processEvents()
+    w.stream_compression.view().window().grab().save(".tmp/shot-best-stream-options.png")
+    w.stream_compression.hidePopup()
     w.revert_filter()
     assert not w._draft_specs
 
@@ -381,6 +432,8 @@ def main():
                         help="capture actual BW/color FFPR and native-preserving state/revert")
     parser.add_argument("--brotli-compatibility-only", action="store_true",
                         help="capture default-off/opt-in Brotli metadata and hidden non-Brotli controls")
+    parser.add_argument("--best-streams-only", action="store_true",
+                        help="capture Best's packed-image output, policy menu and reader help")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -398,7 +451,7 @@ def main():
         review_settings.setValue(key, value)
     review_settings.sync()
     pdf = args.pdf
-    if args.brotli_compatibility_only and pdf == "examples/images.pdf":
+    if (args.brotli_compatibility_only or args.best_streams_only) and pdf == "examples/images.pdf":
         pdf = layout_document(1)
     w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
@@ -416,6 +469,16 @@ def main():
         brotli_compatibility_samples(w)
         close_review_window(w)
         print("BROTLI COMPATIBILITY SHOTS GREEN")
+        return
+
+    if args.best_streams_only:
+        wait_job(w)
+        try:
+            best_stream_samples(w)
+        finally:
+            w.revert_filter()
+            close_review_window(w)
+        print("BEST STREAM SHOTS GREEN")
         return
 
     if args.compression_only or args.compression_state_only:
