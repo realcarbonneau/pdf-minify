@@ -1103,3 +1103,7 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 > I don't think we will be supporting anything other than the three J*.  Why are you mentionning "CCITT fax images", did we not rule that all images get converted?
 
 > yes, but those would be compressed with Best, but J* are excluded.
+
+## 257 — make Best the setting for all app filters (verbatim, 2026-10-17)
+
+> Change all the app filters to "Best" please

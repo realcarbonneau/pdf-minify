@@ -27,7 +27,8 @@ def isolate_gui_artifact_roots(request, tmp_path, monkeypatch):
     adding test-only session layers to the production filesystem design.
     """
     if not request.module.__name__.endswith(("test_minis", "test_filter_lifecycle",
-                                           "test_strip_reorder_identity")):
+                                           "test_strip_reorder_identity", "test_filter_defaults",
+                                           "test_app_identity")):
         return
     from pdf_minify.ui_qt import app as ui, paths
     store_type = ui.ArtifactStore

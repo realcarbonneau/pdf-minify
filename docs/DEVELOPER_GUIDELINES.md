@@ -321,6 +321,14 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   edit/artifact lifecycle and keep original binary studies separate. Existing
   explicit policies retain their native-only saved-recipe semantics; adding
   Best does not silently migrate recipes or remove packed-image options.
+- §257 explicitly authorizes Best for ALL app filters: seed built-ins with
+  Best and migrate every saved custom/built-in-override stream policy once,
+  including explicit old policies. Preserve every other field and the
+  untouched Original reference. Save the revision/records and check settings
+  synchronization before materializing recipes/starting filter jobs. Later
+  deliberate choices remain editable/persistent; do not clamp at every load.
+  This changes app defaults, not explicit benchmark recipes/frozen evidence
+  or the headless legacy missing-policy fallback. See `filter_defaults.py`.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

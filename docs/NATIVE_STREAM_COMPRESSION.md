@@ -37,8 +37,15 @@ Preserve embedded files/metadata and leave PDF object/xref
 stream generation to the shared container optimizer. Font subsetting, garbage
 collection and object-stream packing remain shared for every policy.
 
+§257 now makes Best the built-in APP default and requests a one-time migration
+of ALL existing app filters, including explicit saved stream choices. Only
+that policy field changes. UUIDs/order/labels, image settings and compatibility
+flags survive; later deliberate manual choices survive restart. Original stays
+untouched. The fixed-policy component experiments below and the headless
+legacy missing-policy fallback retain their explicit historical meanings.
+
 Image compression and **PDF stream compression** are independent recipe inputs.
-Existing fixed choices are Flate (default), Flate (Zopfli, slow) and Brotli
+Existing fixed choices are Flate (legacy headless fallback), Flate (Zopfli, slow) and Brotli
 (limited reader support), with installed-runtime results recorded below.
 Changing either uses the one shared 300ms edit timer, dirty star and existing
 saved/draft lifecycle. Keys, Save/Save As/load and actual-file readback/export
@@ -117,7 +124,7 @@ benchmark reference controls are separate from normal filter conversion.
 
 | Choice | Stored PDF filter | Use / limitation |
 |---|---|---|
-| Flate / zlib | FlateDecode | Current default encoder; no reader-compatibility advantage over Zopfli. Separate speed-based product choice is superseded by §213. |
+| Flate / zlib | FlateDecode | Legacy headless fallback/reference, not the app default (§257); no reader-compatibility advantage over Zopfli. Separate speed-based product choice is superseded by §213. |
 | Flate / Zopfli | FlateDecode | SAME decoder/format. Strongest measured Flate encoder here; target implementation for one optimized Flate choice. Tool is optional only in the current build. |
 | Brotli | BrotliDecode | PDF Association's PDF 2.0 extension, published 2026-08-19. Needs supporting readers; not an ordinary PDF 1.7 feature or universal compatibility. |
 | LZW | LZWDecode | Standard historical lossless filter; benchmark/control only unless results justify exposing it. |

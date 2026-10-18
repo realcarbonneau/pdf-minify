@@ -34,6 +34,10 @@ mixed candidates for native AND packed-image streams, without changing image
 samples, quality or J* payloads. The two non-J* image choices are labeled Packed
 BW and Indexed color; existing mode IDs/defaults and fixed-policy recipes stay
 compatible. All source imagery still passes through the selected conversion.
+§257 subsequently sets all built-in app filters to Best and explicitly
+authorizes a one-time migration of every saved app filter's stream policy,
+preserving its UUID, other settings and later deliberate choices. Original
+and fixed-encoder benchmark evidence are unchanged.
 §§251–254 make the Brotli declaration opt-in **(Compatibility)** metadata,
 off by default, with the reader explanation in native tooltip/accessibility
 help. The shared [tooltip convention](TOOLTIPS.md) keeps that help view-only

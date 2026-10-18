@@ -50,7 +50,7 @@ or `code` names offer no required benefit for this rename. See the
       native_layer.py # token edits preserving native Form/text state (B111)
       marked_content.py # orphaned whitespace ActualText repair, native parser
       defaults.py     # shared 300-DPI raster default
-      filter_defaults.py # one-time saved-DPI settings migration policy
+      filter_defaults.py # versioned saved-DPI/stream-default migrations
       pipeline.py     # BW full-page raster + color JPEG recompress + gc copy
       algorithms.py   # editable six-codec image recipe choices, no preset lock
       stencils.py     # exact colored JBIG2 masks, shared by product/benchmark
@@ -296,9 +296,15 @@ candidate to verify decoded streams and protected J* bytes before atomically
 publishing the smallest file. Predictors and image samples remain unchanged;
 source CCITT still undergoes normal conversion. Best's declaration metadata is
 default-OFF and included on opt-in only when the winning output uses Brotli.
-The existing fixed policies/defaults/saved recipes are not migrated. Representation
+That initial addition did not migrate fixed policies/defaults/saved recipes;
+§257's subsequent app migration is described below. Representation
 labels Packed BW/Indexed color avoid falsely promising Flate under Best; mode
 IDs remain compatible. The GUI uses the existing shared edit/artifact lifecycle.
+§257 adds a one-time stream-default migration in `filter_defaults.py`, before
+effective recipes or jobs are created: all built-ins and saved app filters use
+Best, while later explicit choices remain editable/persistent. The settings
+owner preserves full saved records (including extra built-in-override metadata)
+and checks synchronization. Original and fixed benchmark recipes stay unchanged.
 The paragraph below describes the historical study boundary, not a prohibition
 on this later separately requested integration.
 

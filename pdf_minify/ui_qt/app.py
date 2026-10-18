@@ -36,7 +36,7 @@ from .jobs import cpu_cap, pool as filter_pool, frame_view
 from .artifacts import ArtifactStore
 from .lab import open_progress_lab, open_buttons_lab
 from .icon_lab import IconLab
-from .settings import app_settings, configure_application
+from .settings import app_settings, configure_application, sync_settings
 from .tooltips import set_control_help
 
 import fitz
@@ -1137,7 +1137,8 @@ class MainWindow(QMainWindow):
 
     def _apply_custom_presets(self):
         """Load recipes, preserving pasted copies and repairing UUIDs (§155)."""
-        from ..core.filter_defaults import RASTER_DEFAULTS_REVISION, migrate_raster_dpi
+        from ..core.filter_defaults import (RASTER_DEFAULTS_REVISION, migrate_raster_dpi,
+                                            STREAM_DEFAULTS_REVISION, migrate_stream_compression)
         store = self._custom_store()
         try:
             renames = store.value("customRenames", {}) or {}
@@ -1149,6 +1150,10 @@ class MainWindow(QMainWindow):
         except (TypeError, ValueError):
             # A malformed migration marker must not hide valid saved filters.
             dpi_revision = 0
+        try:
+            stream_revision = int(store.value("streamDefaultsRevision", 0) or 0)
+        except (TypeError, ValueError):
+            stream_revision = 0
         entries = {p["id"]: p for p in presets.PRESETS}
         seen_records, loaded, aliases_changed = set(), [], False
         for c in customs:
@@ -1171,28 +1176,34 @@ class MainWindow(QMainWindow):
                 entries[c["id"]] = c
             else:
                 p = entries[c["id"]]
-                p["params"] = dict(c.get("params", p["params"]))
-                p["mode"] = c.get("mode", p["mode"])
-                p["label"] = c.get("label", p["label"])
-                if "uuid" in c:
-                    p["uuid"] = c["uuid"]
+                params = dict(c.get("params", p["params"]))
+                # Saved built-in overrides can carry additional metadata too.
+                # Do not lose it when persisting a defaults/identity migration.
+                p.update(c)
+                p["params"] = params
             loaded.append(entries[c["id"]])
         identities_changed = repair_filter_uuids(presets.PRESETS)
         schema_changed = any(isinstance(p, dict) and isinstance(p.get("id"), str)
                              and "uuid" not in p for p in customs)
         migrate_dpi = dpi_revision < RASTER_DEFAULTS_REVISION
         dpi_changed = migrate_raster_dpi(presets.PRESETS) if migrate_dpi else []
+        migrate_streams = stream_revision < STREAM_DEFAULTS_REVISION
+        stream_changed = migrate_stream_compression(presets.PRESETS) if migrate_streams else []
         identity_changed = aliases_changed or identities_changed or schema_changed
-        if identity_changed or dpi_changed:
+        if identity_changed or dpi_changed or stream_changed or (migrate_streams and loaded):
             store.setValue("customPresets", [dict(p) for p in loaded])
         if migrate_dpi:
             store.setValue("rasterDefaultsRevision", RASTER_DEFAULTS_REVISION)
-        if identity_changed or dpi_changed or migrate_dpi:
-            store.sync()
+        if migrate_streams:
+            store.setValue("streamDefaultsRevision", STREAM_DEFAULTS_REVISION)
+        if identity_changed or dpi_changed or stream_changed or migrate_dpi or migrate_streams:
+            sync_settings(store)
         if identity_changed:
             log.warning("filter identity migration: repaired missing/invalid/duplicate UUIDs or aliases")
         if migrate_dpi:
             log.info("filter resolution migration: %d saved recipes now use %d DPI", len(dpi_changed), presets.DEFAULT_DPI)
+        if migrate_streams:
+            log.info("filter compression migration: %d saved recipes now use Best", len(stream_changed))
         for p in presets.PRESETS:
             if p["id"] in renames:
                 p["label"] = renames[p["id"]]

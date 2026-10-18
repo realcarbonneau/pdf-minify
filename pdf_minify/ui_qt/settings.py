@@ -31,6 +31,12 @@ def _check_status(store):
         raise OSError(f"Cannot synchronize {APP_NAME} settings: {store.fileName()}")
 
 
+def sync_settings(store):
+    """Persist a settings transaction without hiding a failed migration write."""
+    store.sync()
+    _check_status(store)
+
+
 def _migrated(store):
     try:
         return int(store.value(IDENTITY_MIGRATION_KEY, 0) or 0) >= IDENTITY_MIGRATION_REVISION

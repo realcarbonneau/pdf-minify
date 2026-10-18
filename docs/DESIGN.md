@@ -589,6 +589,25 @@ Only add the optional declaration when a saved candidate actually uses Brotli.
 Use the existing dirty/debounce/Save/Save As/Revert/Discard/Cancel and real-file
 preview/export lifecycle; no separate best-mode GUI processing path.
 
+### Best for every app filter (§257)
+
+All built-in app filter recipes now seed **Best (Zopfli/Brotli)**. Apply one
+versioned startup migration to every saved custom filter and built-in override,
+including explicit old Flate/Zopfli/Brotli choices. Change only
+`params.stream_compression`; preserve UUIDs, aliases, labels, ordering, DPI,
+image codec/quality, FFPR, compatibility declaration setting and other metadata.
+The untouched Original reference is not a filter and stays unchanged.
+
+Persist the migrated saved records and revision before constructing effective
+recipes or scheduling work, using the existing settings owner. Failed settings
+synchronization must fail clearly, not report a successful migration. This is
+an explicitly authorized one-time change, not a permanent Best clamp: later
+deliberate manual compression choices survive restart. Save As/copies inherit
+the actual current recipe normally. Explicit benchmark recipes, frozen tables
+and the headless legacy missing-policy fallback are not rewritten by an app
+default change. §257 supersedes §§255/256's no-default-migration boundary only
+for this app migration; the fixed encoder APIs retain their meanings.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

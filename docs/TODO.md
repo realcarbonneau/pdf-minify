@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 254. Routine execution requests are not TODOs (§218).
+new TODO ID is 255. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -1925,9 +1925,12 @@ Documentation only; runtime alignment is OPEN below. No designer issue
 acceptance is claimed.
 
 ## 217 — OPEN (designer §213: align runtime with best encoding and decoder-support choices)
-The current UI still exposes ordinary Flate and Zopfli separately, native
-Flate defaults to zlib, and Indexed has a 100,000-byte Zopfli performance
-cutoff. Align the implementation with §213: one optimized Flate output format
+§§255–257 add full-encoder Best for native AND eligible packed-image streams,
+make it the app default and migrate existing app filters once. That path has
+no historical Zopfli performance cutoff. Remaining legacy paths still expose
+ordinary Flate and Zopfli separately, retain a headless zlib fallback and have
+an Indexed Zopfli performance cutoff. Align those remaining paths with §213:
+one optimized Flate output format
 using the best validated encoder(s), no weaker speed/dependency choice or
 arbitrary performance cap. Retain same-format alternatives internally only
 when actual valid output size justifies them; preserve exact filtered pixels,
@@ -2402,3 +2405,17 @@ its declaration is default-OFF and conditional on actual Brotli use.
 Full suite: **767 passed**. Menu/panels/native tooltip captured and viewed.
 **Implementation verified 2026-10-17; not designer acceptance.** See
 `DESIGN.md` §§255/256, `NATIVE_STREAM_COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 254 — DONE (designer §257: Best for every app filter)
+
+Built-in app filters seed Best; a versioned one-time migration covers all
+saved/custom and overridden built-in filters, including explicit old policies.
+Checked synchronization persists records/revision before recipes/jobs. UUIDs,
+ordering, labels, metadata and other settings survive; later deliberate
+choices persist. Original, headless defaults and explicit benchmark evidence
+are unchanged. All-mode/malformed-marker/idempotence/reload regressions pass;
+full suite **777 passed**. Default GUI and lifecycle smoke captures were
+viewed, verifying all 12 actual filter recipes use Best. The live settings
+audit preserves all five saved records exactly except the stream policy, plus
+renames/order/DPI revision. **Implementation verified 2026-10-17; not designer
+acceptance.** See `DESIGN.md` §257, `NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`.

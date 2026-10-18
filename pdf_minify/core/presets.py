@@ -5,6 +5,7 @@ headless utilities only. Built-in UUIDv4 constants persist across launches.
 """
 from . import threshold as T
 from .pipeline import PAGE_SIZES, DEFAULT_DPI, DEFAULT_PAGE_SIZE, jpx_encode
+from .filter_defaults import migrate_stream_compression
 
 RASTER_DPIS = (150, 200, 300, 600)
 PAGE_SIZE_IDS = tuple(PAGE_SIZES)
@@ -48,6 +49,10 @@ PRESETS = [
      "params": {"dpi_cap": DEFAULT_DPI, "colors": 64},
      "blurb": "diagrams and logos, 64 colors"},
 ]
+
+# App defaults only; explicit headless recipes and frozen benchmark choices
+# retain their own policies. Saved overrides migrate once in the settings owner.
+migrate_stream_compression(PRESETS)
 
 VIEW_MAIN_MODES = ("side-h", "stack-v", "single")
 VIEW_FILTER_MODES = ("film-h", "rail-v", "grid")

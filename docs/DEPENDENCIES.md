@@ -13,6 +13,7 @@ and documents planned cross-platform distribution; no installers exist yet.
 | `python3, python3-venv` | present 3.13.5 | interpreter itself can't live in repo |
 | `libqt6core/gui/widgets 6.8.2` | already installed | Qt C++ runtime; pip PySide6 bundles its own copy, but apt copy helps other apps |
 | `jbig2` (`/usr/bin/jbig2`, libjbig2enc) | present 0.30 | best BW encoder, no pure-Python equivalent; called as subprocess |
+| `zopfli` (`/usr/bin/zopfli`) | present; required by the default Best policy (§257) | full Flate encoder called as subprocess; MuPDF supplies Best's Brotli encoder/decoder |
 | `jbig2dec` | present | debug/verify JBIG2 output |
 | `mutool` (mupdf-tools), `libmupdf` | present | inspect/clean PDFs, fallback renderer |
 | `pdfimages` (poppler-utils) | present | debug: list/extract embedded images |
@@ -21,7 +22,7 @@ and documents planned cross-platform distribution; no installers exist yet.
 
 Install missing system bits with:
 ```bash
-sudo apt install python3-venv jbig2 mupdf-tools poppler-utils
+sudo apt install python3-venv jbig2 zopfli mupdf-tools poppler-utils
 # optional, only if you want apt-Qt bindings instead of pip:
 sudo apt install python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qtwidgets python3-pymupdf
 ```
@@ -70,10 +71,16 @@ extension. QPDF 12.2.0 and Poppler 25.03.0 are independent BENCHMARK tools,
 not runtime dependencies; they fail Brotli decoding in the measured cases.
 See `NATIVE_STREAM_COMPRESSION.md` for versions, complete sizes and limitations.
 
+§257 now makes Best the app default. Normal filter processing therefore
+requires both system `zopfli` and the existing MuPDF Brotli encoder/decoder;
+there is no silent missing-encoder fallback. No additional Python dependency
+is introduced. Explicit legacy headless recipes can still select ordinary Flate.
+
 Latest product ruling §213: encoding dependency convenience is not a reason
 to retain inferior compression. The optional-Zopfli description above records
-the current build, not a reason to keep separate zlib/Zopfli user choices.
+the historical explicit-choice boundary, superseded for app defaults by §257;
+it is not a reason to keep separate zlib/Zopfli user choices.
 Target packaging must provide the selected best validated encoder and fail
 clearly if unavailable, not silently substitute weaker output to save setup
-or processing work. Runtime/packaging alignment is pending in TODO §217;
+or processing work. Remaining legacy-choice/packaging alignment is tracked in TODO §217;
 no dependency was installed by the documentation update.

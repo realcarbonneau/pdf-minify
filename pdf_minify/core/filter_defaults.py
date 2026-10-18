@@ -1,9 +1,11 @@
-"""Versioned saved-recipe default migration (designer §226), without Qt."""
+"""Versioned saved-recipe migrations (designer §§226/257), without Qt."""
 
 from .algorithms import BW_MODES, COLOR_MODES
 from .defaults import DEFAULT_DPI
 
 RASTER_DEFAULTS_REVISION = 1
+STREAM_DEFAULTS_REVISION = 1
+DEFAULT_APP_STREAM_POLICY = "best"
 
 
 def migrate_raster_dpi(filters):
@@ -26,4 +28,23 @@ def migrate_raster_dpi(filters):
         if params != before:
             preset["params"] = params
             changed.append(preset["id"])
+    return changed
+
+
+def migrate_stream_compression(filters):
+    """Set every app filter to Best, changing no other setting or identity.
+
+    Built-in seeds use the same rule. The settings owner gates saved-filter
+    migration ONCE, so subsequent explicit choices are not clamped on load.
+    Original/passthrough is a reference, not an editable app filter.
+    """
+    changed = []
+    for preset in filters:
+        if preset.get("mode") not in BW_MODES | COLOR_MODES:
+            continue
+        before = preset.get("params", {})
+        if before.get("stream_compression") == DEFAULT_APP_STREAM_POLICY:
+            continue
+        preset["params"] = dict(before, stream_compression=DEFAULT_APP_STREAM_POLICY)
+        changed.append(preset["id"])
     return changed

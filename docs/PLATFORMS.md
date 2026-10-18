@@ -17,7 +17,7 @@ Latest verification update: **2026-10-16** (America/New_York).
 | PDF binding / actual rendering engine | PyMuPDF 1.28.2 / bundled MuPDF 1.28.2 |
 | Numeric / image libraries | NumPy 2.5.3 / Pillow 12.3.0 |
 | External BW encoder | `/usr/bin/jbig2`, jbig2enc 0.30 |
-| Optional stream optimizer | `/usr/bin/zopfli` present; explicit Zopfli and Best require it, with no hidden fallback. Best also requires the existing MuPDF Brotli encoder/decoder |
+| Stream optimizers | `/usr/bin/zopfli` and the existing MuPDF Brotli encoder/decoder present; both are required by the default Best policy (§257), with no hidden fallback |
 | Independent PDF validation tools | Poppler 25.03.0; QPDF 12.2.0; `mutool` 1.25.1 |
 
 This certifies the tested **development/source runtime**, not an installer,

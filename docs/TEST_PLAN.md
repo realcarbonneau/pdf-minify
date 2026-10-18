@@ -10,6 +10,29 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+§257 all-app-filter default/migration: **777 passed**, `./test.sh`, exit 0 /
+FULL SUITE GREEN, no expected failures. New regressions cover all six modes,
+missing/malformed revisions, full record/UUID/name/order/parameter preservation,
+checked synchronization and later deliberate choices. Original and the legacy
+headless defaults remain unchanged. Focused defaults/identity/preset checks
+pass **41 tests**; selected Best/Brotli lifecycle checks pass **11 tests**.
+
+`tools/shot.py --best-defaults-only` verifies all 12 actual app filter recipes
+and selection-only reuse of their completed PDFs, without dirty stars or new
+jobs. Its full-window and 1:1 panel captures were viewed. The real-file
+`tools/filter_smoke.py` passes Save/Discard/Cancel/Revert/Save As and palette
+edits under Best; its successful dialogs, states and selected-copy captures
+were viewed. A live settings audit checks all five pre-existing saved records
+against a before-migration snapshot: only `params.stream_compression` changes,
+with renames/order and the completed DPI migration revision preserved.
+All 12 live filters complete on the 12-page Kepler source with Best, and the
+preview loads from its completed filtered PDF. Fixed benchmark
+recipes and the published binary tables are unchanged. **Implementation
+verified 2026-10-17; not designer acceptance.** Completion-document edits reuse
+this tested code result under §241.
+
+### Previous Best implementation stage (§§255/256)
+
 §§255/256 Best: **767 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no
 expected failures, 2026-10-17. Focused core checks pass **100 tests**, and
 selected Best/Brotli GUI lifecycle checks pass **11 tests**. `test_best_streams.py` covers actual

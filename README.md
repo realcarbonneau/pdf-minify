@@ -6,7 +6,7 @@ Sauvola, adaptive), JPEG, JPEG2000, and palette-indexed filters, and watch
 every filter's **real measured output size** update under its thumbnail.
 What you see is what saving writes.
 
-- **BW pipeline**: threshold → selected lossless JBIG2 or 1-bit Flate,
+- **BW pipeline**: threshold → selected lossless JBIG2 or packed 1-bit samples,
   300dpi default, original page size kept unless you pick Letter/A4.
   FFPR off combines images into one BW canvas with native text/vector
   overlays; FFPR on flattens the entire page, preserving its stacked appearance.
@@ -17,12 +17,15 @@ What you see is what saving writes.
   are 300 DPI. Existing saved/custom raster filters migrate once to 300 DPI;
   later deliberate DPI choices are retained.
 - **Image compression**: each filter can select JBIG2 BW, colored JBIG2 stencils,
-  Flate BW, palette Flate Color, JPEG2000 or JPEG; no preset codec lock or
+  Packed BW, Indexed color, JPEG2000 or JPEG; no preset codec lock or
   silent codec substitution. Color uses one composed canvas with native artwork.
-- **PDF stream compression**: independently choose Flate (default), compatible
-  but slower Zopfli-Flate, or Brotli (requires a supporting PDF 2.0 reader).
-  Native text/vector/font data stays lossless; image bytes are unaffected by
-  this choice. [Integrated final-file size matrix](docs/INTEGRATED_COMPRESSION.md)
+- **PDF stream compression**: **Best (Zopfli/Brotli)** is now the app default;
+  every existing saved app filter migrates once, preserving other settings and
+  later deliberate choices. Best compares actual complete saved candidates
+  for native text/vector/font streams AND packed BW/indexed images, preserving
+  exact samples and leaving JPEG/JPEG2000/JBIG2 payloads untouched. It may
+  require a Brotli-capable PDF reader. Existing explicit Flate, Zopfli and
+  Brotli choices retain their native-only semantics. [Integrated final-file size matrix](docs/INTEGRATED_COMPRESSION.md)
   and [reader limits](docs/NATIVE_STREAM_COMPRESSION.md#correctness-and-compatibility).
 - **Honest UI**: original and preview panes stay synced (zoom, pan, scroll);
   view changes never reprocess filters; ESC cancels an active operation/dialog;
@@ -37,7 +40,7 @@ What you see is what saving writes.
 Latest product ruling: encoding cost is not a selection criterion; use the
 best validated encoding and retain alternatives for reader support or real
 size outcomes. Zopfli adds no decoder requirement beyond Flate. The current
-three-way native selector described above is awaiting alignment; see the
+fixed encoder/default paths retain some historical behavior; see the
 [updated compression policy](docs/COMPRESSION_COMBINATIONS.md#decoder-support-not-encoder-cost-213).
 
 Keywords: pdf optimizer, pdf compressor, reduce pdf size, threshold
@@ -94,8 +97,9 @@ values; see [settings migration](docs/PERSISTENCE_AND_TEMP.md#application-name-m
 
 See `docs/DEPENDENCIES.md` for the full local-vs-system table.
 Source runtime: Python/venv plus `requirements.txt`; `jbig2` supplies the
-JBIG2 BW/Color modes. Optional `zopfli` is required only when explicitly
-selecting native Zopfli-Flate; ordinary Flate needs no external encoder.
+JBIG2 BW/Color modes. The default **Best** policy requires system `zopfli` and
+the bundled MuPDF Brotli encoder/decoder; missing encoders produce an error,
+not a silent fallback. Explicit ordinary Flate needs no external encoder.
 `mutool`/`pdfimages` are inspection/validation
 tools, not GUI runtime requirements. PySide6 brings its own Qt libraries but
 still needs compatible OS display/font libraries.

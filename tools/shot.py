@@ -303,6 +303,31 @@ def best_stream_samples(w):
     assert not w._draft_specs
 
 
+def best_default_samples(w):
+    """All built-in/saved filters already use Best, without live edits or work."""
+    from pdf_minify.core import presets
+    assert all(spec["stream_compression"] == "best" for spec in w._saved_specs.values())
+    assert all(preset["params"]["stream_compression"] == "best"
+               for preset in presets.PRESETS
+               if preset["mode"] != "passthrough")
+    generation = w._gen
+    prepared = dict(w._artifacts.results)
+    selected = w._active_pid
+    for pid in w._strip_ids:
+        w.preset.setCurrentIndex(w.preset.findData(pid))
+        app.processEvents()
+        assert w.stream_compression.currentData() == "best"
+        assert w.brotli_declaration.isVisible()
+        assert not w._draft_specs and not w._preview_timer.isActive() and not w._artifacts.pending
+        assert w.after._pdf_source.path == w._artifacts.results[w._result_key(pid)].pdf_path
+    w.preset.setCurrentIndex(w.preset.findData(selected))
+    settle_view(w)
+    assert w._gen == generation and w._artifacts.results == prepared
+    capture(w, "all-filters-best")
+    w.panelScroll.widget().grab().save(".tmp/shot-all-filters-best-panel.png")
+    print(f"ALL {len(w._strip_ids)} APP FILTERS USE BEST")
+
+
 def compression_state_samples(w):
     """All color FFPR codecs are effective edits with actual saved readback."""
     tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
@@ -434,6 +459,8 @@ def main():
                         help="capture default-off/opt-in Brotli metadata and hidden non-Brotli controls")
     parser.add_argument("--best-streams-only", action="store_true",
                         help="capture Best's packed-image output, policy menu and reader help")
+    parser.add_argument("--best-defaults-only", action="store_true",
+                        help="verify/capture Best as every built-in and saved app filter's policy")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -451,7 +478,7 @@ def main():
         review_settings.setValue(key, value)
     review_settings.sync()
     pdf = args.pdf
-    if (args.brotli_compatibility_only or args.best_streams_only) and pdf == "examples/images.pdf":
+    if (args.brotli_compatibility_only or args.best_streams_only or args.best_defaults_only) and pdf == "examples/images.pdf":
         pdf = layout_document(1)
     w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
@@ -479,6 +506,15 @@ def main():
             w.revert_filter()
             close_review_window(w)
         print("BEST STREAM SHOTS GREEN")
+        return
+
+    if args.best_defaults_only:
+        wait_job(w)
+        try:
+            best_default_samples(w)
+        finally:
+            close_review_window(w)
+        print("BEST DEFAULT SHOTS GREEN")
         return
 
     if args.compression_only or args.compression_state_only:

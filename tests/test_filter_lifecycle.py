@@ -1045,6 +1045,11 @@ def test_brotli_compatibility_is_hidden_elsewhere_and_shares_the_real_edit_debou
 
     w = window
     choose(w, "bw-t180")
+    # The app now defaults to Best (also Brotli-capable). Establish an explicit
+    # ordinary-Flate baseline for this fixed-policy visibility/debounce test.
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("flate"))
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    w.save_filter()
     assert w.brotli_declaration.isHidden() and not w.brotli_declaration.isChecked()
     assert w.brotli_declaration.text() == "Include Brotli extension declaration (Compatibility)"
     calls = []
@@ -1087,7 +1092,8 @@ def test_brotli_compatibility_is_hidden_elsewhere_and_shares_the_real_edit_debou
     w.stream_compression.setCurrentIndex(w.stream_compression.findData("brotli"))
     assert w.brotli_declaration.isVisible() and w.brotli_declaration.isChecked()
     choose(w, "color-max")  # clean switch to another default-OFF filter
-    assert w.brotli_declaration.isHidden() and not w.brotli_declaration.isChecked()
+    assert w.stream_compression.currentData() == "best"
+    assert w.brotli_declaration.isVisible() and not w.brotli_declaration.isChecked()
     assert not w._draft_specs
 
 
@@ -1111,7 +1117,7 @@ def test_brotli_warning_is_native_contextual_help_without_inline_space_or_proces
     assert snapshot == (w._gen, dict(w._artifacts.results), dict(w._draft_specs), w._active_pid)
     assert not w._preview_timer.isActive() and not w._artifacts.pending
     w.revert_filter()
-    assert combo.toolTip() == combo.accessibleDescription() == ui.STREAM_HELP["flate"]
+    assert combo.toolTip() == combo.accessibleDescription() == ui.STREAM_HELP["best"]
 
 
 @pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
@@ -1136,7 +1142,8 @@ def test_brotli_declaration_uses_existing_unsaved_switch_transaction(window, mon
         w.revert_filter()
         assert w._result_key("bw-t180") == saved_key and not w.brotli_declaration.isChecked()
     elif choice == "discard":
-        assert w._active_pid == "color-max" and w.brotli_declaration.isHidden()
+        assert w._active_pid == "color-max" and w.stream_compression.currentData() == "best"
+        assert not w.brotli_declaration.isHidden()
         assert not w._draft_specs
     else:
         assert w._active_pid not in ("bw-t180", "color-max")
