@@ -18,7 +18,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools import bench_residual_streams as residual
 
 overview, study = residual.overview, residual.study
-SECTION = "## FFPR residual compression — Zopfli versus Brotli baseline"
+# §258 expands the published section; this runner still owns only NATIVE-02.
+SECTION = "## Stream compression — Zopfli versus Brotli baseline"
 ROWS = tuple(row for row in residual.ROWS if row.family.endswith("-ffpr"))
 LABELS = ("BW + JBIG2", "5 colors + layered JBIG2", "Color + JPEG q50",
           "Color + JPEG2000 lossy r192", "Color + JPEG2000 lossless")

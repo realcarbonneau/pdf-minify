@@ -178,7 +178,10 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     assert fixture["brotli_declaration"] is False
     assert fixture["documents"] == [d.key for d in overview.DOCUMENTS]
     parse = lambda line: [cell.strip() for cell in line.split("|")[1:-1]]
-    baselines = {cells[0]: cells[1:] for line in primary.split("## Overview — final complete-file bytes", 1)[1].splitlines()
+    # §258 moves fixed-encoder baselines out of the Best-only overview. The
+    # actual PNG denominator must remain its own encoder's visible control.
+    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("</details>", 1)[0]
+    baselines = {cells[0]: cells[1:] for line in controls.splitlines()
                  if line.startswith("| ") for cells in [parse(line)]}
     rows = [parse(line) for line in effects.splitlines() if line.startswith("| ")]
     assert len(rows) == 17 and len(rows[0]) == 7  # one header and sixteen pairs

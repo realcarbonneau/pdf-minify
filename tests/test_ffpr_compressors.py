@@ -119,11 +119,18 @@ def test_published_ffpr_effects_match_the_measured_sizes_fixture():
     assert fixture["brotli_declaration"] is False
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     section = report.split(ffpr.SECTION, 1)[1].split("\n## ", 1)[0]
-    parsed = [[cell.strip() for cell in line.split("|")[1:-1]]
-              for line in section.splitlines() if line.startswith("| ")][1:]
-    assert len(parsed) == 5
-    for row, expected in zip(parsed, fixture["rows"], strict=True):
-        assert row[0] == expected["label"]
+    # §258 embeds the unchanged 30-pair FFPR/J* subset in a 19-row binary
+    # reference. Audit every old cell by identity, not by incidental position.
+    from tools import bench_best_overview as best
+    first_table = section.split("### FFPR/J* subset", 1)[0]
+    parsed = {cells[0]: cells for line in first_table.splitlines() if line.startswith("| ")
+              if (cells := [cell.strip() for cell in line.split("|")[1:-1]])}
+    assert set(r.label for r in best.RECIPES) <= set(parsed)
+    assert len([label for label in parsed if label in {r.label for r in best.RECIPES}]) == 19
+    for expected, fixed in zip(fixture["rows"], ffpr.ROWS, strict=True):
+        recipe = next(r for r in best.RECIPES if r.family == fixed.family and r.variant == fixed.variant)
+        row = parsed[recipe.label]
+        assert expected["label"] == ffpr.LABELS[ffpr.ROWS.index(fixed)]
         for cell, baseline, candidate in zip(row[1:], expected["brotli"], expected["zopfli"], strict=True):
             change = (100 * Decimal(candidate-baseline)/Decimal(baseline)).quantize(Decimal("0.01"))
             if change == 0:

@@ -29,7 +29,7 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
     assert all("reference" in r.label for r in overview.ROWS if r.native == "flate")
 
 
-def test_only_the_eight_approved_overview_rows_are_removed():
+def test_legacy_control_selection_and_current_best_only_publication():
     removed = set(overview.ALL_ROWS) - set(overview.ROWS)
     assert len(removed) == 8
     assert {(r.family, r.variant, r.native) for r in removed} == {
@@ -41,15 +41,16 @@ def test_only_the_eight_approved_overview_rows_are_removed():
     main = report.split("## Overview — final complete-file bytes", 1)[1].split(overview.PNG_SECTION, 1)[0]
     published = [line.split("|")[1].strip() for line in main.splitlines() if line.startswith("| ")]
     assert not ({overview.display_label(r.label) for r in removed} & set(published))
-    assert {overview.display_label(r.label) for r in overview.primary_rows(overview.ROWS)} <= set(published)
+    from tools import bench_best_overview as best
+    assert {r.label for r in best.RECIPES} <= set(published)
     assert not any("PNG prediction" in label for label in published)
-    from tools import bench_png_extension as extension
-    assert {overview.display_label(r.label) for r in overview.primary_rows(extension.publication_rows())} <= set(published)
-    assert len(published) == 39  # one header, four dividers, 34 baseline combinations
-    native_palettes = [published.index(overview.display_label(r.label)) for r in extension.publication_rows()
-                       if r.family.startswith("indexed") and "ffpr" not in r.family and not r.variant.endswith("-png")]
-    ffpr_palettes = [published.index(overview.display_label(r.label)) for r in extension.publication_rows()
-                     if r.family.startswith("indexed") and "ffpr" in r.family and not r.variant.endswith("-png")]
+    assert len(published) == 24  # one header, four dividers, 19 Best combinations
+    assert not any(any(policy in label for policy in ("Best", "Zopfli", "Brotli", "Flate", "residual"))
+                   for label in published)
+    native_palettes = [published.index(r.label) for r in best.RECIPES
+                       if r.family.startswith("indexed") and "ffpr" not in r.family]
+    ffpr_palettes = [published.index(r.label) for r in best.RECIPES
+                     if r.family.startswith("indexed") and "ffpr" in r.family]
     assert max(native_palettes) < min(ffpr_palettes)
 
 

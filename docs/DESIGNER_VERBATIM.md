@@ -1107,3 +1107,7 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 ## 257 — make Best the setting for all app filters (verbatim, 2026-10-17)
 
 > Change all the app filters to "Best" please
+
+## 258 — Best-only overview and separate compressor experiment (verbatim, 2026-10-17)
+
+> Why do we still have rows in the main table that compare Zopfli with Brotli?  Move all those to the specialized binary table and only use the new "Best" algorithm for the main table, document in the section, but not in the table directly, because that would make the table too noisy, the specialize binary experiment table will be the reference for that information.

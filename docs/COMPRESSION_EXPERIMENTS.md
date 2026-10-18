@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–254. The primary measured-size tables are in
+Designer §§238–258. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -87,6 +87,10 @@ interrupted attempt only after repeating graph/image/hash checks; rejected or
 partial outputs are never imported or ranked.
 
 ## PNG-02 — palette and page-mode coverage
+
+§258 separates the main Best-only matrix from all fixed-encoder controls.
+PNG-02 retains its original fixed Zopfli/Brotli baseline recipes and measured
+bytes; they are not new Best controls. See the protocol below.
 
 Changed factor within every pair: reversible PNG image-row prediction OFF/ON.
 General image and native policies remain paired Zopfli-Flate or Brotli.
@@ -230,6 +234,30 @@ tables. Explain the encoder/decoder distinction in prose, not every row.
 See [the Zopfli project](https://github.com/google/zopfli#readme).
 This reporting change does not rename stored policies, UI controls or frozen
 measurement labels. Reader eligibility remains separate from the size result.
+
+## Best-only overview and expanded binary reference (§258)
+
+The main matrix measures Best through the existing production saver for
+19 image/reference recipes across six whole PDFs: 114 actual saved outputs.
+Its row labels name only the image recipe/fidelity; section prose owns the
+Best explanation and link to the controlled fixed-encoder comparison.
+Reuse hash-verified frozen prepared PDFs, not a guessed minimum of previous
+Zopfli/Brotli file sizes. Preserve image samples/palettes/predictors, native
+geometry, protected J* bytes and source/catalog semantics. Best makes no
+reader-compatibility guarantee beyond its existing Brotli-capable boundary.
+
+The specialized binary section expands to the same 19 recipes: Brotli is
+the baseline and Zopfli the treatment, with the existing two-decimal signed
+full-file percentages. For packed BW/indexed rows, the single general-encoder
+factor covers both sample-image and native streams; for J* and original-image
+references it changes native/residual streams only. Do not describe the former
+as an image-byte-fixed experiment. The existing NATIVE-02 five FFPR/J* rows
+and their exact accounting remain separately identified within that section.
+PNG-02 still compares each fixed encoder's own OFF/ON files; it must not use
+the new Best matrix as its denominator. Keep the Classic-Flate control and
+all historical fixed-encoder sizes as reference evidence outside the main
+Best-only table. No new image processing, GUI policy or default migration is
+authorized or needed for this reporting change.
 
 ## Proposed next — JBIG2-01: repeated-row prediction OFF/ON
 

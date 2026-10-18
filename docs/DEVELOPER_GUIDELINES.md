@@ -329,6 +329,16 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   deliberate choices remain editable/persistent; do not clamp at every load.
   This changes app defaults, not explicit benchmark recipes/frozen evidence
   or the headless legacy missing-policy fallback. See `filter_defaults.py`.
+- §258 makes the integrated main table Best-only: one actual measured output
+  per image recipe/input, with Best explained once in section prose, not row
+  suffixes. Move fixed Zopfli/Brotli alternatives into the specialized binary
+  section and keep the FFPR residual-only subset/accounting identifiable.
+  Keep Classic-Flate controls outside this main matrix. Do not use a minimum
+  of old sizes as a Best measurement. Reuse verified prepared images through
+  the real shared saver, preserving exact samples/native content and J* bytes.
+  Keep PNG pairs fixed-encoder controls, never compare them against a new
+  Best baseline. Frozen measurements and their producer identities remain
+  immutable; the overview policy changes, not application recipes or encoding.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

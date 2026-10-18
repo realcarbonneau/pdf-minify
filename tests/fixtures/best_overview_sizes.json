@@ -1,0 +1,866 @@
+{
+  "designer_ruling": 258,
+  "stream_policy": "best",
+  "brotli_declaration": false,
+  "measured_manifest_sha256": "ab689814fe55f1d89e2020dee1028819a0d0b9047bd5e84c582441376168f153",
+  "fixed_publication_sha256": "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d",
+  "classic_reference": [
+    188447,
+    367630,
+    4641959,
+    1493125,
+    502235,
+    2188983
+  ],
+  "documents": [
+    {
+      "key": "native",
+      "label": "Native text/vectors",
+      "source": "examples/form-fw9.pdf"
+    },
+    {
+      "key": "scan",
+      "label": "BW scan",
+      "source": "examples/scan-naca-tm972.pdf"
+    },
+    {
+      "key": "photos",
+      "label": "Color photos",
+      "source": "examples/news-crater-lake-2026.pdf"
+    },
+    {
+      "key": "art",
+      "label": "Flat-color artwork",
+      "source": "examples/images.pdf"
+    },
+    {
+      "key": "mixed",
+      "label": "Mixed text/images",
+      "source": "examples/paper-arxiv-1406.2661.pdf"
+    },
+    {
+      "key": "kepler",
+      "label": "Technical illustrations",
+      "source": "examples/models-nasa-kepler.pdf"
+    }
+  ],
+  "rows": [
+    {
+      "key": "reference",
+      "label": "Unresampled reference",
+      "family": "preserve-images",
+      "variant": "preserve-images",
+      "section": "Unresampled reference",
+      "best": [
+        182485,
+        364347,
+        4455585,
+        913416,
+        450454,
+        1607127
+      ],
+      "pdf_sha256": [
+        "60253dd01499fc4615b8ec1da7513324dbfd7ccab6ad2ebb81d8dd80d19568a0",
+        "e3e31b51737537780eea3bd4509031782dd4a96923c5d795a4d1e61636e2cd02",
+        "86bf28adcec8adbf29cd39e815f7758b9db5005c62bdb5607ef2f0a8a5b2905a",
+        "d424e6ea9ca95749625ef4358297418aba0a1579fbe030d051d981cc135aeb87",
+        "a51b230d24bec109f33997e792303d47bbfaa4594594944890216f80941e4aa7",
+        "b54532a1d090b440f4230938972126e5309358a32f1f9915ceb0da8c363c13a3"
+      ],
+      "brotli": [
+        182487,
+        364353,
+        4472491,
+        1492960,
+        483797,
+        1765944
+      ],
+      "zopfli": [
+        187455,
+        366695,
+        4574656,
+        1492980,
+        491510,
+        2016866
+      ],
+      "fixed_labels": {
+        "brotli": "Preserve images + Brotli native",
+        "zopfli": "Preserve images + Zopfli native"
+      }
+    },
+    {
+      "key": "bw-jbig2",
+      "label": "BW + JBIG2",
+      "family": "bw-images",
+      "variant": "jbig2",
+      "section": "Black and white (BW + Otsu)",
+      "best": [
+        182485,
+        267896,
+        1622205,
+        9761,
+        300346,
+        1106489
+      ],
+      "pdf_sha256": [
+        "47a4f5949c709141861952bc2182f5071b16595b2def7621e4c7b2a54d3d392e",
+        "edc554e7e7c415759de51b4a70878c5f3635a21c3ba2ff1d1a0a253c7d12b918",
+        "24f7ad14d740f19d09a1cc91d193fd6a4e9c0c94cc762038713b465464f0a314",
+        "d8776cace93dee6d2657d78130d0bf0bbe99d8047eb15291dbe7602d3de5f778",
+        "808574add95bc4addc0317085f651bc0ccfc3e166854514d380f881c6a3a72fe",
+        "8babffd6a61afce09f1d44fde368f27d97b461048518335c78f4e9385c865157"
+      ],
+      "brotli": [
+        182487,
+        267896,
+        1622361,
+        9786,
+        300351,
+        1106496
+      ],
+      "zopfli": [
+        187455,
+        270228,
+        1724023,
+        9798,
+        308080,
+        1357736
+      ],
+      "fixed_labels": {
+        "brotli": "BW + JBIG2 + Brotli native",
+        "zopfli": "BW + JBIG2 + Zopfli native"
+      }
+    },
+    {
+      "key": "bw-packed",
+      "label": "BW + packed samples",
+      "family": "bw-images",
+      "variant": "zopfli-plain",
+      "section": "Black and white (BW + Otsu)",
+      "best": [
+        182485,
+        413126,
+        1747688,
+        14678,
+        304701,
+        1127095
+      ],
+      "pdf_sha256": [
+        "803a1cdb749aef2510ec5636b320144772e0ea5357a5788fb8e135eeb611f76f",
+        "d3fdaf60822cf7f3060cd0095bdc9188be56036c104009e0f4047df82d49d01b",
+        "05c9259b02de7fda4559f6380ee893b10786beec7fd1d3fe19b2ad9f1d8d72ac",
+        "bb22c93755e149a951f623d17ae8a901d4dbd73db37e8c7ed925dfe3e016f883",
+        "527e00ca01f0e6a7addc84a3c09d623ff8375d2173cc69739e5ecc8129bd011c",
+        "e57ae04c4b6c9863ce383d7025699d1086985e0505c8e6d349776a578ae72c83"
+      ],
+      "brotli": [
+        182487,
+        412939,
+        1747708,
+        14686,
+        304672,
+        1126949
+      ],
+      "zopfli": [
+        187455,
+        578690,
+        1973320,
+        20769,
+        323270,
+        1424063
+      ],
+      "fixed_labels": {
+        "brotli": "BW + Brotli",
+        "zopfli": "BW + Zopfli"
+      }
+    },
+    {
+      "key": "bw-ffpr-jbig2",
+      "label": "BW FFPR + JBIG2",
+      "family": "bw-ffpr",
+      "variant": "jbig2",
+      "section": "Black and white (BW + Otsu)",
+      "best": [
+        297872,
+        229520,
+        1199049,
+        3868,
+        316049,
+        299818
+      ],
+      "pdf_sha256": [
+        "f493a53a9467f873ae23ad4d9b59c59e4fb4441001f60af0ba19ca535f37ba4f",
+        "03632db58d797284334020182d223f46dd558963ec78f7abf4b8f470ec95ecd0",
+        "59c8f41862691d04835a2b511f2a459c8cdfa016891de97bb749d6bdcd3c2797",
+        "929a867cab52b77f2c61945c0a33cd26d32a1e34f9c9172ca65b00341f88867e",
+        "0a0be411a3eedc4b201ad581c239f14b50db904d1c6d00cefe1fa40d7010092e",
+        "fbbbff7cf4ae2d6c05cc0d335ea6c48317cb5fd1cf0ab30ee29a5bf09901dd7c"
+      ],
+      "brotli": [
+        297875,
+        229534,
+        1199051,
+        3871,
+        316052,
+        299821
+      ],
+      "zopfli": [
+        297872,
+        229520,
+        1199049,
+        3868,
+        316049,
+        299818
+      ],
+      "fixed_labels": {
+        "brotli": "BW FFPR + JBIG2 + Brotli residual streams",
+        "zopfli": "BW FFPR + JBIG2; optimized residual streams"
+      }
+    },
+    {
+      "key": "bw-ffpr-packed",
+      "label": "BW FFPR + packed samples",
+      "family": "bw-ffpr",
+      "variant": "zopfli-plain",
+      "section": "Black and white (BW + Otsu)",
+      "best": [
+        531332,
+        374750,
+        1903288,
+        9417,
+        574780,
+        527882
+      ],
+      "pdf_sha256": [
+        "240921b9f402b74194803420f3d9d52650d56688caacbe2653c59bfedfda0f43",
+        "27d6161db1d85977409fb12c5e612cd94fc1f8e3372b5d188a5c4d47fa5ec841",
+        "83def7540b882be38ab544d003ba01e7d03918fe8f601ba02d48d3db71d23e40",
+        "bc160237a3e3b8f293fb75e6bc6206f1d3817b72529b5c712c5159e90c8cb2f6",
+        "b8e1c22252608d1e2903c9dcf0201c957ad46e5c9ac23017ac4c562dfd9cc323",
+        "e837ee40f2c27f4bcb772eb59f3e9d3289ab89c88328b72132a6128751a61e1d"
+      ],
+      "brotli": [
+        531233,
+        374577,
+        1903154,
+        9403,
+        574630,
+        527681
+      ],
+      "zopfli": [
+        688732,
+        537982,
+        2436663,
+        15756,
+        743693,
+        724057
+      ],
+      "fixed_labels": {
+        "brotli": "BW FFPR + Brotli",
+        "zopfli": "BW FFPR + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-jbig2",
+      "label": "Indexed 5 colors + colored JBIG2",
+      "family": "indexed",
+      "variant": "jbig2",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        182485,
+        269681,
+        4003018,
+        15737,
+        338209,
+        1363580
+      ],
+      "pdf_sha256": [
+        "6ff8f0d55cc5fbaa91278e80ea75a5fb2746cdddeabd1a8e23e4fc412f5e8485",
+        "3bd4e8865a146cfe0a2c60ee33f104c42a17926fb1a4aa0e6e13b49ef6780ce4",
+        "cc52fc6cbcd70749bf261b4d662ead7109f4fd4c9b03acaea70a0323e2141ad5",
+        "a61de646a525430e2eb2aa2d309a4ab9d1950a6d3394473f1ecaab7731ce473f",
+        "92c0e96286329c90967370f5c8fade51908df49051e5125002c65d2312075499",
+        "f44c5dbbef10cd78a1df2b84056f2160af44489a1eeb8848c11f8cf9bd14f8ba"
+      ],
+      "brotli": [
+        182487,
+        269681,
+        4003174,
+        15757,
+        338214,
+        1363587
+      ],
+      "zopfli": [
+        187455,
+        272001,
+        4104794,
+        15776,
+        345953,
+        1614891
+      ],
+      "fixed_labels": {
+        "brotli": "Indexed 5 colors + colored JBIG2 + Brotli native",
+        "zopfli": "Indexed 5 colors + colored JBIG2 + Zopfli native"
+      }
+    },
+    {
+      "key": "indexed-5",
+      "label": "Indexed 5 colors",
+      "family": "indexed",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        182485,
+        413401,
+        3277697,
+        21909,
+        331692,
+        1334237
+      ],
+      "pdf_sha256": [
+        "486f50632805f41275a224bee148e2c6e1a1dd2ebee2a5a07f43a4420964a776",
+        "ed7091924cc2a06e3933578821b4eb81e08da52e01a58756bdd7698d22934706",
+        "b3cba3218a12bf64c584b5fa3ed167a957b5eb3cd901face3043e92d00cd98ab",
+        "e42467cfc944bca5b87e0c0e71306c2763903612c49a48f2d469780715d2c685",
+        "ee378eba77388cb25c8a906bb44a235a0d09d35a841a0c43fb8de7f1a778fff7",
+        "f03abec8dde9289b144855a52536f143bafa11865a48b74af3e219dbe3cfbb8b"
+      ],
+      "brotli": [
+        182487,
+        413214,
+        3277717,
+        21917,
+        331663,
+        1334091
+      ],
+      "zopfli": [
+        187455,
+        578965,
+        3769149,
+        28012,
+        359179,
+        1683086
+      ],
+      "fixed_labels": {
+        "brotli": "Indexed 5 colors + Brotli",
+        "zopfli": "Indexed 5 colors + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-16",
+      "label": "Indexed 16 colors",
+      "family": "indexed-16",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        182485,
+        413401,
+        5456145,
+        36337,
+        416843,
+        1712306
+      ],
+      "pdf_sha256": [
+        "e3fec69da76a319695a66c46df2aea859df0bdf33e3816ec5dae1dd3198d409a",
+        "5cc462c982645602a2364b6e8d4031e8c109522087bafd4dd9f91b4e13f06fe1",
+        "7d4bba9620576a137181c433ea3c8b4f505274bf9ed9f090d63d744f79f398c6",
+        "d5bb3254d487d13bd51a3ec1994274d8101c66815d1e71964e421e96aa7840b4",
+        "c8cbf181aa290cace1ce0a3d2d1d84f07c048a0bf2c926bba93abeac91884fe2",
+        "9ba815a7b81310dabb6fb36e4e62fa825675ecb805c75a8ccedd8921dbfda043"
+      ],
+      "brotli": [
+        182487,
+        413214,
+        5456165,
+        36345,
+        416814,
+        1712160
+      ],
+      "zopfli": [
+        187455,
+        578965,
+        6116675,
+        44809,
+        459802,
+        2122383
+      ],
+      "fixed_labels": {
+        "brotli": "Indexed 16 colors + Brotli",
+        "zopfli": "Indexed 16 colors + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-64",
+      "label": "Indexed 64 colors",
+      "family": "indexed-64",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        182485,
+        413401,
+        8276451,
+        52382,
+        513607,
+        2247500
+      ],
+      "pdf_sha256": [
+        "87bc2d2566d81e7f30f80b5169c765a4c518955d43c6635a87d6f178bb2dff3a",
+        "a826cc30ea211f27b2391b755bb4768aeea5b02a252c8b9c6c2c616cfc483568",
+        "042bdfa6c9276a8f1f25c8dd38658b40cd399d1cb9da3e85defeb0140f39c70f",
+        "dcb83e4bea3964408d43759a245e76c9e61ca77b6d68820c57673a520da8c905",
+        "89f03f62d9a854ac4bed2721e3880cc2c7b581531fcfebb640c1a8835d629375",
+        "d33e692257cd3d08bf13ff046fb55e37d92d851c0c154253d8e6e02442c25abd"
+      ],
+      "brotli": [
+        182487,
+        413214,
+        8276471,
+        52390,
+        513578,
+        2247354
+      ],
+      "zopfli": [
+        187455,
+        578965,
+        9338434,
+        63305,
+        578231,
+        2774044
+      ],
+      "fixed_labels": {
+        "brotli": "Indexed 64 colors + Brotli",
+        "zopfli": "Indexed 64 colors + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-ffpr-jbig2",
+      "label": "Color FFPR; indexed 5 colors + colored JBIG2",
+      "family": "indexed-ffpr",
+      "variant": "jbig2",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        299497,
+        231619,
+        3817040,
+        9390,
+        337263,
+        394148
+      ],
+      "pdf_sha256": [
+        "9196f794cbbad99df35a0202ababa39d294ef8fbde8ed0aee61b3927fe631af2",
+        "1fb8d13948d7ea1b7ec4615f6c7e23ece43b9412765a8e3fa8d9d3cc1e4d0dd8",
+        "dc24ba2fb246d1e55d1aa6a5838f434df96444fd1995559e2984f3c7ad8018a6",
+        "8031a7af86a145f731974cbd4231528c99fdd5654949c36c7514eed04eefb15f",
+        "5c4c4b54706e7bb9f694e0b920be0da1525a0d55ce04ec91060058252704acd6",
+        "cab7029541b84ce0b192cc1d18f8cee1cca7e22b3fa15d07dd0b131959829a69"
+      ],
+      "brotli": [
+        299602,
+        231716,
+        3817040,
+        9400,
+        337306,
+        394241
+      ],
+      "zopfli": [
+        299497,
+        231619,
+        3817106,
+        9390,
+        337274,
+        394165
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR; indexed 5 colors + colored JBIG2 + Brotli residual streams",
+        "zopfli": "Color FFPR; indexed 5 colors + colored JBIG2; optimized residual streams"
+      }
+    },
+    {
+      "key": "indexed-ffpr-5",
+      "label": "Color FFPR; indexed 5 colors",
+      "family": "indexed-ffpr",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        531482,
+        375025,
+        3733844,
+        15377,
+        602485,
+        676564
+      ],
+      "pdf_sha256": [
+        "418309dc7ce6e49fc07911ed67a08b0928a768625360a12c067a3ecd3b5d06f0",
+        "121bf3749c230d0fa02b78a5368882e01242734ad43ead8b01f0664cc9ea3719",
+        "16a988db2e7634953309a0b1d313b89d7ed906915bd2837957829bed025b4bf3",
+        "44dcac074c05761cec42ab5cd41ddf0a3530adfebdd07edac6adc2c42bcf5baa",
+        "f242388c3bbf1f6eec4ae0f336e36f16082265770cd0c0ae8f796631b7b0583f",
+        "f93cd77dc2681e1fd8dd9c11a7ecf5d2e1c0b8a2da7cc67be443ef56258f7745"
+      ],
+      "brotli": [
+        531383,
+        374852,
+        3733710,
+        15363,
+        602335,
+        676363
+      ],
+      "zopfli": [
+        688882,
+        538257,
+        4501917,
+        21713,
+        783305,
+        912904
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR; indexed 5 colors + Brotli",
+        "zopfli": "Color FFPR; indexed 5 colors + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-ffpr-16",
+      "label": "Color FFPR; indexed 16 colors",
+      "family": "indexed-ffpr-16",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        531482,
+        375025,
+        6169370,
+        31186,
+        634540,
+        817716
+      ],
+      "pdf_sha256": [
+        "61174fe4baf36286ec1f365cb2d2fc268fbd5dedea50ad4bfca332fdbf1166ce",
+        "15233ca3e9a958cd59899427d69c0e3a5651b06cdf8a3972cdb1e43ee0aaa3d0",
+        "ea52361b375e1e6bf4431c658203c28de5435899c979cb150b1b173f79357716",
+        "67c65110532d856457ab4571a957f0fc8da7580bc69aa015f79a5ba8fac04cf6",
+        "e4e68e25b8be4c7a63c2c9380c28522297c0d6d4eee6a257e5bb54ef1d78243c",
+        "c881bfc15f2c4fd9f62b67c63ade91bf89fa076ea31b010f6a36b5cb5023911d"
+      ],
+      "brotli": [
+        531383,
+        374852,
+        6169236,
+        31172,
+        634390,
+        817515
+      ],
+      "zopfli": [
+        688882,
+        538257,
+        7213825,
+        39624,
+        818742,
+        1071002
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR; indexed 16 colors + Brotli",
+        "zopfli": "Color FFPR; indexed 16 colors + Zopfli"
+      }
+    },
+    {
+      "key": "indexed-ffpr-64",
+      "label": "Color FFPR; indexed 64 colors",
+      "family": "indexed-ffpr-64",
+      "variant": "zopfli-plain",
+      "section": "Indexed color \u2014 low palettes",
+      "best": [
+        531482,
+        375025,
+        9679530,
+        47253,
+        661319,
+        991691
+      ],
+      "pdf_sha256": [
+        "30bc25f1368eef686ffea1c0381800da96e7678ffa57881491df616c2a3c8ad4",
+        "1b0d108bcfb17238b808ff5574217ea7a50a41169324c383472d95f1a88b30b7",
+        "a9d652181ea10b814f79a502c945b99c8892d9a8e0c5c2c2044619d71e674360",
+        "bb2d2d02301fcb0adb7a9339fb97a71f24a4600dbbb872f34580cdd54cce4d3a",
+        "1bfe06246a4941e5d7ab0e0dd1f701ed914b2c9cea19ab59599adf20c87c7963",
+        "17e1b43e06c724909312ab1b184eff387468775f0b5193eb163c7876bec65982"
+      ],
+      "brotli": [
+        531383,
+        374852,
+        9679396,
+        47239,
+        661169,
+        991490
+      ],
+      "zopfli": [
+        688882,
+        538257,
+        11133100,
+        58350,
+        862205,
+        1327080
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR; indexed 64 colors + Brotli",
+        "zopfli": "Color FFPR; indexed 64 colors + Zopfli"
+      }
+    },
+    {
+      "key": "jpeg",
+      "label": "JPEG q50",
+      "family": "jpeg-q50",
+      "variant": "jpeg-q50",
+      "section": "Full color",
+      "best": [
+        182485,
+        4432538,
+        6167987,
+        116259,
+        542736,
+        2098270
+      ],
+      "pdf_sha256": [
+        "f758ec8cb2d19e8a96fa646879f98caa85415db3ad25807b5fd04c8d9072cbad",
+        "4de23942b45c94521d98c810675809385cde5893543b14348045e7892d72a6a8",
+        "ed2b27a14a1203ea0f3676604728e39a1b1ac5214ab00feb8f9bb5204c488223",
+        "a9efec29a1ab3eeb4a3f87507f1f0b7021c5b9c57776be14693725e23422ce4c",
+        "7821dde1e3913693a630aac065bd0e522469308fc98c47f856c8b4ce1d3d984a",
+        "2006185f2933a768071730a4a7c80c55cd2917f3a4a42c618f39a71b57319078"
+      ],
+      "brotli": [
+        182487,
+        4432538,
+        6168143,
+        116284,
+        542741,
+        2098277
+      ],
+      "zopfli": [
+        187455,
+        4434870,
+        6269805,
+        116296,
+        550470,
+        2349517
+      ],
+      "fixed_labels": {
+        "brotli": "JPEG q50 + Brotli native",
+        "zopfli": "JPEG q50 + Zopfli native"
+      }
+    },
+    {
+      "key": "jpx-lossy",
+      "label": "JPEG2000 lossy r192",
+      "family": "jpx-r192",
+      "variant": "jpx-r192",
+      "section": "Full color",
+      "best": [
+        182485,
+        1251344,
+        3524907,
+        139031,
+        530867,
+        2232391
+      ],
+      "pdf_sha256": [
+        "54ee58bf298de9d3dac52fed23f960c218beaed30dad09ee2c19818b9c47d6fc",
+        "90dbd9dc768bfe2bfdf7e523344b1091637b228fc0fa892164c9d0ffeb541c57",
+        "0bc1343bff7d85b6626f5d2d8300cf466e5711406a6f559e111a2ea76f42b30a",
+        "8c29b88f69f8a396b1d9862644a08122390a7d68461ecfeea856130ac262babe",
+        "98bb5f61de823cd7b6909d8afa0181f85a3903641d2b9317875d938a26837f95",
+        "7467a0b2429d31aa755578c0c0a7eb398df42e049b0baa4be274fbc70bf02fe6"
+      ],
+      "brotli": [
+        182487,
+        1251344,
+        3525063,
+        139056,
+        530872,
+        2232398
+      ],
+      "zopfli": [
+        187455,
+        1253676,
+        3626725,
+        139068,
+        538601,
+        2483638
+      ],
+      "fixed_labels": {
+        "brotli": "JPEG2000 lossy r192 + Brotli native",
+        "zopfli": "JPEG2000 lossy r192 + Zopfli native"
+      }
+    },
+    {
+      "key": "jpx-lossless",
+      "label": "JPEG2000 lossless",
+      "family": "jpx-lossless",
+      "variant": "jpx-lossless",
+      "section": "Full color",
+      "best": [
+        182485,
+        19097985,
+        56241450,
+        569331,
+        1805448,
+        8674834
+      ],
+      "pdf_sha256": [
+        "df6a34f72996fdee70b2f53b6689f9558aaa9667c4e0cf4924ed717717fb80cd",
+        "ddd2623287e51a413b06785b59db0d9391f684978217e80ca8c4499be8439877",
+        "ee534f47fab93c97e535a93cce79a15089d24bf322a162f6bdcb383e48796565",
+        "204f1c655d620bb42a1a8ed83b5bb83daa2461e724439e81c677d61751173de6",
+        "9d2bf89a6d985605c86e408fd124ec706dbf87ee911f5cb524d875ee2cb5feef",
+        "598e846aab6c6b5414ebd6cc8a483c7f0b6080476bd5aeedb00915174c8a4305"
+      ],
+      "brotli": [
+        182487,
+        19097985,
+        56241606,
+        569356,
+        1805453,
+        8674841
+      ],
+      "zopfli": [
+        187455,
+        19100317,
+        56343268,
+        569368,
+        1813182,
+        8926081
+      ],
+      "fixed_labels": {
+        "brotli": "JPEG2000 lossless + Brotli native",
+        "zopfli": "JPEG2000 lossless + Zopfli native"
+      }
+    },
+    {
+      "key": "jpeg-ffpr",
+      "label": "Color FFPR + JPEG q50",
+      "family": "jpeg-q50-ffpr",
+      "variant": "jpeg-q50-ffpr",
+      "section": "Full color",
+      "best": [
+        5674560,
+        4394162,
+        16652211,
+        119758,
+        5695628,
+        6225232
+      ],
+      "pdf_sha256": [
+        "dc6550b8bb9b2127bdb6ace8f6fd6b7a650b7bb18cd8a19b391374a18f05ea28",
+        "220694469196986434e773f6c9e77c1f59e6a7c6c30805bd0e68925df66785ad",
+        "a7df039898c5de439b29a386cdcb2611034cb02c3f615f8298ebc94570ed429c",
+        "60e6c27683f0b3f64a6c14885a0df9a8ec385510f9ab66ad349b1573ddf2ece5",
+        "07e5290df9654fac0eb20ce21b4e8a5720c0bfa7c1ae41b4f0f7f3850c2a6d47",
+        "34289b5d245eeba72fa5ae8b351e131b09af0183c1db8b9d1534bcf76393844a"
+      ],
+      "brotli": [
+        5674563,
+        4394176,
+        16652213,
+        119761,
+        5695631,
+        6225235
+      ],
+      "zopfli": [
+        5674560,
+        4394162,
+        16652211,
+        119758,
+        5695628,
+        6225232
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR + JPEG q50 + Brotli residual streams",
+        "zopfli": "Color FFPR + JPEG q50; optimized residual streams"
+      }
+    },
+    {
+      "key": "jpx-lossy-ffpr",
+      "label": "Color FFPR + JPEG2000 lossy r192",
+      "family": "jpx-r192-ffpr",
+      "variant": "jpx-r192-ffpr",
+      "section": "Full color",
+      "best": [
+        790654,
+        1212968,
+        2322153,
+        132374,
+        1186046,
+        1581087
+      ],
+      "pdf_sha256": [
+        "f5d6b13ef66c550a8f8935688edb2c36e1487f96792ada8cd54867b4c6c115e3",
+        "0fac6c84c074dc7420be74cbf3c7a808262691a7939aec68da1264b13db21b16",
+        "2549d63a878cbb4505d1e4159b2ef83a716ea952e8975f60e74d59020cee753a",
+        "de87cf96575717da1265420780c558e1b390ac611fa3b3ee4bc84f6e36f18cb5",
+        "02d51a89b8689531587d85769abf860bf8ca0315d103328dd017b51a3ae2e777",
+        "35221df449b8a3a53fb447a4af3b3e241e5ab782cf1fa105d017748a2692101f"
+      ],
+      "brotli": [
+        790657,
+        1212982,
+        2322155,
+        132377,
+        1186049,
+        1581090
+      ],
+      "zopfli": [
+        790654,
+        1212968,
+        2322153,
+        132374,
+        1186046,
+        1581087
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR + JPEG2000 lossy r192 + Brotli residual streams",
+        "zopfli": "Color FFPR + JPEG2000 lossy r192; optimized residual streams"
+      }
+    },
+    {
+      "key": "jpx-lossless-ffpr",
+      "label": "Color FFPR + JPEG2000 lossless",
+      "family": "jpx-lossless-ffpr",
+      "variant": "jpx-lossless-ffpr",
+      "section": "Full color",
+      "best": [
+        26977014,
+        19059609,
+        127518137,
+        631376,
+        27091577,
+        32340923
+      ],
+      "pdf_sha256": [
+        "56e6dd6c6ac74c66ab6fdbb555e45d2943382f1122d03d4b23511dfebb6dee45",
+        "3b96dce47256655e7e0603c5c8a5b2e3386d0fab66fda06bfbf38cf2a93b9085",
+        "a7174ad66665e7589849707e9d86a4b240a27a71d5577578ffdef633f6df80f9",
+        "73522f02478656b7c89cbb451327da75e83712ade8dfddbb6d229568dee977e0",
+        "b70055a3a7050e7e95eb41a4f32dacf117dbf431f96ee4c1258de9eb386c6ee6",
+        "6269a822240351cc57bc795bf8684e0334952bf49059d23b9531edeffc074e41"
+      ],
+      "brotli": [
+        26977017,
+        19059623,
+        127518139,
+        631379,
+        27091580,
+        32340926
+      ],
+      "zopfli": [
+        26977014,
+        19059609,
+        127518137,
+        631376,
+        27091577,
+        32340923
+      ],
+      "fixed_labels": {
+        "brotli": "Color FFPR + JPEG2000 lossless + Brotli residual streams",
+        "zopfli": "Color FFPR + JPEG2000 lossless; optimized residual streams"
+      }
+    }
+  ]
+}

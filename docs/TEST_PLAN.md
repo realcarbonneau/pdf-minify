@@ -10,6 +10,30 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+§258 Best-only overview: **794 passed**, `./test.sh`, exit 0 / FULL SUITE
+GREEN, no expected failures. Focused overview/binary/PNG checks pass **105
+tests**. New regressions cover missing/duplicate/invalid cells, fixed-policy
+relabeling, per-fidelity minima, real shared-saver output, strict resume/
+tampering and incomplete publication rejection.
+
+All **114 actual Best PDFs** are independently audited against their exact
+source/preparation/recipe, saved sizes/hashes and semantic graphs. Neither
+image preparation nor J* encoding repeats. The expanded binary table retains
+**114 fixed-encoder pairs**: 66 also preserve encoded image bytes, while 48
+packed-image pairs preserve decoded samples. The original 30-pair FFPR/J*
+subset and all **96 PNG denominators/effects** remain unchanged. The regression
+fixture pins every new Best size/hash and both fixed-policy sizes; tests audit
+the main table, relocated raw controls, percentage tables and fidelity groups.
+Evidence: `best-overview-300dpi-20261017/metrics.json` and
+`best-overview-publication-20261017/audit.json` under `.tmp/compression-experiments/`.
+
+No application code/settings change or new dependency is involved. Environment
+checks confirm the intended system/venv split. **Implementation verified
+2026-10-17; not designer acceptance.** These completion notes are documentation
+only and reuse this passing code result under §241.
+
+### Previous all-app-filter defaults stage (§257)
+
 §257 all-app-filter default/migration: **777 passed**, `./test.sh`, exit 0 /
 FULL SUITE GREEN, no expected failures. New regressions cover all six modes,
 missing/malformed revisions, full record/UUID/name/order/parameter preservation,

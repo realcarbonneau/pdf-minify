@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 255. Routine execution requests are not TODOs (§218).
+new TODO ID is 256. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2419,3 +2419,17 @@ viewed, verifying all 12 actual filter recipes use Best. The live settings
 audit preserves all five saved records exactly except the stream policy, plus
 renames/order/DPI revision. **Implementation verified 2026-10-17; not designer
 acceptance.** See `DESIGN.md` §257, `NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`.
+
+## 255 — DONE (designer §258: Best-only integrated overview)
+
+~~Use Best only in the main matrix and move fixed-encoder comparisons to the specialized binary reference.~~
+Stub: 19 recipes × six complete PDFs use **114 actual new Best saves**,
+with the common policy explained in prose, not row suffixes. The binary
+section covers 114 existing fixed-encoder pairs and relocated raw sizes;
+the 30-pair FFPR subset/accounting and all 96 PNG effects remain intact.
+Source/preparation/recipe/output hashes, exact semantic graphs and protected
+J* bytes pass the independent publication audit. No application code or
+settings change. **105 focused tests; 794 full-suite tests passed.**
+**Implementation verified 2026-10-17; not designer acceptance.** See
+`INTEGRATED_COMPRESSION.md`, `DESIGN.md` §258, `COMPRESSION_EXPERIMENTS.md`,
+`TEST_PLAN.md`, `tools/bench_best_overview.py` and `tools/publish_best_overview.py`.

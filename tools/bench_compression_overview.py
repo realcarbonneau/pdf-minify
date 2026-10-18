@@ -1,7 +1,8 @@
-"""Six representative PDF cases, realistic combinations, complete bytes only.
+"""Fixed-encoder controls over six representative PDFs, complete bytes only.
 
 Reuses hash-verified complete outputs, measures missing cells with the existing
 strict integrated saver, and publishes Markdown rather than a codec cross-product.
+The current Best-only primary matrix is owned by bench_best_overview.py (§258).
 """
 
 import argparse

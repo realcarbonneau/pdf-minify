@@ -52,6 +52,14 @@ PDFs, then focused scenario tables, with all overhead included and no timing
 comparisons. Mixed general-codec pairs are excluded; the two component
 studies above support the analysis, not substitute for it.
 
+§258 makes the main matrix Best-only: one measured row per image recipe,
+with the common stream policy explained in section prose, not repeated row
+suffixes. The specialized binary section owns fixed Zopfli/Brotli alternatives
+and reference sizes; PNG effects retain their own fixed-encoder denominators.
+Use actual new Best saves from verified preparations, never copied minima.
+The earlier fixed-study counts below describe its retained control inventory,
+not the current main-table row selection.
+
 [JBIG2.md](JBIG2.md) (§234) documents the current generic-region `-p` path,
 lossless/lossy feature boundaries, refinement limitations and TODO §240's
 size-only optimization research. No additional switches or advanced GUI

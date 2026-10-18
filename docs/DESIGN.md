@@ -608,6 +608,35 @@ and the headless legacy missing-policy fallback are not rewritten by an app
 default change. §257 supersedes §§255/256's no-default-migration boundary only
 for this app migration; the fixed encoder APIs retain their meanings.
 
+### Best-only integrated overview (§258)
+
+The primary complete-file matrix uses the actual Best stream policy for every
+image recipe, not separate fixed Zopfli/Brotli rows or a minimum copied from
+their old sizes. Explain Best once in the overview section, with a link to
+the specialized controlled compressor comparison; omit stream-policy names
+and "optimized residual streams" suffixes from its row labels. The unresampled
+Best reference preserves samples, not necessarily their original lossless
+encoding; label it "Unresampled reference", not "Preserve images". Keep one
+continuous table, six complete inputs, native/FFPR fidelity groups, 300 DPI,
+plain image prediction and measured complete-file bytes. Packed BW/indexed
+images participate in Best; J* payloads remain unchanged.
+
+Move fixed Zopfli/Brotli alternatives to the specialized binary section,
+extending its coverage to all overview recipes. Its factor is residual/native
+encoding for specialized J* or preserved-image cases, and the shared general
+encoder for packed-image cases; state this boundary explicitly. Retain the
+original FFPR-only experiment and its accounting as a separately identified
+subset. Keep Classic-Flate reference evidence outside the Best-only matrix.
+PNG OFF/ON pairs remain a separate fixed-encoder experiment; their baselines
+are not renamed to Best or silently compared against new Best results.
+
+Save actual new Best outputs through the shared saver from verified frozen
+preparations, without repeating raster/image preparation or J* encoding.
+Verify source/preparation/output hashes, exact decoded native/image content,
+unchanged visual graph and protected J* payloads. Retain frozen fixed-encoder
+provenance and all old measurements. This updates reporting and benchmark
+policy, not app settings, core algorithm behavior or reader certification.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview
