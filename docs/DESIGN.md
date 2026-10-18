@@ -661,6 +661,45 @@ its presentation regressions, without re-encoding the corpus, changing app
 behavior or modifying frozen evidence. The results/conclusion must precede
 the method and existing percentage table.
 
+### Joint image prediction and stream selection (§260)
+
+Supersede §259's runtime predictor-preservation boundary: **Best
+(Zopfli/Brotli) always tests PNG prediction OFF and ON for eligible prepared
+image samples**, with both encoders. Do not discard Brotli+prediction because
+of a corpus heuristic; the noisy-BW counterexample rules that out. Native
+text/vector/font streams still compare the two encoders without image-row
+prediction. An image stream is not a native text/vector stream, but either
+kind can select Zopfli. "PNG prediction" describes reversible sample-row
+filtering; the input need not contain PNG files.
+
+For explicit Zopfli, expose **PNG prediction: Off / On / Best**. This
+selection controls eligible packed BW/indexed image storage as well as the
+existing Zopfli native-stream policy. Best compares both predictor states;
+Off/On force their stated state. Keep the control visible but disabled at
+Best for the Best stream policy, and disabled/inapplicable for J* image
+choices and other fixed stream policies. Preserve the saved explicit choice
+when switching controls. Include only the effective choice in recipe/cache
+identity; use the existing debounce/dirty/Save/Save As/Revert lifecycle.
+
+Use one core predictor and selection saver, disk-backed encoded alternatives,
+exact sample readback and actual complete-file trial saves. Include predictor
+dictionary and PDF/container overhead when selecting; prefer fewer Brotli
+streams, then fewer predictions on exact ties. Never repeat composition,
+resizing, thresholding, quantization or J* encoding for a storage trial.
+No-image/native-only and specialized J* payloads need no predictor work.
+For general images, validate sample layout rather than guess from names or
+extensions. Preserve unknown layouts in automatic mode; an explicit On must
+fail clearly if it cannot be applied. Keep cancellation/atomic publication,
+mask/palette/native geometry and the compatibility declaration contract.
+
+Legacy headless explicit-policy calls without a predictor field keep their
+native-only semantics; app recipes carry the new choice. Frozen §258
+benchmarks explicitly retain predictor-preserving selection and remain
+labeled as such, never relabeled as measurements of §260. Update the decision
+tree and publisher without inventing replacement sizes. Verify both encoder
+and predictor outcomes, packed row padding, masks, exact visuals and the
+shared GUI lifecycle; capture/view the new control states.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

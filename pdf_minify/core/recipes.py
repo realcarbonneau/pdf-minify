@@ -3,12 +3,14 @@
 from .pipeline import DEFAULT_DPI, DEFAULT_PAGE_SIZE
 from .algorithms import BW_MODES, COLOR_MODES, PALETTE_MODES
 from .stream_compression import permits_brotli
+from .predictors import effective_prediction
 
 
 def preset_spec(preset: dict) -> dict:
     prm = preset.get("params", {})
     mode = preset["mode"]
     spec = {"mode": mode, "stream_compression": prm.get("stream_compression", "flate"),
+            "png_prediction": prm.get("png_prediction", "off"),
             "brotli_declaration": bool(prm.get("brotli_declaration", False))}
     if mode in BW_MODES:
         spec.update(strategy=prm.get("strategy", "otsu"), t=int(prm.get("t", 180)),
@@ -37,7 +39,8 @@ def spec_key(spec: dict) -> tuple:
     """
     policy = spec.get("stream_compression", "flate")
     return (*_image_spec_key(spec), policy,
-            bool(spec.get("brotli_declaration", False)) if permits_brotli(policy) else False)
+            bool(spec.get("brotli_declaration", False)) if permits_brotli(policy) else False,
+            effective_prediction(spec))
 
 
 def _image_spec_key(spec):

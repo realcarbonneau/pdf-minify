@@ -1175,6 +1175,7 @@ def test_best_and_packed_image_edits_share_one_debounce_and_real_file_reuse(wind
     w.force_raster.setChecked(True)
     w.stream_compression.setCurrentIndex(w.stream_compression.findData("best"))
     assert w.stream_compression.currentText() == "Best (Zopfli/Brotli)"
+    assert w.png_prediction.currentData() == "best" and not w.png_prediction.isEnabled()
     assert w.brotli_declaration.isVisible() and not w.brotli_declaration.isChecked()
     QTest.qWait(40)
     w.brotli_declaration.setChecked(True)
@@ -1201,6 +1202,113 @@ def test_best_and_packed_image_edits_share_one_debounce_and_real_file_reuse(wind
     assert w._artifacts.results[w._result_key("bw-t180")] is result
     assert len(starts) == 1 and not w._draft_specs
     assert w.stream_compression.currentData() == "best"
+
+
+def test_prediction_control_retains_explicit_choice_across_best_and_jstar(window):
+    w = window
+    choose(w, "bw-t180")
+    assert not w.png_prediction.isHidden() and not w.png_prediction.isEnabled()
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    assert w.png_prediction.currentData() == "best" and not w.png_prediction.isEnabled()
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    assert w.png_prediction.isEnabled() and w.png_prediction.currentData() == "off"
+    w.png_prediction.setCurrentIndex(w.png_prediction.findData("on"))
+    assert w._spec_for(w._active_pid)["png_prediction"] == "on"
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("best"))
+    assert not w.png_prediction.isEnabled() and w.png_prediction.currentData() == "best"
+    assert w._spec_for(w._active_pid)["png_prediction"] == "on"
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    assert w.png_prediction.isEnabled() and w.png_prediction.currentData() == "on"
+    w.compression.setCurrentIndex(w.compression.findData("color"))
+    assert not w.png_prediction.isEnabled() and w.png_prediction.currentData() == "off"
+    assert w._spec_for(w._active_pid)["png_prediction"] == "on"
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    assert w.png_prediction.isEnabled() and w.png_prediction.currentData() == "on"
+    assert w.png_prediction.accessibleName() == "PNG prediction"
+    assert w.png_prediction.accessibleDescription() == w.png_prediction.toolTip()
+    assert "No source PNG" in w.png_prediction.whatsThis()
+
+
+def test_prediction_edits_debounce_once_save_copy_reload_and_revert_without_reprocessing(window, monkeypatch):
+    w = window
+    choose(w, "bw-t180")
+    starts = []
+    start = w._artifacts.start
+
+    def record(key, path, spec, *args, **kwargs):
+        copying = key in w._artifacts.copy_sources
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None and not copying:
+            starts.append(dict(spec))
+        return worker
+
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    w.dpi.setCurrentIndex(w.dpi.findData(150))
+    w.force_raster.setChecked(True)
+    w.colors_value.setValue(5)
+    w.png_prediction.setCurrentIndex(w.png_prediction.findData("on"))
+    QTest.qWait(40)
+    w.png_prediction.setCurrentIndex(w.png_prediction.findData("best"))
+    assert not starts and w._preview_timer.isActive() and w._draft_specs
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(starts) == 1 and starts[0]["png_prediction"] == "best"
+    pid = w._active_pid
+    result = w._artifacts.results[w._result_key(pid)]
+    assert result.nbytes == Path(result.pdf_path).stat().st_size
+    assert w.after._pdf_source.path == result.pdf_path
+    w.save_filter()
+    assert presets.get(pid)["params"]["png_prediction"] == "best"
+    w.png_prediction.setCurrentIndex(w.png_prediction.findData("off"))
+    assert w._draft_specs and w._preview_timer.isActive()
+    w.revert_filter()
+    assert not w._draft_specs and not w._preview_timer.isActive()
+    assert w.png_prediction.currentData() == "best" and len(starts) == 1
+    assert w._artifacts.results[w._result_key(pid)] is result
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Predictor copy", True))
+    w.copy_filter()
+    copied = w._active_pid
+    assert copied != pid and presets.get(copied)["params"]["png_prediction"] == "best"
+    wait_until(lambda: not w._artifacts.pending)
+    copied_result = w._artifacts.results[w._result_key(copied)]
+    assert Path(copied_result.pdf_path).read_bytes() == Path(result.pdf_path).read_bytes()
+    assert copied_result.pdf_path != result.pdf_path and len(starts) == 1
+    stored = next(p for p in w._custom_store().value("customPresets") if p["id"] == copied)
+    assert preset_spec(stored)["png_prediction"] == "best"
+    w.close()
+    wait_until(lambda: not w._jobs)
+    presets.PRESETS[:] = copy.deepcopy(_defaults)
+    loaded = ui.MainWindow(None)
+    try:
+        choose(loaded, copied)
+        assert loaded.png_prediction.isEnabled() and loaded.png_prediction.currentData() == "best"
+        assert not loaded._draft_specs
+    finally:
+        loaded.close()
+
+
+@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
+def test_prediction_edits_use_the_existing_unsaved_switch_resolution(window, monkeypatch, choice):
+    w = window
+    choose(w, "bw-t180")
+    w.compression.setCurrentIndex(w.compression.findData("bw-flate"))
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    w.save_filter()
+    w.png_prediction.setCurrentIndex(w.png_prediction.findData("on"))
+    monkeypatch.setattr(w, "_ask_unsaved_filter", lambda pid: choice)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Prediction saved copy", True))
+    w.preset.setCurrentIndex(w.preset.findData("color-max"))
+    if choice == "cancel":
+        assert w._active_pid == "bw-t180" and w.png_prediction.currentData() == "on"
+        assert w._draft_specs
+    elif choice == "discard":
+        assert w._active_pid == "color-max" and not w._draft_specs
+        assert w._saved_specs["bw-t180"]["png_prediction"] == "off"
+    else:
+        assert w._active_pid not in ("bw-t180", "color-max")
+        assert presets.get(w._active_pid)["params"]["png_prediction"] == "on"
+        assert not w._draft_specs
 
 
 @pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])

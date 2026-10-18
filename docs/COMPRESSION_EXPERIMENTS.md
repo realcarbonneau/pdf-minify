@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–259. The primary measured-size tables are in
+Designer §§238–260. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -95,8 +95,11 @@ bytes; they are not new Best controls. See the protocol below.
 §259 puts the [measured results and decision tree](INTEGRATED_COMPRESSION.md#results-and-decision-tree)
 first in the PNG section. Branch on prepared output representation, then
 encoder and actual BW/indexed content; keep corpus observations distinct from
-universal rules. Best preserves the chosen predictor and does not automate
-an OFF/ON search. Fixed baseline sizes are always visible, not in a drawer.
+universal rules. These versioned measurements preserve the chosen predictor.
+§260 subsequently adds joint encoder/predictor selection to the app; these
+fixed measurements are not relabeled as results of that search. Fixed
+baseline sizes are always visible, not in a drawer. The §258 runner explicitly
+requests predictor preservation when reproducing its frozen experiment.
 
 Changed factor within every pair: reversible PNG image-row prediction OFF/ON.
 General image and native policies remain paired Zopfli-Flate or Brotli.

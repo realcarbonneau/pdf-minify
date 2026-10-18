@@ -24,6 +24,7 @@ from ..core import presets
 from ..core.recipes import preset_spec, spec_key, recipe_params
 from ..core.algorithms import ALGORITHMS, ALGORITHM_LABELS, BW_MODES, PALETTE_MODES, with_algorithm
 from ..core.stream_compression import STREAM_POLICIES, STREAM_LABELS, permits_brotli
+from ..core.predictors import PREDICTION_CHOICES, PACKED_MODES, effective_prediction
 from ..core.identity import canonical_uuid, new_filter_uuid, repair_filter_uuids
 from ..core.pdf_io import CancelledError
 from ..core.display import render_display_page
@@ -47,16 +48,23 @@ PREVIEW_DPI = 150
 FILTER_EDIT_DEBOUNCE_MS = 300
 STREAM_HELP = {
     "flate": "Compress native text, vectors and fonts losslessly without changing image bytes.",
-    "zopfli": "Compress native streams as standard Flate data using the Zopfli encoder.",
+    "zopfli": "Use standard Flate data with Zopfli; PNG prediction is selectable for packed images.",
     "brotli": "Requires a compatible PDF reader; older readers may show missing content.",
-    "best": "Optimize native and packed-image streams; may require a Brotli-capable reader.",
+    "best": "Choose encoder and image prediction by measured size; may require a Brotli-capable reader.",
 }
 STREAM_HELP_DETAILS = (
-    "Fixed policies compress native streams only. Best also compresses packed "
-    "BW/palette image streams, leaving JPEG, JPEG2000 and JBIG2 payloads unchanged. "
+    "Best compares Zopfli/Brotli and PNG prediction Off/On for eligible image rows. "
+    "Zopfli also compresses packed images with the selected Off/On/Best prediction. "
+    "Flate and fixed Brotli compress native streams only. "
+    "JPEG, JPEG2000 and JBIG2 payloads stay unchanged. "
     "No pixels, DPI or quality settings change. Brotli requires "
     "a supporting reader. Its optional extension declaration is off by default "
     "and supplies metadata, not decoder support.")
+PNG_PREDICTION_HELP = (
+    "Lossless pixel-row prediction: Off, On, or compare both by complete PDF size.",
+    "Available for packed BW/indexed images with Zopfli. Best (Zopfli/Brotli) "
+    "always compares both prediction states with both encoders. "
+    "No source PNG file is required. Native streams and J* payloads do not use it.")
 
 
 @dataclass(frozen=True)
@@ -857,6 +865,11 @@ class MainWindow(QMainWindow):
             "Best adds it only if the selected output actually uses Brotli. "
             "This changes metadata, not image fidelity.")
         self.brotli_declaration.hide()
+        self.png_prediction = QComboBox()
+        self.png_prediction.setAccessibleName("PNG prediction")
+        for value, label in PREDICTION_CHOICES:
+            self.png_prediction.addItem(label, value)
+        set_control_help(self.png_prediction, *PNG_PREDICTION_HELP)
         self.strategy = QComboBox()
         self.strategy.addItems(["otsu", "simple", "adaptive", "sauvola"])
         self.strategy.setAccessibleName("Threshold method")
@@ -883,7 +896,7 @@ class MainWindow(QMainWindow):
         for pid in presets.PAGE_SIZE_IDS:
             self.page_size.addItem(presets.PAGE_SIZE_LABELS[pid], pid)
         self.page_size.setCurrentIndex(list(presets.PAGE_SIZE_IDS).index(presets.DEFAULT_PAGE_SIZE))
-        for _cb in (self.compression, self.stream_compression, self.strategy, self.dpi, self.page_size):
+        for _cb in (self.compression, self.stream_compression, self.png_prediction, self.strategy, self.dpi, self.page_size):
             _fit_combo(_cb)  # static items: fit once (§130)
         self.force_raster = QCheckBox("Force full-page raster")
         self.force_raster.setChecked(False)
@@ -942,6 +955,12 @@ class MainWindow(QMainWindow):
         streamRow.addWidget(self.stream_compression, 1)
         right.addLayout(streamRow)
         right.addWidget(self.brotli_declaration)
+        predictionRow = spaced(QHBoxLayout())
+        self.png_prediction_label = QLabel("PNG &prediction:")
+        self.png_prediction_label.setBuddy(self.png_prediction)
+        predictionRow.addWidget(self.png_prediction_label)
+        predictionRow.addWidget(self.png_prediction, 1)
+        right.addLayout(predictionRow)
         right.addWidget(QLabel("Filter details:"))
         right.addWidget(self.details)
         stratRow = spaced(QHBoxLayout())
@@ -1072,6 +1091,7 @@ class MainWindow(QMainWindow):
                                 (self.lossless_box, "toggled"), (self.strategy, "currentTextChanged"),
                                 (self.compression, "currentIndexChanged"),
                                 (self.stream_compression, "currentIndexChanged"),
+                                (self.png_prediction, "currentIndexChanged"),
                                 (self.brotli_declaration, "toggled"),
                                 (self.dpi, "currentIndexChanged"), (self.page_size, "currentIndexChanged"),
                                 (self.force_raster, "toggled")):
@@ -1242,7 +1262,7 @@ class MainWindow(QMainWindow):
         self._loading_controls = True
         try:
             with ExitStack() as stack:
-                for widget in (self.compression, self.stream_compression, self.brotli_declaration, self.strategy,
+                for widget in (self.compression, self.stream_compression, self.png_prediction, self.brotli_declaration, self.strategy,
                                self.threshold_control, self.dpi, self.colors_control,
                                self.lossless_box, self.force_raster, self.page_size):
                     stack.enter_context(QSignalBlocker(widget))
@@ -1250,6 +1270,7 @@ class MainWindow(QMainWindow):
                 self.stream_compression.setCurrentIndex(self.stream_compression.findData(
                     spec.get("stream_compression", "flate")))
                 self.brotli_declaration.setChecked(spec.get("brotli_declaration", False))
+                self.png_prediction.setCurrentIndex(self.png_prediction.findData(spec.get("png_prediction", "off")))
                 self.strategy.setCurrentText(spec.get("strategy", "otsu"))
                 self.threshold_control.setValue(spec.get("t", 180))
                 dpi_field = "dpi" if spec["mode"] in BW_MODES else "dpi_cap"
@@ -1270,6 +1291,8 @@ class MainWindow(QMainWindow):
             spec = with_algorithm(spec, mode)
         spec["stream_compression"] = self.stream_compression.currentData()
         spec["brotli_declaration"] = self.brotli_declaration.isChecked()
+        if self.png_prediction.isEnabled():
+            spec["png_prediction"] = self.png_prediction.currentData()
         if mode in BW_MODES:
             spec.update(strategy=self.strategy.currentText(), t=self.slider.value(),
                         dpi=self.dpi.currentData(), force_raster=self.force_raster.isChecked(),
@@ -1508,6 +1531,17 @@ class MainWindow(QMainWindow):
         self.page_size.setEnabled(mode in ALGORITHM_LABELS and self.force_raster.isChecked())
         brotli = permits_brotli(self._spec_for(pid).get("stream_compression"))
         self.brotli_declaration.setVisible(brotli)
+        spec = self._spec_for(pid)
+        policy = spec.get("stream_compression", "flate")
+        packed = mode in PACKED_MODES
+        editable = packed and policy == "zopfli"
+        display_prediction = ("best" if packed and policy == "best" else
+                              spec.get("png_prediction", "off") if editable else "off")
+        with QSignalBlocker(self.png_prediction):
+            self.png_prediction.setCurrentIndex(self.png_prediction.findData(display_prediction))
+        self.png_prediction.setEnabled(editable)
+        self.png_prediction_label.setEnabled(editable)
+        set_control_help(self.png_prediction, *PNG_PREDICTION_HELP)
         set_control_help(self.stream_compression,
                          STREAM_HELP[self.stream_compression.currentData()], STREAM_HELP_DETAILS)
 
@@ -1591,6 +1625,9 @@ class MainWindow(QMainWindow):
                 "gc + deflate only — pixels unchanged",
             ]
         lines.append("PDF streams: " + STREAM_LABELS[spec.get("stream_compression", "flate")])
+        prediction = effective_prediction(spec)
+        if prediction is not None:
+            lines.append("PNG prediction: " + dict(PREDICTION_CHOICES)[prediction])
         if permits_brotli(spec.get("stream_compression")):
             declaration = "Off"
             if spec.get("brotli_declaration", False):

@@ -233,4 +233,5 @@ def test_published_decision_tree_leads_the_section_and_matches_measured_results(
     assert len(mixed_ffpr) == 3
     assert all(row["png"][mixed] < row["baseline"][mixed] for row in mixed_ffpr)
     assert "**Counterexample:**" in publisher.PNG_GUIDANCE
-    assert "Best → keeps the chosen predictor; no automatic OFF/ON search." in publisher.PNG_GUIDANCE
+    assert "Best (Zopfli/Brotli) → automatically test OFF/ON with both encoders." in publisher.PNG_GUIDANCE
+    assert "96 fixed-encoder pairs do **not** measure §260's new" in publisher.PNG_GUIDANCE

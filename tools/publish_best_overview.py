@@ -20,7 +20,7 @@ OLD_BINARY = "## FFPR residual compression — Zopfli versus Brotli baseline"
 BINARY = "## Stream compression — Zopfli versus Brotli baseline"
 PNG_GUIDANCE = """### Results and decision tree
 
-**Current measured result:** prediction reduces **0 of 48 Brotli** files
+**Fixed-encoder measured result:** prediction reduces **0 of 48 Brotli** files
 and **18 of 48 Zopfli** files. With every measured same-fidelity algorithm
 eligible, none of the 96 PNG candidates is uniquely smallest. Reader limits
 matter: excluding Brotli leaves eight strict wins in the measured 16/64-color
@@ -33,12 +33,10 @@ Prepared output image
 ├─ No bitmap rows → no-op; no prediction decision.
 ├─ JPEG / JPEG2000 / JBIG2 → PNG prediction not applicable to that payload.
 └─ Packed BW / indexed samples
-   ├─ Brotli → prefer OFF in this corpus (0/48 reductions); see counterexample.
-   ├─ Zopfli
-   │  ├─ BW → test ON, especially scans and FFPR; not a guaranteed win.
-   │  └─ Indexed → OFF first for color photos/artwork; test ON for
-   │              scan/text-like content and mixed-content FFPR.
-   └─ Best → keeps the chosen predictor; no automatic OFF/ON search.
+   ├─ Best (Zopfli/Brotli) → automatically test OFF/ON with both encoders.
+   ├─ Zopfli → PNG prediction: Off / On / Best.
+   │           Best automatically compares OFF/ON with Zopfli only.
+   └─ Fixed Brotli study → OFF favored here (0/48 reductions), not universally.
 ```
 
 **Counterexample:** the earlier noisy-BW Brotli control improves **-2.90%**
@@ -48,12 +46,19 @@ All current indexed-color photo/artwork PNG candidates grow; some
 mixed-paper indexed FFPR candidates shrink with Zopfli. Encoder and actual
 image content—not palette count or FFPR alone—determine the measured outcome.
 
-This is **benchmark guidance, not a new automatic app policy** (§259).
-For a new input, a firm choice requires actual complete-PDF OFF/ON
-measurements with other factors and reader eligibility fixed. Best currently
-preserves the predictor supplied by the recipe; these results do not measure
-a joint Best-plus-predictor search. Native text/vector streams do not use
-image-row prediction.
+**Application policy (§260):** Best performs the joint search rather than
+turning these content observations into skip heuristics. Explicit Zopfli's
+Off/On choices force their stated predictor; Best measures both. Compare
+actual complete saved PDFs, including predictor dictionaries and container
+overhead, without repeating image processing. Keep exact sample bytes and
+J* payloads. Native text/vector streams do not use image-row prediction.
+
+The source need not contain PNG files: prediction applies to the prepared
+pixel rows. No eligible bitmap rows or J* payloads are applicability skips,
+not evidence that prediction loses. Unsupported general-image layouts stay
+unchanged in automatic mode; explicit On reports an error. The existing
+114-file overview and 96 fixed-encoder pairs do **not** measure §260's new
+joint search; their measured sizes and denominators remain frozen.
 
 ### Method and interpretation"""
 
@@ -184,18 +189,22 @@ def replace_once(text, before, after):
 def rewrite(before, report, publication, path):
     text = before
     text = replace_once(text, "Designer §§210–214/220–254; TODO §§226–252.",
-                        "Designer §§210–214/220–259; TODO §§226–256.")
+                        "Designer §§210–214/220–260; TODO §§226–257.")
     text = replace_once(text, "All **177 integrated Brotli outputs** were",
                         "The fixed-encoder study's **177 integrated Brotli outputs** were")
     start = "**Current selected results after the B114 preparation repair and §254 refresh.**"
     paragraph = next(p for p in text.split("\n\n") if p.startswith(start))
     text = replace_once(text, paragraph,
-        "**Current selection (§258).** The overview has **19 recipes × six complete PDFs = 114 measured sizes**. "
+        "**Versioned selection (§258).** The overview has **19 recipes × six complete PDFs = 114 measured sizes**. "
         "The separate Zopfli/Brotli binary reference covers the same 19 recipes; PNG prediction retains "
         "its **96 fixed-encoder pairs**, and NATIVE-01 retains **42 pairs**. The new saves reuse verified "
         "post-B114 preparations; the 392-file fixed-encoder publication remains unchanged. "
         "The BW representative is the eleven-page CCITT NACA TM972 scan, not the already-JBIG2 JFK "
-        "regression fixture. B114 is worker-verified, not designer-confirmed acceptance.")
+        "regression fixture. B114 is worker-verified, not designer-confirmed acceptance.\n\n"
+        "**Policy boundary (§260).** The app's joint encoder/predictor search is newer\n"
+        "than these measurements. The 114 overview files use §258's predictor-preserving\n"
+        "Best; the 96 PNG pairs use fixed encoders. Neither is relabeled as a measured\n"
+        "result of the new automatic search. No replacement size is estimated.")
     text = replace_once(text,
         "  compressor, not a second image/codec. The overview shows plain baselines; the separate PNG table isolates its measured effect.",
         "  compressor, not a second image/codec. Its separate table compares each\n"
@@ -239,6 +248,10 @@ def rewrite(before, report, publication, path):
         "row labels. The\n"
         "[specialized binary experiment](#stream-compression--zopfli-versus-brotli-baseline)\n"
         "owns the fixed-encoder comparison and its reference sizes.\n\n"
+        "This is the measured **§258 predictor-preserving** Best policy, not §260's\n"
+        "new joint encoder/predictor search. Frozen outputs and producer identities\n"
+        "stay unchanged; reproducing this experiment requests predictor preservation\n"
+        "explicitly.\n\n"
         "Transformed packed-image rows use PNG prediction OFF; the unresampled\n"
         "reference keeps its existing image decoding parameters.\n\n"
         "The unresampled reference does not compose, resize or recolor images.\n"

@@ -347,6 +347,13 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Best preserves the predictor; do not claim it searches OFF/ON. No app
   behavior/default, frozen measurement or reader-support change is implied.
   Keep publisher output and presentation regressions aligned.
+- §260 supersedes Best's predictor-preserving runtime boundary: test OFF/ON
+  with both general encoders for eligible image rows, not native/J* streams.
+  Explicit Zopfli has Off/On/Best predictor state; Best forces automatic Best.
+  Use the shared real-file saver and effective recipe lifecycle, not a new
+  filter or repeated image processing. Skip by actual applicability, never
+  by absence of source PNG files or a no-win corpus heuristic. Frozen §258
+  sizes remain explicitly predictor-preserving historical evidence.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

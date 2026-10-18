@@ -1115,3 +1115,7 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 ## 259 — visible fixed controls and PNG-prediction decision tree (verbatim, 2026-10-17)
 
 > you can leave this always expanded, no drawer to open "Show fixed Zopfli/Brotli sizes and the Classic-Flate reference".  Also, we now have a decision tree for PNG prediction, right, please document, it depends on brotli and image type.  Add it to the top section of "PNG prediction — measured effect versus baseline" conclusion/resuts.  Right?
+
+## 260 — jointly choose image predictor and lossless encoder (verbatim, 2026-10-17)
+
+> Also, can it happen that the images is native stream AND that best chooses zopfli?  Regardless, in the decision tree, when zopfli, we should automatically test PNG Prediction on and off when choosing best?  And also have an option for PNG prediction for when zopfli is chosen, have On/Off/Best.  For Best Zopfli/Brotli, it would also always try PNG Prediction Best.  or are there cases where it's guaranteed useless, eg, no PNGs = no need?

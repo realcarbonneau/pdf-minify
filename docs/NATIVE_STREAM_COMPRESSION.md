@@ -76,9 +76,10 @@ the tiny native painting stream in actual FFPR/JBIG2 files and proposes
 shared general compression for packed images and an inactive general control
 for FFPR + specialized codecs. The earlier automatic/disabled FFPR control is
 not approved. §256 now approves shared packed-image/native encoding for Best
-only; preserve the existing explicit policies and saved-recipe semantics.
+only; §260 subsequently extends explicit Zopfli to eligible packed images
+when its new predictor setting is supplied. Other legacy calls stay unchanged.
 
-## Best (Zopfli/Brotli) — native and packed-image streams (§§255/256)
+## Best (Zopfli/Brotli) — native and packed-image streams (§§255/256/260)
 
 The new selector value compares the two encoders for each native stream AND
 eligible general-compressed image stream: packed BW, palette indices, raw or
@@ -86,22 +87,25 @@ Flate/Brotli sample images and masks. It excludes the specialized JPEG,
 JPEG2000 and JBIG2 payloads, including lossless JPEG2000 and colored JBIG2
 stencils. It does not automatically select image codecs or change DPI, palette, JPEG
 quality or FFPR. Shared fonts/resources mean this is per stream, not an
-independent rewrite of each page. Explicit policies and existing recipes
-remain available and unchanged. Empty streams stay plain; both encoders are
+independent rewrite of each page. Explicit policies remain available;
+§260 adds Off/On/Best prediction to app Zopfli recipes and always searches
+both predictor states under Best. Empty streams stay plain; both encoders are
 required for nonempty data, with no cheaper/failing-encoder substitution.
 
-Encode unique stream bytes once per encoder, verify each representation and
+Encode unique stream/predictor bytes once per encoder, verify each representation and
 choose a local assignment including dictionary overhead. Save and measure
 that mixed assignment plus the homogeneous Zopfli and Brotli controls through
-the same optimized writer. Preparation/font subsetting happens once, encoded
-samples/palettes/predictors remain fixed, J* encoded payloads stay identical,
+the same optimized writer. §260 also measures OFF/ON whole-file controls and
+per-image predictor choices. Preparation/font subsetting happens once, decoded
+samples/palettes remain fixed, J* encoded payloads stay identical,
 and PDF IDs use identical framing in every candidate.
 Return the smallest actual complete file, preferring fewer Brotli streams
-on exact ties; do not claim exhaustive global optimization. Failed/canceled
+on exact ties, then fewer predicted streams; do not claim exhaustive global
+optimization. Failed/canceled
 work does not replace a completed output. Candidate files belong to the
 existing encoding work directory and are cleaned up after selection.
 Cache encoded alternatives on disk; retain only stream metadata/digests across
-inputs, with exact decoded-byte comparisons before accepting either encoding.
+inputs, with exact decoded-byte comparisons before accepting every encoding.
 
 Best can produce Brotli and therefore requires a supporting reader when it
 does. Native tooltip/accessibility help explains that scope. The existing
@@ -356,7 +360,43 @@ Implementation verification is not designer acceptance. Tests additionally
 cover independent image/native keys, all six actual image filters, shared
 debounce, Save/Save As/load/Cancel and the empty-stream encoder defect.
 
-## Integration verification and acceptance
+## Joint PNG-predictor selection (§260)
+
+Best now requires a joint storage search for eligible prepared image rows:
+Zopfli OFF/ON and Brotli OFF/ON. Native text/vector/font resources have no
+image-row predictor. JPEG/JPEG2000/JBIG2 payloads remain protected, even
+when their accompanying native streams choose Zopfli. Absence of input PNG
+files is not a skip condition: prediction operates on prepared pixel rows.
+The adaptive row operation follows the [PNG filter definitions](https://www.w3.org/TR/png-3/#9Filters);
+the PDF stores the filtered samples and matching decoding parameters, not a
+PNG container or source filename.
+
+Source PDFs can also embed inline bitmaps inside page content streams. The
+normal composition pass replaces those bitmaps before this storage stage;
+it does not apply PNG prediction blindly to a native painting program.
+Here, "image stream" means the prepared image samples, while "native stream"
+means the retained non-image content/resources. Both can select Zopfli.
+
+Explicit Zopfli exposes Off/On/Best for eligible packed images. The app's
+Best policy always uses predictor Best, regardless of the retained inactive
+explicit setting. Choices are effective recipe state and share one normal
+edit/artifact transaction. Legacy headless explicit calls with no predictor
+field retain native-only behavior. Core trial saves account for predictor
+dictionaries, filter names and complete container overhead; they never rerun
+the visual processing pipeline. Unsupported general-image layouts are kept
+unchanged in automatic mode, not guessed; explicit On reports an error.
+
+The §258 integrated measurements predate this joint search and explicitly
+preserve their predictor state. Their actual byte evidence remains valid for
+that versioned experiment, not a measurement of the new §260 policy.
+See `DESIGN.md` §260 and the updated PNG decision tree.
+
+§260 verification: **834 full-suite tests**, the real-file lifecycle smoke,
+and viewed native-control captures at 1×/2× pass on 2026-10-18.
+Implementation verification is not designer acceptance. See
+`TEST_PLAN.md` and TODO §257.
+
+## Original integration verification and acceptance (§205)
 
 Final full suite: **429 passed in 174.96s**, 2026-10-15. Actual six-codec and
 three-stream-policy GUI captures were viewed at normal/2×, with both-scale

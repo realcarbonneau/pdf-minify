@@ -2446,3 +2446,20 @@ table row is unchanged; no corpus encoding or app/settings change.
 **107 focused tests; 796 full-suite tests passed. Implementation verified
 2026-10-17; not designer acceptance.** See `DESIGN.md` §259,
 `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md` and `TEST_PLAN.md`.
+
+## 257 — DONE (designer §260: automatic PNG prediction with Best)
+
+~~Jointly select PNG prediction OFF/ON and Zopfli/Brotli; expose explicit
+Zopfli Off/On/Best through the existing filter lifecycle.~~
+Stub: one core row predictor and disk-backed saver compare actual complete
+files, preserving samples/masks/palettes/native appearance/J* payloads and
+atomic/cancel behavior. Best always searches both states; explicit Zopfli
+retains its editable choice across policy/codec switches. Effective keys,
+one debounce, Save/copy/load/Cancel/Discard/Revert pass. The decision tree
+and publisher match; frozen §258 results explicitly preserve their old
+predictor policy and are not relabeled as new measurements. Review captures
+at 1×/2× and the real-file lifecycle smoke pass and were viewed.
+**83 focused checks; six GUI checks; 834 full-suite tests passed.**
+**Implementation verified 2026-10-18; not designer acceptance.** See
+`DESIGN.md` §260, `NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`,
+`pdf_minify/core/predictors.py` and `pdf_minify/core/best_streams.py`.

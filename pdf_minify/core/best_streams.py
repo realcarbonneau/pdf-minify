@@ -1,12 +1,13 @@
 """Measured Zopfli/Brotli selection for prepared PDFs (§§255/256).
 
 Only lossless storage changes: native resources and general-compressed image
-samples participate; specialized J* payloads and image predictors stay intact.
+samples participate; specialized J* payloads stay intact. §260 adds joint
+image-predictor selection; frozen studies can explicitly request preservation.
 The caller owns image processing/font subsetting and supplies the shared final
 writer. Both encoders run once per distinct input, not once per trial PDF.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import errno
 import hashlib
 import os
@@ -21,6 +22,7 @@ import pymupdf as fitz
 from .cancel import CancelToken
 from .pdf_io import FITZ_LOCK
 from . import stream_compression as streams
+from .predictors import image_layout, predict_rows
 
 _GENERAL_IMAGE_FILTERS = ("null", "/FlateDecode", "/BrotliDecode")
 
@@ -52,10 +54,15 @@ class _Encoded:
     path: Path
     size: int
     filtr: str | None
+    policy: str = ""
+    decode_parms: str = "null"
+    prediction: str = "preserve"
+    uses_prediction: bool = False
 
     @property
     def cost(self):
-        return _stored_cost(self.size, self.filtr)
+        return (_stored_cost(self.size, self.filtr)
+                + (len("/DecodeParms") + len(self.decode_parms) if self.decode_parms != "null" else 0))
 
 
 @dataclass(frozen=True)
@@ -66,6 +73,8 @@ class _Pair:
     zopfli: _Encoded
     brotli: _Encoded
     image: bool
+    alternatives: tuple = ()
+    predictable: bool = False
 
     def choice(self, brotli):
         return self.brotli if brotli else self.zopfli
@@ -92,11 +101,12 @@ def _read(doc, xref):
     return data
 
 
-def _install(doc, pair, brotli):
-    choice = pair.choice(brotli)
+def _install(doc, pair, choice):
+    if isinstance(choice, bool):
+        choice = pair.choice(choice)
     doc.update_stream(pair.xref, choice.path.read_bytes(), compress=False)
     doc.xref_set_key(pair.xref, "Filter", choice.filtr or "null")
-    doc.xref_set_key(pair.xref, "DecodeParms", pair.decode_parms)
+    doc.xref_set_key(pair.xref, "DecodeParms", choice.decode_parms)
 
 
 def _stored_cost(size, filtr):
@@ -104,7 +114,7 @@ def _stored_cost(size, filtr):
     return size + len(filtr or "null") + len(str(size))
 
 
-def _encode_pairs(doc, directory, token):
+def _encode_pairs(doc, directory, token, image_prediction="preserve", policies=("zopfli", "brotli")):
     cache = {}
     pairs = []
     raw_total = 0
@@ -113,9 +123,11 @@ def _encode_pairs(doc, directory, token):
         decoded = _read(doc, xref)
         digest = hashlib.sha256(decoded).digest()
         # xref_stream applies prediction too. Remove only the decoding
-        # parameters temporarily to obtain the exact existing predicted bytes;
-        # both encoders then retain the original predictor/dictionary verbatim.
+        # parameters temporarily to obtain the exact existing predicted bytes
+        # for the preservation control. New OFF/ON variants use decoded rows.
         parms = doc.xref_get_key(xref, "DecodeParms")[1] if image else "null"
+        predictor = doc.xref_get_key(xref, "DecodeParms/Predictor") if image else ("null", "null")
+        was_predicted = predictor[0] == "int" and int(predictor[1]) > 1
         if image and parms != "null":
             doc.xref_set_key(xref, "DecodeParms", "null")
             try:
@@ -127,24 +139,71 @@ def _encode_pairs(doc, directory, token):
         # Do not retain every page's decoded pixels. A digest indexes disk
         # artifacts; byte-for-byte per-stream readback below still guards
         # reuse, so even a cache-key collision cannot publish different data.
-        key = len(data), hashlib.sha256(data).digest()
-        if key not in cache:
-            choices = []
-            for policy in ("zopfli", "brotli"):
-                encoded, filtr = streams.encode_stream(data, policy, directory=directory, token=token)
-                path = Path(directory) / f"stream-{len(cache)}-{policy}.bin"
-                path.write_bytes(encoded)
-                choices.append(_Encoded(path, len(encoded), filtr))
-            cache[key] = tuple(choices)
-        pair = _Pair(xref, parms, digest, *cache[key], image)
-        for brotli in (False, True):
+        variants = [("preserve", data, parms)]
+        layout = image_layout(doc, xref, len(decoded)) if image and image_prediction != "preserve" else None
+        if image and image_prediction == "off":
+            variants = [("off", decoded, "null")]
+        if image and image_prediction == "on" and layout is None:
+            raise RuntimeError(f"Image stream {xref} has no supported PNG predictor layout.")
+        if layout:
+            width, height, bpc, colors = layout
+            variants = []
+            if image_prediction in ("off", "best"):
+                variants.append(("off", decoded, "null"))
+            if image_prediction in ("on", "best"):
+                predicted_rows = predict_rows(decoded, width, height, bpc, colors, token)
+                prediction_parms = (f"<< /Predictor 15 /Colors {colors} "
+                                    f"/BitsPerComponent {bpc} /Columns {width} >>")
+                variants.append(("on", predicted_rows, prediction_parms))
+            if image_prediction == "best" and parms != "null":
+                variants.append(("preserve", data, parms))
+        alternatives = []
+        for prediction, raw, decode_parms in variants:
+            for policy in policies:
+                streams.check_cancel(token)
+                key = policy if raw else "empty", len(raw), hashlib.sha256(raw).digest()
+                if key not in cache:
+                    encoded, filtr = streams.encode_stream(raw, policy, directory=directory, token=token)
+                    path = Path(directory) / f"stream-{len(cache)}-{policy}.bin"
+                    path.write_bytes(encoded)
+                    cache[key] = _Encoded(path, len(encoded), filtr, policy)
+                encoded = cache[key]
+                uses_prediction = prediction == "on" or (prediction == "preserve" and was_predicted)
+                if decode_parms != "null" or prediction != "preserve" or encoded.policy != policy:
+                    encoded = replace(encoded, policy=policy, decode_parms=decode_parms,
+                                      prediction=prediction, uses_prediction=uses_prediction)
+                alternatives.append(encoded)
+        smallest = lambda policy: min((a for a in alternatives if a.policy == policy),
+                                       key=lambda a: (a.cost, a.uses_prediction))
+        zopfli = smallest("zopfli")
+        brotli = smallest("brotli") if "brotli" in policies else zopfli
+        pair = _Pair(xref, parms, digest, zopfli, brotli, image, tuple(alternatives), bool(layout))
+        for choice in alternatives:
             streams.check_cancel(token)
-            _install(doc, pair, brotli)
+            _install(doc, pair, choice)
             if _read(doc, xref) != decoded:
                 raise RuntimeError(f"Stream {xref} failed exact Best readback.")
         pairs.append(pair)
         raw_total += len(data)
     return pairs, raw_total
+
+
+def _assignments(pairs, policies):
+    """Measure whole-file controls as well as locally cheapest assignments."""
+    for policy in policies:
+        choice = lambda pair: pair.choice(policy == "brotli")
+        yield policy, tuple(choice(pair) for pair in pairs)
+        if any(pair.predictable and len({a.prediction for a in pair.alternatives}) > 1 for pair in pairs):
+            for prediction in ("off", "on", "preserve"):
+                if not any(a.prediction == prediction for pair in pairs if pair.image for a in pair.alternatives):
+                    continue
+                assignment = tuple(next((a for a in pair.alternatives
+                                         if a.policy == policy and a.prediction == prediction), choice(pair))
+                                   for pair in pairs)
+                yield f"{policy}-{prediction}", assignment
+    yield "mixed", tuple(min(pair.alternatives,
+                             key=lambda a: (a.cost, a.filtr == "/BrotliDecode", a.uses_prediction))
+                         for pair in pairs)
 
 
 def _stable_ids(doc, no_new_id):
@@ -207,13 +266,18 @@ def _publish(candidate, target, token):
 
 
 def save_best_streams(doc, target, *, writer, directory=None, token=None,
-                      brotli_declaration=False, no_new_id=False):
+                      brotli_declaration=False, no_new_id=False,
+                      image_prediction="best", policy="best"):
     """Save the smallest actual homogeneous/mixed candidate, not a size estimate.
 
     This is best among evaluated assignments, not an exhaustive search of all
-    possible stream combinations. Fewer Brotli streams break exact file ties.
+    possible stream combinations. Fewer Brotli streams, then fewer predicted
+    streams, break exact file ties.
     """
     token = token or CancelToken()
+    if policy not in ("best", "zopfli") or image_prediction not in ("off", "on", "best", "preserve"):
+        raise ValueError("Unknown lossless encoder/predictor selection")
+    policies = ("zopfli", "brotli") if policy == "best" else ("zopfli",)
     streams.check_cancel(token)
     started = time.perf_counter()
     with FITZ_LOCK, tempfile.TemporaryDirectory(prefix="best-streams-", dir=directory) as scratch:
@@ -225,35 +289,36 @@ def save_best_streams(doc, target, *, writer, directory=None, token=None,
             _stable_ids(probe, no_new_id)
             snapshot = probe.tobytes(deflate=False, use_objstms=False, no_new_id=True)
             protected = _protected_signature(probe)
-            pairs, raw_total = _encode_pairs(probe, scratch, token)
-        local = tuple(pair.brotli.cost < pair.zopfli.cost for pair in pairs)
-        assignments = (("zopfli", (False,) * len(pairs)),
-                       ("brotli", tuple(bool(pair.brotli.filtr) for pair in pairs)),
-                       ("mixed", local))
+            pairs, raw_total = _encode_pairs(probe, scratch, token, image_prediction, policies)
         measured = []
         seen = set()
-        for name, assignment in assignments:
-            if assignment in seen:
+        for name, assignment in _assignments(pairs, policies):
+            identity = tuple((a.path, a.filtr, a.decode_parms) for a in assignment)
+            if identity in seen:
                 continue
-            seen.add(assignment)
+            seen.add(identity)
             streams.check_cancel(token)
             path = Path(scratch) / f"{name}.pdf"
             with fitz.open(stream=snapshot, filetype="pdf") as candidate:
-                for pair, brotli in zip(pairs, assignment):
-                    _install(candidate, pair, brotli)
+                for pair, choice in zip(pairs, assignment):
+                    _install(candidate, pair, choice)
                 streams.set_brotli_declaration(candidate,
                                                brotli_declaration and _uses_brotli(candidate))
                 writer(candidate, str(path), no_new_id=True)
             streams.check_cancel(token)
             _verify_saved(path, pairs, protected)
-            measured.append((path.stat().st_size, sum(assignment), name, path, assignment))
-        size, brotli_count, name, path, assignment = min(measured, key=lambda row: row[:3])
+            measured.append((path.stat().st_size,
+                             sum(a.filtr == "/BrotliDecode" for a in assignment),
+                             sum(a.uses_prediction for a in assignment), name, path, assignment))
+        size, brotli_count, prediction_count, name, path, assignment = min(measured, key=lambda row: row[:4])
         stats = dict(streams=len(pairs), image_streams=sum(pair.image for pair in pairs),
                      raw_bytes=raw_total,
-                     encoded_bytes=sum(pair.choice(use_brotli).size
-                                       for pair, use_brotli in zip(pairs, assignment)),
+                     encoded_bytes=sum(choice.size for choice in assignment),
                      brotli_streams=brotli_count, winner=name, file_bytes=size,
-                     candidate_bytes={row[2]: row[0] for row in measured})
+                     predictable_images=sum(pair.predictable for pair in pairs),
+                     predicted_streams=prediction_count,
+                     png_prediction_on_streams=sum(a.prediction == "on" for a in assignment),
+                     candidate_bytes={row[3]: row[0] for row in measured})
         _publish(path, target, token)
     stats["encode_seconds"] = time.perf_counter() - started
     return stats

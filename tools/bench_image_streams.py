@@ -1,7 +1,7 @@
 """Size-only exact bitmap comparisons (§209); never launches the GUI.
 
 Production composition/palette/threshold/JBIG2/native assembly/save are reused.
-Only the experimental packed-stream transport/prediction is benchmark-owned.
+Packed-stream transport uses the production codec and predictor helpers.
 """
 
 import argparse
@@ -29,6 +29,7 @@ from pdf_minify.core.canvas import flatten_rgb
 from pdf_minify.core.display import DisplayPage
 from pdf_minify.core.pdf_io import render_gray
 from pdf_minify.core.stencils import PaletteCanvas, place_stencils
+from pdf_minify.core.predictors import predict_rows
 from tools.layered_color_jbig2 import write_fixture
 
 
@@ -77,31 +78,6 @@ class Bitmap:
                     palette_colors=len(self.palette) if self.palette is not None else 2,
                     raw_bytes=len(self.packed), packed_sha256=digest(self.packed),
                     palette_sha256=digest(self.palette.tobytes()) if self.palette is not None else None)
-
-
-def predict_rows(data, width, height, bpc):
-    """Reversible adaptive PNG byte predictors; one packed component, bpp=1."""
-    stride = (width*bpc+7)//8
-    rows = np.frombuffer(data, dtype=np.uint8).reshape(height, stride)
-    output = bytearray()
-    previous = np.zeros(stride, dtype=np.int16)
-    for row in rows:
-        current = row.astype(np.int16)
-        left = np.concatenate((np.zeros(1, dtype=np.int16), current[:-1]))
-        upper_left = np.concatenate((np.zeros(1, dtype=np.int16), previous[:-1]))
-        estimate = left+previous-upper_left
-        distance = np.stack((abs(estimate-left), abs(estimate-previous), abs(estimate-upper_left)))
-        paeth = np.choose(distance.argmin(axis=0), (left, previous, upper_left))
-        predictions = np.stack((np.zeros(stride, dtype=np.int16), left, previous,
-                                (left+previous)//2, paeth))
-        candidates = (current-predictions).astype(np.uint8)
-        signed = candidates.astype(np.int16)
-        scores = np.minimum(signed, 256-signed).sum(axis=1)
-        chosen = int(scores.argmin())
-        output.append(chosen)
-        output.extend(candidates[chosen].tobytes())
-        previous = current
-    return bytes(output)
 
 
 def prepare(source, mode, dpi, colors, strategy, threshold, folder):

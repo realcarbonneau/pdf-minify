@@ -33,6 +33,7 @@ def digest(data):
 
 def environment():
     files = ("pdf_minify/core/pipeline.py", "pdf_minify/core/stream_compression.py",
+             "pdf_minify/core/predictors.py",
              "pdf_minify/core/display.py", "pdf_minify/core/image_layers.py",
              "pdf_minify/core/marked_content.py", "pdf_minify/core/native_layer.py",
              "pdf_minify/core/canvas.py",

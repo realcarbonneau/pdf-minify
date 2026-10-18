@@ -8,7 +8,36 @@ comment-only edits need relevant checks (formatting, links or table/data
 consistency), not a full test run. Reuse a passing result when the tested code
 is unchanged; committing or pushing does not require repeating verification.
 
-## Current regression verification — 2026-10-17
+## Current regression verification — 2026-10-18
+
+§260 joint predictor/encoder selection: **834 passed**, `./test.sh`, exit 0 /
+FULL SUITE GREEN, no expected failures. The latest focused predictor/report
+checks pass **83 tests**; selected GUI controls/lifecycle checks pass **six**.
+Core coverage includes 1/2/4/8/16-bit packed rows, odd-width padding,
+multi-component samples, independent historical predictor hashes, both
+encoders with both predictor states, explicit Zopfli Off/On/Best, actual
+complete-file minima, no-image skips and unknown-layout safety. Existing
+mask/render/J*/metadata/cancellation/atomic-publication checks remain green.
+
+GUI checks cover retained inactive choice, forced Best/inapplicable controls,
+one debounce, exact completed-file preview/size, Save, distinct owned Save As
+copies, reload, Cancel, Discard and cached Revert. `tools/shot.py
+--png-prediction-only` passes at 1× and 2×; actual full-window, native panel
+and dropdown captures were viewed, including Off/On/Best, forced Best and
+J*-inapplicable states. The real `tools/filter_smoke.py` passes first-click
+reuse and native unsaved/copy dialogs; its captures were viewed. Its 600s
+review guard accommodates full encoding without changing 300-DPI recipes or
+imposing a product encoding-time cutoff.
+
+No benchmark corpus is re-encoded and every published table row remains
+byte-for-byte unchanged. The matrix is explicitly the frozen §258
+predictor-preserving experiment, not a measurement of the new joint search.
+Reproduction requests preservation explicitly and hashes the shared predictor
+implementation.
+**Implementation verified 2026-10-18; not designer acceptance.** Completion
+notes are documentation-only and reuse this passing result under §241.
+
+### Previous reporting stage (§259, 2026-10-17)
 
 §259 visible controls/PNG guidance: **796 passed**, `./test.sh`, exit 0 /
 FULL SUITE GREEN, no expected failures. Focused overview/binary/PNG checks

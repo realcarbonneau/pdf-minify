@@ -30,7 +30,10 @@ def main():
         out.mkdir(exist_ok=True)
 
         def wait_ready():
-            deadline = time.monotonic() + 90
+            # Best now includes two full encoders and both predictor states.
+            # This review guard is not an encoding-time product cutoff; keep
+            # real 300-DPI recipes rather than weakening them to fit 90s.
+            deadline = time.monotonic() + 600
             while w._artifacts.pending or w._preview_timer.isActive():
                 assert time.monotonic() < deadline, "filter processing did not finish"
                 app.processEvents()

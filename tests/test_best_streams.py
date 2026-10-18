@@ -323,6 +323,9 @@ def test_real_filter_flow_preserves_exact_pages_and_specialized_payloads(tmp_pat
     stats, = observed
     packed = mode in ("indexed", "bw-flate")
     assert (stats["image_streams"] > 0) is packed
+    assert (stats["predictable_images"] > 0) is packed
+    if not packed:
+        assert stats["png_prediction_on_streams"] == 0
     assert target.stat().st_size == min(stats["candidate_bytes"].values())
     with fitz.open(reference) as before, fitz.open(target) as after:
         if packed:
@@ -347,7 +350,8 @@ def test_real_filter_flow_preserves_exact_pages_and_specialized_payloads(tmp_pat
 
 
 @pytest.mark.parametrize("indirect", [False, True])
-def test_png_predictor_bytes_and_transparency_mask_are_preserved(tmp_path, indirect):
+@pytest.mark.parametrize("prediction", ["preserve", "best"])
+def test_png_mask_pixels_stay_exact_and_frozen_prediction_is_supported(tmp_path, indirect, prediction):
     with fitz.open() as doc:
         page = doc.new_page(width=17, height=13)
         raw = bytes((x * 11 + y * 7) % 256 for y in range(13) for x in range(17))
@@ -376,16 +380,19 @@ def test_png_predictor_bytes_and_transparency_mask_are_preserved(tmp_path, indir
         pipeline._write_optimized_pdf(doc, str(baseline), no_new_id=True)
         with fitz.open(baseline) as stored:
             before = DisplayPage(stored[0]).render().samples
-        stats = save(doc, tmp_path / "best.pdf")
+        stats = save(doc, tmp_path / "best.pdf", image_prediction=prediction)
         assert stats["image_streams"] == 2
     with fitz.open(tmp_path / "best.pdf") as doc:
         assert DisplayPage(doc[0]).render().samples == before
         image = doc[0].get_images()[0][0]
         mask = int(doc.xref_get_key(image, "SMask")[1].split()[0])
-        assert doc.xref_get_key(mask, "DecodeParms/Predictor")[1] == "15"
         assert doc.xref_stream(mask) == raw
-        doc.xref_set_key(mask, "DecodeParms", "null")
-        assert doc.xref_stream(mask) == predicted
+        if prediction == "preserve":
+            assert doc.xref_get_key(mask, "DecodeParms/Predictor")[1] == "15"
+            doc.xref_set_key(mask, "DecodeParms", "null")
+            assert doc.xref_stream(mask) == predicted
+        else:
+            assert stats["predictable_images"] == 2
 
 
 def test_source_ccitt_is_converted_not_preserved_as_an_output_exception(tmp_path):

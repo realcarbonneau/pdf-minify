@@ -159,7 +159,7 @@ def identity(publication_path):
     return dict(publication=str(publication_path), publication_sha256=digest(publication_path),
                 environment=environment, recipes=[asdict(r) for r in RECIPES],
                 documents=[asdict(d) for d in overview.DOCUMENTS],
-                stream_policy="best", brotli_declaration=False)
+                stream_policy="best", image_prediction="preserve", brotli_declaration=False)
 
 
 def validate_measured(record):
@@ -203,6 +203,7 @@ def measure(document, recipe, seed, folder, expected_identity, resume=False):
         # Preparation already subset fonts. This is the same Best routine and
         # final writer as pipeline._save_optimized_pdf, without repeating it.
         selection = best.save_best_streams(doc, str(target), writer=study.pipeline._write_optimized_pdf,
+                                           image_prediction="preserve",
                                             directory=str(folder), brotli_declaration=False, no_new_id=True)
     with study.fitz.open(target) as output:
         if semantic_graph(output) != expected_graph or study.streams.brotli_declaration_present(output):

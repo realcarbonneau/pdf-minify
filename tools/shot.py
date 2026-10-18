@@ -303,6 +303,47 @@ def best_stream_samples(w):
     assert not w._draft_specs
 
 
+def png_prediction_samples(w):
+    """Real completed files and native control states for joint prediction."""
+    tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
+    w.preset.setCurrentIndex(w.preset.findData("bw-t180"))
+    w.compression.setCurrentIndex(w.compression.findData("indexed"))
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("zopfli"))
+    w.dpi.setCurrentIndex(w.dpi.findData(150))
+    w.colors_value.setValue(5)
+    w.force_raster.setChecked(True)
+    for prediction in ("off", "on", "best"):
+        w.png_prediction.setCurrentIndex(w.png_prediction.findData(prediction))
+        wait_job(w)
+        assert not w._artifacts.errors, w._artifacts.errors
+        assert w.png_prediction.isEnabled()
+        assert w._spec_for(w._active_pid)["png_prediction"] == prediction
+        artifact = w._artifacts.results[w._result_key(w._active_pid)]
+        with fitz.open(artifact.pdf_path) as doc:
+            images = [x for x in range(1, doc.xref_length()) if doc.xref_is_stream(x)
+                      and doc.xref_get_key(x, "Subtype")[1] == "/Image"]
+            assert images
+            if prediction != "best":
+                assert all((doc.xref_get_key(x, "DecodeParms/Predictor")[1] == "15")
+                           == (prediction == "on") for x in images)
+        capture(w, f"png-zopfli-{prediction}{tag}")
+        w.panelScroll.widget().grab().save(f".tmp/shot-png-zopfli-{prediction}{tag}-panel.png")
+    w.png_prediction.showPopup()
+    app.processEvents()
+    w.png_prediction.view().window().grab().save(f".tmp/shot-png-options{tag}.png")
+    w.png_prediction.hidePopup()
+    w.stream_compression.setCurrentIndex(w.stream_compression.findData("best"))
+    wait_job(w)
+    assert not w.png_prediction.isEnabled() and w.png_prediction.currentData() == "best"
+    capture(w, f"png-forced-best{tag}")
+    w.panelScroll.widget().grab().save(f".tmp/shot-png-forced-best{tag}-panel.png")
+    w.compression.setCurrentIndex(w.compression.findData("bw"))
+    wait_job(w)
+    assert not w.png_prediction.isEnabled() and w.png_prediction.currentData() == "off"
+    capture(w, f"png-jbig2-inapplicable{tag}")
+    w.panelScroll.widget().grab().save(f".tmp/shot-png-jbig2-inapplicable{tag}-panel.png")
+
+
 def best_default_samples(w):
     """All built-in/saved filters already use Best, without live edits or work."""
     from pdf_minify.core import presets
@@ -461,6 +502,8 @@ def main():
                         help="capture Best's packed-image output, policy menu and reader help")
     parser.add_argument("--best-defaults-only", action="store_true",
                         help="verify/capture Best as every built-in and saved app filter's policy")
+    parser.add_argument("--png-prediction-only", action="store_true",
+                        help="capture Off/On/Best prediction and forced/inapplicable states")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -478,7 +521,7 @@ def main():
         review_settings.setValue(key, value)
     review_settings.sync()
     pdf = args.pdf
-    if (args.brotli_compatibility_only or args.best_streams_only or args.best_defaults_only) and pdf == "examples/images.pdf":
+    if (args.brotli_compatibility_only or args.best_streams_only or args.best_defaults_only or args.png_prediction_only) and pdf == "examples/images.pdf":
         pdf = layout_document(1)
     w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
@@ -489,6 +532,16 @@ def main():
         icon_lab_samples(w)
         close_review_window(w)
         print("ICON LAB SHOTS GREEN")
+        return
+
+    if args.png_prediction_only:
+        wait_job(w)
+        try:
+            png_prediction_samples(w)
+        finally:
+            w.revert_filter()
+            close_review_window(w)
+        print("PNG PREDICTION SHOTS GREEN")
         return
 
     if args.brotli_compatibility_only:

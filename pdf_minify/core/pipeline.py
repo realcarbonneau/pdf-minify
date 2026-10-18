@@ -28,6 +28,7 @@ from .canvas import flatten_rgb
 log = logging.getLogger("pdf_minify")
 _ENCODE_WORKDIR = ContextVar("encoder_workdir", default=None)
 _STREAM_POLICY = ContextVar("stream_compression", default="flate")
+_PNG_PREDICTION = ContextVar("png_prediction", default=None)
 _BROTLI_DECLARATION = ContextVar("brotli_declaration", default=False)
 _SAVE_TOKEN = ContextVar("save_token", default=None)
 
@@ -276,10 +277,11 @@ def deflate_best(data: bytes) -> bytes:
     100KB (fast either way); above that zlib-9. Zopfli's default gzip wrapper
     is NOT a PDF Flate stream. Roundtrip validation rejects wrong containers.
     """
-    if _STREAM_POLICY.get() == "best":
-        # Preparation transport only. Best will run both full encoders ONCE
-        # on these same samples; do not run the old opportunistic Zopfli path
-        # first and then encode them again during measured final selection.
+    if (_STREAM_POLICY.get() == "best"
+            or (_STREAM_POLICY.get() == "zopfli" and _PNG_PREDICTION.get() is not None)):
+        # Preparation transport only. The final selector runs the selected
+        # full encoder(s) once per distinct sample/predictor input; do not run
+        # the old opportunistic Zopfli path first and then repeat that work.
         return zlib.compress(data, 9)
     if len(data) <= 100_000 and zopfli_binary() is not None:
         fd, tmp = tempfile.mkstemp(prefix="encode-zopfli-", dir=_ENCODE_WORKDIR.get())
@@ -614,11 +616,13 @@ def _save_optimized_pdf(doc: "fitz.Document", out_path: str, *, no_new_id: bool 
     if subset_fonts:
         doc.subset_fonts()
     policy = _STREAM_POLICY.get()
-    if policy == "best":
+    if policy == "best" or (policy == "zopfli" and _PNG_PREDICTION.get() is not None):
         from .best_streams import save_best_streams
         stats = save_best_streams(doc, out_path, writer=_write_optimized_pdf,
                                   directory=_ENCODE_WORKDIR.get(), token=_SAVE_TOKEN.get(),
-                                  brotli_declaration=_BROTLI_DECLARATION.get(), no_new_id=no_new_id)
+                                  brotli_declaration=_BROTLI_DECLARATION.get(), no_new_id=no_new_id,
+                                  policy=policy,
+                                  image_prediction="best" if policy == "best" else _PNG_PREDICTION.get())
         log.info("Best PDF streams: %s; candidates=%s; Brotli=%d; packed images=%d",
                  stats["winner"], stats["candidate_bytes"], stats["brotli_streams"],
                  stats["image_streams"])
@@ -715,8 +719,13 @@ def save_with_spec(in_path: str, out_path: str, spec: dict,
     policy = spec.get("stream_compression", "flate")
     if policy not in STREAM_LABELS:
         raise ValueError(f"Unknown PDF stream compression: {policy}")
+    from .predictors import effective_prediction
+    prediction = spec.get("png_prediction")
+    if prediction is not None and prediction not in ("off", "on", "best"):
+        raise ValueError(f"Unknown PNG prediction: {prediction}")
     context = _ENCODE_WORKDIR.set(workdir)
     stream_context = _STREAM_POLICY.set(policy)
+    prediction_context = _PNG_PREDICTION.set(effective_prediction(spec))
     declaration_context = _BROTLI_DECLARATION.set(
         permits_brotli(policy) and bool(spec.get("brotli_declaration", False)))
     token_context = _SAVE_TOKEN.set(token)
@@ -725,6 +734,7 @@ def save_with_spec(in_path: str, out_path: str, spec: dict,
     finally:
         _ENCODE_WORKDIR.reset(context)
         _STREAM_POLICY.reset(stream_context)
+        _PNG_PREDICTION.reset(prediction_context)
         _BROTLI_DECLARATION.reset(declaration_context)
         _SAVE_TOKEN.reset(token_context)
 
