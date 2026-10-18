@@ -1,6 +1,6 @@
 # Controlled compression experiments
 
-Designer §§238–258. The primary measured-size tables are in
+Designer §§238–259. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
@@ -92,6 +92,12 @@ partial outputs are never imported or ranked.
 PNG-02 retains its original fixed Zopfli/Brotli baseline recipes and measured
 bytes; they are not new Best controls. See the protocol below.
 
+§259 puts the [measured results and decision tree](INTEGRATED_COMPRESSION.md#results-and-decision-tree)
+first in the PNG section. Branch on prepared output representation, then
+encoder and actual BW/indexed content; keep corpus observations distinct from
+universal rules. Best preserves the chosen predictor and does not automate
+an OFF/ON search. Fixed baseline sizes are always visible, not in a drawer.
+
 Changed factor within every pair: reversible PNG image-row prediction OFF/ON.
 General image and native policies remain paired Zopfli-Flate or Brotli.
 The ON path is the existing predictor-15 implementation: adaptively choose
@@ -107,7 +113,8 @@ PDF dispositions. Four native artwork/mixed palette cases already have
 compatible focused-study pairs; reuse those verified files with provenance
 instead of encoding them again. Remaining cells require new actual saves.
 
-Publish measured plain baseline rows in the overview. Under §243, the PNG
+Publish measured plain baselines in the specialized fixed-encoder controls
+(§258), not the Best-only overview. Under §243, the PNG
 table shows only signed percentage changes computed from measured complete
 files, with the shared precision/emphasis rules above; retain exact byte counts in frozen
 measurement evidence. Focused and native/residual size tables remain separate;

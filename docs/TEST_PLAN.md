@@ -10,6 +10,23 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-17
 
+§259 visible controls/PNG guidance: **796 passed**, `./test.sh`, exit 0 /
+FULL SUITE GREEN, no expected failures. Focused overview/binary/PNG checks
+pass **107 tests**. Presentation regressions require an always-visible
+fixed-size reference, publisher/report agreement and a decision tree before
+the method/table. Frozen measured bytes independently verify 0/48 Brotli
+and 18/48 Zopfli reductions, indexed photo/artwork losses and mixed-content
+indexed FFPR gains. The earlier noisy-BW Brotli counterexample and Best's
+predictor-preserving scope are retained.
+
+Every Markdown table row is byte-for-byte unchanged from the prior report;
+all paired denominators, frozen manifests and measured PDFs remain intact.
+No corpus encodings, app changes, settings changes or new dependencies.
+**Implementation verified 2026-10-17; not designer acceptance.** Completion
+notes are documentation-only and reuse this passing result under §241.
+
+### Previous Best-only overview stage (§258)
+
 §258 Best-only overview: **794 passed**, `./test.sh`, exit 0 / FULL SUITE
 GREEN, no expected failures. Focused overview/binary/PNG checks pass **105
 tests**. New regressions cover missing/duplicate/invalid cells, fixed-policy

@@ -208,7 +208,7 @@ def test_published_primary_and_binary_tables_match_all_measured_cells():
                                        for a, b in zip(row["brotli"], row["zopfli"], strict=True)]
         audited += len(row["best"])
     assert audited == 114
-    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("</details>", 1)[0]
+    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("## Focused scenarios", 1)[0]
     control_rows = {cells[0]: cells[1:] for line in controls.splitlines() if line.startswith("| ")
                     if (cells := [c.strip() for c in line.split("|")[1:-1]])}
     decode = lambda value: int(value.replace("*", "").replace(",", ""))
@@ -224,8 +224,26 @@ def test_fixed_controls_are_relocated_not_removed_and_png_denominators_stay_fixe
     binary = report.split("## Stream compression — Zopfli versus Brotli baseline", 1)[1].split("## Focused scenarios", 1)[0]
     assert "Classic Flate (reference) native |" not in primary
     assert "Preserve images + Classic Flate (reference) native |" in binary
-    assert "<details>" in binary and "</details>" in binary
+    assert "<details" not in binary and "<summary" not in binary and "</details>" not in binary
     assert "### Replace Brotli with Zopfli — final PDF size change (%)\n\n|" in binary
     assert "### FFPR/J* subset — unchanged NATIVE-02 findings" in binary
     png = report.split(bench.overview.PNG_SECTION, 1)[1].split("## Stream compression", 1)[0]
     assert "fixed-encoder plain baseline" in png and "No denominator or PNG measurement changes" in png
+
+
+def test_publisher_fixed_controls_remain_visible_without_a_drawer(monkeypatch):
+    from tools import publish_best_overview as publisher
+    sentinel = object()
+    table = "| Fixed-policy combination | Input |\n|---|---:|\n| Control | 123 |\n"
+    seen = []
+
+    def fixed_controls(publication):
+        seen.append(publication)
+        return table
+
+    monkeypatch.setattr(publisher, "fixed_controls", fixed_controls)
+    section = publisher.fixed_controls_section(sentinel)
+    assert seen == [sentinel]
+    assert "<details" not in section and "<summary" not in section
+    assert section.endswith("\n\n" + table + "\n")
+    assert section.startswith("### Fixed-encoder controls — measured final PDF bytes\n\n")

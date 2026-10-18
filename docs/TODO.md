@@ -2433,3 +2433,16 @@ settings change. **105 focused tests; 794 full-suite tests passed.**
 **Implementation verified 2026-10-17; not designer acceptance.** See
 `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §258, `COMPRESSION_EXPERIMENTS.md`,
 `TEST_PLAN.md`, `tools/bench_best_overview.py` and `tools/publish_best_overview.py`.
+
+## 256 — DONE (designer §259: visible controls and PNG-prediction decision tree)
+
+~~Show the fixed-size reference without a drawer and lead PNG results with
+a measured decision tree by prepared image representation, encoder and content.~~
+Stub: reference always visible; results/tree precede the method and effect
+table. Reader tiers, the noisy-BW Brotli counterexample and Best's unchanged
+predictor boundary remain explicit. Publisher and presentation regressions
+match; frozen fixtures verify the counts/content observations. Every published
+table row is unchanged; no corpus encoding or app/settings change.
+**107 focused tests; 796 full-suite tests passed. Implementation verified
+2026-10-17; not designer acceptance.** See `DESIGN.md` §259,
+`INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md` and `TEST_PLAN.md`.

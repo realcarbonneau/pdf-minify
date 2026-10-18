@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–258; TODO §§226–255. This is the primary integrated
+Designer §§210–214/220–259; TODO §§226–256. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
 
@@ -174,6 +174,45 @@ targets remain distinct. A smaller encoding need not beat the original.
 
 ## PNG prediction — measured effect versus baseline
 
+### Results and decision tree
+
+**Current measured result:** prediction reduces **0 of 48 Brotli** files
+and **18 of 48 Zopfli** files. With every measured same-fidelity algorithm
+eligible, none of the 96 PNG candidates is uniquely smallest. Reader limits
+matter: excluding Brotli leaves eight strict wins in the measured 16/64-color
+alternatives, not an exhaustive layered-JBIG2 search.
+
+Use the **prepared output image**, not its original file type, to branch:
+
+```text
+Prepared output image
+├─ No bitmap rows → no-op; no prediction decision.
+├─ JPEG / JPEG2000 / JBIG2 → PNG prediction not applicable to that payload.
+└─ Packed BW / indexed samples
+   ├─ Brotli → prefer OFF in this corpus (0/48 reductions); see counterexample.
+   ├─ Zopfli
+   │  ├─ BW → test ON, especially scans and FFPR; not a guaranteed win.
+   │  └─ Indexed → OFF first for color photos/artwork; test ON for
+   │              scan/text-like content and mixed-content FFPR.
+   └─ Best → keeps the chosen predictor; no automatic OFF/ON search.
+```
+
+**Counterexample:** the earlier noisy-BW Brotli control improves **-2.90%**
+with prediction, although JBIG2 remains smaller. See the
+[measured evidence](IMAGE_STREAM_COMPRESSION.md#what-these-sizes-show).
+All current indexed-color photo/artwork PNG candidates grow; some
+mixed-paper indexed FFPR candidates shrink with Zopfli. Encoder and actual
+image content—not palette count or FFPR alone—determine the measured outcome.
+
+This is **benchmark guidance, not a new automatic app policy** (§259).
+For a new input, a firm choice requires actual complete-PDF OFF/ON
+measurements with other factors and reader eligibility fixed. Best currently
+preserves the predictor supplied by the recipe; these results do not measure
+a joint Best-plus-predictor search. Native text/vector streams do not use
+image-row prediction.
+
+### Method and interpretation
+
 Only **image-row PNG prediction** changes within each pair. The row
 names its own **fixed-encoder plain baseline**, retained in the specialized
 reference controls below—not a Best result from the new overview.
@@ -272,7 +311,7 @@ streams. These historical controls are not homogeneous Best candidates.
 **Negative favors Zopfli; positive favors Brotli.** Cells show only
 two-decimal measured full-file changes. Bold marks displayed negatives;
 rounded +0.00% is never bold. Exact baseline/treatment sizes are retained
-in the expandable reference and measured evidence below.
+in the always-visible reference table and measured evidence below.
 
 ### Replace Brotli with Zopfli — final PDF size change (%)
 
@@ -368,9 +407,6 @@ These are the relocated fixed-policy alternatives, not additional main
 matrix choices. PNG OFF/ON calculations keep these encoder-specific
 plain baselines. The Classic-Flate reference remains a control only.
 
-<details>
-<summary>Show fixed Zopfli/Brotli sizes and the Classic-Flate reference</summary>
-
 | Fixed-policy combination | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
 |---|---:|---:|---:|---:|---:|---:|
 | Preserve images + Classic Flate (reference) native | 188,447 | 367,630 | 4,641,959 | 1,493,125 | 502,235 | 2,188,983 |
@@ -412,8 +448,6 @@ plain baselines. The Classic-Flate reference remains a control only.
 | Color FFPR + JPEG2000 lossy r192 + Brotli residual streams | 790,657 | 1,212,982 | 2,322,155 | 132,377 | 1,186,049 | 1,581,090 |
 | Color FFPR + JPEG2000 lossless; optimized residual streams | **26,977,014** | **19,059,609** | **127,518,137** | **631,376** | **27,091,577** | **32,340,923** |
 | Color FFPR + JPEG2000 lossless + Brotli residual streams | 26,977,017 | 19,059,623 | 127,518,139 | 631,379 | 27,091,580 | 32,340,926 |
-
-</details>
 
 ## Focused scenarios
 

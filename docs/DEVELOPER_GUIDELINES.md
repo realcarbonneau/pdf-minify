@@ -339,6 +339,14 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Keep PNG pairs fixed-encoder controls, never compare them against a new
   Best baseline. Frozen measurements and their producer identities remain
   immutable; the overview policy changes, not application recipes or encoding.
+- §259 keeps the specialized fixed-size reference always visible, with no
+  details/summary drawer. Put a measured PNG-prediction decision tree at the
+  top of its results section: distinguish prepared J* payloads/no bitmap
+  from packed BW/indexed samples, then encoder and content. Scope Brotli's
+  no-win result to the current corpus and retain the noisy-BW counterexample.
+  Best preserves the predictor; do not claim it searches OFF/ON. No app
+  behavior/default, frozen measurement or reader-support change is implied.
+  Keep publisher output and presentation regressions aligned.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

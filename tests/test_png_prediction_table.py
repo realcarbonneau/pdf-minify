@@ -180,7 +180,7 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     parse = lambda line: [cell.strip() for cell in line.split("|")[1:-1]]
     # §258 moves fixed-encoder baselines out of the Best-only overview. The
     # actual PNG denominator must remain its own encoder's visible control.
-    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("</details>", 1)[0]
+    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("## Focused scenarios", 1)[0]
     baselines = {cells[0]: cells[1:] for line in controls.splitlines()
                  if line.startswith("| ") for cells in [parse(line)]}
     rows = [parse(line) for line in effects.splitlines() if line.startswith("| ")]
@@ -208,3 +208,29 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
             assert bool(match[1]) == bool(match[3]) == (change < 0)
             audited += 1
     assert audited == 96
+
+
+def test_published_decision_tree_leads_the_section_and_matches_measured_results():
+    from tools import publish_best_overview as publisher
+    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    effects = report.split(overview.PNG_SECTION, 1)[1].split("\n## ", 1)[0]
+    assert effects.startswith("\n\n" + publisher.PNG_GUIDANCE + "\n\nOnly **image-row PNG prediction**")
+    fixture = json.loads(Path("tests/fixtures/png_prediction_sizes.json").read_text())
+    for encoder, reductions in (("Brotli", 0), ("Zopfli", 18)):
+        rows = [row for row in fixture["rows"] if encoder in row["label"]]
+        pairs = [(a, b) for row in rows for a, b in zip(row["baseline"], row["png"], strict=True)]
+        assert len(pairs) == 48
+        assert sum(b < a for a, b in pairs) == reductions
+        assert f"**{reductions} of 48 {encoder}**" in publisher.PNG_GUIDANCE
+    indexed = [row for row in fixture["rows"] if "indexed" in row["label"].lower()]
+    assert len(indexed) == 12
+    for row in indexed:
+        for document in ("photos", "art"):
+            i = fixture["documents"].index(document)
+            assert row["png"][i] > row["baseline"][i]
+    mixed = fixture["documents"].index("mixed")
+    mixed_ffpr = [row for row in indexed if "FFPR" in row["label"] and "Zopfli" in row["label"]]
+    assert len(mixed_ffpr) == 3
+    assert all(row["png"][mixed] < row["baseline"][mixed] for row in mixed_ffpr)
+    assert "**Counterexample:**" in publisher.PNG_GUIDANCE
+    assert "Best → keeps the chosen predictor; no automatic OFF/ON search." in publisher.PNG_GUIDANCE

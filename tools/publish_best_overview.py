@@ -18,6 +18,44 @@ from tools import bench_best_overview as bench
 MAIN = "## Overview — final complete-file bytes"
 OLD_BINARY = "## FFPR residual compression — Zopfli versus Brotli baseline"
 BINARY = "## Stream compression — Zopfli versus Brotli baseline"
+PNG_GUIDANCE = """### Results and decision tree
+
+**Current measured result:** prediction reduces **0 of 48 Brotli** files
+and **18 of 48 Zopfli** files. With every measured same-fidelity algorithm
+eligible, none of the 96 PNG candidates is uniquely smallest. Reader limits
+matter: excluding Brotli leaves eight strict wins in the measured 16/64-color
+alternatives, not an exhaustive layered-JBIG2 search.
+
+Use the **prepared output image**, not its original file type, to branch:
+
+```text
+Prepared output image
+├─ No bitmap rows → no-op; no prediction decision.
+├─ JPEG / JPEG2000 / JBIG2 → PNG prediction not applicable to that payload.
+└─ Packed BW / indexed samples
+   ├─ Brotli → prefer OFF in this corpus (0/48 reductions); see counterexample.
+   ├─ Zopfli
+   │  ├─ BW → test ON, especially scans and FFPR; not a guaranteed win.
+   │  └─ Indexed → OFF first for color photos/artwork; test ON for
+   │              scan/text-like content and mixed-content FFPR.
+   └─ Best → keeps the chosen predictor; no automatic OFF/ON search.
+```
+
+**Counterexample:** the earlier noisy-BW Brotli control improves **-2.90%**
+with prediction, although JBIG2 remains smaller. See the
+[measured evidence](IMAGE_STREAM_COMPRESSION.md#what-these-sizes-show).
+All current indexed-color photo/artwork PNG candidates grow; some
+mixed-paper indexed FFPR candidates shrink with Zopfli. Encoder and actual
+image content—not palette count or FFPR alone—determine the measured outcome.
+
+This is **benchmark guidance, not a new automatic app policy** (§259).
+For a new input, a firm choice requires actual complete-PDF OFF/ON
+measurements with other factors and reader eligibility fixed. Best currently
+preserves the predictor supplied by the recipe; these results do not measure
+a joint Best-plus-predictor search. Native text/vector streams do not use
+image-row prediction.
+
+### Method and interpretation"""
 
 
 def encoded_images(doc):
@@ -47,6 +85,17 @@ def fixed_controls(publication):
     records = list(index.values())
     raw = overview.matrix_markdown(overview.DOCUMENTS, rows, records)
     return raw.replace("| Algorithm combination |", "| Fixed-policy combination |", 1)
+
+
+def fixed_controls_section(publication):
+    """Keep the measured baseline sizes always visible (§259)."""
+    return (
+        "### Fixed-encoder controls — measured final PDF bytes\n\n"
+        "These are the relocated fixed-policy alternatives, not additional main\n"
+        "matrix choices. PNG OFF/ON calculations keep these encoder-specific\n"
+        "plain baselines. The Classic-Flate reference remains a control only.\n\n"
+        + fixed_controls(publication) + "\n"
+    )
 
 
 def audit(path):
@@ -135,7 +184,7 @@ def replace_once(text, before, after):
 def rewrite(before, report, publication, path):
     text = before
     text = replace_once(text, "Designer §§210–214/220–254; TODO §§226–252.",
-                        "Designer §§210–214/220–258; TODO §§226–255.")
+                        "Designer §§210–214/220–259; TODO §§226–256.")
     text = replace_once(text, "All **177 integrated Brotli outputs** were",
                         "The fixed-encoder study's **177 integrated Brotli outputs** were")
     start = "**Current selected results after the B114 preparation repair and §254 refresh.**"
@@ -215,6 +264,8 @@ def rewrite(before, report, publication, path):
         "files now included in this expanded overview.", "files retained in the fixed-encoder controls.")
     text = replace_once(text, "**Does prediction ever win overall?** With all measured same-fidelity\nalgorithms eligible,",
         "**Does prediction ever win overall?** In the fixed-encoder study, with all\nmeasured same-fidelity algorithms eligible,")
+    text = replace_once(text, bench.overview.PNG_SECTION + "\n\n",
+        bench.overview.PNG_SECTION + "\n\n" + PNG_GUIDANCE + "\n\n")
     old_start = text.index(OLD_BINARY)
     old_end = text.index("## Focused scenarios", old_start)
     old = text[old_start:old_end]
@@ -238,7 +289,7 @@ def rewrite(before, report, publication, path):
         "**Negative favors Zopfli; positive favors Brotli.** Cells show only\n"
         "two-decimal measured full-file changes. Bold marks displayed negatives;\n"
         "rounded +0.00% is never bold. Exact baseline/treatment sizes are retained\n"
-        "in the expandable reference and measured evidence below.\n\n"
+        "in the always-visible reference table and measured evidence below.\n\n"
         "### Replace Brotli with Zopfli — final PDF size change (%)\n\n"
         + bench.binary_table(bench.overview.DOCUMENTS, bench.RECIPES, publication) + "\n"
         "### FFPR/J* subset — unchanged NATIVE-02 findings\n\n"
@@ -246,12 +297,7 @@ def rewrite(before, report, publication, path):
         "experiment (§§245/246). Their results and causal accounting remain\n"
         "unchanged; the statements in this subsection refer to those 30 pairs,\n"
         "not every row of the expanded reference.\n\n" + subset
-        + "### Fixed-encoder controls — measured final PDF bytes\n\n"
-        "These are the relocated fixed-policy alternatives, not additional main\n"
-        "matrix choices. PNG OFF/ON calculations keep these encoder-specific\n"
-        "plain baselines. The Classic-Flate reference remains a control only.\n\n"
-        "<details>\n<summary>Show fixed Zopfli/Brotli sizes and the Classic-Flate reference</summary>\n\n"
-        + fixed_controls(publication) + "\n</details>\n\n"
+        + fixed_controls_section(publication) + "\n"
     )
     text = text[:old_start] + binary + text[old_end:]
     text = replace_once(text,

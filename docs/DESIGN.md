@@ -637,6 +637,30 @@ unchanged visual graph and protected J* payloads. Retain frozen fixed-encoder
 provenance and all old measurements. This updates reporting and benchmark
 policy, not app settings, core algorithm behavior or reader certification.
 
+### Visible controls and PNG-prediction guidance (§259)
+
+Keep the relocated fixed Zopfli/Brotli sizes and Classic-Flate control always
+visible in the specialized binary section, with no collapsible details/summary
+wrapper. Preserve every measured cell, label, denominator and emphasis rule.
+
+Lead the PNG-prediction section with results and a decision tree for the
+**prepared output image representation**, not the original input codec.
+No eligible bitmap is a no-op; PNG row prediction does not apply to J*
+payloads or native text/vector streams. For packed BW/indexed samples, the
+fixed encoder and actual content matter: the representative Brotli study has
+no reductions, while Zopfli improves some scan/text-like and FFPR cases but
+not the current color-photo/artwork cases. Retain the earlier noisy-BW Brotli
+counterexample and the distinction between a baseline improvement and an
+overall size winner, including reader eligibility.
+
+This is measured guidance, not a universal predictor-elimination rule or an
+implemented automatic policy. Best preserves the selected predictor; it does
+not search prediction OFF/ON. New-input certainty requires measured complete
+OFF/ON files with other factors fixed. Update the documentation publisher and
+its presentation regressions, without re-encoding the corpus, changing app
+behavior or modifying frozen evidence. The results/conclusion must precede
+the method and existing percentage table.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

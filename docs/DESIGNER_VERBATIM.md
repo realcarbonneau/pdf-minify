@@ -1111,3 +1111,7 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 ## 258 — Best-only overview and separate compressor experiment (verbatim, 2026-10-17)
 
 > Why do we still have rows in the main table that compare Zopfli with Brotli?  Move all those to the specialized binary table and only use the new "Best" algorithm for the main table, document in the section, but not in the table directly, because that would make the table too noisy, the specialize binary experiment table will be the reference for that information.
+
+## 259 — visible fixed controls and PNG-prediction decision tree (verbatim, 2026-10-17)
+
+> you can leave this always expanded, no drawer to open "Show fixed Zopfli/Brotli sizes and the Classic-Flate reference".  Also, we now have a decision tree for PNG prediction, right, please document, it depends on brotli and image type.  Add it to the top section of "PNG prediction — measured effect versus baseline" conclusion/resuts.  Right?
