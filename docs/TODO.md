@@ -2463,3 +2463,15 @@ at 1×/2× and the real-file lifecycle smoke pass and were viewed.
 **Implementation verified 2026-10-18; not designer acceptance.** See
 `DESIGN.md` §260, `NATIVE_STREAM_COMPRESSION.md`, `TEST_PLAN.md`,
 `pdf_minify/core/predictors.py` and `pdf_minify/core/best_streams.py`.
+
+## 258 — DONE (designer §261: explicit OFF/ON branches in the predictor tree)
+
+~~Show prediction OFF/ON testing in both Best encoder branches.~~
+Stub: report and publisher refer to separate Zopfli/Brotli definitions;
+both automatic branches explicitly test OFF/ON. Explicit Zopfli's choices
+remain separate, and study observations stay outside the operational tree.
+Presentation regressions require both branches and publisher/report agreement.
+Every measured table row, runtime and settings remain unchanged.
+**107 focused checks; 834 full-suite tests passed. Implementation verified
+2026-10-18; not designer acceptance.** See `DESIGN.md` §261,
+`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.

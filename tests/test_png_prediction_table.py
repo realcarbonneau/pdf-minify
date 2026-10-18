@@ -233,5 +233,20 @@ def test_published_decision_tree_leads_the_section_and_matches_measured_results(
     assert len(mixed_ffpr) == 3
     assert all(row["png"][mixed] < row["baseline"][mixed] for row in mixed_ffpr)
     assert "**Counterexample:**" in publisher.PNG_GUIDANCE
-    assert "Best (Zopfli/Brotli) → automatically test OFF/ON with both encoders." in publisher.PNG_GUIDANCE
+    tree = publisher.PNG_GUIDANCE.split("```text\n", 1)[1].split("\n```", 1)[0]
+    assert (
+        "Best (Zopfli/Brotli)\n"
+        "├─ Zopfli → see Zopfli below; use PNG prediction Best.\n"
+        "└─ Brotli → see Brotli below."
+    ) in tree
+    assert (
+        "Zopfli\n"
+        "├─ Off → test prediction OFF only.\n"
+        "├─ On → test prediction ON only.\n"
+        "└─ Best → test prediction OFF and ON."
+    ) in tree
+    assert "Brotli (branch of Best)\n└─ Always test prediction OFF and ON." in tree
+    assert "Compare measured complete-PDF candidates; keep the smallest." in tree
+    assert "Fixed Brotli study" not in tree
+    assert "favored" not in tree
     assert "96 fixed-encoder pairs do **not** measure §260's new" in publisher.PNG_GUIDANCE

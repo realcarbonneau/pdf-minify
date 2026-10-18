@@ -700,6 +700,16 @@ tree and publisher without inventing replacement sizes. Verify both encoder
 and predictor outcomes, packed row padding, masks, exact visuals and the
 shared GUI lifecycle; capture/view the new control states.
 
+### Explicit predictor-search tree (§261)
+
+Keep §260's automatic search unchanged. The Best decision tree has separate
+Zopfli and Brotli branches referring to their definitions below; both test
+PNG prediction OFF and ON for eligible image rows. Show explicit Zopfli's
+Off/On/Best choices separately, without implying a new fixed-Brotli GUI
+control. Keep measured study observations outside the operational tree:
+the current corpus's no-win result does not remove Brotli+prediction trials.
+Update the report and publisher together; retain all measured table cells.
+
 ### Sixth representative: technical illustrations (§231)
 
 Add `examples/models-nasa-kepler.pdf` as a sixth complete-file overview

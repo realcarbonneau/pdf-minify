@@ -354,6 +354,10 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   filter or repeated image processing. Skip by actual applicability, never
   by absence of source PNG files or a no-win corpus heuristic. Frozen §258
   sizes remain explicitly predictor-preserving historical evidence.
+- §261 keeps that search unchanged and makes both encoder branches explicit
+  in the tree: Best refers to Zopfli and Brotli definitions below, each testing
+  prediction OFF/ON. Keep study observations outside operational branches;
+  do not infer a fixed-Brotli GUI control or alter measured table cells.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,
   palette or codec transforms. No post-threshold/palette resize, per-image

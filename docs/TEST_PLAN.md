@@ -10,6 +10,16 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-18
 
+§261 predictor-tree clarification: **834 passed**, `./test.sh`, exit 0 /
+FULL SUITE GREEN; **107 focused report checks passed**. Regressions require
+Best's separate encoder references, prediction OFF/ON in both automatic
+branches, explicit Zopfli's Off/On/Best choices and publisher/report agreement.
+The operational tree contains no fixed-study recommendation. Every Markdown
+table row is byte-for-byte unchanged; no corpus encoding, app/runtime or
+settings change. **Implementation verified 2026-10-18; not designer acceptance.**
+
+### Joint predictor/encoder selection (§260)
+
 §260 joint predictor/encoder selection: **834 passed**, `./test.sh`, exit 0 /
 FULL SUITE GREEN, no expected failures. The latest focused predictor/report
 checks pass **83 tests**; selected GUI controls/lifecycle checks pass **six**.

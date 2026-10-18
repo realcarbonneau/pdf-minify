@@ -1,6 +1,6 @@
 # Integrated compression — complete-PDF sizes at 300 DPI
 
-Designer §§210–214/220–260; TODO §§226–257. This is the primary integrated
+Designer §§210–214/220–261; TODO §§226–258. This is the primary integrated
 size analysis, replacing the earlier mixed-DPI overview. Measurements and
 verification: 2026-10-16–17 (America/New_York).
 
@@ -198,11 +198,21 @@ Use the **prepared output image**, not its original file type, to branch:
 Prepared output image
 ├─ No bitmap rows → no-op; no prediction decision.
 ├─ JPEG / JPEG2000 / JBIG2 → PNG prediction not applicable to that payload.
-└─ Packed BW / indexed samples
-   ├─ Best (Zopfli/Brotli) → automatically test OFF/ON with both encoders.
-   ├─ Zopfli → PNG prediction: Off / On / Best.
-   │           Best automatically compares OFF/ON with Zopfli only.
-   └─ Fixed Brotli study → OFF favored here (0/48 reductions), not universally.
+└─ Packed BW / indexed samples → apply the stream policy below.
+
+Best (Zopfli/Brotli)
+├─ Zopfli → see Zopfli below; use PNG prediction Best.
+└─ Brotli → see Brotli below.
+
+Zopfli
+├─ Off → test prediction OFF only.
+├─ On → test prediction ON only.
+└─ Best → test prediction OFF and ON.
+
+Brotli (branch of Best)
+└─ Always test prediction OFF and ON.
+
+Compare measured complete-PDF candidates; keep the smallest.
 ```
 
 **Counterexample:** the earlier noisy-BW Brotli control improves **-2.90%**
@@ -212,7 +222,7 @@ All current indexed-color photo/artwork PNG candidates grow; some
 mixed-paper indexed FFPR candidates shrink with Zopfli. Encoder and actual
 image content—not palette count or FFPR alone—determine the measured outcome.
 
-**Application policy (§260):** Best performs the joint search rather than
+**Application policy (§§260/261):** Best performs the joint search rather than
 turning these content observations into skip heuristics. Explicit Zopfli's
 Off/On choices force their stated predictor; Best measures both. Compare
 actual complete saved PDFs, including predictor dictionaries and container

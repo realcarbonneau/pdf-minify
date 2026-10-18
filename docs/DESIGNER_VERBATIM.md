@@ -1119,3 +1119,7 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 ## 260 — jointly choose image predictor and lossless encoder (verbatim, 2026-10-17)
 
 > Also, can it happen that the images is native stream AND that best chooses zopfli?  Regardless, in the decision tree, when zopfli, we should automatically test PNG Prediction on and off when choosing best?  And also have an option for PNG prediction for when zopfli is chosen, have On/Off/Best.  For Best Zopfli/Brotli, it would also always try PNG Prediction Best.  or are there cases where it's guaranteed useless, eg, no PNGs = no need?
+
+## 261 — show both predictor states for both Best encoder branches (verbatim, 2026-10-18)
+
+> Ok, then leave it always tested for both, fix your tree to show the test for both.
