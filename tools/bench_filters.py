@@ -12,7 +12,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pdf_minify.core import presets
 from pdf_minify.core.cancel import CancelToken
-from pdf_minify.core.pipeline import process_file, recompress_file, gc_copy
+from pdf_minify.core.pipeline import save_with_spec
+from pdf_minify.core.recipes import preset_spec
 
 FILES = [
     "examples/deed-brevard.pdf",
@@ -28,24 +29,9 @@ def run_one(src, pid, out):
     p = presets.get(pid)
     t0 = time.perf_counter()
     tok = CancelToken()
-    if p["mode"] == "bw":
-        prm = p["params"]
-        process_file(src, out, strategy=prm["strategy"], t=prm["t"],
-                     dpi=prm["dpi"], token=tok)
-    elif p["mode"] == "color":
-        prm = p["params"]
-        recompress_file(src, out, dpi_cap=prm["dpi_cap"], jpeg_q=prm["jpeg_q"],
-                        token=tok)
-    elif p["mode"] == "jpx":
-        prm = p["params"]
-        recompress_file(src, out, dpi_cap=prm["dpi_cap"], token=tok,
-                        codec="jpx", rate=prm.get("rate", 192))
-    elif p["mode"] == "indexed":
-        prm = p["params"]
-        recompress_file(src, out, dpi_cap=prm["dpi_cap"], token=tok,
-                        codec="indexed", colors=prm.get("colors", 64))
-    else:
-        gc_copy(src, out)
+    # Current app defaults use the real recipe/saver, including q75, FFPR and
+    # PDF streams. Do not silently feed JPEG2000's former r192 fallback.
+    save_with_spec(src, out, preset_spec(p), token=tok)
     return time.perf_counter() - t0
 
 

@@ -4,8 +4,9 @@ No Qt imports here. GUI previews read real saved PDFs; apply helpers below are
 headless utilities only. Built-in UUIDv4 constants persist across launches.
 """
 from . import threshold as T
-from .pipeline import PAGE_SIZES, DEFAULT_DPI, DEFAULT_PAGE_SIZE, jpx_encode
+from .pipeline import PAGE_SIZES, DEFAULT_DPI, DEFAULT_PAGE_SIZE, jpeg_encode, jpx_encode
 from .filter_defaults import migrate_stream_compression
+from .quality import DEFAULT_LOSSY_QUALITY
 
 RASTER_DPIS = (150, 200, 300, 600)
 PAGE_SIZE_IDS = tuple(PAGE_SIZES)
@@ -34,14 +35,14 @@ PRESETS = [
      "params": {"strategy": "otsu", "t": 180, "dpi": DEFAULT_DPI, "encoder": "jbig2-g4", "force_raster": True},
      "blurb": "flatten text, vectors and images"},
     {"id": "color-j2k", "uuid": "382c2804-d86e-4120-9427-2dd2a68f3874", "label": "Color · JPEG2000", "mode": "jpx",
-     "params": {"dpi_cap": DEFAULT_DPI, "rate": 192},
-     "blurb": "smallest photos (default color)"},
+     "params": {"dpi_cap": DEFAULT_DPI, "jpx_q": DEFAULT_LOSSY_QUALITY},
+     "blurb": f"wavelet color encoding, q{DEFAULT_LOSSY_QUALITY} starting point"},
     {"id": "color-max", "uuid": "d2aa4370-d9d5-4850-9761-b03414e01233", "label": "Color · Max Squeeze", "mode": "color",
-     "params": {"dpi_cap": DEFAULT_DPI, "jpeg_q": 45},
-     "blurb": "smallest slides/photos"},
+     "params": {"dpi_cap": DEFAULT_DPI, "jpeg_q": DEFAULT_LOSSY_QUALITY},
+     "blurb": f"JPEG q{DEFAULT_LOSSY_QUALITY} starting point; quality is editable"},
     {"id": "color-bal", "uuid": "1dd0af4f-9a2d-40f5-b83c-a96d74deb7b7", "label": "Color · Balanced", "mode": "color",
-     "params": {"dpi_cap": DEFAULT_DPI, "jpeg_q": 60},
-     "blurb": "fewer JPEG blocks"},
+     "params": {"dpi_cap": DEFAULT_DPI, "jpeg_q": DEFAULT_LOSSY_QUALITY},
+     "blurb": f"JPEG q{DEFAULT_LOSSY_QUALITY} starting point; quality is editable"},
     {"id": "color-p16", "uuid": "b946f490-22a2-48c1-9e12-af269d2e3f70", "label": "Color · Poster 16", "mode": "indexed",
      "params": {"dpi_cap": DEFAULT_DPI, "colors": 16},
      "blurb": "flat graphics, 16 colors"},
@@ -100,10 +101,7 @@ def apply_color_preview(rgb, preset_id: str, dpi_cap: int | None = None,
     img = Image.fromarray(rgb)
     if scale < 1.0:
         img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
-    buf = io.BytesIO()
-    img.save(buf, "JPEG", quality=q, optimize=True)
-    buf.seek(0)
-    return np.asarray(Image.open(buf).convert("RGB"))
+    return np.asarray(Image.open(io.BytesIO(jpeg_encode(img, q))).convert("RGB"))
 
 
 def apply_jpx_preview(rgb, preset_id: str, dpi_cap: int | None = None,
@@ -116,5 +114,6 @@ def apply_jpx_preview(rgb, preset_id: str, dpi_cap: int | None = None,
     if p["mode"] != "jpx":
         raise ValueError(f"{preset_id} is not a JPEG2000 preset")
     cap = dpi_cap if dpi_cap is not None else p["params"]["dpi_cap"]
-    data = jpx_encode(rgb, cap, p["params"].get("rate", 192), lossless)
+    data = jpx_encode(rgb, cap, p["params"].get("rate"), lossless,
+                      jpx_q=p["params"].get("jpx_q"))
     return np.asarray(Image.open(io.BytesIO(data)).convert("RGB"))

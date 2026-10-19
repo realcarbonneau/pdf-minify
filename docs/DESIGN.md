@@ -83,11 +83,101 @@ View=Main:V + Filters:V (square / portrait screens) → panes stacked, rail on r
 | 3 | BW · Strong T=210 | BW | 300dpi, simple T=210 | faint pencil / gray bg |
 | 4 | BW · Stained Paper | BW | 300dpi, sauvola w31 k0.25 | yellowed / uneven light |
 | 5 | BW · Full-page | BW | 300dpi, otsu, JBIG2, FFPR | flatten all artwork |
-| 6 | Color · JPEG2000 ★ default color | JPX | 300dpi, rate 192 | photo/reader tradeoff |
-| 7 | Color · Max Squeeze | JPEG | 300dpi, q45 | smaller lossy photos |
-| 8 | Color · Balanced | JPEG | 300dpi, q60 | fewer JPEG blocks |
+| 6 | Color · JPEG2000 | JPX | 300dpi, q75 | wavelet color encoding |
+| 7 | Color · Max Squeeze | JPEG | 300dpi, q75 | retained filter identity/name; editable quality |
+| 8 | Color · Balanced | JPEG | 300dpi, q75 | retained filter identity/name; editable quality |
 | 9 | Color · Poster 16 | indexed | 300dpi, 16 colors | flat graphics, tiny |
 | 10 | Color · Indexed 64 | indexed | 300dpi, 64 colors | diagrams and logos |
+
+### Familiar lossy quality and q75 baseline (§§262–264)
+
+Designer §262:
+> We have to use the parameter that users are most used to, that is the most common.
+
+Designer §263:
+> is this the default  "4:4:4"?   Also, use q90 for both jpg and jpeg2000 for now please as a start.  Should they be somewhat similar if the assumed range is 0-100?
+
+Designer §264 supersedes the q90 starting point:
+> change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
+
+JPEG and lossy JPEG2000 start at **Quality 75**. Use one native
+slider/editable-number control on a 0–100 scale; higher means better quality.
+It is active for JPEG and lossy JPEG2000, visible but disabled otherwise.
+JPEG2000 retains its separate Lossless checkbox. Every edit uses the existing
+300ms debounce and saved/draft/artifact lifecycle, including Save As and Revert.
+
+Apply this starting point once to existing JPEG/JPEG2000 app filters as well
+as new defaults, preserving UUIDs, names/order, DPI, FFPR, native streams,
+metadata and the Lossless choice. Later deliberate quality edits persist;
+the migration is not a permanent clamp. Keep both legacy-named JPEG seeds
+rather than deleting identities or silently renaming the designer's filters.
+
+The library JPEG default is **4:2:0**, but §§265/266 now approve the researched
+fixed full-resolution comparison profiles: JPEG **4:4:4** and lossy JPEG2000
+**9/7 + RGB colour decorrelation**. These are internal encoder policy, not
+new UI controls. Keep one quality slider; preserve the existing edge-case
+Lossless capability without expanding it into the core benchmark.
+
+Designer §265:
+> I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
+
+Designer §266:
+> If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
+
+Use **q75/q75 as the working comparable-quality baseline**, with actual
+complete PDFs at 300 DPI, native-preserving and FFPR separately. Do not make
+an unimplemented perceptual calibration a blocker. Record the exact quality
+mapping and encoder profiles; inspect actual output and report observed
+differences without declaring equivalence experimentally proven or hiding
+losses. Any stronger future quality-matching method must add measured,
+source-backed information. The JPEG2000 implementation mapping and
+historical-measurement boundary are in
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md), including the adopted
+full-chroma comparison setup and primary-source research.
+
+Designer §267:
+> ok, use that please
+
+Use the study-based conditional comparison as the new working baseline:
+encode the identical prepared raster with JPEG at the selected Quality,
+measure its actual raw-sample/JPEG-byte ratio, then choose JPEG2000's ratio
+using the approximate anchors **40→45** and **60→73**. Interpolate linearly
+between these anchors; outside that interval hold the nearest anchor's
+relative gain, never extrapolate the slope or claim a measured match there.
+Clamp the target ratio to at least 1. This bounded extrapolation is an
+implementation assumption, not an additional result from the study.
+The q75 default and one slider remain; do not substitute a fixed q56 or q28
+for every image. The JPEG reference is an internal measurement only, never
+the source pixels for JPEG2000. Compose/resize once, then encode each codec
+from the same RGB pixels. Explicit legacy ratios and Lossless are unchanged.
+Version the new mapping in effective keys, including its reference JPEG
+profile, so completed old q75 files cannot be reused as current output.
+Remeasure the four lossy overview rows; retain frozen controls and the
+previous fixed-ratio q75 study as historical evidence. See
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md) and TODO §262.
+
+Designer §268:
+> ok, update all benchmarks and docs, and run the updated benchmarks that have not been done yet.
+
+Apply the current q75/full-chroma/study-reference standard throughout active
+lossy benchmark tables, not only the main matrix. Reuse the 24 verified
+LOSSY-02 whole PDFs as immutable image preparations; run the missing 48
+fixed Zopfli/Brotli native/FFPR controls and 12 Flate FFPR references.
+Hold encoded image bytes and decoded native/metadata/geometry constant per
+stream-policy comparison. Those same complete files supply the binary,
+focused-photo and native/residual tables; do not encode the images or repeat
+already completed comparisons for each displayed table. Remeasure actual
+complete files, never infer a new size from old bytes or percentages.
+
+Retain unaffected BW/indexed/lossless/control evidence with its producing
+identity. Old q50/r192 and fixed-ratio q75 artifacts remain immutable history,
+not active lossy comparison rows. Update current recipe labels, table
+denominators, bold minima, two-decimal effects, causal byte accounting,
+conclusions, reproduction instructions and regression fixtures together.
+Historical component studies retain their explicit historical scope and link
+to the current integrated result; no timing ranks, CSV delivery, new GUI
+option or application codec change. See TODO §263 and LOSSY-03 in
+`COMPRESSION_EXPERIMENTS.md`.
 
 Historical automatic choice (§57), superseded for explicit selections by
 §203: few-color images (≤256 distinct colors — logos,
@@ -703,8 +793,8 @@ shared GUI lifecycle; capture/view the new control states.
 ### Explicit predictor-search tree (§261)
 
 Keep §260's automatic search unchanged. The Best decision tree has separate
-Zopfli and Brotli branches referring to their definitions below; both test
-PNG prediction OFF and ON for eligible image rows. Show explicit Zopfli's
+Zopfli and Brotli branches, each directly stating that it tests PNG prediction
+OFF and ON for eligible image rows. Show explicit Zopfli's
 Off/On/Best choices separately, without implying a new fixed-Brotli GUI
 control. Keep measured study observations outside the operational tree:
 the current corpus's no-win result does not remove Brotli+prediction trials.

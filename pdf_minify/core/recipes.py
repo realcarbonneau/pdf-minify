@@ -4,6 +4,8 @@ from .pipeline import DEFAULT_DPI, DEFAULT_PAGE_SIZE
 from .algorithms import BW_MODES, COLOR_MODES, PALETTE_MODES
 from .stream_compression import permits_brotli
 from .predictors import effective_prediction
+from .quality import (DEFAULT_LOSSY_QUALITY, JPEG_ENCODING_PROFILE, JPX_ENCODING_PROFILE,
+                      JPX_QUALITY_MAPPING, checked_quality, jpx_lossy_setting)
 
 
 def preset_spec(preset: dict) -> dict:
@@ -22,10 +24,16 @@ def preset_spec(preset: dict) -> dict:
                     force_raster=bool(prm.get("force_raster", False)),
                     page_size=prm.get("page_size", DEFAULT_PAGE_SIZE))
         if mode == "color":
-            spec["jpeg_q"] = int(prm.get("jpeg_q", 50))
+            spec["jpeg_q"] = checked_quality(prm.get("jpeg_q", DEFAULT_LOSSY_QUALITY))
         elif mode == "jpx":
-            spec.update(rate=int(prm.get("rate", 192)),
-                        lossless=bool(prm.get("lossless", False)))
+            spec["lossless"] = bool(prm.get("lossless", False))
+            # A saved q field wins only when rate is absent; explicit old
+            # ratio recipes remain reproducible, never silently relabeled.
+            if prm.get("jpx_q") is not None or prm.get("rate") is None:
+                spec["jpx_q"] = prm.get("jpx_q", DEFAULT_LOSSY_QUALITY)
+            if prm.get("rate") is not None:
+                spec["rate"] = prm["rate"]
+            jpx_lossy_setting(spec)  # fail ambiguous active recipes early
         else:
             spec["colors"] = int(prm.get("colors", 5 if mode == "layered-jbig2" else 64))
     return spec
@@ -35,7 +43,7 @@ def spec_key(spec: dict) -> tuple:
     """Every effective saver input, no disabled controls or filter identity.
 
     An automatic strategy ignores T; unforced BW ignores page reshaping;
-    lossless JPEG2000 ignores its lossy rate. Equivalent copies share results.
+    lossless JPEG2000 ignores its lossy quality/rate. Equivalent copies share results.
     """
     policy = spec.get("stream_compression", "flate")
     return (*_image_spec_key(spec), policy,
@@ -54,11 +62,15 @@ def _image_spec_key(spec):
                 int(spec.get("t", 180)) if strategy == "simple" else None,
                 force, spec.get("page_size", DEFAULT_PAGE_SIZE) if force else None)
     if mode == "color":
-        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), int(spec.get("jpeg_q", 50)), *raster)
+        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)),
+                checked_quality(spec.get("jpeg_q", DEFAULT_LOSSY_QUALITY)),
+                JPEG_ENCODING_PROFILE, *raster)
     if mode == "jpx":
-        lossless = bool(spec.get("lossless", False))
-        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), lossless,
-                None if lossless else int(spec.get("rate", 192)), *raster)
+        setting, value = jpx_lossy_setting(spec)
+        quality_key = ((setting, value, JPX_QUALITY_MAPPING, JPEG_ENCODING_PROFILE)
+                       if setting == "quality" else (setting, value))
+        profile = "jpx-rgb53-lossless-v1" if setting == "lossless" else JPX_ENCODING_PROFILE
+        return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), quality_key, profile, *raster)
     if mode in PALETTE_MODES:
         return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)),
                 int(spec.get("colors", 5 if mode == "layered-jbig2" else 64)), *raster)

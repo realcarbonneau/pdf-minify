@@ -733,7 +733,7 @@ def test_effective_recipe_keys_include_all_saver_inputs_not_names():
     assert spec_key(bw) == spec_key(dict(bw, page_size="a4"))  # unforced ignores size
     forced = dict(bw, force_raster=True)
     assert spec_key(forced) != spec_key(dict(forced, page_size="a4"))
-    for mode, field in (("color", "jpeg_q"), ("jpx", "rate"), ("indexed", "colors")):
+    for mode, field in (("color", "jpeg_q"), ("jpx", "jpx_q"), ("indexed", "colors")):
         sample = next(p for p in presets.PRESETS if p["mode"] == mode)
         spec = preset_spec(sample)
         assert spec_key(spec) != spec_key(dict(spec, **{field: spec[field] + 1}))
@@ -1340,3 +1340,100 @@ def test_algorithm_changes_obey_existing_switch_transaction(window, monkeypatch,
         assert copied["mode"] == "bw-flate" and copied["uuid"] != original_uuid
         assert copied["params"]["stream_compression"] == "zopfli"
         assert w._saved_specs[w._active_pid]["mode"] == "bw-flate"
+
+
+@pytest.mark.parametrize("pid,field", [("color-max", "jpeg_q"), ("color-j2k", "jpx_q")])
+def test_quality_slider_spinner_use_one_debounce_and_saved_file_lifecycle(window, monkeypatch, pid, field):
+    w = window
+    choose(w, pid)
+    assert w.quality_control.isEnabled() and w.quality_value.value() == 75
+    uid = presets.get(pid)["uuid"]
+    starts = []
+    start = w._artifacts.start
+
+    def record(key, path, spec, *args, **kwargs):
+        copying = key in w._artifacts.copy_sources
+        worker = start(key, path, spec, *args, **kwargs)
+        if worker is not None and not copying:
+            starts.append(dict(spec))
+        return worker
+
+    monkeypatch.setattr(w._artifacts, "start", record)
+    w.quality_control.slider.setValue(89)
+    w.quality_value.setFocus()
+    w.quality_value.selectAll()
+    QTest.keyClicks(w.quality_value, "86")
+    w.quality_value.stepUp()
+    assert w.quality_control.value() == w.quality_value.value() == 87
+    assert w._spec_for(pid)[field] == 87 and not starts
+    assert w._preview_timer.isActive() and w._filter_display_name(pid).endswith(" *")
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(starts) == 1 and starts[0][field] == 87
+    saved = w._artifacts.results[w._result_key(pid)]
+    assert w.after._pdf_source.path == saved.pdf_path
+    assert saved.nbytes == os.path.getsize(saved.pdf_path)
+    assert "q87" in ui._preset_algo(pid, w._spec_for(pid))
+    w.save_filter()
+    assert not w._draft_specs
+    assert presets.get(pid)["params"][field] == 87 and presets.get(pid)["uuid"] == uid
+    w.quality_value.setValue(84)
+    wait_until(lambda: not w._preview_timer.isActive() and not w._artifacts.pending)
+    assert len(starts) == 2
+    w.revert_filter()
+    assert w.quality_value.value() == 87 and not w._draft_specs
+    assert w._artifacts.results[w._result_key(pid)] is saved and len(starts) == 2
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Saved quality copy", True))
+    w.copy_filter()
+    copied = w._active_pid
+    assert copied != pid and presets.get(copied)["params"][field] == 87
+    wait_until(lambda: not w._artifacts.pending)
+    duplicate = w._artifacts.results[w._result_key(copied)]
+    assert Path(duplicate.pdf_path).read_bytes() == Path(saved.pdf_path).read_bytes()
+    assert duplicate.pdf_path != saved.pdf_path and len(starts) == 2
+    presets.PRESETS[:] = copy.deepcopy(_defaults)
+    loaded = ui.MainWindow(None)
+    try:
+        choose(loaded, copied)
+        assert loaded._spec_for(copied)[field] == 87
+        assert loaded.quality_value.value() == 87 and not loaded._draft_specs
+    finally:
+        loaded.close()
+
+
+def test_quality_is_disabled_and_ineffective_for_other_codecs_and_lossless(window):
+    w = window
+    choose(w, "bw-t180")
+    key = w._result_key(w._active_pid)
+    assert not w.quality_control.isEnabled() and not w.quality_label.isEnabled()
+    w.quality_value.setValue(50)  # even programmatic disabled changes are no-ops
+    assert not w._draft_specs and not w._preview_timer.isActive()
+    assert w._result_key(w._active_pid) == key
+    choose(w, "color-j2k")
+    w.quality_value.setValue(88)
+    w.lossless_box.setChecked(True)
+    assert not w.quality_control.isEnabled()
+    assert w._spec_for("color-j2k")["jpx_q"] == 88
+    w.lossless_box.setChecked(False)
+    assert w.quality_control.isEnabled() and w.quality_value.value() == 88
+    w.revert_filter()
+
+
+@pytest.mark.parametrize("pid,field", [("color-max", "jpeg_q"), ("color-j2k", "jpx_q")])
+@pytest.mark.parametrize("choice", ["cancel", "discard", "save_as"])
+def test_quality_edits_use_existing_unsaved_switch_transaction(window, monkeypatch, pid, field, choice):
+    w = window
+    choose(w, pid)
+    w.quality_value.setValue(85)
+    monkeypatch.setattr(w, "_ask_unsaved_filter", lambda current: choice)
+    monkeypatch.setattr(QInputDialog, "getText", lambda *a, **k: ("Quality switch copy", True))
+    w.preset.setCurrentIndex(w.preset.findData("bw-t180"))
+    assert w._saved_specs[pid][field] == 75
+    if choice == "cancel":
+        assert w._active_pid == pid and w.quality_value.value() == 85
+        assert pid in w._draft_specs
+    elif choice == "discard":
+        assert w._active_pid == "bw-t180" and not w._draft_specs
+    else:
+        assert w._active_pid not in (pid, "bw-t180") and not w._draft_specs
+        assert w._spec_for(w._active_pid)[field] == 85
+        assert w.quality_value.value() == 85

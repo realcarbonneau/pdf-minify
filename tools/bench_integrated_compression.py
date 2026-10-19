@@ -38,7 +38,7 @@ def environment():
              "pdf_minify/core/marked_content.py", "pdf_minify/core/native_layer.py",
              "pdf_minify/core/canvas.py",
              "pdf_minify/core/stencils.py", "pdf_minify/core/algorithms.py",
-             "pdf_minify/core/defaults.py", "pdf_minify/core/threshold.py",
+             "pdf_minify/core/defaults.py", "pdf_minify/core/quality.py", "pdf_minify/core/threshold.py",
              "tools/bench_image_streams.py", "tools/bench_integrated_compression.py")
     return dict(python=sys.version.split()[0], pymupdf=fitz.VersionBind,
                 zopfli=pipeline.zopfli_binary(),
@@ -198,6 +198,8 @@ def bitmap_cases(manifest):
 
 def production_cases(sources, folder, resume=False, *, native_sources=None,
                      dpi=pipeline.DEFAULT_DPI, include_ffpr=False):
+    # Frozen experiment recipes, not current app defaults (§264). Never
+    # relabel q50/r192 bytes as q75; a q75 experiment needs fresh saves.
     recipes = (
         ("jpeg-q50", dict(mode="color", dpi_cap=dpi, jpeg_q=50)),
         ("jpx-r192", dict(mode="jpx", dpi_cap=dpi, rate=192, lossless=False)),

@@ -23,6 +23,7 @@ from .image_layers import compose_page_images, compose_color_page
 from .algorithms import BW_MODES, COLOR_MODES
 from .stream_compression import STREAM_LABELS, permits_brotli, recompress_native_streams
 from .defaults import DEFAULT_DPI
+from .quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_lossy_setting, jpx_reference_rate
 from .canvas import flatten_rgb
 
 log = logging.getLogger("pdf_minify")
@@ -200,15 +201,26 @@ def _fit_rect(src_w: float, src_h: float, dst_w: float, dst_h: float) -> fitz.Re
     return fitz.Rect(x0, y0, x0 + w, y0 + h)
 
 
-def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: int = 192,
-               lossless: bool = False, presized: bool = False) -> bytes:
+def jpeg_encode(img: Image.Image, quality: int = DEFAULT_LOSSY_QUALITY) -> bytes:
+    """Fixed full-chroma JPEG profile; only quality is user-facing (§265)."""
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=checked_quality(quality), optimize=True, subsampling=0)
+    return buf.getvalue()
+
+
+def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: float | None = None,
+               lossless: bool = False, presized: bool = False, *,
+               jpx_q: int | None = None) -> bytes:
     """RGB array -> JPEG2000 bytes at the cap rule (designer §56).
 
     Used by the real saver; previews read its resulting PDF. Lossless
-    (`§100`, reversible 5/3) when asked; otherwise the given rate.
+    (`§100`, reversible 5/3) when asked; otherwise the §265 lossy 9/7 + RGB
+    colour-transform profile at user-facing quality or an explicit legacy
+    rate. Never reinterpret an old ratio. Technical options stay internal.
     presized=True skips the legacy downscale (designer §129: the caller
     already forced exact DPI — never scale twice).
     """
+    setting, value = jpx_lossy_setting(dict(lossless=lossless, rate=rate, jpx_q=jpx_q))
     h, w = arr.shape[:2]
     img = Image.fromarray(arr)
     if not presized:
@@ -218,10 +230,25 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: int = 192,
         if scale < 1.0:
             img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), Image.LANCZOS)
     buf = io.BytesIO()
-    if lossless:
-        img.save(buf, "JPEG2000", quality_mode="lossless")
+    # Six resolutions is OpenJPEG's normal profile. Tiny helper inputs need
+    # fewer decompositions; neither path introduces spatial subsampling.
+    resolutions = min(6, min(img.size).bit_length())
+    if setting == "lossless":
+        img.save(buf, "JPEG2000", quality_mode="lossless", num_resolutions=resolutions)
     else:
-        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[rate])
+        if setting == "quality":
+            # Reference only: encode the SAME prepared pixels at the selected
+            # JPEG quality, then map its achieved ratio (§267). Never decode
+            # that JPEG or feed its lossy samples into the JPX encoder.
+            reference = jpeg_encode(img, value)
+            raw_bytes = img.width * img.height * len(img.getbands())
+            target_rate = jpx_reference_rate(raw_bytes, len(reference))
+        else:
+            target_rate = value  # explicit legacy ratio, no reference encode
+        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[target_rate],
+                 irreversible=True, mct=int(img.mode == "RGB"),
+                 num_resolutions=resolutions, codeblock_size=(64, 64),
+                 progression="LRCP", tile_size=None)
     return buf.getvalue()
 
 
@@ -419,9 +446,9 @@ def _place_indexed(doc: "fitz.Document", xref: int, parts: dict):
         pass
 
 
-def color_canvas_payload(img, codec="jpeg", jpeg_q=45, rate=192,
+def color_canvas_payload(img, codec="jpeg", jpeg_q=DEFAULT_LOSSY_QUALITY, rate=None,
                          colors=64, lossless=False, *, allow_substitution=True,
-                         token=None):
+                         token=None, jpx_q=None):
     """Transform an ALREADY flattened, final-DPI RGB canvas (§§180/182).
 
     No per-image alpha guard, size skip or keep-original branch. The chosen
@@ -440,11 +467,9 @@ def color_canvas_payload(img, codec="jpeg", jpeg_q=45, rate=192,
                 "w": iw, "h": ih, "indexed": parts}
     if codec == "jpx":
         cands = [(jpx_encode(np.asarray(img), None, rate, lossless,
-                             presized=True), "/JPXDecode", None)]
+                             presized=True, jpx_q=jpx_q), "/JPXDecode", None)]
     elif codec == "jpeg":
-        buf = io.BytesIO()
-        img.save(buf, "JPEG", quality=jpeg_q, optimize=True)
-        cands = [(buf.getvalue(), "/DCTDecode", None)]
+        cands = [(jpeg_encode(img, jpeg_q), "/DCTDecode", None)]
     else:
         raise ValueError(f"Unknown color codec: {codec}")
     auto = indexed_flate_candidate(img) if allow_substitution else None
@@ -655,11 +680,13 @@ def gc_copy(in_path: str, out_path: str):
 
 
 @_fitz_locked
-def recompress_file(in_path: str, out_path: str, dpi_cap: int = DEFAULT_DPI, jpeg_q: int = 50,
+def recompress_file(in_path: str, out_path: str, dpi_cap: int = DEFAULT_DPI,
+                    jpeg_q: int = DEFAULT_LOSSY_QUALITY,
                     token: CancelToken | None = None, progress=None,
-                    codec: str = "jpeg", rate: int = 192, colors: int = 64,
+                    codec: str = "jpeg", rate: float | None = None, colors: int = 64,
                     lossless: bool = False, *, allow_substitution: bool = True,
-                    force_raster: bool = False, page_size: str = DEFAULT_PAGE_SIZE):
+                    force_raster: bool = False, page_size: str = DEFAULT_PAGE_SIZE,
+                    jpx_q: int | None = None):
     """Color: native full-color composition → final DPI → transform/encode.
 
     One opaque canvas per image-bearing page, with native text/vectors above.
@@ -680,7 +707,8 @@ def recompress_file(in_path: str, out_path: str, dpi_cap: int = DEFAULT_DPI, jpe
                 raise CancelledError()
             def encode(rgb):
                 return color_canvas_payload(rgb, codec, jpeg_q, rate, colors, lossless,
-                                            allow_substitution=allow_substitution, token=token)
+                                            allow_substitution=allow_substitution, token=token,
+                                            jpx_q=jpx_q)
             if force_raster:
                 # Same compose → one resize → transform/encode sequence as the
                 # image layer, but include ALL original page painting (§224).
@@ -714,7 +742,7 @@ def save_with_spec(in_path: str, out_path: str, spec: dict,
     """The ONLY filter-to-PDF entry point (§§122/149); UI reads this file back.
 
     The same recipe includes every effective parameter, including palette
-    count, JPEG quality, JPX rate/lossless, and forced BW page size.
+    count, JPEG/JPX quality (or explicit legacy JPX rate), lossless and page size.
     """
     policy = spec.get("stream_compression", "flate")
     if policy not in STREAM_LABELS:
@@ -752,11 +780,16 @@ def _save_recipe(in_path, out_path, spec, token, progress):
                      force_raster=spec.get("force_raster", False),
                      codec="jbig2" if mode == "bw" else "flate")
     elif mode in COLOR_MODES:
+        if mode == "color":
+            checked_quality(spec.get("jpeg_q", DEFAULT_LOSSY_QUALITY))
+        elif mode == "jpx":
+            jpx_lossy_setting(spec)
         recompress_file(in_path, out_path, dpi_cap=spec.get("dpi_cap", DEFAULT_DPI),
-                        jpeg_q=spec.get("jpeg_q", 50), token=token, progress=progress,
+                        jpeg_q=spec.get("jpeg_q", DEFAULT_LOSSY_QUALITY), token=token, progress=progress,
                         codec={"color": "jpeg", "jpx": "jpx", "indexed": "indexed",
                                "layered-jbig2": "layered-jbig2"}[mode],
-                        rate=spec.get("rate", 192),
+                        rate=spec.get("rate") if mode == "jpx" else None,
+                        jpx_q=spec.get("jpx_q") if mode == "jpx" else None,
                         colors=spec.get("colors", 5 if mode == "layered-jbig2" else 64),
                         lossless=spec.get("lossless", False), allow_substitution=False,
                         force_raster=spec.get("force_raster", False),

@@ -34,6 +34,19 @@ copy the draft's actual mode/policy, not the source template's original mode.
 Changes use the same 300ms timer and explicit switch transaction described
 below. UUID/name/order remain unchanged on Save; a named copy gets a new UUID.
 
+§§262–264 add the common Quality control: `jpeg_q` for JPEG, `jpx_q` for
+JPEG2000, with a q75 starting point and a versioned one-time saved-filter
+migration (§264 replaces §263's q90; revision 2 must migrate revision 1 stores).
+Quality edits use this same transaction and timer. Lossless JPX ignores its
+retained inactive quality. Keep explicit legacy ratio recipes distinct from
+quality in effective keys; see [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).
+§265 also versions the fixed JPEG/JPEG2000 encoder profiles in effective keys.
+§267 versions the study-based JPX quality mapping and its reference JPEG
+profile as well. Saved q values remain unchanged; a changed encoding policy
+invalidates old completed results, not filter UUIDs or saved/draft ownership.
+No new user-facing encoder controls or independent preview transformation are
+introduced. Selection still observes the actual saved result only.
+
 Each filter keeps a saved recipe/result and, while dirty, a live draft.
 Loading controls under signal blockers is not an edit. Effective comparisons
 exclude irrelevant disabled controls and normalize defaults, so selection

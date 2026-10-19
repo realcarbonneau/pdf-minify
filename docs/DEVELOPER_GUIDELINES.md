@@ -95,7 +95,39 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   flattened appearance. Do not rasterize native artwork or invent
   glyph-shaped masks. Lossless content/font/container compression is distinct
   from image thresholding. See `COMPRESSION.md`, issues B89/B90.
-- Color: 300dpi + JPEG q~50 default; JPEG2000 opt-in only (§225).
+- Color: 300 DPI + q75 for JPEG and lossy JPEG2000 (§264 supersedes §263), with a familiar
+  Quality control (§262). JPEG2000 remains an explicit codec choice; its
+  Lossless choice is unchanged. Never relabel a compression ratio as quality
+  or treat equal numeric quality values as measured visual equivalence.
+  Keep explicit historical rate recipes and frozen measurements intact.
+  See `LOSSY_IMAGE_QUALITY.md` for the versioned mapping and migration.
+  §§265/266 now authorize fixing those internal lossy profiles: full-resolution
+  JPEG 4:4:4 and JPEG2000 9/7 with RGB colour decorrelation. The quality slider
+  remains the user-facing control; do not add technical encoder knobs.
+  Equal q75 values are the approved working visual-quality baseline. Run real
+  300-DPI whole-file comparisons now; a more rigorous calibration is a possible
+  refinement, never a precondition for useful benchmarks. Prioritize lossy
+  JPEG2000, not a lossless study or claims of universal codec superiority.
+- §267 replaces the fixed `101-q` JPEG2000 mapping with a study-based
+  JPEG-reference mapping. At the selected Quality encode the identical
+  prepared pixels with the fixed JPEG profile, measure the actual raster
+  ratio, and use 40→45 / 60→73 JPEG→JPX anchors. Interpolate inside that
+  interval and hold endpoint relative gains outside it (explicit heuristic,
+  not proven quality equivalence); target ratio is at least 1. One Quality
+  slider and q75 defaults stay. Never feed JPEG-decoded pixels to JPX,
+  substitute JPEG output, recompose/resize, or rerun filters for selection.
+  Keep explicit legacy ratios/Lossless unchanged; version the mapping AND
+  reference JPEG profile in effective identity. Remeasure current lossy
+  complete-file rows without relabeling prior fixed-ratio measurements.
+- §268 extends the current lossy standard to ALL active benchmark sections
+  and reproduction commands. Reuse verified LOSSY-02 payloads; save only the
+  48 missing Zopfli/Brotli controls and 12 Flate FFPR references, verifying
+  exact images/native/geometry and actual complete-file bytes. Reuse those
+  files across binary, focused and residual tables. Preserve unaffected
+  evidence and frozen historical artifacts, but replace obsolete q50/r192
+  active rows/denominators and update labels/minima/effects/conclusions/tests
+  together. Historical component evidence is explicitly historical, not a
+  competing current standard. No new app codec/default or quality change.
 - §§224/225 supersede mixed-resolution defaults: all built-in raster filters
   and missing-DPI fallbacks use 300 DPI. §226 also requires a one-time migration
   of ALL existing saved raster recipes, including explicit custom DPI values,
@@ -355,8 +387,8 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   by absence of source PNG files or a no-win corpus heuristic. Frozen §258
   sizes remain explicitly predictor-preserving historical evidence.
 - §261 keeps that search unchanged and makes both encoder branches explicit
-  in the tree: Best refers to Zopfli and Brotli definitions below, each testing
-  prediction OFF/ON. Keep study observations outside operational branches;
+  in the tree: Best's Zopfli and Brotli branches each directly state that they
+  test prediction OFF/ON. Keep study observations outside operational branches;
   do not infer a fixed-Brotli GUI control or alter measured table cells.
 - §§180/182: for BW image layers and color, compose original imagery/masks
   in full color first, resize the canvas ONCE to target DPI, then gray/BW,

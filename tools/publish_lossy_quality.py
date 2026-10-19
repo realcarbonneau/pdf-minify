@@ -1,0 +1,158 @@
+"""Publish only completed LOSSY-02 measurements; never encode or estimate."""
+
+import argparse
+from dataclasses import asdict
+import json
+from pathlib import Path
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from tools import bench_lossy_quality as bench
+
+FIXTURE = Path("tests/fixtures/lossy_quality_sizes.json")
+LABELS = ((False, "color", "JPEG q75", "JPEG q50"),
+          (False, "jpx", "JPEG2000 q75", "JPEG2000 lossy r192"),
+          (True, "color", "Color FFPR + JPEG q75", "Color FFPR + JPEG q50"),
+          (True, "jpx", "Color FFPR + JPEG2000 q75", "Color FFPR + JPEG2000 lossy r192"))
+
+
+def native_resource_images(row, source):
+    """Source-bound native opacity/font images are not page-artwork canvases.
+
+    Reuse the established B112 validator: replaced painted source images may
+    not survive through hidden owners, while native opacity/Type 3 resources
+    must not be deleted or lossily rewritten to force one artwork codec.
+    """
+    payloads = {c["payload_sha256"] for c in row["canvases"]}
+    expected_filter = "/DCTDecode" if row["mode"] == "color" else "/JPXDecode"
+    protected = []
+    with bench.fitz.open(source) as original, bench.fitz.open(row["pdf"]) as doc:
+        original_images = {bench.digest(original.xref_stream_raw(x))
+                           for x in range(1, original.xref_length())
+                           if original.xref_is_stream(x) and original.xref_get_key(x, "Subtype")[1] == "/Image"}
+        replacements = {image[0] for page in doc for image in page.get_images(full=True)}
+        bench.overview.study.images.assert_no_retained_source_images(original, doc, replacements)
+        for xref in range(1, doc.xref_length()):
+            if not doc.xref_is_stream(xref) or doc.xref_get_key(xref, "Subtype")[1] != "/Image":
+                continue
+            fingerprint = bench.digest(doc.xref_stream_raw(xref))
+            if xref in replacements:
+                if doc.xref_get_key(xref, "Filter")[1] != expected_filter or fingerprint not in payloads:
+                    raise ValueError("Painted image is not the verified production payload")
+                if row["mode"] == "color":
+                    actual_bytes = len(doc.xref_stream_raw(xref))
+                    if any(c["quality_reference"]["jpeg_bytes"] != actual_bytes
+                           for c in row["canvases"] if c["payload_sha256"] == fingerprint):
+                        raise ValueError("Reference JPEG byte count differs from the actual saved payload")
+            else:
+                if row["force_raster"] or fingerprint not in original_images:
+                    raise ValueError("Unverified non-artwork image resource")
+                protected.append(dict(sha256=fingerprint, properties={key: doc.xref_get_key(xref, key)[1]
+                                 for key in ("Width", "Height", "BitsPerComponent", "ColorSpace", "Filter", "Decode")}))
+    return sorted(protected, key=lambda item: json.dumps(item, sort_keys=True))
+
+
+def audit(manifest):
+    data = json.loads(manifest.read_text())
+    if not data.get("complete") or data["identity"] != bench.identity(bench.DOCUMENTS):
+        raise ValueError("Incomplete or changed lossy study identity")
+    # The run already decoded/rendered every page. Hash-verified immutable
+    # outputs retain that proof; publication does not repeat all encoding or
+    # all-page renders merely to format the same measurements.
+    sources = {d.key: d.source for d in bench.DOCUMENTS}
+    protected_pairs = {}
+    for row in data["records"]:
+        bench.verify_record(row, rerender=False)
+        protected = native_resource_images(row, sources[row["document"]])
+        row["native_resource_images"] = protected
+        key = row["document"], row["force_raster"]
+        if key in protected_pairs and protected_pairs[key] != protected:
+            raise ValueError("Lossy comparison changed protected native opacity/font images")
+        protected_pairs[key] = protected
+    bench.table(bench.DOCUMENTS, data["records"])  # full inventory and pair checks
+    return data
+
+
+def fixture(manifest):
+    data = audit(manifest)
+    records = {(r["document"], r["force_raster"], r["mode"]): r for r in data["records"]}
+    rows = []
+    for force, mode, label, _ in LABELS:
+        cells = [records[d.key, force, mode] for d in bench.DOCUMENTS]
+        rows.append(dict(label=label, mode=mode, force_raster=force,
+                         sizes=[r["complete_pdf_bytes"] for r in cells],
+                         pdf_sha256=[r["pdf_sha256"] for r in cells],
+                         canvas_proof_sha256=[bench.digest(json.dumps(r["canvases"], sort_keys=True).encode())
+                                              for r in cells],
+                         readback_proof_sha256=[bench.digest(json.dumps(r["readback"], sort_keys=True).encode())
+                                                for r in cells],
+                         native_resource_image_count=[len(r["native_resource_images"]) for r in cells],
+                         native_resource_proof_sha256=[bench.digest(json.dumps(r["native_resource_images"], sort_keys=True).encode())
+                                                      for r in cells]))
+    return dict(designer_rulings=[265, 266, 267], quality=bench.QUALITY, dpi=bench.DPI,
+                visual_quality_basis=data["identity"]["visual_quality_basis"],
+                jpeg_profile=data["identity"]["jpeg_profile"], jpx_profile=data["identity"]["jpx_profile"],
+                jpx_quality_mapping=data["identity"]["jpx_quality_mapping"],
+                measured_manifest=str(manifest), measured_manifest_sha256=bench.file_digest(manifest),
+                documents=[asdict(d) for d in bench.DOCUMENTS],
+                source_sha256=[d["source_sha256"] for d in data["identity"]["documents"]], rows=rows)
+
+
+def row_lines(proof):
+    if (proof["quality"] != 75 or proof["dpi"] != 300 or len(proof["rows"]) != 4
+            or proof["documents"] != [asdict(d) for d in bench.DOCUMENTS]
+            or proof.get("jpx_quality_mapping") != bench.quality.JPX_QUALITY_MAPPING
+            or proof.get("visual_quality_basis") != "designer-study-ratio-matched-working-baseline"):
+        raise ValueError("Wrong lossy baseline fixture scope")
+    rows = {}
+    for (force, mode, label, _), row in zip(LABELS, proof["rows"], strict=True):
+        if (row["label"], row["mode"], row["force_raster"]) != (label, mode, force):
+            raise ValueError("Mislabeled lossy fixture row")
+        if len(row["sizes"]) != 6 or any(type(n) is not int or n <= 0 for n in row["sizes"]):
+            raise ValueError("Lossy publication requires six measured integer sizes")
+        rows[label] = row
+    lines = {}
+    for force, mode, label, old_label in LABELS:
+        peer = next(row for row in rows.values() if row["force_raster"] == force and row["mode"] != mode)
+        cells = [f"**{n:,}**" if n <= p else f"{n:,}"
+                 for n, p in zip(rows[label]["sizes"], peer["sizes"], strict=True)]
+        lines[label] = lines[old_label] = "| " + label + " | " + " | ".join(cells) + " |"
+    return lines
+
+
+def overlay(table, proof):
+    """Replace the four lossy rows only; keep the continuous table and controls."""
+    replacements, seen, lines = row_lines(proof), set(), []
+    for line in table.splitlines():
+        cells = line.split("|")
+        label = cells[1].strip() if len(cells) > 2 else ""
+        if label in replacements:
+            line = replacements[label]
+            current = line.split("|")[1].strip()
+            if current in seen:
+                raise ValueError("Duplicate lossy overview row")
+            seen.add(current)
+        lines.append(line)
+    if len(seen) != 4:
+        raise ValueError("Missing lossy overview row")
+    return "\n".join(lines) + "\n"
+
+
+def current_primary(table):
+    return overlay(table, json.loads(FIXTURE.read_text())) if FIXTURE.exists() else table
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("manifest", type=Path)
+    args = parser.parse_args()
+    proof = fixture(args.manifest)
+    # Emit an apply_patch; tracked files are edited only with apply_patch.
+    print("*** Begin Patch\n*** Add File: tests/fixtures/lossy_quality_sizes.json")
+    for line in json.dumps(proof, indent=2).splitlines():
+        print("+" + line)
+    print("*** End Patch")
+
+
+if __name__ == "__main__":
+    main()

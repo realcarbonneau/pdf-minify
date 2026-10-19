@@ -80,7 +80,7 @@ def test_hidden_black_never_becomes_a_color_border(tmp_path, monkeypatch, mode, 
             # Lossy JPEG may ring at a high-contrast boundary. Pin the exact
             # independent JPEG result, not an invented "lossless JPEG" limit.
             expected = io.BytesIO()
-            inputs[0].save(expected, "JPEG", quality=45, optimize=True)
+            inputs[0].save(expected, "JPEG", quality=45, optimize=True, subsampling=0)
             assert after.xref_stream_raw(images[0][0]) == expected.getvalue()
         assert before[0].get_text("words") == after[0].get_text("words")
         assert len(before[0].get_drawings()) == len(after[0].get_drawings())

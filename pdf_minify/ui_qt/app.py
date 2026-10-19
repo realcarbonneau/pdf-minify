@@ -22,6 +22,7 @@ from ..core.cancel import CancelToken
 from ..core import pdf_io, threshold as T
 from ..core import presets
 from ..core.recipes import preset_spec, spec_key, recipe_params
+from ..core.quality import DEFAULT_LOSSY_QUALITY
 from ..core.algorithms import ALGORITHMS, ALGORITHM_LABELS, BW_MODES, PALETTE_MODES, with_algorithm
 from ..core.stream_compression import STREAM_POLICIES, STREAM_LABELS, permits_brotli
 from ..core.predictors import PREDICTION_CHOICES, PACKED_MODES, effective_prediction
@@ -707,7 +708,9 @@ def _preset_algo(pid: str, spec: dict | None = None) -> str:
     if mode == "color":
         return page_handling + f"JPEG q{recipe['jpeg_q']} · {recipe['dpi_cap']}dpi"
     if mode == "jpx":
-        codec = "JPEG2000 lossless" if recipe.get("lossless") else f"JPEG2000 r{recipe['rate']}"
+        codec = ("JPEG2000 lossless" if recipe.get("lossless") else
+                 f"JPEG2000 q{recipe['jpx_q']}" if "jpx_q" in recipe else
+                 f"JPEG2000 r{recipe['rate']}")
         return page_handling + f"{codec} · {recipe['dpi_cap']}dpi"
     if mode == "indexed":
         return page_handling + f"Indexed {recipe['colors']}c · {recipe['dpi_cap']}dpi"
@@ -888,6 +891,18 @@ class MainWindow(QMainWindow):
         self.lossless_box = QCheckBox("Lossless")  # §100: JPX reversible
         self.lossless_box.setToolTip("Lossless encoding — only JPEG2000 offers the choice; "
                                      "every other filter shows its fixed state, greyed.")
+        self.quality_control = NumericSlider(0, 100, DEFAULT_LOSSY_QUALITY, "Image quality")
+        self.quality_value = self.quality_control.number
+        self.quality_label = QLabel("&Quality:")
+        self.quality_label.setBuddy(self.quality_value)
+        set_control_help(self.quality_control,
+            "Higher quality usually makes larger files. Available for JPEG and lossy JPEG2000.",
+            "Quality is a 0–100 index, not a percentage. Equal values are the working comparison baseline. "
+            "JPEG2000 measures JPEG at this Quality on the same pixels, then applies a study-based "
+            "compression-ratio mapping (40:1 to 45:1; 60:1 to 73:1). This is a working match, "
+            "not guaranteed equal visual quality for every image. "
+            "JPEG uses full-resolution colour; lossy JPEG2000 uses 9/7 and colour decorrelation. "
+            "Lossless ignores this value.")
         self.dpi = QComboBox()
         for d in presets.RASTER_DPIS:
             self.dpi.addItem(f"{d} dpi", d)
@@ -973,6 +988,8 @@ class MainWindow(QMainWindow):
         right.addWidget(self.threshold_control)
         right.addWidget(self.c_label)
         right.addWidget(self.colors_control)
+        right.addWidget(self.quality_label)
+        right.addWidget(self.quality_control)
         right.addWidget(self.lossless_box)
         dpiRow = spaced(QHBoxLayout())
         dpiRow.addWidget(QLabel("Raster DPI:"))
@@ -1088,6 +1105,7 @@ class MainWindow(QMainWindow):
         self.after.relayouted = self._reframe_timer.start
         for control, signal in ((self.threshold_control, "valueChanged"),
                                 (self.colors_control, "valueChanged"),
+                                (self.quality_control, "valueChanged"),
                                 (self.lossless_box, "toggled"), (self.strategy, "currentTextChanged"),
                                 (self.compression, "currentIndexChanged"),
                                 (self.stream_compression, "currentIndexChanged"),
@@ -1158,7 +1176,8 @@ class MainWindow(QMainWindow):
     def _apply_custom_presets(self):
         """Load recipes, preserving pasted copies and repairing UUIDs (§155)."""
         from ..core.filter_defaults import (RASTER_DEFAULTS_REVISION, migrate_raster_dpi,
-                                            STREAM_DEFAULTS_REVISION, migrate_stream_compression)
+                                            STREAM_DEFAULTS_REVISION, migrate_stream_compression,
+                                            QUALITY_DEFAULTS_REVISION, migrate_lossy_quality)
         store = self._custom_store()
         try:
             renames = store.value("customRenames", {}) or {}
@@ -1174,6 +1193,10 @@ class MainWindow(QMainWindow):
             stream_revision = int(store.value("streamDefaultsRevision", 0) or 0)
         except (TypeError, ValueError):
             stream_revision = 0
+        try:
+            quality_revision = int(store.value("qualityDefaultsRevision", 0) or 0)
+        except (TypeError, ValueError):
+            quality_revision = 0
         entries = {p["id"]: p for p in presets.PRESETS}
         seen_records, loaded, aliases_changed = set(), [], False
         for c in customs:
@@ -1209,14 +1232,20 @@ class MainWindow(QMainWindow):
         dpi_changed = migrate_raster_dpi(presets.PRESETS) if migrate_dpi else []
         migrate_streams = stream_revision < STREAM_DEFAULTS_REVISION
         stream_changed = migrate_stream_compression(presets.PRESETS) if migrate_streams else []
+        migrate_quality = quality_revision < QUALITY_DEFAULTS_REVISION
+        quality_changed = migrate_lossy_quality(presets.PRESETS) if migrate_quality else []
         identity_changed = aliases_changed or identities_changed or schema_changed
-        if identity_changed or dpi_changed or stream_changed or (migrate_streams and loaded):
+        if (identity_changed or dpi_changed or stream_changed or quality_changed
+                or ((migrate_streams or migrate_quality) and loaded)):
             store.setValue("customPresets", [dict(p) for p in loaded])
         if migrate_dpi:
             store.setValue("rasterDefaultsRevision", RASTER_DEFAULTS_REVISION)
         if migrate_streams:
             store.setValue("streamDefaultsRevision", STREAM_DEFAULTS_REVISION)
-        if identity_changed or dpi_changed or stream_changed or migrate_dpi or migrate_streams:
+        if migrate_quality:
+            store.setValue("qualityDefaultsRevision", QUALITY_DEFAULTS_REVISION)
+        if (identity_changed or dpi_changed or stream_changed or quality_changed
+                or migrate_dpi or migrate_streams or migrate_quality):
             sync_settings(store)
         if identity_changed:
             log.warning("filter identity migration: repaired missing/invalid/duplicate UUIDs or aliases")
@@ -1224,6 +1253,9 @@ class MainWindow(QMainWindow):
             log.info("filter resolution migration: %d saved recipes now use %d DPI", len(dpi_changed), presets.DEFAULT_DPI)
         if migrate_streams:
             log.info("filter compression migration: %d saved recipes now use Best", len(stream_changed))
+        if migrate_quality:
+            log.info("filter quality migration: %d JPEG/JPEG2000 recipes now use q%d",
+                     len(quality_changed), DEFAULT_LOSSY_QUALITY)
         for p in presets.PRESETS:
             if p["id"] in renames:
                 p["label"] = renames[p["id"]]
@@ -1263,7 +1295,7 @@ class MainWindow(QMainWindow):
         try:
             with ExitStack() as stack:
                 for widget in (self.compression, self.stream_compression, self.png_prediction, self.brotli_declaration, self.strategy,
-                               self.threshold_control, self.dpi, self.colors_control,
+                               self.threshold_control, self.dpi, self.colors_control, self.quality_control,
                                self.lossless_box, self.force_raster, self.page_size):
                     stack.enter_context(QSignalBlocker(widget))
                 self.compression.setCurrentIndex(self.compression.findData(spec["mode"]))
@@ -1276,6 +1308,8 @@ class MainWindow(QMainWindow):
                 dpi_field = "dpi" if spec["mode"] in BW_MODES else "dpi_cap"
                 self.dpi.setCurrentIndex(self.dpi.findData(spec.get(dpi_field, 300)))
                 self.colors_control.setValue(spec.get("colors", 64))
+                quality_field = "jpeg_q" if spec["mode"] == "color" else "jpx_q"
+                self.quality_control.setValue(spec.get(quality_field, DEFAULT_LOSSY_QUALITY))
                 self.force_raster.setChecked(spec.get("force_raster", False))
                 self.lossless_box.setChecked(spec.get("lossless", False))
                 self.page_size.setCurrentIndex(self.page_size.findData(spec.get("page_size", "original")))
@@ -1302,6 +1336,10 @@ class MainWindow(QMainWindow):
             spec.update(force_raster=self.force_raster.isChecked(), page_size=self.page_size.currentData())
             if mode == "jpx":
                 spec["lossless"] = self.lossless_box.isChecked()
+                spec.pop("rate", None)
+                spec["jpx_q"] = self.quality_control.value()
+            elif mode == "color":
+                spec["jpeg_q"] = self.quality_control.value()
             elif mode in PALETTE_MODES:
                 spec["colors"] = self.colors.value()
         return spec
@@ -1525,6 +1563,9 @@ class MainWindow(QMainWindow):
                 with QSignalBlocker(self.lossless_box):
                     self.lossless_box.setChecked(fixed)
             self.lossless_box.setEnabled(False)
+        quality_on = mode == "color" or (mode == "jpx" and not self.lossless_box.isChecked())
+        self.quality_control.setEnabled(quality_on)
+        self.quality_label.setEnabled(quality_on)
         self.strategy.setEnabled(bw)
         self.strategy_label.setEnabled(bw)
         self.force_raster.setEnabled(mode in ALGORITHM_LABELS)
@@ -1610,7 +1651,8 @@ class MainWindow(QMainWindow):
             lines = [
                 "Codec: JPEG2000",
                 ("Lossless" if self.lossless_box.isChecked() else
-                 f"Rate: r={spec.get('rate', 192)}") + f" · {self.dpi.currentData()}dpi",
+                 f"Quality: q={spec['jpx_q']}" if "jpx_q" in spec else
+                 f"Rate: r={spec['rate']}") + f" · {self.dpi.currentData()}dpi",
                 "Full-page raster" if spec.get("force_raster") else "Text/vectors kept · color image canvas",
             ]
         elif mode in PALETTE_MODES:

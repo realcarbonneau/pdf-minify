@@ -369,6 +369,65 @@ def best_default_samples(w):
     print(f"ALL {len(w._strip_ids)} APP FILTERS USE BEST")
 
 
+def quality_samples(w):
+    """Observe q75 real files and native quality/disabled control states."""
+    tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
+    generation = w._gen
+    prepared = dict(w._artifacts.results)
+    for pid, field in (("color-max", "jpeg_q"), ("color-j2k", "jpx_q")):
+        w.preset.setCurrentIndex(w.preset.findData(pid))
+        assert w._spec_for(pid)[field] == 75
+        assert w.quality_value.value() == 75 and w.quality_control.isEnabled()
+        assert not w._draft_specs and not w._preview_timer.isActive() and not w._artifacts.pending
+        assert "q75" in w.details.text().replace("q=", "q")
+        result = w._artifacts.results[w._result_key(pid)]
+        assert w.after._pdf_source.path == result.pdf_path
+        assert result.nbytes == os.path.getsize(result.pdf_path)
+        with fitz.open(result.pdf_path) as doc:
+            expected = "DCTDecode" if field == "jpeg_q" else "JPXDecode"
+            assert any(image[8] == expected for page in doc for image in page.get_images(full=True))
+        w.panelScroll.ensureWidgetVisible(w.quality_control)
+        settle_view(w)
+        name = f"quality-{pid}-q75{tag}"
+        capture(w, name)
+        w.panelScroll.viewport().grab().save(f".tmp/shot-{name}-panel-visible.png")
+        w.panelScroll.widget().grab().save(f".tmp/shot-{name}-panel.png")
+        w.quality_control.grab().save(f".tmp/shot-{name}-control.png")
+    assert w._gen == generation and w._artifacts.results == prepared
+    w.lossless_box.setChecked(True)
+    assert not w.quality_control.isEnabled() and w.quality_value.value() == 75
+    wait_job(w)
+    settle_view(w)
+    capture(w, f"quality-jpx-lossless{tag}")
+    w.panelScroll.widget().grab().save(f".tmp/shot-quality-jpx-lossless{tag}-panel.png")
+    w.revert_filter()
+    assert not w._draft_specs and w.quality_control.isEnabled()
+    w.preset.setCurrentIndex(w.preset.findData("bw-t180"))
+    assert not w.quality_control.isEnabled()
+    settle_view(w)
+    w.panelScroll.widget().grab().save(f".tmp/shot-quality-bw-disabled{tag}-panel.png")
+    print("Q75 JPEG/JPEG2000 REAL FILES AND CONTROL STATES GREEN")
+
+
+def quality_document():
+    """Small real bitmap/native source; avoid unrelated large palette searches."""
+    import io
+    import numpy as np
+    from PIL import Image
+    path = Path(".tmp/shot-quality-source.pdf")
+    y, x = np.indices((96, 128))
+    rgb = np.uint8(np.stack((x * 2, y * 2, (x+y) % 256), axis=-1))
+    buffer = io.BytesIO()
+    Image.fromarray(rgb).save(buffer, "PNG")
+    with fitz.open() as doc:
+        page = doc.new_page(width=180, height=180)
+        page.insert_image(fitz.Rect(8, 8, 172, 132), stream=buffer.getvalue())
+        page.insert_text((8, 156), "JPEG / JPEG2000 quality", fontsize=9)
+        page.draw_line((8, 164), (172, 164), color=(.2, .1, .8), width=1)
+        doc.save(path)
+    return str(path)
+
+
 def compression_state_samples(w):
     """All color FFPR codecs are effective edits with actual saved readback."""
     tag = "" if w.devicePixelRatioF() == 1 else f"-{w.devicePixelRatioF():g}x"
@@ -504,6 +563,8 @@ def main():
                         help="verify/capture Best as every built-in and saved app filter's policy")
     parser.add_argument("--png-prediction-only", action="store_true",
                         help="capture Off/On/Best prediction and forced/inapplicable states")
+    parser.add_argument("--quality-only", action="store_true",
+                        help="capture real q75 JPEG/JPEG2000 files and quality/lossless controls")
     args = parser.parse_args()
     setup_logging(True)
     global app
@@ -523,6 +584,8 @@ def main():
     pdf = args.pdf
     if (args.brotli_compatibility_only or args.best_streams_only or args.best_defaults_only or args.png_prediction_only) and pdf == "examples/images.pdf":
         pdf = layout_document(1)
+    if args.quality_only and pdf == "examples/images.pdf":
+        pdf = quality_document()
     w = MainWindow(None if args.icon_lab_only else pdf)
     w.resize(1100, 650)
     w.show()
@@ -532,6 +595,16 @@ def main():
         icon_lab_samples(w)
         close_review_window(w)
         print("ICON LAB SHOTS GREEN")
+        return
+
+    if args.quality_only:
+        try:
+            wait_job(w)
+            quality_samples(w)
+        finally:
+            w.revert_filter()
+            close_review_window(w)
+        print("QUALITY SHOTS GREEN")
         return
 
     if args.png_prediction_only:

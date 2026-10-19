@@ -236,16 +236,17 @@ def test_published_decision_tree_leads_the_section_and_matches_measured_results(
     tree = publisher.PNG_GUIDANCE.split("```text\n", 1)[1].split("\n```", 1)[0]
     assert (
         "Best (Zopfli/Brotli)\n"
-        "├─ Zopfli → see Zopfli below; use PNG prediction Best.\n"
-        "└─ Brotli → see Brotli below."
+        "├─ Zopfli → test prediction OFF and ON.\n"
+        "└─ Brotli → test prediction OFF and ON."
     ) in tree
     assert (
-        "Zopfli\n"
+        "Explicit Zopfli\n"
         "├─ Off → test prediction OFF only.\n"
         "├─ On → test prediction ON only.\n"
         "└─ Best → test prediction OFF and ON."
     ) in tree
-    assert "Brotli (branch of Best)\n└─ Always test prediction OFF and ON." in tree
+    assert "see Zopfli below" not in tree
+    assert "see Brotli below" not in tree
     assert "Compare measured complete-PDF candidates; keep the smallest." in tree
     assert "Fixed Brotli study" not in tree
     assert "favored" not in tree

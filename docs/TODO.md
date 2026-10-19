@@ -2467,11 +2467,102 @@ at 1×/2× and the real-file lifecycle smoke pass and were viewed.
 ## 258 — DONE (designer §261: explicit OFF/ON branches in the predictor tree)
 
 ~~Show prediction OFF/ON testing in both Best encoder branches.~~
-Stub: report and publisher refer to separate Zopfli/Brotli definitions;
-both automatic branches explicitly test OFF/ON. Explicit Zopfli's choices
+Stub: report and publisher directly state prediction OFF/ON testing on
+both Best encoder branches. Explicit Zopfli's choices
 remain separate, and study observations stay outside the operational tree.
 Presentation regressions require both branches and publisher/report agreement.
-Every measured table row, runtime and settings remain unchanged.
+All measured values, runtime and settings remain unchanged.
 **107 focused checks; 834 full-suite tests passed. Implementation verified
 2026-10-18; not designer acceptance.** See `DESIGN.md` §261,
 `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 259 — DONE (designer §§262/263: familiar q90 JPEG/JPEG2000 starting point)
+
+~~Use the familiar quality parameter and start JPEG/JPEG2000 at q90.~~
+Stub: Quality slider/spinner shares the existing edit/real-file transaction;
+q90 seeds and a versioned saved-filter migration preserve Lossless, UUIDs
+and unrelated settings. JPX's explicit `darktable-rate-v1` mapping makes q90
+11:1, not r90 or PSNR 90; legacy ratio recipes remain distinct. JPEG sampling
+stays 4:2:0. Actual native/FFPR codec bytes, exact lossless pixels, one debounce,
+Save/copy/reload/Revert/Cancel/Discard and later deliberate values pass.
+Frozen benchmark cells/labels remain intact, with a visible q50/r192 boundary.
+The normal-scale full window and 1×/2× panels/editors were viewed; both
+quality-only review runs finish GREEN.
+**38 focused checks; 872 full-suite tests passed. Implementation verified
+2026-10-18; not designer acceptance.** See `LOSSY_IMAGE_QUALITY.md`,
+`DESIGN.md` §§262/263, `COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 260 — DONE (designer §264: q75 defaults and comparable lossy settings research)
+
+~~Set both lossy codecs to q75 and research comparable encoder settings.~~
+Stub: q75 seeds/defaults and saved-filter migration revision 2 (including
+previous q90/revision 1 stores) preserve identity, Lossless, other fields
+and later deliberate edits. The stable mapping gives JPX q75 → 26:1;
+explicit q90 and legacy ratio recipes remain reproducible. Primary-source
+research proposes JPEG 4:4:4, full-resolution JPX, lossy 9/7 plus MCT and a
+concrete perceptual/visual matching protocol. These are recommendations,
+not silently applied settings or completed corpus benchmarks. Actual codec
+headers pin unchanged sampling/transforms. Frozen benchmark numeric columns
+remain unchanged. Both 1×/2× isolated GUI reviews exit GREEN and their actual
+captures were viewed; the desktop app stays closed.
+**46 focused checks; 880 full-suite tests passed. Implementation verified
+2026-10-18; not designer acceptance.** See `LOSSY_IMAGE_QUALITY.md`,
+`DESIGN.md` §264 and `TEST_PLAN.md`.
+
+## 261 — DONE (designer §§265/266: configured lossy profiles and q75 comparison)
+
+~~Fix internal lossy profiles and benchmark comparable q75 outputs now.~~
+Stub: JPEG uses explicit 4:4:4; JPEG2000 uses lossy 9/7 + RGB decorrelation,
+one tile/layer, LRCP, 64×64 blocks and safe tiny-image wavelet depth. Profile
+versions enter effective identity; headless JPEG uses the shared encoder.
+No new technical controls or dependencies. LOSSY-01 saved/verified all
+24 complete PDFs at 300 DPI, using q75/q75 as the working comparable-quality
+baseline, with identical per-pair prepared pixels and preserved native data.
+The continuous overview receives four fresh rows; frozen controls stay intact.
+JPEG2000 wins two pairs, JPEG nine, with one no-image tie. Native opacity
+resources remain source-bound and identical rather than being deleted or
+mistaken for artwork-codec failures. Real screen/300-DPI output and 1×/2×
+GUI captures were viewed; the desktop app remains closed.
+**908 full-suite tests, 69 focused codec/publication checks and 33 overview
+checks passed. Implementation verified 2026-10-19; not designer acceptance.**
+See `LOSSY_IMAGE_QUALITY.md`, `INTEGRATED_COMPRESSION.md`,
+`COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md` and
+`tests/fixtures/lossy_quality_sizes.json`.
+
+## 262 — DONE (designer §267: study-based JPEG2000 quality matching)
+
+~~Use the approved conditional JPEG/JPEG2000 quality comparison instead of
+the fixed 101-q mapping; update actual complete-file measurements.~~
+Stub: `jpeg-reference-study-v1` measures the same-quality JPEG on original
+final-DPI pixels, maps 40→45 / 60→73 with explicit bounded outside-range
+gains, and versions mapping/reference profile identity. One q75-default
+Quality control, legacy ratios, Lossless and saved/draft lifecycle remain.
+LOSSY-02 verifies 24 actual PDFs and 78 exact reference/canvas pairs per codec;
+only the four current overview rows change. Old evidence stays immutable.
+JPEG2000 is smaller in the 11 image-bearing pairs; no-image ties. This is a
+study-informed working quality assumption, not universal perceptual proof.
+Actual artwork/photo screen/crop views and both 1×/2× UI reviews were viewed.
+**942 full-suite tests and 186 focused quality/benchmark/publication/overview
+checks passed. Implementation verified 2026-10-19; not designer acceptance.**
+See `DESIGN.md` §267, `LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_EXPERIMENTS.md`,
+`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`. The desktop remains closed.
+
+## 263 — DONE (designer §268: current standard across all affected benchmarks)
+
+~~Apply the approved current quality standard to every active lossy benchmark
+and run the missing comparisons.~~
+Stub: LOSSY-03 saves/verifies all 60 missing complete PDFs from the 24
+completed LOSSY-02 image preparations: 48 Zopfli/Brotli controls and twelve
+standard-Flate FFPR references. Exact image/native content, geometry,
+metadata and every page at 72/300 DPI remain fixed. The same measurements
+update all 22 binary/fixed/focused-photo/residual rows, percentages, minima,
+accounting and conclusions. No repeated image encoding or unaffected
+BW/indexed/PNG/lossless rerun. Old artifacts/fixtures stay immutable history,
+not active q50/r192 rows. Strict identities, separate actual saves, resume,
+coverage and source-bound publication pass; current data is applied last
+by the overview publisher. All 36 new ordinary-format files pass QPDF;
+Brotli files use the recorded supporting reader, not false all-reader proof.
+**960 full-suite tests passed. Implementation verified 2026-10-19; not
+designer acceptance.** See `DESIGN.md` §268, LOSSY-03 in
+`COMPRESSION_EXPERIMENTS.md`, `LOSSY_IMAGE_QUALITY.md`,
+`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`. The desktop remains closed.

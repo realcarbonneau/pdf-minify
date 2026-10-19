@@ -202,8 +202,13 @@ For other inapplicable controls, retain visible/disabled effective values under
 exception: show it only for Brotli-capable policies (Brotli and Best).
 
 Threshold method applies only to BW; manual T only to Simple; palette count
-only to the two palette modes; JPEG quality only to JPEG; JPEG2000 rate only
-to lossy JPEG2000. The lossless checkbox remains visible in its correct fixed
+only to the two palette modes. The shared **Quality** control applies to JPEG
+and lossy JPEG2000, both starting at q75 (§264); ratio control is now
+legacy/headless only. See [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).
+§§267/268 use the study-based JPEG-reference mapping for every active lossy
+comparison, including fixed-stream controls; the current integrated tables
+do not mix this standard with historical q50/r192 recipes.
+The lossless checkbox remains visible in its correct fixed
 state when not editable (§100). Keep one DPI and the one shared 300ms edit
 timer. Do not enable/disable controls from whichever codec happened to win
 the last benchmark or make their applicability jump from page to page.

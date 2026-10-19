@@ -42,7 +42,11 @@ def test_legacy_control_selection_and_current_best_only_publication():
     published = [line.split("|")[1].strip() for line in main.splitlines() if line.startswith("| ")]
     assert not ({overview.display_label(r.label) for r in removed} & set(published))
     from tools import bench_best_overview as best
-    assert {r.label for r in best.RECIPES} <= set(published)
+    from tools.publish_lossy_quality import LABELS
+    current_lossy_labels = {old: label for _, _, label, old in LABELS}
+    expected = {current_lossy_labels.get(label, label) for recipe in best.RECIPES
+                for label in (recipe.label.removesuffix(" + packed samples"),)}
+    assert expected <= set(published)
     assert not any("PNG prediction" in label for label in published)
     assert len(published) == 24  # one header, four dividers, 19 Best combinations
     assert not any(any(policy in label for policy in ("Best", "Zopfli", "Brotli", "Flate", "residual"))
@@ -55,6 +59,8 @@ def test_legacy_control_selection_and_current_best_only_publication():
 
 
 def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
+    from tools.publish_lossy_controls import current_label
+
     report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
     assert "| **Black and white (BW + Otsu)** |" in report
     assert "; keep native" not in report
@@ -62,7 +68,7 @@ def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
         assert "; keep native" not in row.label
         assert ("FFPR" in row.label) == row.family.endswith("-ffpr")
         if not row.variant.endswith("-png"):
-            assert f"| {overview.display_label(row.label)} |" in report
+            assert f"| {current_label(overview.display_label(row.label))} |" in report
 
 
 def test_published_representatives_match_selected_whole_sources():

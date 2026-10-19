@@ -1,0 +1,1818 @@
+{
+  "designer_ruling": 268,
+  "quality": 75,
+  "dpi": 300,
+  "jpx_quality_mapping": "jpeg-reference-study-v1",
+  "measured_manifest": ".tmp/lossy-controls/q75-all-sections-20261019/metrics.json",
+  "measured_manifest_sha256": "72ceaaa600ef6584c10531cabdffbc266444618944cff6074c60a6bf21defb44",
+  "baseline_sha256": "f42191ff54fe1cf5081c9497c253e763263191c43983861876906c806683b05b",
+  "unchanged_publication_sha256": "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d",
+  "documents": [
+    {
+      "key": "native",
+      "label": "Native text/vectors",
+      "source": "examples/form-fw9.pdf"
+    },
+    {
+      "key": "scan",
+      "label": "BW scan",
+      "source": "examples/scan-naca-tm972.pdf"
+    },
+    {
+      "key": "photos",
+      "label": "Color photos",
+      "source": "examples/news-crater-lake-2026.pdf"
+    },
+    {
+      "key": "art",
+      "label": "Flat-color artwork",
+      "source": "examples/images.pdf"
+    },
+    {
+      "key": "mixed",
+      "label": "Mixed text/images",
+      "source": "examples/paper-arxiv-1406.2661.pdf"
+    },
+    {
+      "key": "kepler",
+      "label": "Technical illustrations",
+      "source": "examples/models-nasa-kepler.pdf"
+    }
+  ],
+  "rows": [
+    {
+      "mode": "color",
+      "force_raster": false,
+      "policy": "zopfli",
+      "label": "JPEG q75 + Zopfli native",
+      "sizes": [
+        187455,
+        6194183,
+        9979408,
+        222994,
+        747206,
+        3363830
+      ],
+      "pdf_sha256": [
+        "946d9b3ab9fe128131de990ebdae9c0ff6abeb033f7e17fbd11da4cdec3fdbde",
+        "3d2acb2081656d13daa76a4622dd492795033d2a7747023cc1f8c727c35eba94",
+        "873eda25c966a4436a1834ff2ce5a881588762a20a3817d9353248c9032926e8",
+        "1d6d0a578c910de6335557c6d1d46d97f2df843965da590de9dc363e280eae36",
+        "76dc943bfd6fdef54127d831384e5e52cefa8202182c3b39cea64a82d3527dcf",
+        "1b65366327d89e283a0427843c8a241b37e1d4a8d8987f1303a03cdfea402fd0"
+      ],
+      "base_sha256": [
+        "44ad91479afec971c69f9ce8a56ffc30bebf268bc81c2dba2972f8110ce13a27",
+        "fc115aa910093c2f76d80c0eacef81c400f304acdcfef0d42bbfab2266440c98",
+        "4d3dd32f1d8791db3047a9d56e857231077e91f72bf3739e77083ac97b71ada8",
+        "8ee3f95879deaf234921efbffbb23ec17c46a20bda61bd6bc21c6a1ef5dd00da",
+        "d6c0faa918e742ae168c46d4f3894ff5fd72be2d8143a783df58702d36610036",
+        "143f00628872c37cf40c0d699bfc51b53957267976be2aa4be23b49447d397a3"
+      ]
+    },
+    {
+      "mode": "color",
+      "force_raster": false,
+      "policy": "brotli",
+      "label": "JPEG q75 + Brotli native",
+      "sizes": [
+        182487,
+        6191851,
+        9877746,
+        222982,
+        739477,
+        3112590
+      ],
+      "pdf_sha256": [
+        "10b9620999b3a174e36e6ca15c2f07c3c14b6def9dc8606eb12b570baa5eec01",
+        "1399b97beecbb6c9383bbc5935103d23ade7d943ce1b9569118a9691c0426424",
+        "33a0133ba84663f0ab1f4569761efddb5fb75608856927b6062d85fbf6678238",
+        "5ca9739b1f3468f8593a3bc879d82c1d6489daa06b5bae5d5f4198931ae86e2e",
+        "19ce3299ca6b1eed6e35c52be7db11d95e2a4c8c9d5e33df23954749e0add15e",
+        "0e162343e643c039f263771ea0730ef44d240e88eb44af26b5b1a4d7662901c2"
+      ],
+      "base_sha256": [
+        "44ad91479afec971c69f9ce8a56ffc30bebf268bc81c2dba2972f8110ce13a27",
+        "fc115aa910093c2f76d80c0eacef81c400f304acdcfef0d42bbfab2266440c98",
+        "4d3dd32f1d8791db3047a9d56e857231077e91f72bf3739e77083ac97b71ada8",
+        "8ee3f95879deaf234921efbffbb23ec17c46a20bda61bd6bc21c6a1ef5dd00da",
+        "d6c0faa918e742ae168c46d4f3894ff5fd72be2d8143a783df58702d36610036",
+        "143f00628872c37cf40c0d699bfc51b53957267976be2aa4be23b49447d397a3"
+      ]
+    },
+    {
+      "mode": "jpx",
+      "force_raster": false,
+      "policy": "zopfli",
+      "label": "JPEG2000 q75 + Zopfli native",
+      "sizes": [
+        187455,
+        5452054,
+        8680739,
+        184637,
+        609801,
+        3019187
+      ],
+      "pdf_sha256": [
+        "669d08c761c155662cb67c967c34ac64417ea5d30181d2a1c4dfa460562d58a0",
+        "d3f81cfaa8502ef6ce330b43eaea64dd06bb20e74db19fac433359a9fb42c1c6",
+        "ba09d9719f4ba707f730f876ceec64770e7dcdc9a3756dac47e65ded160d7316",
+        "3fb4d437863be69028cb19b4a113bbd8af37f462769024acc154fb2e06134e3a",
+        "4ebfcce177d48c6730b82ad75d760b4664139835235688c98ba43638fa784b45",
+        "49637bf7bdbd471ffb1d924435bed4db0e48aefcc22284d741f4115584a0b31c"
+      ],
+      "base_sha256": [
+        "3a982c5df2314986fa2b2582677d4b3d32e87a86be2c6e95f7c43cc9ab6dfa73",
+        "7c68f50c8d1e3b0d4d692745dd74e5c1452396541777c85b5a86674b12cf45cf",
+        "285db9bd044fcfef66e689367260d3c6f98f5cd153d34659e6c0e2eb8c589259",
+        "eb0f912cbbfdd6841976793d2c929f5b31af9a890a9e32c31bbbbe910c78a7fc",
+        "b07e917799fd2c08bf276884d224fd40c24bdd70fa529313c12a8c1aed989ea6",
+        "234a0eb0209e1741bdaf51e430f10b6187c3454a4eff0aa82db7498f0fc45d7a"
+      ]
+    },
+    {
+      "mode": "jpx",
+      "force_raster": false,
+      "policy": "brotli",
+      "label": "JPEG2000 q75 + Brotli native",
+      "sizes": [
+        182487,
+        5449722,
+        8579077,
+        184625,
+        602072,
+        2767947
+      ],
+      "pdf_sha256": [
+        "7f4db51b3f81d95951852b1f9c692a56a620a073ead1c3010c72423b43d68b6e",
+        "8d4d6caae407c1b6706efab4ea682c11778d92afc807bbd25263a6827a9c152a",
+        "b68ebf78a5203faa29b6400781125b5fb3316fabb85d22cceda892207f708aef",
+        "8442aa993512c4b8112bd776939a0ee04f5773dda4bd43a04995485ff9bfb730",
+        "0d79af6919ef571dd852cddb4342ad3c2fed73f91dc77231a7ae37d5161cba6a",
+        "27217e6bb1dc4a390ab6194447497ac73b17604e9bf426b4ee92b225820c23d8"
+      ],
+      "base_sha256": [
+        "3a982c5df2314986fa2b2582677d4b3d32e87a86be2c6e95f7c43cc9ab6dfa73",
+        "7c68f50c8d1e3b0d4d692745dd74e5c1452396541777c85b5a86674b12cf45cf",
+        "285db9bd044fcfef66e689367260d3c6f98f5cd153d34659e6c0e2eb8c589259",
+        "eb0f912cbbfdd6841976793d2c929f5b31af9a890a9e32c31bbbbe910c78a7fc",
+        "b07e917799fd2c08bf276884d224fd40c24bdd70fa529313c12a8c1aed989ea6",
+        "234a0eb0209e1741bdaf51e430f10b6187c3454a4eff0aa82db7498f0fc45d7a"
+      ]
+    },
+    {
+      "mode": "color",
+      "force_raster": true,
+      "policy": "zopfli",
+      "label": "Color FFPR + JPEG q75; optimized residual streams",
+      "sizes": [
+        7613859,
+        6153475,
+        25408295,
+        229773,
+        7796402,
+        9166390
+      ],
+      "pdf_sha256": [
+        "3d3ac8863cb170cabde2e14f39308b60762456e6cc7900678ca1144b18a0a975",
+        "045d24a20af13965763722868a3e5b85dc0811a6351b5efdc197eff8f02fc235",
+        "422e43e6877036646b8123af701ee49778600e6ebc0d15b89bc6d2f878dd926d",
+        "0c58bda039c1ba22e6778eeeb0f954b1fd68dbf9a1ccca019ec08dcb184aafad",
+        "0386812bbcf84bc48b7d9996377eadfeb2d65dc77e21b31f2ffef1a8ac7ac661",
+        "d8926d4c77abb4bf4d983423d91fe946549c9fb4634a4c0e7b23517371ac75a3"
+      ],
+      "base_sha256": [
+        "3d9f6aaaea4e8421a394ec9d8533917ea0c59e03ca64f1932562c97f98d64345",
+        "2924e4d5d978a28ffe5bea1145540dd5c9bf42e6f40100d5803ea735ba2c2906",
+        "fb0e695115f766b0f0686b49660fadf289a055ab7b453b7ebff0899920fdffc8",
+        "8734adeafa179143466f11ebb20226be68b666590504f9f575da58c72a632b26",
+        "c26e3a0b83c775541b652dfb807640a7c2313a6e85c4bce0be6a2b736c9aff99",
+        "7371e01a10b5a59a7116213410f93205da2e321ccf878e77e42d7e34f2b24c61"
+      ]
+    },
+    {
+      "mode": "color",
+      "force_raster": true,
+      "policy": "brotli",
+      "label": "Color FFPR + JPEG q75 + Brotli residual streams",
+      "sizes": [
+        7613862,
+        6153489,
+        25408297,
+        229776,
+        7796405,
+        9166393
+      ],
+      "pdf_sha256": [
+        "cc08c35975fea0d8f8c36ef6d01f1615c16eebc2a64af6d023e216d46bddf319",
+        "2ace58449c16670e4065dd99ec332b540eec42892ca683f2fe434ea4ff535fc1",
+        "3c2f9c4a7c69f3941781da3dcf10c0ae1b17a62edc8ea99c4cc471c2c134b62c",
+        "d1cd71747f05437b20681e532093d9168c941033c6d1690d159747e63017c2e8",
+        "a04d65a4247278d38297b67a79270ddb43af432a8bb57f28e8c2f8ecae89122c",
+        "3ca1fede3c52d4f4ab7d7827d728ceef851b9c9a4f73cf872959bb38e1f6a4df"
+      ],
+      "base_sha256": [
+        "3d9f6aaaea4e8421a394ec9d8533917ea0c59e03ca64f1932562c97f98d64345",
+        "2924e4d5d978a28ffe5bea1145540dd5c9bf42e6f40100d5803ea735ba2c2906",
+        "fb0e695115f766b0f0686b49660fadf289a055ab7b453b7ebff0899920fdffc8",
+        "8734adeafa179143466f11ebb20226be68b666590504f9f575da58c72a632b26",
+        "c26e3a0b83c775541b652dfb807640a7c2313a6e85c4bce0be6a2b736c9aff99",
+        "7371e01a10b5a59a7116213410f93205da2e321ccf878e77e42d7e34f2b24c61"
+      ]
+    },
+    {
+      "mode": "color",
+      "force_raster": true,
+      "policy": "flate",
+      "label": "Color FFPR + JPEG q75 + Classic Flate (reference) residual streams",
+      "sizes": [
+        7613859,
+        6153475,
+        25408295,
+        229773,
+        7796402,
+        9166390
+      ],
+      "pdf_sha256": [
+        "4c7de88688507b7ec357f6315e949dfc67c027f68c13d9893ec1c568806e93d5",
+        "04af56274894f44ae0cc55c01062111b8ecba5a0499a6925425da0b4305e7043",
+        "a9780afc6dc8cb6437858208191054782f382191ea23487a2868e9ae74ec17fc",
+        "9ae8665bff86b03faa81e807362d466ce3769d766560affeb549896a9ac6ab4a",
+        "80334462f08e11ea69aeb7f85c6410e45cabd719482c455bfe5485e9d2e05a77",
+        "bed4134cc3860deacc8a53381bd20e24890a65ec3006521026388f41980ee2d8"
+      ],
+      "base_sha256": [
+        "3d9f6aaaea4e8421a394ec9d8533917ea0c59e03ca64f1932562c97f98d64345",
+        "2924e4d5d978a28ffe5bea1145540dd5c9bf42e6f40100d5803ea735ba2c2906",
+        "fb0e695115f766b0f0686b49660fadf289a055ab7b453b7ebff0899920fdffc8",
+        "8734adeafa179143466f11ebb20226be68b666590504f9f575da58c72a632b26",
+        "c26e3a0b83c775541b652dfb807640a7c2313a6e85c4bce0be6a2b736c9aff99",
+        "7371e01a10b5a59a7116213410f93205da2e321ccf878e77e42d7e34f2b24c61"
+      ]
+    },
+    {
+      "mode": "jpx",
+      "force_raster": true,
+      "policy": "zopfli",
+      "label": "Color FFPR + JPEG2000 q75; optimized residual streams",
+      "sizes": [
+        6767913,
+        5411346,
+        22584569,
+        189019,
+        6921190,
+        8109133
+      ],
+      "pdf_sha256": [
+        "08c29eebe3ba466bcc0284dfb517ad82ff0e10c26c8245712cec20eb9e143fed",
+        "bd60eda647732883bf75bbff9d2bd9b664a63ed33c87c495eb513b45ebae8431",
+        "b2e3326109115e9b48cfbc50a6e4c345a0cc82245cbe22e68c5a3f34c53aaff7",
+        "134e0bf4a6da77cd6d06536bf8b486c5604e6164616ddb75252942546cbb0836",
+        "dcb46c82d6b0a70edf0f57edd0c6d249aecfa20dd80dab2634b5cb58a4dd3fb1",
+        "708488e757ecd30a72968fcb738494aa3bd36183252c7fab8ed87b167aef4014"
+      ],
+      "base_sha256": [
+        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
+        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
+        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
+        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
+        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
+        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+      ]
+    },
+    {
+      "mode": "jpx",
+      "force_raster": true,
+      "policy": "brotli",
+      "label": "Color FFPR + JPEG2000 q75 + Brotli residual streams",
+      "sizes": [
+        6767916,
+        5411360,
+        22584571,
+        189022,
+        6921193,
+        8109136
+      ],
+      "pdf_sha256": [
+        "15ddccff907f9bd7177b37b04c22550dc8a96c5ea7037f20f72aa9a5bd2ec54f",
+        "f51e9575ed623b866435b76ebec83a0b83f212be044b8d0e985e0ecb933bccd3",
+        "77d899495d64cdce0d52bd6b7bb3b3708e9b743556fd2675b5bdfdd4ff1f1a0d",
+        "cb7fb8fb53fbc159fdc486902191fa9a9a23d0deb592389622adee5633de1f07",
+        "6920ab71759af9bb84ab6d033a331d52efd69334f1ca56d6984db4f431c48f18",
+        "544bf20cd463a30407ccf4abf4c7822a6648aadb2c8a0d1e4cca303ab9c12476"
+      ],
+      "base_sha256": [
+        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
+        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
+        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
+        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
+        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
+        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+      ]
+    },
+    {
+      "mode": "jpx",
+      "force_raster": true,
+      "policy": "flate",
+      "label": "Color FFPR + JPEG2000 q75 + Classic Flate (reference) residual streams",
+      "sizes": [
+        6767913,
+        5411346,
+        22584569,
+        189019,
+        6921190,
+        8109133
+      ],
+      "pdf_sha256": [
+        "2ca3adfb1736e3372c1b205909c297019ce4044a36ea91da8c48eec5e0a15755",
+        "449781f1eb1b719d4f0e3ab162124acc627d922f36c85583a8f59c0238ba2090",
+        "6774c84d163843f62ed37b9f3cd0e9fe48dcb7f648bf5400b72234c01b73f4d3",
+        "0eaae207c36aa898d72c49bf9e2e0f557f422501decdece77deea05c61841de7",
+        "3192fefadd294385bcce095bfa08f333da4f29f13a7cbaf6e4bb9d64984d4b89",
+        "9ab843ced734eb1459e538bf05d02fd71dddabefb4668f56fe822fb07b69f5ca"
+      ],
+      "base_sha256": [
+        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
+        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
+        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
+        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
+        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
+        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+      ]
+    }
+  ],
+  "ffpr_accounting": [
+    {
+      "document": "native",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 7611224,
+          "native": 47,
+          "container": 1065,
+          "other_streams": 0,
+          "syntax": 1526,
+          "pages": 6,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 43,
+          "complete_pdf_bytes": 7613862,
+          "images_signature": [
+            [
+              "8286b228802c541376f87edb89419ff969068ee3a06f95eadfef8bc141c9c465",
+              1
+            ],
+            [
+              "95a511976a603adb06580ef058b6238f803d99e7881b7f55db23144f26181e4d",
+              1
+            ],
+            [
+              "9bdd26f096c10ac4ddbb98dad51d2ff3e7ef8ad4db90d093c154c7252ddce8f4",
+              1
+            ],
+            [
+              "b02713b9fbbab73da834eb130742eaa35e1e78ad0f530fb15ab74709faea33f4",
+              1
+            ],
+            [
+              "bd554cc606ad65b7d2bb1cbd65996f1cebf2e600f962cf38cb993391ea0857ac",
+              1
+            ],
+            [
+              "e37688afde5d571482777afeb3ca13e2905754ea0814cf2a51c91e0632b3b721",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "e3bc11d378afc037db107e118658ccfd9c5f10e755cbf8472d20ea6e0eb6ef69",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 7611224,
+          "native": 45,
+          "container": 1065,
+          "other_streams": 0,
+          "syntax": 1525,
+          "pages": 6,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 43,
+          "complete_pdf_bytes": 7613859,
+          "images_signature": [
+            [
+              "8286b228802c541376f87edb89419ff969068ee3a06f95eadfef8bc141c9c465",
+              1
+            ],
+            [
+              "95a511976a603adb06580ef058b6238f803d99e7881b7f55db23144f26181e4d",
+              1
+            ],
+            [
+              "9bdd26f096c10ac4ddbb98dad51d2ff3e7ef8ad4db90d093c154c7252ddce8f4",
+              1
+            ],
+            [
+              "b02713b9fbbab73da834eb130742eaa35e1e78ad0f530fb15ab74709faea33f4",
+              1
+            ],
+            [
+              "bd554cc606ad65b7d2bb1cbd65996f1cebf2e600f962cf38cb993391ea0857ac",
+              1
+            ],
+            [
+              "e37688afde5d571482777afeb3ca13e2905754ea0814cf2a51c91e0632b3b721",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "25c4e3b5cee6c9a9ceaaa5103ade5b22f1cb3222e675c05247f6cc0241695364",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "native",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 6765278,
+          "native": 47,
+          "container": 1065,
+          "other_streams": 0,
+          "syntax": 1526,
+          "pages": 6,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 43,
+          "complete_pdf_bytes": 6767916,
+          "images_signature": [
+            [
+              "20f0386bb2b527a2a9d2e9a69daa81c9d75f7e220a04b7424b20730b1a372db4",
+              1
+            ],
+            [
+              "357113af93460a118043fa150490967a9af267cde06aa1d4a9499e74858b3de5",
+              1
+            ],
+            [
+              "63ad3a3a24f02ba420dc715c6a0261413b76feb80fcb3322f09104a5527b871d",
+              1
+            ],
+            [
+              "745c88581e72b8d9d155c3d32597b92583b0105af6fa72d9181965b659de450d",
+              1
+            ],
+            [
+              "7f56beba1b681ce285c7d4c45fc1db7eeb2c995c6e112159a110a3e123950004",
+              1
+            ],
+            [
+              "ea8d37b72a3787c577b95c79a2520e6dedba30f5c1108f7fbfaec075b18ecab4",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "e3bc11d378afc037db107e118658ccfd9c5f10e755cbf8472d20ea6e0eb6ef69",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 6765278,
+          "native": 45,
+          "container": 1065,
+          "other_streams": 0,
+          "syntax": 1525,
+          "pages": 6,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 43,
+          "complete_pdf_bytes": 6767913,
+          "images_signature": [
+            [
+              "20f0386bb2b527a2a9d2e9a69daa81c9d75f7e220a04b7424b20730b1a372db4",
+              1
+            ],
+            [
+              "357113af93460a118043fa150490967a9af267cde06aa1d4a9499e74858b3de5",
+              1
+            ],
+            [
+              "63ad3a3a24f02ba420dc715c6a0261413b76feb80fcb3322f09104a5527b871d",
+              1
+            ],
+            [
+              "745c88581e72b8d9d155c3d32597b92583b0105af6fa72d9181965b659de450d",
+              1
+            ],
+            [
+              "7f56beba1b681ce285c7d4c45fc1db7eeb2c995c6e112159a110a3e123950004",
+              1
+            ],
+            [
+              "ea8d37b72a3787c577b95c79a2520e6dedba30f5c1108f7fbfaec075b18ecab4",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "25c4e3b5cee6c9a9ceaaa5103ade5b22f1cb3222e675c05247f6cc0241695364",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "scan",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 6148405,
+          "native": 273,
+          "container": 1871,
+          "other_streams": 0,
+          "syntax": 2940,
+          "pages": 11,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 245,
+          "complete_pdf_bytes": 6153489,
+          "images_signature": [
+            [
+              "010aeec5b4d02e94d0884734029ca27b452aeed6be70b4572672c9cdce05eab9",
+              1
+            ],
+            [
+              "1329ceaddbf89d3adfa4f271350050622d943e040e309924976e5348b590841e",
+              1
+            ],
+            [
+              "39a77079205020e2d74403321391a2ca437bcc602b86f4650b024ec3d466af5b",
+              1
+            ],
+            [
+              "539e6edecb5a9ba8c6c05771a044cbf9bad6361808e40947bbdcf3fbaf35cc9b",
+              1
+            ],
+            [
+              "55dceed9a9ef64e657ad6bac8c1c8859fe276cf1cf8822af82c81db0e2ae7ff0",
+              1
+            ],
+            [
+              "624ff88eb16b1712664ae504ac9e5e20ad39eba15a407be93341308919c1bbe0",
+              1
+            ],
+            [
+              "915784abc488605694a9771a14cb8b07150b33549bff1927b0370c72b6db1061",
+              1
+            ],
+            [
+              "aac8742a5e3dee282ea3d191575e9c6c2987ef59baa17914c2cc24ff889d0130",
+              1
+            ],
+            [
+              "b823e4a57f0a1e1dea14252dca210814c49a44229430b261463aea3b14613094",
+              1
+            ],
+            [
+              "c1d1be5a5ff509083a6fa1595e9517bedf77c8250c550a23bbfc7b0d1dfdd3c4",
+              1
+            ],
+            [
+              "f7533335fe9e1f87ff7cdc8538cfce2ac9325546c01b254468160cb320c74764",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "29793171a1ff1f6db485b9729df9f12ea2726524014c128880eea0002edc4378",
+              1
+            ],
+            [
+              "3424773c57ba8d50eb4a102ae9c6c3724781b9ab49b682ef4b7c9d7247a17d55",
+              1
+            ],
+            [
+              "4992b3d0fcabaeb75dc6689801e0484569114457540546a6f23de3dde504fdbc",
+              1
+            ],
+            [
+              "58a3df0148158bb4fa5e211d8c9072f3a0a6e93f029334d2c015e0a3fa075eea",
+              1
+            ],
+            [
+              "70cf70158a63ed631ee3471aafabe5e365b7010d1b091f304ad6b38ddd30cae9",
+              1
+            ],
+            [
+              "de9492f3c56232b065a9b6c3db7ceeb05a0729650d1a1d1ef732f042b7b4bdfa",
+              1
+            ],
+            [
+              "ed67aeb332b1ff3b2cca2cb613d449b48da39b728fa120ff2abda7cf46e75dce",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 6148405,
+          "native": 266,
+          "container": 1871,
+          "other_streams": 0,
+          "syntax": 2933,
+          "pages": 11,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 245,
+          "complete_pdf_bytes": 6153475,
+          "images_signature": [
+            [
+              "010aeec5b4d02e94d0884734029ca27b452aeed6be70b4572672c9cdce05eab9",
+              1
+            ],
+            [
+              "1329ceaddbf89d3adfa4f271350050622d943e040e309924976e5348b590841e",
+              1
+            ],
+            [
+              "39a77079205020e2d74403321391a2ca437bcc602b86f4650b024ec3d466af5b",
+              1
+            ],
+            [
+              "539e6edecb5a9ba8c6c05771a044cbf9bad6361808e40947bbdcf3fbaf35cc9b",
+              1
+            ],
+            [
+              "55dceed9a9ef64e657ad6bac8c1c8859fe276cf1cf8822af82c81db0e2ae7ff0",
+              1
+            ],
+            [
+              "624ff88eb16b1712664ae504ac9e5e20ad39eba15a407be93341308919c1bbe0",
+              1
+            ],
+            [
+              "915784abc488605694a9771a14cb8b07150b33549bff1927b0370c72b6db1061",
+              1
+            ],
+            [
+              "aac8742a5e3dee282ea3d191575e9c6c2987ef59baa17914c2cc24ff889d0130",
+              1
+            ],
+            [
+              "b823e4a57f0a1e1dea14252dca210814c49a44229430b261463aea3b14613094",
+              1
+            ],
+            [
+              "c1d1be5a5ff509083a6fa1595e9517bedf77c8250c550a23bbfc7b0d1dfdd3c4",
+              1
+            ],
+            [
+              "f7533335fe9e1f87ff7cdc8538cfce2ac9325546c01b254468160cb320c74764",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "20f1f396c001a228ac762692e2aaabff4e1afe05fa7f6204404a19aa15017b18",
+              1
+            ],
+            [
+              "2cf03195cc1783a125919e9f37b917a32f5e334ae870cb6dcd151706bebd0b4a",
+              1
+            ],
+            [
+              "48dfd8e23d2c69d22127d914828d04eb401b535cbc165bb56d93f76b886fe9c3",
+              1
+            ],
+            [
+              "a8d1322371f171f6d9be440ba29aaea2eda84e6a75fd5ec9cb29da2ce0b51df9",
+              1
+            ],
+            [
+              "b4e07e6d7c3722fd09063555ca1a038b1748ebc438bf385298da66ca3beb2afb",
+              1
+            ],
+            [
+              "b5a8c8a2cb9305b2d58a59467e9a1f05e8322d17d3f508c1e87effc307e291aa",
+              1
+            ],
+            [
+              "c1648c25b6453a46cdcb3d60a09b3e0b38b6e54fb35caa213f19eedb9015dff9",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -7,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -7
+        },
+        "complete_byte_change": -14
+      }
+    },
+    {
+      "document": "scan",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 5406276,
+          "native": 273,
+          "container": 1871,
+          "other_streams": 0,
+          "syntax": 2940,
+          "pages": 11,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 245,
+          "complete_pdf_bytes": 5411360,
+          "images_signature": [
+            [
+              "2cc942a07c31a79ce5f611a56ae1d5e9a12ddfd4331262c86e39b6f1e986c747",
+              1
+            ],
+            [
+              "4ccb558d885cea0c7f05346921a99b39b4a9ea5824d6ed29f0e5d1d2538e45aa",
+              1
+            ],
+            [
+              "513bad7efeacffefdeabaf564d68cde9fe53a5d97af37664abef5c109b1aed92",
+              1
+            ],
+            [
+              "53360d45e4e756a0a18a920d01bbabb7c70e7311381efb6a55d88e941385a5fe",
+              1
+            ],
+            [
+              "7315004ae3cb6f34ef28212739f4c94b3dd4ef530a1af8729fabb998b28b8887",
+              1
+            ],
+            [
+              "7771737349492a54de6328faf0ae9264ea1648c725edbb58f1d45e663ec50fe4",
+              1
+            ],
+            [
+              "83e2c03ab349ea17cacfadc19b96dddfdbc05820c2c2175d57d7cd6de21e3781",
+              1
+            ],
+            [
+              "947a087f892126a76371a7794f3d625aef8a76e4d5a37feb89bf1f3fc4deae3f",
+              1
+            ],
+            [
+              "98675ab24c1277a5cb32c0e8c3296c42edf7227181b8ddc082db6db6002d32a9",
+              1
+            ],
+            [
+              "a8ef928012418f70668b9e72828b16feab1aef3dcf4803f534eafa3c0ba4068c",
+              1
+            ],
+            [
+              "aa73f670c8ea5339fb8239bc0387aa2281fdd9165e4d55dbfcf316c4d4c4a5f7",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "29793171a1ff1f6db485b9729df9f12ea2726524014c128880eea0002edc4378",
+              1
+            ],
+            [
+              "3424773c57ba8d50eb4a102ae9c6c3724781b9ab49b682ef4b7c9d7247a17d55",
+              1
+            ],
+            [
+              "4992b3d0fcabaeb75dc6689801e0484569114457540546a6f23de3dde504fdbc",
+              1
+            ],
+            [
+              "58a3df0148158bb4fa5e211d8c9072f3a0a6e93f029334d2c015e0a3fa075eea",
+              1
+            ],
+            [
+              "70cf70158a63ed631ee3471aafabe5e365b7010d1b091f304ad6b38ddd30cae9",
+              1
+            ],
+            [
+              "de9492f3c56232b065a9b6c3db7ceeb05a0729650d1a1d1ef732f042b7b4bdfa",
+              1
+            ],
+            [
+              "ed67aeb332b1ff3b2cca2cb613d449b48da39b728fa120ff2abda7cf46e75dce",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 5406276,
+          "native": 266,
+          "container": 1871,
+          "other_streams": 0,
+          "syntax": 2933,
+          "pages": 11,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 245,
+          "complete_pdf_bytes": 5411346,
+          "images_signature": [
+            [
+              "2cc942a07c31a79ce5f611a56ae1d5e9a12ddfd4331262c86e39b6f1e986c747",
+              1
+            ],
+            [
+              "4ccb558d885cea0c7f05346921a99b39b4a9ea5824d6ed29f0e5d1d2538e45aa",
+              1
+            ],
+            [
+              "513bad7efeacffefdeabaf564d68cde9fe53a5d97af37664abef5c109b1aed92",
+              1
+            ],
+            [
+              "53360d45e4e756a0a18a920d01bbabb7c70e7311381efb6a55d88e941385a5fe",
+              1
+            ],
+            [
+              "7315004ae3cb6f34ef28212739f4c94b3dd4ef530a1af8729fabb998b28b8887",
+              1
+            ],
+            [
+              "7771737349492a54de6328faf0ae9264ea1648c725edbb58f1d45e663ec50fe4",
+              1
+            ],
+            [
+              "83e2c03ab349ea17cacfadc19b96dddfdbc05820c2c2175d57d7cd6de21e3781",
+              1
+            ],
+            [
+              "947a087f892126a76371a7794f3d625aef8a76e4d5a37feb89bf1f3fc4deae3f",
+              1
+            ],
+            [
+              "98675ab24c1277a5cb32c0e8c3296c42edf7227181b8ddc082db6db6002d32a9",
+              1
+            ],
+            [
+              "a8ef928012418f70668b9e72828b16feab1aef3dcf4803f534eafa3c0ba4068c",
+              1
+            ],
+            [
+              "aa73f670c8ea5339fb8239bc0387aa2281fdd9165e4d55dbfcf316c4d4c4a5f7",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "20f1f396c001a228ac762692e2aaabff4e1afe05fa7f6204404a19aa15017b18",
+              1
+            ],
+            [
+              "2cf03195cc1783a125919e9f37b917a32f5e334ae870cb6dcd151706bebd0b4a",
+              1
+            ],
+            [
+              "48dfd8e23d2c69d22127d914828d04eb401b535cbc165bb56d93f76b886fe9c3",
+              1
+            ],
+            [
+              "a8d1322371f171f6d9be440ba29aaea2eda84e6a75fd5ec9cb29da2ce0b51df9",
+              1
+            ],
+            [
+              "b4e07e6d7c3722fd09063555ca1a038b1748ebc438bf385298da66ca3beb2afb",
+              1
+            ],
+            [
+              "b5a8c8a2cb9305b2d58a59467e9a1f05e8322d17d3f508c1e87effc307e291aa",
+              1
+            ],
+            [
+              "c1648c25b6453a46cdcb3d60a09b3e0b38b6e54fb35caa213f19eedb9015dff9",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -7,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -7
+        },
+        "complete_byte_change": -14
+      }
+    },
+    {
+      "document": "photos",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 25404994,
+          "native": 43,
+          "container": 1370,
+          "other_streams": 0,
+          "syntax": 1890,
+          "pages": 8,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 39,
+          "complete_pdf_bytes": 25408297,
+          "images_signature": [
+            [
+              "5b9b13e8acb3a23609a2facd8d946137aa16bf7c7057fc19bc48376c7ffceef7",
+              1
+            ],
+            [
+              "70b91b79662d937c659c92d026f40c3539b88e34857c2e9d5ea16d59489e428e",
+              1
+            ],
+            [
+              "80b901cfed3aeb964cd07726f2ef6bfb84f6187849d6e6dad7862d209ea83f06",
+              1
+            ],
+            [
+              "816393310232ab9a8168821dd44bc3756976725d02652c543eca9cc3d8407787",
+              1
+            ],
+            [
+              "98260d924f88273869dcd755df5951b5c437aeb8bc66c5ee961f07fbe82d8284",
+              1
+            ],
+            [
+              "afed44617a29b4a17b7eccc4ba0a565d4a05a5c2ee5674a4c9420e795fcec943",
+              1
+            ],
+            [
+              "c7dea3ff8fcb0662115225d443e5084ab776f639309cf240ed9d57f957ea17f1",
+              1
+            ],
+            [
+              "cf6f9bf42d1908417ba753f6484d3daffb0c29c8037d94eca746b1437a7421ce",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5f53a3491ceb6b5948f0812f434e768205c4af9a03e390d0f5bedbfa42568639",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 25404994,
+          "native": 42,
+          "container": 1370,
+          "other_streams": 0,
+          "syntax": 1889,
+          "pages": 8,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 39,
+          "complete_pdf_bytes": 25408295,
+          "images_signature": [
+            [
+              "5b9b13e8acb3a23609a2facd8d946137aa16bf7c7057fc19bc48376c7ffceef7",
+              1
+            ],
+            [
+              "70b91b79662d937c659c92d026f40c3539b88e34857c2e9d5ea16d59489e428e",
+              1
+            ],
+            [
+              "80b901cfed3aeb964cd07726f2ef6bfb84f6187849d6e6dad7862d209ea83f06",
+              1
+            ],
+            [
+              "816393310232ab9a8168821dd44bc3756976725d02652c543eca9cc3d8407787",
+              1
+            ],
+            [
+              "98260d924f88273869dcd755df5951b5c437aeb8bc66c5ee961f07fbe82d8284",
+              1
+            ],
+            [
+              "afed44617a29b4a17b7eccc4ba0a565d4a05a5c2ee5674a4c9420e795fcec943",
+              1
+            ],
+            [
+              "c7dea3ff8fcb0662115225d443e5084ab776f639309cf240ed9d57f957ea17f1",
+              1
+            ],
+            [
+              "cf6f9bf42d1908417ba753f6484d3daffb0c29c8037d94eca746b1437a7421ce",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "306808ce3ed1b10875f66387bff7897ebd433d3b54d998d1f44a2a4b615fe403",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -1,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -2
+      }
+    },
+    {
+      "document": "photos",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 22581268,
+          "native": 43,
+          "container": 1370,
+          "other_streams": 0,
+          "syntax": 1890,
+          "pages": 8,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 39,
+          "complete_pdf_bytes": 22584571,
+          "images_signature": [
+            [
+              "5b9e4136c016d4b4e060a6391eb195a9ad1afa5db5f08bf2244fb7888f539b04",
+              1
+            ],
+            [
+              "70f9632ad52891470a6b535cbfed69240307fc32fc510aecc1ab584d9c1dfc10",
+              1
+            ],
+            [
+              "91de94c5e67d0f5e674bf7fc773afa4db0bfddba10b125d3bfcb3a78f1c47357",
+              1
+            ],
+            [
+              "9801b07b59f1f3844e6455b5c929ede58f128eff12de5d35bb2fae753ba21b9e",
+              1
+            ],
+            [
+              "af048a90a6a374cec8e438f69998523f2f0daddc640f6d705bc1181b6d54d998",
+              1
+            ],
+            [
+              "df8d2aee4bdfd6e51cb09acb935a94aa73cbb4627ae056c12aeac42bbe0d68c5",
+              1
+            ],
+            [
+              "e40c6f27951c09ee0a8aaa3ee071bbf72c84602b8cd5e410826f534e3cd8b36b",
+              1
+            ],
+            [
+              "fc1b13ae348510f86143a8a02b2ac0496ff0efe257af5eb4939232af3b796c9e",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5f53a3491ceb6b5948f0812f434e768205c4af9a03e390d0f5bedbfa42568639",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 22581268,
+          "native": 42,
+          "container": 1370,
+          "other_streams": 0,
+          "syntax": 1889,
+          "pages": 8,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 39,
+          "complete_pdf_bytes": 22584569,
+          "images_signature": [
+            [
+              "5b9e4136c016d4b4e060a6391eb195a9ad1afa5db5f08bf2244fb7888f539b04",
+              1
+            ],
+            [
+              "70f9632ad52891470a6b535cbfed69240307fc32fc510aecc1ab584d9c1dfc10",
+              1
+            ],
+            [
+              "91de94c5e67d0f5e674bf7fc773afa4db0bfddba10b125d3bfcb3a78f1c47357",
+              1
+            ],
+            [
+              "9801b07b59f1f3844e6455b5c929ede58f128eff12de5d35bb2fae753ba21b9e",
+              1
+            ],
+            [
+              "af048a90a6a374cec8e438f69998523f2f0daddc640f6d705bc1181b6d54d998",
+              1
+            ],
+            [
+              "df8d2aee4bdfd6e51cb09acb935a94aa73cbb4627ae056c12aeac42bbe0d68c5",
+              1
+            ],
+            [
+              "e40c6f27951c09ee0a8aaa3ee071bbf72c84602b8cd5e410826f534e3cd8b36b",
+              1
+            ],
+            [
+              "fc1b13ae348510f86143a8a02b2ac0496ff0efe257af5eb4939232af3b796c9e",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "306808ce3ed1b10875f66387bff7897ebd433d3b54d998d1f44a2a4b615fe403",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -1,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -2
+      }
+    },
+    {
+      "document": "art",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 228895,
+          "native": 39,
+          "container": 222,
+          "other_streams": 0,
+          "syntax": 620,
+          "pages": 1,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 229776,
+          "images_signature": [
+            [
+              "52c34230a05aa028880c4694a45643ede0a1771a52dffd79bddcc76369758127",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 228895,
+          "native": 37,
+          "container": 222,
+          "other_streams": 0,
+          "syntax": 619,
+          "pages": 1,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 229773,
+          "images_signature": [
+            [
+              "52c34230a05aa028880c4694a45643ede0a1771a52dffd79bddcc76369758127",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "art",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 188141,
+          "native": 39,
+          "container": 222,
+          "other_streams": 0,
+          "syntax": 620,
+          "pages": 1,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 189022,
+          "images_signature": [
+            [
+              "43982570aeaf2bba6ec44382aa89fa3fcb9b2816ea4d194ef41616f39aed1deb",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 188141,
+          "native": 37,
+          "container": 222,
+          "other_streams": 0,
+          "syntax": 619,
+          "pages": 1,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 189019,
+          "images_signature": [
+            [
+              "43982570aeaf2bba6ec44382aa89fa3fcb9b2816ea4d194ef41616f39aed1deb",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "mixed",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 7792805,
+          "native": 39,
+          "container": 1500,
+          "other_streams": 0,
+          "syntax": 2061,
+          "pages": 9,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 7796405,
+          "images_signature": [
+            [
+              "15db4dad1d5aa134b2e66ca9700bf9a5857faa15530e2c267f55877dc83484e2",
+              1
+            ],
+            [
+              "1bde46bcbffa181b0978035d78e1557d6c5148f457bcb2bc55e2a7294178498e",
+              1
+            ],
+            [
+              "238d5d5a62b59c2e6d37b5399c4658c81c007dcb45da022c3caf2d0847e44714",
+              1
+            ],
+            [
+              "2ed1b4a32501cbfd4b06283413c4b4a3b6615ed97aad2601cf04c2d0b6fd5ea5",
+              1
+            ],
+            [
+              "985a90485451c0e22d0cb350cf9defe5f0f2bab46482754da82b5a4467c44bef",
+              1
+            ],
+            [
+              "a7f70204c7380ad3c5c1a1074459a7be09672af6efb253f9678884512116c310",
+              1
+            ],
+            [
+              "b87f497dd52d70d4f4980f2989ea957d72504964aa6238fa4f7801fb53fef051",
+              1
+            ],
+            [
+              "b940c22d7e9aebacc25106c76daa9c0834ed6d96171cb85fc3c3ac6a8e378a9d",
+              1
+            ],
+            [
+              "dcb04b596a18107a88a9f4d68420a2aa167e950e445233f71a3db705414fe123",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 7792805,
+          "native": 37,
+          "container": 1500,
+          "other_streams": 0,
+          "syntax": 2060,
+          "pages": 9,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 7796402,
+          "images_signature": [
+            [
+              "15db4dad1d5aa134b2e66ca9700bf9a5857faa15530e2c267f55877dc83484e2",
+              1
+            ],
+            [
+              "1bde46bcbffa181b0978035d78e1557d6c5148f457bcb2bc55e2a7294178498e",
+              1
+            ],
+            [
+              "238d5d5a62b59c2e6d37b5399c4658c81c007dcb45da022c3caf2d0847e44714",
+              1
+            ],
+            [
+              "2ed1b4a32501cbfd4b06283413c4b4a3b6615ed97aad2601cf04c2d0b6fd5ea5",
+              1
+            ],
+            [
+              "985a90485451c0e22d0cb350cf9defe5f0f2bab46482754da82b5a4467c44bef",
+              1
+            ],
+            [
+              "a7f70204c7380ad3c5c1a1074459a7be09672af6efb253f9678884512116c310",
+              1
+            ],
+            [
+              "b87f497dd52d70d4f4980f2989ea957d72504964aa6238fa4f7801fb53fef051",
+              1
+            ],
+            [
+              "b940c22d7e9aebacc25106c76daa9c0834ed6d96171cb85fc3c3ac6a8e378a9d",
+              1
+            ],
+            [
+              "dcb04b596a18107a88a9f4d68420a2aa167e950e445233f71a3db705414fe123",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "mixed",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 6917593,
+          "native": 39,
+          "container": 1500,
+          "other_streams": 0,
+          "syntax": 2061,
+          "pages": 9,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 6921193,
+          "images_signature": [
+            [
+              "0395e8073941d0be8217342b214637bf6715b9459f8044ccf77eb4b3c7b088df",
+              1
+            ],
+            [
+              "09c92cdbe3bee0d470ebed01af11311bb41124e514a55828ec8d99b9ce87c4f6",
+              1
+            ],
+            [
+              "4dd6453ba1a4a323d6aec33f3385d55f354e36ef90e15b1bdd66619de15f8cc5",
+              1
+            ],
+            [
+              "98b863aeca9752f8261e7d2e9c0c82df8e79bc555312ee2e0d87428a186a10fb",
+              1
+            ],
+            [
+              "c74a12dc934be14daddda3873188f48371b9e3936c7027097067f9fd8ccda487",
+              1
+            ],
+            [
+              "c9ec2440799f6c5e176fbbd19faa071a83ce4f63de58368d1cad81f349fd0584",
+              1
+            ],
+            [
+              "d6c2dba016da35b20f4258e04297f49239a168d6cf1d53ff932617d8cfedccae",
+              1
+            ],
+            [
+              "dbd4c65242dfead028836cfacce1734894f350efa60d75f3e355c7e685a52e3d",
+              1
+            ],
+            [
+              "e28ced05a2c3a5e660184d18abd6f84e623b0aa8a1c691fb40e882cc6266ebe6",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 6917593,
+          "native": 37,
+          "container": 1500,
+          "other_streams": 0,
+          "syntax": 2060,
+          "pages": 9,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 6921190,
+          "images_signature": [
+            [
+              "0395e8073941d0be8217342b214637bf6715b9459f8044ccf77eb4b3c7b088df",
+              1
+            ],
+            [
+              "09c92cdbe3bee0d470ebed01af11311bb41124e514a55828ec8d99b9ce87c4f6",
+              1
+            ],
+            [
+              "4dd6453ba1a4a323d6aec33f3385d55f354e36ef90e15b1bdd66619de15f8cc5",
+              1
+            ],
+            [
+              "98b863aeca9752f8261e7d2e9c0c82df8e79bc555312ee2e0d87428a186a10fb",
+              1
+            ],
+            [
+              "c74a12dc934be14daddda3873188f48371b9e3936c7027097067f9fd8ccda487",
+              1
+            ],
+            [
+              "c9ec2440799f6c5e176fbbd19faa071a83ce4f63de58368d1cad81f349fd0584",
+              1
+            ],
+            [
+              "d6c2dba016da35b20f4258e04297f49239a168d6cf1d53ff932617d8cfedccae",
+              1
+            ],
+            [
+              "dbd4c65242dfead028836cfacce1734894f350efa60d75f3e355c7e685a52e3d",
+              1
+            ],
+            [
+              "e28ced05a2c3a5e660184d18abd6f84e623b0aa8a1c691fb40e882cc6266ebe6",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "kepler",
+      "mode": "color",
+      "accounting": {
+        "brotli": {
+          "images": 9161769,
+          "native": 39,
+          "container": 1988,
+          "other_streams": 0,
+          "syntax": 2597,
+          "pages": 12,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 9166393,
+          "images_signature": [
+            [
+              "08332cd7664af6fb0fd3d8fe568a32a49937107a9d3bb2827ae5b20765197c18",
+              1
+            ],
+            [
+              "4e7b793794267786ea7b7ed6932a47ef24aa9e872943f37e0a126518be9b1c7a",
+              1
+            ],
+            [
+              "559b58342a3e28108ef5104bc5aaac0db6e500ed88837f42fecedd3c8f346760",
+              1
+            ],
+            [
+              "6d85bc1714ea0423cd716854e35c006f0ab18d8174cbd24734ec0084d327c3c4",
+              1
+            ],
+            [
+              "859926a67e59d4338078bed0af8e66a770ceba73fc25ec10fdcfe3efcefde36a",
+              1
+            ],
+            [
+              "9c4f525c4afb10ced05c7d252c97831e7f04be5415fe2bb086339fbf8b2a29b5",
+              1
+            ],
+            [
+              "a47c6e3af604b0837c2183cd732758608d8be037db43341267998080f7cc1541",
+              1
+            ],
+            [
+              "a82ec5b5039083ea4a79e70e73def3c14e3ad70ad59f00f3ff6864972bacac57",
+              1
+            ],
+            [
+              "b6d720b43ced3dd9677e8a626d9667178c8068f07533124683980c292a43a2b3",
+              1
+            ],
+            [
+              "c5ff1767d8c31340058b98df6bff76b64a3a649a90d4c915c1d6adeb445f4dca",
+              1
+            ],
+            [
+              "dc1383fac4bcdbafe61155432f7c546379178238380865c42464eaba1efbd9d7",
+              1
+            ],
+            [
+              "dc63f438a7603cce2038bac8363cd4258cae6f87f7d8d2f6dc45691cf8af1fb7",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 9161769,
+          "native": 37,
+          "container": 1988,
+          "other_streams": 0,
+          "syntax": 2596,
+          "pages": 12,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 9166390,
+          "images_signature": [
+            [
+              "08332cd7664af6fb0fd3d8fe568a32a49937107a9d3bb2827ae5b20765197c18",
+              1
+            ],
+            [
+              "4e7b793794267786ea7b7ed6932a47ef24aa9e872943f37e0a126518be9b1c7a",
+              1
+            ],
+            [
+              "559b58342a3e28108ef5104bc5aaac0db6e500ed88837f42fecedd3c8f346760",
+              1
+            ],
+            [
+              "6d85bc1714ea0423cd716854e35c006f0ab18d8174cbd24734ec0084d327c3c4",
+              1
+            ],
+            [
+              "859926a67e59d4338078bed0af8e66a770ceba73fc25ec10fdcfe3efcefde36a",
+              1
+            ],
+            [
+              "9c4f525c4afb10ced05c7d252c97831e7f04be5415fe2bb086339fbf8b2a29b5",
+              1
+            ],
+            [
+              "a47c6e3af604b0837c2183cd732758608d8be037db43341267998080f7cc1541",
+              1
+            ],
+            [
+              "a82ec5b5039083ea4a79e70e73def3c14e3ad70ad59f00f3ff6864972bacac57",
+              1
+            ],
+            [
+              "b6d720b43ced3dd9677e8a626d9667178c8068f07533124683980c292a43a2b3",
+              1
+            ],
+            [
+              "c5ff1767d8c31340058b98df6bff76b64a3a649a90d4c915c1d6adeb445f4dca",
+              1
+            ],
+            [
+              "dc1383fac4bcdbafe61155432f7c546379178238380865c42464eaba1efbd9d7",
+              1
+            ],
+            [
+              "dc63f438a7603cce2038bac8363cd4258cae6f87f7d8d2f6dc45691cf8af1fb7",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    },
+    {
+      "document": "kepler",
+      "mode": "jpx",
+      "accounting": {
+        "brotli": {
+          "images": 8104512,
+          "native": 39,
+          "container": 1988,
+          "other_streams": 0,
+          "syntax": 2597,
+          "pages": 12,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 8109136,
+          "images_signature": [
+            [
+              "1095a53ef4dca571e6b28191b754394ddce274602c6afd6ed55f088f60304bde",
+              1
+            ],
+            [
+              "1d950b8034cb70dce9ecc5daa5288aa07f961c35db3efbb7e2a82b4093fd0f8f",
+              1
+            ],
+            [
+              "226ca3259a5c1ae94a56d8b8840f6a046cc2c8ecd925885960c7eb5fcb262aeb",
+              1
+            ],
+            [
+              "29e91bfe827929fed3b003d9930047d8dab555aed66a225ac3cad48b8f6318a1",
+              1
+            ],
+            [
+              "499caefa558347675bb4e99bded8cd6f9b6da9780901670820628420c2f77026",
+              1
+            ],
+            [
+              "a2d9608eaf272b91ba0ea3f6308550bef9d06c93b6ace3ba1ebb808e6e02794a",
+              1
+            ],
+            [
+              "a43abc3f188e8d6bb77127486fa54a9784c63194f001f6c2deca5adc0c8e0281",
+              1
+            ],
+            [
+              "ac18066faf77470df335abd5f6ac43e610556639701234adebb2151f16d82253",
+              1
+            ],
+            [
+              "dee87ef3f3976ab71e188d1339e087ff2e0624cee18b9945612986f9c9a944d0",
+              1
+            ],
+            [
+              "e4d72a632a58521f041c7d975fe8a5b9f43ca6fc4fc0725860c79fb82e9eac8d",
+              1
+            ],
+            [
+              "e518e39abd42b56cf398eb2b1e3814a35952bef89e570cb837ff16feac46a82d",
+              1
+            ],
+            [
+              "f082b1304512fa7c9e552d2fda4d18c38f6b3a522a68631d0e3d63bdbc334c47",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "5fbc44e042f74101a30e0ddaf0977f91e4e91b049b5abffbab823d282c0b2f51",
+              1
+            ]
+          ]
+        },
+        "zopfli": {
+          "images": 8104512,
+          "native": 37,
+          "container": 1988,
+          "other_streams": 0,
+          "syntax": 2596,
+          "pages": 12,
+          "brotli_declaration": "null",
+          "native_decoded_bytes": 35,
+          "complete_pdf_bytes": 8109133,
+          "images_signature": [
+            [
+              "1095a53ef4dca571e6b28191b754394ddce274602c6afd6ed55f088f60304bde",
+              1
+            ],
+            [
+              "1d950b8034cb70dce9ecc5daa5288aa07f961c35db3efbb7e2a82b4093fd0f8f",
+              1
+            ],
+            [
+              "226ca3259a5c1ae94a56d8b8840f6a046cc2c8ecd925885960c7eb5fcb262aeb",
+              1
+            ],
+            [
+              "29e91bfe827929fed3b003d9930047d8dab555aed66a225ac3cad48b8f6318a1",
+              1
+            ],
+            [
+              "499caefa558347675bb4e99bded8cd6f9b6da9780901670820628420c2f77026",
+              1
+            ],
+            [
+              "a2d9608eaf272b91ba0ea3f6308550bef9d06c93b6ace3ba1ebb808e6e02794a",
+              1
+            ],
+            [
+              "a43abc3f188e8d6bb77127486fa54a9784c63194f001f6c2deca5adc0c8e0281",
+              1
+            ],
+            [
+              "ac18066faf77470df335abd5f6ac43e610556639701234adebb2151f16d82253",
+              1
+            ],
+            [
+              "dee87ef3f3976ab71e188d1339e087ff2e0624cee18b9945612986f9c9a944d0",
+              1
+            ],
+            [
+              "e4d72a632a58521f041c7d975fe8a5b9f43ca6fc4fc0725860c79fb82e9eac8d",
+              1
+            ],
+            [
+              "e518e39abd42b56cf398eb2b1e3814a35952bef89e570cb837ff16feac46a82d",
+              1
+            ],
+            [
+              "f082b1304512fa7c9e552d2fda4d18c38f6b3a522a68631d0e3d63bdbc334c47",
+              1
+            ]
+          ],
+          "native_signature": [
+            [
+              "879f28cfae0d8da97db7f4e633ef2c2b17a66cee3aa6b6e5dbd8c9e4e43d6df5",
+              1
+            ]
+          ]
+        },
+        "zopfli_minus_brotli": {
+          "images": 0,
+          "native": -2,
+          "container": 0,
+          "other_streams": 0,
+          "syntax": -1
+        },
+        "complete_byte_change": -3
+      }
+    }
+  ]
+}

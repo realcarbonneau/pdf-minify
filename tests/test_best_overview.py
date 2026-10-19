@@ -182,7 +182,11 @@ def test_semantic_proof_detects_geometry_native_and_decoded_image_changes(real_b
 
 
 def test_published_primary_and_binary_tables_match_all_measured_cells():
+    from tools import publish_best_overview as publisher
+    from tools import publish_lossy_controls as lossy
+
     frozen = json.loads(Path("tests/fixtures/best_overview_sizes.json").read_text())
+    current = json.loads(lossy.FIXTURE.read_text())
     assert frozen["designer_ruling"] == 258 and frozen["stream_policy"] == "best"
     assert frozen["brotli_declaration"] is False
     assert frozen["fixed_publication_sha256"] == bench.PUBLICATION_SHA256
@@ -197,15 +201,23 @@ def test_published_primary_and_binary_tables_match_all_measured_cells():
     records = [record(d, recipe, row["best"][i])
                for recipe, row in zip(bench.RECIPES, frozen["rows"], strict=True)
                for i, d in enumerate(bench.overview.DOCUMENTS)]
-    assert bench.table(bench.overview.DOCUMENTS, bench.RECIPES, records).strip() in primary
+    expected = publisher.current_primary(publisher.display_table(
+        bench.table(bench.overview.DOCUMENTS, bench.RECIPES, records)))
+    assert expected.strip() in primary
+    for section in (primary, binary):
+        assert "| BW |" in section and "| BW FFPR |" in section
+        assert "| BW + packed samples |" not in section
+        assert "| BW FFPR + packed samples |" not in section
     parsed = {cells[0]: cells[1:] for line in binary.splitlines() if line.startswith("| ")
               if (cells := [c.strip() for c in line.split("|")[1:-1]])}
     audited = 0
     for recipe, row in zip(bench.RECIPES, frozen["rows"], strict=True):
         assert row["key"] == recipe.key and row["label"] == recipe.label
         assert len(row["pdf_sha256"]) == 6 and all(len(h) == 64 for h in row["pdf_sha256"])
-        assert parsed[recipe.label] == [bench.overview.measured_effect_cell(a, b, show_size=False)
-                                       for a, b in zip(row["brotli"], row["zopfli"], strict=True)]
+        measured = lossy.updated_fixed_row(row, current)
+        label = lossy.current_label(recipe.label).removesuffix(" + packed samples")
+        assert parsed[label] == [bench.overview.measured_effect_cell(a, b, show_size=False)
+                                 for a, b in zip(measured["brotli"], measured["zopfli"], strict=True)]
         audited += len(row["best"])
     assert audited == 114
     controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("## Focused scenarios", 1)[0]
@@ -213,6 +225,7 @@ def test_published_primary_and_binary_tables_match_all_measured_cells():
                     if (cells := [c.strip() for c in line.split("|")[1:-1]])}
     decode = lambda value: int(value.replace("*", "").replace(",", ""))
     for row in frozen["rows"]:
+        row = lossy.updated_fixed_row(row, current)
         for policy in ("brotli", "zopfli"):
             assert [decode(c) for c in control_rows[row["fixed_labels"][policy]]] == row[policy]
     assert [decode(c) for c in control_rows["Preserve images + Classic Flate (reference) native"]] == frozen["classic_reference"]
@@ -226,7 +239,7 @@ def test_fixed_controls_are_relocated_not_removed_and_png_denominators_stay_fixe
     assert "Preserve images + Classic Flate (reference) native |" in binary
     assert "<details" not in binary and "<summary" not in binary and "</details>" not in binary
     assert "### Replace Brotli with Zopfli — final PDF size change (%)\n\n|" in binary
-    assert "### FFPR/J* subset — unchanged NATIVE-02 findings" in binary
+    assert "### FFPR/J* subset — current NATIVE-02 findings" in binary
     png = report.split(bench.overview.PNG_SECTION, 1)[1].split("## Stream compression", 1)[0]
     assert "fixed-encoder plain baseline" in png and "No denominator or PNG measurement changes" in png
 

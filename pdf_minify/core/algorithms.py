@@ -1,6 +1,7 @@
 """Editable compression choices, independent of a filter's name/UUID (§203)."""
 
 from .defaults import DEFAULT_DPI
+from .quality import DEFAULT_LOSSY_QUALITY
 
 ALGORITHMS = (
     ("bw", "JBIG2 BW"),
@@ -41,8 +42,9 @@ def with_algorithm(spec: dict, mode: str) -> dict:
         if mode in PALETTE_MODES:
             result.setdefault("colors", 5 if mode == "layered-jbig2" else 64)
         elif mode == "jpx":
-            result.setdefault("rate", 192)
+            if "rate" not in result:
+                result.setdefault("jpx_q", DEFAULT_LOSSY_QUALITY)
             result.setdefault("lossless", False)
         elif mode == "color":
-            result.setdefault("jpeg_q", 50)
+            result.setdefault("jpeg_q", DEFAULT_LOSSY_QUALITY)
     return result

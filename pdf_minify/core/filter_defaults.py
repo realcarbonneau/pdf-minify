@@ -1,10 +1,12 @@
-"""Versioned saved-recipe migrations (designer §§226/257), without Qt."""
+"""Versioned saved-recipe migrations (designer §§226/257/263/264), without Qt."""
 
 from .algorithms import BW_MODES, COLOR_MODES
 from .defaults import DEFAULT_DPI
+from .quality import DEFAULT_LOSSY_QUALITY
 
 RASTER_DEFAULTS_REVISION = 1
 STREAM_DEFAULTS_REVISION = 1
+QUALITY_DEFAULTS_REVISION = 2
 DEFAULT_APP_STREAM_POLICY = "best"
 
 
@@ -47,4 +49,26 @@ def migrate_stream_compression(filters):
             continue
         preset["params"] = dict(before, stream_compression=DEFAULT_APP_STREAM_POLICY)
         changed.append(preset["id"])
+    return changed
+
+
+def migrate_lossy_quality(filters):
+    """Apply the q75 starting point once; preserve Lossless and other fields.
+
+    JPX's old ratio is replaced, not renamed or numerically reinterpreted.
+    Settings gate the migration so later deliberate quality edits survive.
+    """
+    changed = []
+    for preset in filters:
+        mode = preset.get("mode")
+        if mode not in ("color", "jpx"):
+            continue
+        before = preset.get("params", {})
+        params = dict(before)
+        params["jpeg_q" if mode == "color" else "jpx_q"] = DEFAULT_LOSSY_QUALITY
+        if mode == "jpx":
+            params.pop("rate", None)
+        if params != before:
+            preset["params"] = params
+            changed.append(preset["id"])
     return changed

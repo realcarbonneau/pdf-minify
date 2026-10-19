@@ -12,6 +12,12 @@ measured reference/candidate complete-file tables belong in the integrated
 report, not another duplicate analysis here. The earlier component results
 below retain their original scope and provenance.
 
+§268 refreshes every active whole-PDF lossy comparison, including NATIVE-01/
+02's JPEG/JPEG2000 cases, through LOSSY-03 in the integrated report. It does
+not change these earlier native-only component controls: their image bytes
+are fixed inputs, not an image-codec quality comparison. No rerun is needed
+for unchanged BW/indexed, PNG or synthetic native-only measurements.
+
 Designer §§204/205, 2026-10-15 (America/New_York); TODO §§207/208.
 Related: [COMPRESSION.md](COMPRESSION.md),
 [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md),

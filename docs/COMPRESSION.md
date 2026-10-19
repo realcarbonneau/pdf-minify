@@ -220,6 +220,29 @@ representation, not merely backward compatibility. Normative filter definitions:
 [ISO 32000-1 Table 6, §§7.4.4/7.4.7–9](https://opensource.adobe.com/dc-acrobat-sdk-docs/standards/pdfstandards/pdf/PDF32000_2008.pdf);
 encoder options: [Pillow JPEG/JPEG2000](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html).
 
+### Current lossy quality baseline (§§262–268)
+
+JPEG and lossy JPEG2000 now start at **q75**, with one familiar 0–100 Quality
+control and JPEG2000's existing Lossless choice. §264 supersedes §263's q90
+starting point and the earlier q45/q50/q60 and r192 app defaults, not explicit
+historical recipes/results.
+§§265/266 adopt JPEG 4:4:4 and a deliberately configured lossy JPEG2000
+profile (9/7, RGB colour decorrelation, full-resolution components, one
+tile/layer). These internal defaults do not add encoder controls to the GUI.
+Equal q75 values are the working comparable-quality benchmark baseline;
+produce real 300-DPI measurements rather than blocking on future calibration. See
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md) for the exact, versioned
+JPEG2000 quality-to-encoder mapping, migration and verification
+requirements, fixed profiles, primary sources and the actual comparison method.
+§267 replaces fixed q75 → 26:1 with a measured JPEG reference at the same
+Quality and the study-informed 40→45 / 60→73 ratio anchors. The same prepared
+pixels feed both codecs; no JPEG-decoded intermediate or new GUI option.
+§268 applies this standard to every active lossy benchmark section. The
+24 image preparations and 60 fixed general-stream controls are measured
+and verified; their current sizes and provenance are centralized in
+[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). Original q50/r192
+and mixed-DPI studies below are historical, not current comparison baselines.
+
 §204 clarification: the selector governs the bitmap canvas ONLY. Every selected
 image codec still uses `_save_optimized_pdf`: font subsetting, explicit native
 stream compression, garbage=4, use_objstms=True, compression_effort=100.
@@ -397,7 +420,7 @@ overflowing uint8 subtraction. No new package or optional algorithm UI.
   The old `_rasterize_images_1bit`/individual-mask path has been removed.
 - **Color/JPX/Indexed/colored JBIG2** (`image_layers.compose_color_page`): native full-color
   image composition, including real flat page backdrops → one final-DPI
-  Lanczos resize → JPEG quality / JPEG2000 rate or lossless / forced palette.
+  Lanczos resize → JPEG quality / JPEG2000 quality or lossless / forced palette.
   Explicit JPEG/JPX never substitute Indexed (§203). Flate Color saves the
   quantized index map; JBIG2 Color splits that SAME map into exact colored
   stencils with an opaque white base. Save ONE opaque composite canvas, not
@@ -487,6 +510,10 @@ white page — see the §127 accounting the designer ruled on. Repro:
 
 ### Initial compose-first results — before §183 (2026-10-14)
 
+**Historical stage, not current benchmarks.** These mixed-DPI/old-quality
+numbers document the compositor repair only. Current 300-DPI/q75 comparisons
+are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+
 `tools/bench_color_layers.py --repeat 2 --before .tmp/color-layers/before-live`
 measures complete saved PDFs from the shared full-color compositor. The before
 files are copies of the previous running build's saved default artifacts,
@@ -494,7 +521,7 @@ not an estimated payload or a rerun using the new code. Input images.pdf is
 1,494,439 B. Medians are wall time under normal desktop/other-check load,
 not isolated codec timings or a controlled before/after speed comparison.
 
-| Default color recipe | Before B | Current B | Median s |
+| Default color recipe | Before B | After B | Median s |
 |---|---:|---:|---:|
 | JPEG2000 rate 192, 150dpi | 99,391 | 40,437 | 2.1164 |
 | JPEG q45, 150dpi | 118,815 | 45,140 | 3.1981 |

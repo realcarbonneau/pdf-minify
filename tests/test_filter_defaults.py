@@ -11,7 +11,8 @@ from PySide6.QtWidgets import QApplication
 from pdf_minify.core import presets
 from pdf_minify.core.algorithms import ALGORITHMS
 from pdf_minify.core.filter_defaults import (RASTER_DEFAULTS_REVISION, migrate_raster_dpi,
-    STREAM_DEFAULTS_REVISION, DEFAULT_APP_STREAM_POLICY, migrate_stream_compression)
+    STREAM_DEFAULTS_REVISION, DEFAULT_APP_STREAM_POLICY, migrate_stream_compression,
+    QUALITY_DEFAULTS_REVISION, migrate_lossy_quality)
 from pdf_minify.core.recipes import preset_spec
 from pdf_minify.ui_qt.settings import sync_settings
 from pdf_minify.ui_qt.app import MainWindow
@@ -124,6 +125,8 @@ def test_all_saved_filters_migrate_once_without_losing_metadata_or_later_choices
     store.setValue("customRenames", renames)
     # The DPI migration was already completed; this request must not reset it.
     store.setValue("rasterDefaultsRevision", RASTER_DEFAULTS_REVISION)
+    # This test isolates stream migration, not the later quality starting point.
+    store.setValue("qualityDefaultsRevision", QUALITY_DEFAULTS_REVISION)
     if revision is not None:
         store.setValue("streamDefaultsRevision", revision)
     monkeypatch.setattr(MainWindow, "_custom_store", lambda self: store)
@@ -171,3 +174,73 @@ def test_settings_sync_failure_is_not_reported_as_a_completed_migration(tmp_path
     with pytest.raises(OSError, match="Cannot synchronize"):
         sync_settings(store)
     assert store.called
+
+
+def test_quality_migration_changes_only_active_lossy_settings_and_keeps_lossless():
+    filters = [dict(id=mode, uuid=f"keep-{mode}", label=f"Keep {mode}", mode=mode,
+                    params=dict(dpi_cap=150, jpeg_q=74, rate=192, lossless=True,
+                                colors=16, force_raster=True, stream_compression="brotli"))
+               for mode, _ in ALGORITHMS]
+    before = copy.deepcopy(filters)
+    assert migrate_lossy_quality(filters) == ["jpx", "color"]
+    for old, new in zip(before, filters):
+        expected = copy.deepcopy(old)
+        if old["mode"] == "color":
+            expected["params"]["jpeg_q"] = 75
+        elif old["mode"] == "jpx":
+            expected["params"]["jpx_q"] = 75
+            expected["params"].pop("rate")
+        assert new == expected
+    assert not migrate_lossy_quality(filters)
+
+
+@pytest.mark.parametrize("revision", [None, 0, 1, "invalid-revision"])
+def test_q75_migration_is_persisted_once_before_specs_then_later_choices_survive(tmp_path, monkeypatch, revision):
+    assert QUALITY_DEFAULTS_REVISION == 2
+    templates = copy.deepcopy(presets.PRESETS)
+    monkeypatch.setattr(presets, "PRESETS", copy.deepcopy(templates))
+    store = QSettings(str(tmp_path / "quality.ini"), QSettings.IniFormat)
+    saved = []
+    for index, mode in enumerate(("color", "jpx", "jpx")):
+        saved.append(dict(id=f"quality-{index}", uuid=f"00000000-0000-4000-8000-{index:012d}",
+                          label=f"Keep quality {index}", mode=mode, blurb="Quality migration fixture",
+                          customMetadata={"keep": index},
+                          params=dict(dpi_cap=150, jpeg_q=74, rate=192, lossless=(index == 2),
+                                      stream_compression="zopfli", force_raster=True)))
+    if revision == 1:
+        # A store that already applied the previous q90 migration still needs q75.
+        for preset in saved:
+            params = preset["params"]
+            params["jpeg_q" if preset["mode"] == "color" else "jpx_q"] = 90
+            if preset["mode"] == "jpx":
+                params.pop("rate")
+    expected = copy.deepcopy(saved)
+    migrate_lossy_quality(expected)
+    store.setValue("customPresets", saved)
+    store.setValue("rasterDefaultsRevision", RASTER_DEFAULTS_REVISION)
+    store.setValue("streamDefaultsRevision", STREAM_DEFAULTS_REVISION)
+    if revision is not None:
+        store.setValue("qualityDefaultsRevision", revision)
+    monkeypatch.setattr(MainWindow, "_custom_store", lambda self: store)
+    w = MainWindow(None)
+    try:
+        assert store.value("qualityDefaultsRevision", type=int) == QUALITY_DEFAULTS_REVISION
+        assert store.value("customPresets") == expected
+        assert w._saved_specs["quality-0"]["jpeg_q"] == 75
+        assert w._saved_specs["quality-1"]["jpx_q"] == 75
+        assert w._saved_specs["quality-2"]["lossless"]
+        assert not w._draft_specs and not w._artifacts.pending and not w._preview_timer.isActive()
+    finally:
+        w.close()
+    expected[0]["params"]["jpeg_q"] = 84
+    expected[1]["params"]["jpx_q"] = 86
+    store.setValue("customPresets", expected)
+    monkeypatch.setattr(presets, "PRESETS", copy.deepcopy(templates))
+    w = MainWindow(None)
+    try:
+        assert store.value("customPresets") == expected
+        assert w._saved_specs["quality-0"]["jpeg_q"] == 84
+        assert w._saved_specs["quality-1"]["jpx_q"] == 86
+        assert not w._draft_specs
+    finally:
+        w.close()

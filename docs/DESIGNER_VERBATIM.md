@@ -1123,3 +1123,40 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 ## 261 — show both predictor states for both Best encoder branches (verbatim, 2026-10-18)
 
 > Ok, then leave it always tested for both, fix your tree to show the test for both.
+
+## 262 — familiar JPEG2000 quality control (verbatim excerpt, 2026-10-18)
+
+> We have to use the parameter that users are most used to, that is the most common.
+
+Context: the user-facing JPEG2000 export setting, rather than an encoder's
+compression ratio, PSNR or other low-level parameter.
+
+## 263 — q90 starting point for both lossy color codecs (verbatim, 2026-10-18)
+
+> is this the default  "4:4:4"?   Also, use q90 for both jpg and jpeg2000 for now please as a start.  Should they be somewhat similar if the assumed range is 0-100?
+
+## 264 — q75 starting point and comparable codec settings research (verbatim, 2026-10-18)
+
+> change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
+
+## 265 — prioritize configured lossy JPEG2000 and comparable benchmarks (verbatim, 2026-10-19)
+
+> I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
+
+## 266 — equal slider values are the working comparison baseline (verbatim, 2026-10-19)
+
+> If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
+
+## 267 — use the study-based JPEG/JPEG2000 quality comparison (verbatim, 2026-10-19)
+
+> ok, use that please
+
+Context: approval of the preceding conditional comparison: if JPEG at the
+selected Quality achieves 40:1, use approximately 45:1 for JPEG2000; at
+60:1, use approximately 73:1. These are readings from the 2007 study's
+average visual-quality curve, not a universal quality equivalence. Keep
+one familiar Quality control rather than expose compression ratios.
+
+## 268 — refresh every affected benchmark and document (verbatim, 2026-10-19)
+
+> ok, update all benchmarks and docs, and run the updated benchmarks that have not been done yet.

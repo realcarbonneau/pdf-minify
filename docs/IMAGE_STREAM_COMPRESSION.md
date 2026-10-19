@@ -19,6 +19,10 @@ graphs/stream signatures preserve the original pixel-validation evidence.
 This controlled metadata-policy refresh does not turn the old preparations
 into measurements of the later compositor or new default recipes.
 
+§268's q75 JPEG/JPEG2000 update does not change these BW/indexed component
+cases. Their measurements remain valid within that recorded scope; all
+current whole-PDF lossy comparisons are refreshed in the integrated report.
+
 The current single-factor PNG-prediction experiment and its 16/64-color,
 native/FFPR extension use the protocol in
 [COMPRESSION_EXPERIMENTS.md](COMPRESSION_EXPERIMENTS.md#png-02--palette-and-page-mode-coverage).

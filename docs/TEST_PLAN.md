@@ -8,14 +8,166 @@ comment-only edits need relevant checks (formatting, links or table/data
 consistency), not a full test run. Reuse a passing result when the tested code
 is unchanged; committing or pushing does not require repeating verification.
 
-## Current regression verification — 2026-10-18
+## Current regression verification — 2026-10-19
+
+### Current standard across all affected benchmarks (§268)
+
+**960 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused benchmark/publication/overview/effect-table selection passed
+**141 tests** before the final full run. No second full run is required for
+the subsequent documentation-only completion notes.
+
+LOSSY-03 saved and verified **60 missing complete PDFs** from the 24 completed
+LOSSY-02 preparations: 48 fixed Zopfli/Brotli native/FFPR controls and twelve
+standard-Flate FFPR references. Every control is a separate actual file,
+including no-image cases. Encoded/decoded images, native content, metadata,
+geometry and all-page 72/300-DPI pixels match their preparations. All twelve
+new FFPR Zopfli/Brotli byte partitions close exactly. `qpdf --check` passes
+all 36 new ordinary-format files; its unsupported Brotli decoder is not
+used to certify the other 24. Their exact readback uses the recorded
+Brotli-capable MuPDF build.
+
+New tiny real-file tests fail if image processing or either image encoder
+runs in the fixed-control path; resume must also avoid new saves. Tests
+reject incomplete/changed preparations, missing/duplicate/aliased controls,
+wrong-quality/mapping labels and non-measured counts. Module-scoped fixtures
+keep these checks independent of test execution order. Publication audits
+all 22 affected table rows from one pinned dataset, checks two-decimal
+effects/minima and preserves the main/PNG data and old fixtures. The overview
+publisher applies current control data last so archived q50/r192 cells cannot
+return to active tables.
+
+The original LOSSY-01, LOSSY-02 and fixed-publication manifest hashes remain
+unchanged. All 77 local documentation file links checked pass;
+`git diff --check` passes. Current sizes, complete-file hashes and measurement
+provenance are centralized in `INTEGRATED_COMPRESSION.md`; the new proof is
+`tests/fixtures/lossy_controls_sizes.json`. No repeated image encoding,
+unaffected experiment rerun, app/GUI change or desktop launch.
+**Implementation verified 2026-10-19; not designer acceptance or independent
+perceptual-quality calibration.** The desktop app remains closed.
+
+### Previous study-based JPEG-reference quality mapping (§267)
+
+**942 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused quality/benchmark/publication/overview selection passes **186
+tests**. A separate quality/lifecycle selection also passes **186 tests**;
+these overlapping selections are not an additive test count.
+
+Checks pin 40→45 / 60→73 anchors, continuous monotonic interpolation,
+bounded endpoint-relative gains and the minimum ratio. Quality endpoints,
+invalid values, header-heavy/tiny inputs, real codestreams and preserved
+Lossless/explicit legacy ratios pass. The reference encoder sees final-sized
+original pixels exactly once; an equivalent explicit-ratio encode proves
+JPEG-decoded pixels were not used. Mapping and reference-profile changes
+invalidate effective quality keys without changing legacy/Lossless keys.
+Saved/draft/Save As/Discard/Cancel/Revert behavior remains covered.
+
+LOSSY-02 saved/verified **24 complete PDFs at 300 DPI**. Each pair has identical
+prepared samples; all 78 internal JPX JPEG references match the corresponding
+actual JPEG payload hashes/byte counts. Source-bound native opacity resources,
+native content/geometry and all-page 72/300-DPI readback pass. Existing PDF
+diagnostics match LOSSY-01 exactly; none are newly introduced. Publication
+rejects stale mappings, changed reference counts/hashes and incomplete or
+altered files. Only the four current lossy overview rows change; old
+LOSSY-01, fixed q50/r192 and PNG/native experiment evidence stays immutable.
+
+Both isolated 1×/2× quality-only GUI reviews exit 0 / QUALITY SHOTS GREEN;
+full-window/panel/control captures were viewed. Actual artwork/photo outputs
+were reviewed at screen scale and in native 300-DPI crops with the app's
+Brotli-capable exact display renderer. No display smoothing or new dependency.
+The desktop app remains closed. Verification is not designer acceptance or
+a universal visual-quality calibration. **Verified 2026-10-19.**
+
+### Previous fixed lossy profiles and q75/q75 comparison (§§265/266)
+
+**908 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The final focused codec/publication selection passes **69 tests**; the overview selection
+passes **33 tests**. Actual codestream checks pin JPEG 4:4:4 and lossy JPX
+full-resolution components, 9/7, RGB MCT, LRCP and one quality layer. Tiny
+inputs decode with valid wavelet depth. Encoder-profile changes alter
+effective identity without adding controls or changing the quality mapping.
+The existing Lossless edge case and saved/draft/preview lifecycle remain covered.
+
+LOSSY-01 measured **24 independently saved complete PDFs** via the production
+saver: q75/q75, all six representative sources, native and FFPR separately.
+Identical prepared sample hashes, exact embedded production payloads,
+retained native content/geometry, source/output hashes and all-page
+72/300-DPI readback pass. Strict resume and publication checks reject missing,
+duplicate, altered, mislabelled or estimated results. Reuse the established
+B112 source-image validator: the photo source's 67 native opacity-resource
+images are retained source-bound and identically in both native outputs,
+not mistaken for selected artwork-codec failures or deleted. Unknown native
+resource pixels are rejected. The main table changes its four lossy rows only;
+all fixed q50/r192 and PNG/native experiment measurements stay unchanged.
+
+Both isolated 1×/2× quality-only GUI review runs exit 0 / QUALITY SHOTS GREEN;
+actual full-window, panel and editor captures were viewed. Real artwork/photo
+outputs were inspected at screen scale and with 300-DPI photo/text/edge crops.
+No display smoothing, desktop launch or new encoder dependency was introduced.
+Equal slider values remain the working visual-quality baseline; optional
+stronger calibration does not block the actual comparison. Verification is
+implementation evidence, not designer acceptance. **Verified 2026-10-19.**
+
+### Previous q75 lossy starting point and comparison research (§264)
+
+**880 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused quality/migration/lifecycle selection passes **46 tests**.
+
+Coverage includes q75 seeds/defaults, q75 → 26:1 without changing
+`darktable-rate-v1`, migration from revision 1 as well as missing/malformed
+markers, preservation of Lossless and later saved edits, actual native/FFPR
+encoding and the common slider/spinner lifecycle. Explicit q90/11:1
+compatibility remains tested. Actual codestream headers pin JPEG2000's
+full-resolution 8-bit components, MCT off and 5/3 wavelet; JPEG stays 4:2:0.
+At that stage, sampling/transform changes were proposals. §§265/266 above
+subsequently authorize and verify the fixed profiles and real q75 comparison.
+
+Both sequential, isolated `tools/shot.py --quality-only` runs (1× and 2×)
+exit 0 / QUALITY SHOTS GREEN. The normal-scale full window, JPEG/JPEG2000
+panel/editor captures and Lossless/BW-disabled states were viewed, including
+the 2× JPX panel and JPEG editor. Both readouts show q75; selection only
+observes the completed real file. The desktop app remains closed. All numeric
+columns in the published integrated tables are unchanged, and `git diff
+--check` passes. **Implementation verified 2026-10-18; not designer acceptance.**
+
+### Previous q90 lossy starting point (§§262/263)
+
+**872 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused quality/migration/lifecycle selection passes **38 tests**.
+
+`test_quality.py` pins the versioned JPX mapping (q90 → 11:1), distinct legacy
+ratio identities, quality validation, unchanged actual JPEG 4:2:0 sampling,
+real native/FFPR encoded-stream propagation and lossless pixel equality.
+Current-preset tools forward the same real saver recipe; benchmark producer
+identity includes the mapping module. Frozen q50/r192 results remain labeled
+as historical measurements, with an explicit quality boundary in the report
+and publisher.
+
+`test_filter_defaults.py` covers q90 seeds, saved custom migration, metadata/
+UUID/Lossless/DPI/stream-policy preservation, malformed/missing markers and
+later deliberate quality edits surviving fresh-process reload. Lifecycle
+tests cover both codecs' slider/typed-number/step signals, one trailing job,
+saved-file readback, Save/copy/reload, cached Revert and Cancel/Discard/Save As.
+Offscreen `tools/shot.py --quality-only` observes actual completed q90 PDFs
+and active/lossless/BW-disabled controls. Review screenshots before handoff;
+keep the desktop app closed as explicitly requested. Normal-scale actual
+full-window and 1:1 panel/editor captures, plus 2× high-DPI panels/editors,
+were viewed. Both quality-only review runs finish GREEN. The focused
+bitmap-bearing source includes real JPEG/JPX output (not an image-free no-op);
+large unrelated palette searches are not part of this quality-control review.
+Review processes must not share a sandbox PID artifact root: use sequential
+runs and an isolated OS-temp base via standard `TMPDIR` when necessary,
+without changing production PID/UUID paths or removing unverified locks.
+**Implementation verified 2026-10-18; not designer acceptance.**
+
+### Previous reporting-only verification (§261)
 
 §261 predictor-tree clarification: **834 passed**, `./test.sh`, exit 0 /
 FULL SUITE GREEN; **107 focused report checks passed**. Regressions require
-Best's separate encoder references, prediction OFF/ON in both automatic
+Best's direct encoder actions, prediction OFF/ON in both automatic
 branches, explicit Zopfli's Off/On/Best choices and publisher/report agreement.
-The operational tree contains no fixed-study recommendation. Every Markdown
-table row is byte-for-byte unchanged; no corpus encoding, app/runtime or
+The operational tree contains no fixed-study recommendation. Every measured
+table cell is byte-for-byte unchanged; no corpus encoding, app/runtime or
 settings change. **Implementation verified 2026-10-18; not designer acceptance.**
 
 ### Joint predictor/encoder selection (§260)

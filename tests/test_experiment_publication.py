@@ -64,6 +64,7 @@ def test_direct_stream_signature_distinguishes_native_changes_from_fixed_images(
 def test_published_native_pair_percentages_use_the_visible_reference():
     from decimal import Decimal
     import re
+    from tools.publish_lossy_controls import current_label
 
     text = Path("docs/INTEGRATED_COMPRESSION.md").read_text().split(publication.residual.SECTION, 1)[1]
     references, candidates = text.split("### Measured candidate bytes and change from that reference", 1)
@@ -72,7 +73,7 @@ def test_published_native_pair_percentages_use_the_visible_reference():
     candidates = candidates.split("## What the measurements establish", 1)[0]
     candidates = candidates.split("## FFPR residual compression", 1)[0]
     rows = [parse(line) for line in candidates.splitlines() if line.startswith("| ")][1:]
-    assert len(rows) == 7 and {r[0] for r in rows} == {publication.overview.display_label(r.label) for r in publication.residual.ROWS}
+    assert len(rows) == 7 and {r[0] for r in rows} == {current_label(publication.overview.display_label(r.label)) for r in publication.residual.ROWS}
     audited = 0
     for row in rows:
         assert len(row) == 7

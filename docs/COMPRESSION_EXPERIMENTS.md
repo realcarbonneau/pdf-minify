@@ -1,8 +1,105 @@
 # Controlled compression experiments
 
-Designer §§238–260. The primary measured-size tables are in
+Designer §§238–268. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
+
+## LOSSY-03 — current-standard fixed stream controls everywhere (§268)
+
+The current quality standard is q75 for both codecs with JPEG 4:4:4 and
+JPX's study-based JPEG-reference mapping, at 300 DPI. LOSSY-02 already saved
+and verified all 24 native/FFPR main-table PDFs. Reuse those exact encoded
+image preparations, including native opacity resources; no image encoder,
+composition, resize or filter-preview path runs again.
+
+Measure the remaining **60 actual complete PDFs**: Zopfli/Brotli controls
+for each of the four lossy recipes and six inputs (48), and standard-Flate
+FFPR references for the two lossy codecs across six inputs (12). Fixed pairs
+vary general native/residual-stream compression only. Keep image streams
+byte-identical, native decoded content/geometry/metadata identical and Brotli
+declaration OFF; use the shared real saver and verify all pages at 72/300 DPI.
+Source/baseline/output/implementation hashes guard imports and resume.
+Never alias a control to a main-table file, even for a no-image/tie case.
+
+One measured control supplies every table that needs that same case: fixed
+Zopfli/Brotli effect and sizes, FFPR byte accounting, focused photography,
+and Flate-reference residual effects. Preserve the unaffected BW/indexed/
+lossless measurements and the already completed main matrix. Refresh active
+lossy labels, percentages, minima, conclusions and tests; old q50/r192 and
+fixed-ratio q75 files remain immutable historical evidence. No timing ranking,
+CSV export, app/GUI change or universal visual-quality claim.
+
+Completed 2026-10-19: **all 60 controls** were actually saved and verified,
+reusing the 24 completed LOSSY-02 preparations. Each fixed pair preserves
+encoded/decoded images, native content/geometry/metadata and every page's
+72/300-DPI pixels. No image encoding runs. Twelve new FFPR byte partitions
+close exactly; those streams make Brotli 2–14 bytes larger than Zopfli,
+while standard Flate and Zopfli tie on all twelve current lossy FFPR files.
+The same measurements update all 22 affected rows in the integrated report,
+not duplicated experiments. `tools/bench_lossy_controls.py` owns measurement;
+`tools/publish_lossy_controls.py` audits coverage/provenance and emits the
+current table/fixture patch. The manifest/hash and actual sizes are centralized
+in the integrated report; regression verification is in `TEST_PLAN.md`.
+
+## LOSSY-02 — q75 JPEG versus study-matched q75 JPEG2000 (§267)
+
+Replace only JPX's quality-to-ratio mapping: anchor each actual reference JPEG
+at selected q75 to the 2007 visual study's approximate 40→45 / 60→73 ratios.
+The exact interpolation and bounded outside-range heuristic are in
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md). Keep 300 DPI, prepared RGB,
+JPEG 4:4:4, JPX 9/7/ICT, native/FFPR, stream policy and writer unchanged.
+Observe the real internal JPEG reference without replacing any encoding.
+Record its actual bytes/hash, raw sample count and chosen JPX ratio. In each
+pair that reference must match the actual JPEG payload byte-for-byte.
+Save/verify all 24 whole PDFs, publish the four current rows only and inspect
+real output. This is a source-informed working quality baseline, not a
+completed perceptual calibration. No timing ranking or new lossless study.
+The old LOSSY-01 manifest stays immutable; current identities reject it.
+
+Completed 2026-10-19: all 24 whole PDFs and 78 reference-JPEG/prepared-canvas
+pairs per codec passed verification. JPEG2000 is smaller in the 11 image-
+bearing pairs; the no-image case ties. Reference JPEG hashes and byte counts
+match the paired actual JPEG payloads. The integrated report owns the final
+sizes and percentage range; 16 canvases fall inside the studied anchor
+interval, 62 use the explicit outside-range heuristic. These are measured
+sizes under the approved working quality assumption, not a new perceptual
+quality experiment. Output and proof hashes are pinned separately from the
+unchanged LOSSY-01 and original fixed-encoder controls. §268 subsequently
+refreshes active lossy fixed controls in LOSSY-03 above.
+
+## LOSSY-01 — previous fixed-ratio q75 baseline (§§265/266)
+
+Use equal q75 slider values as the working comparable-visual-quality baseline,
+at 300 DPI and with identical full-resolution colour sampling. JPEG uses
+4:4:4 and optimized Huffman coding; JPEG2000 uses one layer/tile, the lossy
+9/7 wavelet and RGB colour decorrelation. Technical settings stay internal.
+That study's JPEG2000 quality mapping was fixed (q75 → ratio 26).
+Do not require an unrun perceptual calibration before producing measurements.
+
+Measure all six representative whole PDFs with native text/vectors retained,
+then FFPR, saving a separate real complete PDF for each codec: **24 outputs**.
+No-image native cases remain independently saved sanity checks. Observe the
+production encoder without changing its result and record identical prepared
+RGB dimensions/sample hashes per pair. Validate actual embedded codec/payload,
+retained native drawing/text/geometry, source/output hashes and all-page
+decoding. Inspect screen-scale output and native 300-DPI pixel crops.
+Record versions and current producing code; resume rejects changed identities
+or altered outputs. Publish measured complete-file bytes in the integrated
+analysis, with per-mode minima and no compute-time comparison or CSV.
+Keep q50/r192 fixed-policy studies immutable and explicitly historical.
+No new lossless competitor is needed. Report any observed visual differences
+and codec regressions; the baseline assumption is not a measured universal
+quality equivalence or a guarantee of JPEG2000 winning every file.
+
+Completed 2026-10-19: all 24 outputs and their source/prepared-sample/codec/
+native/all-page-render proofs were verified. `tools/bench_lossy_quality.py`
+owns production-saver measurement; `tools/publish_lossy_quality.py` audits
+completed files without re-encoding and pins the separate q75 fixture.
+It reuses the B112 source-image validator and verifies unchanged native
+opacity-resource images across both codecs. The current results replace only
+the four lossy rows in the continuous integrated overview; no frozen PNG or
+native/residual denominator changes. See the integrated report for sizes,
+wins/losses and measurement provenance, and `TEST_PLAN.md` for verification.
 
 ## Shared protocol
 
@@ -167,15 +264,17 @@ Use seven rows across all six whole PDFs (42 pairs):
 | Preserve original encoded images; native-content control | Brotli | Standard Flate |
 | BW/Otsu FFPR + JBIG2 | Zopfli | Standard Flate |
 | Five-color FFPR + layered colored JBIG2 | Zopfli | Standard Flate |
-| Full-color FFPR + JPEG q50 | Zopfli | Standard Flate |
-| Full-color FFPR + JPEG2000 lossy r192 | Zopfli | Standard Flate |
+| Full-color FFPR + JPEG q75 | Zopfli | Standard Flate |
+| Full-color FFPR + JPEG2000 q75 | Zopfli | Standard Flate |
 | Full-color FFPR + JPEG2000 lossless | Zopfli | Standard Flate |
 
 The five FFPR rows isolate the residual optimization previously described
 only in their labels. The native-preserving controls show the contrast when
 fonts/text/vector programs remain. This intentionally scoped first experiment
 does not repeat every image palette or PNG variant: those are separate factors.
-All seven rows apply to every source, including image-free PDFs.
+All seven rows apply to every source, including image-free PDFs. §268
+refreshes both lossy rows with current profiles via LOSSY-03; the original
+q50/r192 files stay archived. The other five rows retain their measurements.
 
 Reuse verified candidate outputs and the already measured preserve-images
 Flate controls, with their original producing identities. Save the 30 missing
@@ -192,11 +291,13 @@ interoperability. Results join the existing integrated report, not this plan.
 ## NATIVE-02 — FFPR Zopfli treatment versus Brotli baseline
 
 Designer §§245/246. Scope is FFPR with specialized JBIG2 BW, five-color
-layered JBIG2, JPEG q50, JPEG2000 lossy r192 and JPEG2000 lossless—not
+layered JBIG2, JPEG q75, JPEG2000 q75 and JPEG2000 lossless—not
 retained native text/vectors or packed-image compressor alternatives.
 Change only native/residual-stream compression: Brotli baseline versus
 Zopfli treatment. Encoded image payloads, source, recipe, 300-DPI samples,
 native drawing, fixed-width ID framing and final save policy stay fixed.
+§268 replaces the twelve original q50/r192 pairs with LOSSY-03's current
+q75 pairs; the other eighteen retain their verified evidence.
 
 Use five rows over all six whole PDFs (30 pairs). Reuse the verified Zopfli
 candidates from NATIVE-01. Save the 30 missing actual Brotli baselines from
