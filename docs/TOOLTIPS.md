@@ -1,7 +1,24 @@
 # Contextual help and tooltip convention
 
-Designer §253; current application: Qt Widgets. This is the shared convention
-for new/updated help, not approval to rewrite every existing control at once.
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§253** (2026-10-17)
+
+```text
+Remove the text under Brotli, put that in a tooltip please, plan a standard tooltip as per modern GUI best practices
+```
+
+**§252** (2026-10-17)
+
+```text
+Mark that option as "(Compatibility)" for clarity.
+```
+
+This is the shared convention for new or updated help in the Qt Widgets
+application; existing controls are not rewritten all at once.
 
 ## Presentation and content
 
@@ -30,14 +47,14 @@ tooltip explains the option without suggesting it installs decoder support:
 
 > Add Brotli extension metadata for readers that use it; this does not add Brotli decoder support.
 
-More detailed help states that the declaration is off by default, affects
-metadata/file size rather than image fidelity. §§255/256 extend availability
-to **Best (Zopfli/Brotli)**, with the declaration included only if its selected
-output actually uses Brotli. State that condition in detailed help and the
-Best recipe readout; a checked setting does not promise Brotli will win.
-Best's short help names native/packed-image selection and the possible reader
-requirement; it does not claim automatic J* selection. Remove
-the former inline warning entirely; do not merely hide an abandoned label.
+More detailed help states that the declaration is off by default and affects
+metadata and file size, not image fidelity. The checkbox is also offered for
+**Best (Zopfli/Brotli)** (§§255/256), and the declaration is included only if
+the chosen output actually uses Brotli; detailed help and the Best recipe
+readout state that condition, since a checked setting does not promise Brotli
+will win. Best's short help names native/packed-image selection and the
+possible reader requirement; it does not claim automatic J* selection. There
+is no inline warning label and no space reserved for one.
 
 > Optimize native and packed-image streams; may require a Brotli-capable reader.
 
@@ -46,8 +63,8 @@ the former inline warning entirely; do not merely hide an abandoned label.
 [Qt QToolTip](https://doc.qt.io/qt-6/qtooltip.html) documents native widget/action
 help and normal platform behavior. [KDE inline help guidance](https://develop.kde.org/hig/displaying_content/#inline-help-and-tooltips)
 recommends short tooltips and accessible, discoverable detailed help rather
-than hover-only essential instructions. This project's designer specifically
-chooses tooltip placement for Brotli; the visible limited-support label stays.
+than hover-only essential instructions. The designer chose tooltip placement
+for the Brotli help (§253); the visible limited-support label stays.
 [QWidget help properties](https://doc.qt.io/qt-6/qwidget.html#accessibleDescription-prop)
 provide accessible descriptions and What's This help without extra dependencies.
 
