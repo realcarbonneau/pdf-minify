@@ -1,8 +1,71 @@
-# Filter recipes, live drafts, and real filtered files — canon (§§122/149)
+# Filter recipes, live drafts and real filtered files
 
-The designer's full ruling is preserved verbatim in `DESIGNER_VERBATIM.md`
-§149. Cross-refs: `ARCHITECTURE.md`,
-`UI_LAYOUT.md`, `PERSISTENCE_AND_TEMP.md`, `TODO.md` §§150–157, issues B74–B79.
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+### One processing path
+
+**§122** (2026-10-13)
+
+```text
+The preview need to show the saved file, DO NOT have multiple paths, this is the root cause of alot of your failures!! One single path, process the file, save temp, display temp file in preview, minis come from save temp files once they are processed. This is an important design ruling, please put this in the design under architecture and flow. Do you follow this flow? Do you understand why this is robust and safe?
+```
+
+**§44** (2026-10-10)
+
+```text
+when I was clicking on a filter preview, it seemed to be restarting it processing, but that is incorrect, it should be processed once and only reprocessed if there is a change of the file or change in the filter specifications.
+```
+
+**§149** (2026-10-13)
+
+```text
+Ok, this renumbering issue seems resolved, you can document my explicit confirmation.  Next issue, this also seems like a design implementation issue, please find the root cause.  Canon design is that all filters be run for real and the previews come from the filtered files, and these files have the true final size, not an approximation, please make sure this is clear canon design ruling in the proper dev docs.  When I zoom in/out, the preview and minis update live, this is good.  However, when I click on a mini that has not been clicked yet, I see it doing a "Rendering preview..." processing.  This is obviously wrong flow because this is already fully processed to have the mini previews that work.  So something is fundamentally wrong.  There should be no reprocessing EXCEPT for changes to the filter.  And there are two types of changes to the filter, the first is live changes which should update the processing live with a debounce and mark the filter as changed with a star * (per standard GUI conventions, right?).  However, if the chosen filter is changed without saving, there should be a popup for discard/save/save-as (aka save copy, choose best modern term).  If discard, then the previous file is kept (and the temp new live changes file is deleted), inverse if save, save-as keeps both of course.  These are multiple design runlings, please document in the correct places, also document the issues and work on them.
+```
+
+### Filter identity
+
+**§155** (2026-10-13)
+
+```text
+you should give the filter a UUID and never permit two filters to have the same UUID, check when loading, in case someone copy/paste filters.  These UUIDs are only for internal use, name tis dirs with the UUID.  I think this is modern best practices, no?  Python has UUID generation, not tied to the network card?  Or just make a random UUID generator, if python does not have.
+```
+
+### Edits and leaving a dirty filter
+
+**§183** (2026-10-14)
+
+```text
+In the low color versions, colors are getting incorrectly converted to white instead of their closest colors. Also, when using the spinner, after a debounce, a rerender should be triggered, same for the sliders or any other change.  We should have one global debouce for this.  What do you suggest as a debounce time?
+```
+
+**§160** (2026-10-14)
+
+```text
+Change "Close without saving" to "Discard Changes"
+```
+
+**§161** (2026-10-14)
+
+```text
+Also, after clicking another filter in the minis, if I escape the "Unsaved filter changes", the filter selection changed, but nothing was saved, nor discarded, this is wrong.  Cancel should remain on the edited fiter.
+```
+
+**§162** (2026-10-14)
+
+```text
+Also, add a revert changes igon beside the dropdown, the typical counter-clockwise arrow, right?
+```
+
+**§189** (2026-10-14)
+
+```text
+I just did a change, then click mini elsewhere, then save as, but the selection did not move to the new sav-as filter, this is incorrect.   Modern GUI design would expect this.  Review anywhere this pattern would apply.  Also, I think the all just crashed, or you killed it?
+```
+
+Related pages: `ARCHITECTURE.md`, `UI_LAYOUT.md`, `PERSISTENCE_AND_TEMP.md`.
 
 ## One processing path and one source of truth
 
@@ -42,8 +105,6 @@ quality in effective keys; see [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).
 The JPEG and JPEG2000 encoder profiles and the JPEG2000 quality mapping are
 versioned in effective keys. Saved q values remain unchanged; a changed encoding policy
 invalidates old completed results, not filter UUIDs or saved/draft ownership.
-No new user-facing encoder controls or independent preview transformation are
-introduced. Selection still observes the actual saved result only.
 
 Each filter keeps a saved recipe/result and, while dirty, a live draft.
 Loading controls under signal blockers is not an edit. Effective comparisons
@@ -52,7 +113,7 @@ cannot accidentally change threshold/DPI/lossless or other recipes.
 
 User edits create/update the selected filter's draft immediately, show `*`
 in its mini/dropdown/header, and restart ONE shared single-shot 300ms trailing
-debounce (§183; proposed default replacing 200ms). All recipe inputs feed the
+debounce (§183; 300ms is the proposed value). All recipe inputs feed the
 same edit path: native slider drag/keys, spin arrows/typed numbers, DPI/strategy/
 page-size dropdowns, FFPR and JPX-lossless toggles. Use a precise timer so it
 cannot fire before the trailing interval; Qt event-loop load may delay it.
@@ -78,8 +139,8 @@ in-flight recipe completes under the new saved ownership, without rerunning.
 
 ## Leaving a dirty filter
 
-"Changed chosen filter" is interpreted as selecting another filter. Show a
-modal decision before changing the active recipe/controls/preview:
+Selecting another filter while the current one is dirty shows a modal
+decision before the active recipe, controls or preview change (§149):
 
 Dialog wording (§160): its destructive choice is explicitly **Discard Changes**,
 not the platform's application-close-oriented "Close without saving" label.
@@ -149,30 +210,16 @@ late arrivals after discard and copies of identical recipes in separate UUID
 directories. Pending copies retain their source; subsequent edits cannot
 delete another filter's saved files. Validate IDs and pasted aliases on load.
 
-## Related rulings
+## Design traps and failed attempts
 
-The quotes remain unchanged in `DESIGNER_VERBATIM.md`; this index records
-their operative meaning and routes it to its canonical topic, without making
-old implementation descriptions into designer decisions.
-
-| Topic | Designer rulings | Operative canon / topic |
-| --- | --- | --- |
-| All filters processed, GUI responsive | §§9, 32, 37, 43, 51, 90, 128, 149 | Real-file jobs in background, half-core cap, selected first then strip order; per-filter progress. `ARCHITECTURE.md` |
-| No processing on selection/view | §§37, 44, 45, 47, 48, 90, 92, 108, 115, 149 | Selection only shows prepared results; zoom/pan/page/crop only reframes; trailing view debounce. This doc / `UI_LAYOUT.md` |
-| Exact final size, not estimate | §§32, 53, 55, 59, 60, 61, 106, 122, 149 | Byte size of the real whole filtered PDF; rounded original-relative percentage; include overhead/fonts/masks. `ARCHITECTURE.md` |
-| One saved-file observation path | §§48, 111, 113, 121, 122, 149 | Real saver → kept temp PDF → prepared pixels, minis, final bytes, export copy. This doc / `ARCHITECTURE.md` |
-| Isolated per-filter changes | §§65, 67, 83, 85, 100, 103, 105, 106, 116, 127, 129, 131, 149 | Full effective recipe snapshot; one dirty draft; debounce only that filter; selection cannot seed other recipes. This doc |
-| Rename/copy/save versus live edit | §§109, 112, 120, 149 | Explicit persistence actions; `*` dirty state; Save promotes, Save As preserves a named copy, Discard restores saved, Cancel stays. This doc / `UI_LAYOUT.md` |
-| Temp versus persistence | §§15, 91, 93, 123, 149, 151, 152, 153 | Runtime scratch in Qt OS temp under one locked GUI PID directory, removed on normal exit; no extra session/history layer. Recipes/last-file in QSettings; repo `.tmp/` only developer artifacts. `PERSISTENCE_AND_TEMP.md` |
-| Stable filter identity | §§128, 148, 154, 155 | Persistent unique random UUID, validated on load and never displayed; name and number are presentation. UUID-named directories; recipe-key children keep saved/live data separate; copies reuse prepared files. This doc / `PERSISTENCE_AND_TEMP.md` |
-| Transform semantics | §§10, 57, 64, 74, 81, 85, 103, 119, 121, 126, 127, 129 | Original page size by default; FFPR OFF preserves text/vectors, ON flattens; exact DPI before transforms supersedes old ceiling-only prose. `COMPRESSION.md` |
-| Progress, cancellation, safe close | §§3, 37, 43, 85, 89, 94, 95, 149 | No artificial 50% milestone; true work progress; Cancel Save isn't Undo; closing never destroys live QThreads. `ARCHITECTURE.md` / this doc |
-| Verification and acceptance | §§14, 19, 59, 62, 90, 102, 104, 125, 137, 139, 147, 149, 150 | Docs lead; logs/real artifacts/call counts, full suite, viewed screenshots, restart; only dated explicit designer acceptance closes issues. `DEVELOPER_GUIDELINES.md` |
-
-## Editable compression (§§203–205)
-
-Six image modes and the independent native-stream policy use these same
-saved/draft transactions and the shared 300ms timer. Effective keys ignore inactive fields; Save As persists the
-draft's actual mode/policy and selects the new copy, and built-in override
-reload restores the saved mode. See `COMPRESSION.md` and
-`NATIVE_STREAM_COMPRESSION.md`.
+- **A second processing path.** Separate preview, mini or size calculations
+  disagreed with the saved file. Everything reads the one saved PDF
+  (§§122/149).
+- **One timer for view events and edits.** Zoom and resize then interfered
+  with edits or authorized processing. The view reframe debounce stays
+  separate from the edit debounce.
+- **Rolling back a canceled switch inside Qt's selection signals.** Unfinished
+  Qt work overwrote the restored highlight or reopened the prompt (§161). Run
+  the native input handler with view notifications blocked and notify once.
+- **Save As selecting the filter that triggered the prompt.** The new copy must
+  become the selected filter everywhere (§189).
