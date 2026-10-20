@@ -1,7 +1,19 @@
 # Certified platform
 
-Designer ruling: `DESIGNER_VERBATIM.md` §176. Recorded **2026-10-14**
-(America/New_York). Packaging plan: [PACKAGING.md](PACKAGING.md).
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§176** (2026-10-14)
+
+```text
+Also, document the current platform as the certerfied and create a document for packaging, meaning if any packages are required to make this work on multiple platforms, you can follow the taskcoach project which is also on github and in a sister dir here.
+```
+
+Certificate date: **2026-10-14** (America/New_York). The first target, LXDE
+on Debian, comes from the original brief (§3, quoted in `DESIGN.md`).
+Packaging plan: [PACKAGING.md](PACKAGING.md).
 
 ## Current certificate: Debian 13 x86-64, source/workspace build
 
