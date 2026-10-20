@@ -1,8 +1,19 @@
 # Packaging and multi-platform deployment
 
-Designer ruling §176, 2026-10-14. [PLATFORMS.md](PLATFORMS.md) is the authority
-for what is certified; this document is a **packaging plan**, not evidence of
-existing installers. No packaging tools were installed or releases published.
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§176** (2026-10-14)
+
+```text
+Also, document the current platform as the certerfied and create a document for packaging, meaning if any packages are required to make this work on multiple platforms, you can follow the taskcoach project which is also on github and in a sister dir here.
+```
+
+[PLATFORMS.md](PLATFORMS.md) is the authority for what is certified; this
+document is a **packaging plan**. No installers exist yet. Multi-platform
+support is part of the original brief (§3, quoted in `DESIGN.md`).
 
 ## Reference: Task Coach, adapted to this app
 
@@ -33,8 +44,8 @@ bundling route per target; do not combine several freezers by default.
 | Icon Lab stock PNG resources | Coded Nuvola/Oxygen/GNOME Classic comparison; not a production theme change | Include `ui_qt/assets/icon_lab/` JSON data, provenance, all copyright/license notices and Nuvola's original artwork addendum, plus the reused Breeze assets; decode original PNG bytes in memory, no runtime theme install/download |
 | PyMuPDF >=1.28.2 | Required, including its matching native MuPDF binding/library | The native PDF filtering/display APIs are used directly; an older distro binding is not a substitute |
 | NumPy, Pillow | Required, including their native extensions/codecs | Use target-specific tested wheels and record exact resolved dependencies |
-| `jbig2` / `jbig2.exe` | Required when selecting JBIG2 BW or JBIG2 Color | Native executable and dependencies, not supplied by pip. Explicit choices fail clearly when unavailable; the user can choose Flate instead, never a hidden fallback |
-| `zopfli` | Required for the default Best policy (§257) and explicit Zopfli | Best runs the complete encoder, with no missing-encoder fallback. §213 targets one best-encoded Flate format; remaining legacy fixed-path choices require alignment (TODO §217). No new package is claimed here |
+| `jbig2` / `jbig2.exe` | Required when selecting JBIG2 BW or JBIG2 Color | Native executable and dependencies, not supplied by pip. Explicit choices fail clearly when unavailable; the user can choose Packed BW or Indexed color instead, never a hidden fallback |
+| `zopfli` | Required for the default Best policy (§257) and explicit Zopfli | Best runs the complete encoder, with no missing-encoder fallback. §213 targets one best-encoded Flate format; remaining legacy fixed-path choices require alignment (TODO §217) |
 | Bundled MuPDF Brotli support | Required for the default Best policy and explicit Brotli; output may need a supporting PDF reader | Verified in the existing 1.28.2 binding, no extra Python package. Verify native/packed-image encoding/decoding, exact predictors/masks, empty-stream guard and optional declaration on each target. Legacy headless Flate remains available |
 | `mutool`, `pdfimages`, `jbig2dec` | Not core GUI runtime dependencies | Inspection/independent validation tools; `pdfimages` is used by the saved-image benchmark |
 | pytest, Xvfb, xdotool | Not app runtime dependencies | Automated/offscreen and real X11 drag validation tools, respectively |
@@ -84,7 +95,7 @@ and verified; Task Coach having them does not certify or require them here.
    integration; [PyInstaller explicitly requires early freeze_support](https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html#multi-processing).
 3. Resolve bundled external tools at controlled application-relative paths,
    and use the resolved path for both detection and subprocess execution.
-   `pipeline.py` detects `jbig2` with `shutil.which` and now invokes that
+   `pipeline.py` detects `jbig2` with `shutil.which` and invokes that
    resolved path; a bundle still needs an intentional launcher/PATH or resolver. Verify
    the actual `jbig2 -p` output with the installed native MuPDF decoder.
 4. Keep helper DLL/shared-library lookup compatible with the helper's origin.
