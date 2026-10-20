@@ -1,10 +1,147 @@
-# Developer guidelines — PDF Minify (full)
+# Developer guidelines — PDF Minify
 
-Read this before touching code. Source of truth for designer intent:
-`DESIGNER_VERBATIM.md`. Request tracker: [TODO.md](TODO.md) (this directory).
-Root docs: `00_OVERVIEW.md`, `ARCHITECTURE.md`.
-Entry point at repo root: `../README.md`. The request log and analysis docs
-live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, …).
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+### Authority and documentation
+
+**§9** (2026-10-09)
+
+```text
+Put all my comments verbatim in a design md doc, make a docs dir.  make a dev md doc with guidance, including to keep all my comments verbatim.  I want to see a list of preset optimization options, like photo filters on a camera with a smaller version of previews, and when I click on one, the main doc has original and preview (optmized side by side, vertically or horizontally, same for the filter thumbnails, all would be choosable as menu view options.
+```
+
+**§11** (2026-10-09)
+
+```text
+design.md, designer rulings section, verbatim.  In the docs, always call the operator/user the designer.
+```
+
+**§19** (2026-10-09)
+
+```text
+yes, correct docs, don't ask, docs should be all updated first, then dev work.  Docs lead the decisions, rulings, design intent.  Everything else follows.
+```
+
+**§16** (2026-10-09)
+
+```text
+no checkbox for doto list, put item in full detail, when completed, stub, cross ref with final docs that implement it and strikethrough.  If dropped, we can have a doc with dropped ideas and log them for historical reference with reasons.  Once we do work, we don't want to redo the work and knowledge.
+```
+
+**§216** (2026-10-15)
+
+```text
+Move the TODO.md to the docs dir please also
+```
+
+**§218** (2026-10-15)
+
+```text
+commit/push is not a todo/issue neither, you can scrub/drop those, if any, from the docs.  Do you see anything else that is not design related?  Like requesting to run the app or whatever else that has no added value to the docs.
+```
+
+**§220** (2026-10-15)
+
+```text
+ok, then leave in the tables as it was.  Also, clean this up, we should NOT have typo correction discussions in the docs.
+```
+
+**§273** (2026-10-19)
+
+```text
+the developper guidelines were not well done neither.  My verbatim words should be exact, but the corpus is a mess and the verbatim recordings might not be well organized.
+```
+
+**§279** (2026-10-20)
+
+```text
+collect the most important top level design rulings and design intents, varbatim, to the top section of the design document.  Each dev doc should have a first sections with contains the relevant rulings, etc.  Each page should also have a section with historical change logs ONLY for mistakes/changes that have a chance of recurring, eg design traps, of failed attempts and the reason, we onle keep current present tense documentation, UNLESS it's a past mistake that can inform current and future work to avoid past mistakes.  If the mistake was trivial and because the worker did NOT follow canon or rulings, or drifted, we do not document, the git historical keeps a record naturally.
+```
+
+**§280** (2026-10-20)
+
+```text
+I would rather you don't use a tool, you should be reviewing and think of each one, but you can use a tool for copying precisely, once you have read and analyzed and made decisions.  I don't want a full refactor now, we will work iteratively and opportunistically, start with the most important current design principles please.  Also, after the top level precinciples, work on the compression docs, since we are working on that now.  These are also a mess.
+```
+
+**§289** (2026-10-20)
+
+```text
+squash, commit and push.  Then review the docs for additional useless chatter that the previous worker kept, list me the top 10 useless chatter that we can scrub from the docs.  Also, when I use the word scrub, that means completely remove, and remove reference, and not log that is was cleaned.  The only history that would remain is in the git history.
+```
+
+**§290** (2026-10-20)
+
+```text
+ok, for Item 9, Item 10.  For option 1, clean up if you have superceding rulings that override old ones that are not clear about the source, same for one that have been reconfirmed by clear more recent rulings, you can delete the old duplicate unclear source ones.  The rest, you can leave as unclear source and clear when new rulings come in.  Ok for option 2 JBIG2 as you suggest.  Then do the analysis of the next document carefully, one at a time.  You can also squash, commit and push
+```
+
+### Issues and acceptance
+
+**§90** (2026-10-10)
+
+```text
+Also, when I choose a to be processed filter to the far right, when other fitlers are processed to the left, reprocessing starts onthe left filters, this is also incorrect.  Add each of my notes to a BUGS.md doc, in a numbered list and cross only once I have comfirmed that they are fixed.  Look back at my past complaints and add them to the bugs list please.
+```
+
+**§147** (2026-10-13)
+
+```text
+Ok, this is good, you can mark these issues fixed, confirmed by me.  I don't know if the worker was self-marking issues fixed without my confirmation, but try to have a marking that indicates that I explicitly confirmed it fixed and the date.  There are still other DnD issues, so mark this ghost as fixed.   Is transparency at 75% now also?
+```
+
+### Testing, running and logging
+
+**§59** (2026-10-10)
+
+```text
+please complete your work, don't stop half compelted.  Also make a full test suite please and run each time please.
+```
+
+**§241** (2026-10-16)
+
+```text
+This “full suite before every ship” is incorrect.  Full suite of test after code changed, not documentation changes, right?
+```
+
+**§62** (2026-10-10)
+
+```text
+run, always run after a new build, kill the existing one
+```
+
+**§137** (2026-10-13)
+
+```text
+Add canon instructions that you have to take screenshots (in a virtual frambuffer, same for the tests) and view the formats, layouts and other work you do to see if they make visual sense and follow modern best practices, or else you are just programming blind for GUI work!
+```
+
+**§14** (2026-10-09)
+
+```text
+The app should log everything important to the stdout so that you can run and review what happened from the log.  Also, have a --debug mode that dumps more so you can rune and evaluate issues and problems as required.  This goes in development guidelines, as it is not a ui nor feature design issue.
+```
+
+**§102** (2026-10-10)
+
+```text
+'PySide6.QtGui.QPalette' object has no attribute 'Mid', BUT you should see this in the log automatically, no?  This was in a popup.
+```
+
+### Commits
+
+**§291** (2026-10-20)
+
+```text
+Why forced push, I want to keep some history, when I say squash and push, that means to squash the commits since the last commit that was pushed to origin, to avoid noisy commit history.  The commits should be squashed and pushed by theme/fix/batch.
+```
+
+Read this before touching code. The designer's rulings are in
+`DESIGNER_VERBATIM.md`, [00_OVERVIEW.md](00_OVERVIEW.md) maps every page, and
+requirements are in [TODO.md](TODO.md).
 
 ## 0. General guidelines (designer rulings — always in force)
 - The designer is the sole authority. In all docs, call them "the designer".
@@ -34,9 +171,10 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   local date (America/New_York). Tests or worker assertions never substitute
   for that confirmation. Mixed-scope issues remain OPEN for unconfirmed parts;
   `DONE` in TODO means implementation complete unless confirmation is stated.
-- This file carries the designer's general rulings; `DESIGN.md` carries the
-  design rulings with verbatim quotes. Both stay in sync with
-  `DESIGNER_VERBATIM.md`.
+- Each page opens with the rulings that govern it, quoted exactly from
+  `DESIGNER_VERBATIM.md`, then present-tense documentation, then only design
+  traps likely to recur (§279). This file holds the general rules; topic
+  rules live on their pages.
 - Docs lead: `docs/` is updated FIRST and carries decisions, rulings, and
   design intent; code and everything else follow. When docs and code disagree,
   fix the code to match the docs — or get a new designer ruling. Don't ask
@@ -45,8 +183,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 ## 1. Keep designer comments verbatim — always
 - Preserve retained designer quotations exactly in `DESIGNER_VERBATIM.md`;
   do not rewrite their wording or add editorial annotations.
-- New substantive designer ruling? Append it verbatim (numbered, dated) before
-  acting. §218 excludes routine operational chat; do not turn every command
+- New substantive designer ruling? Before acting, append it as the next
+  numbered entry: one message in a fenced `text` block, with its date and a
+  `Source:` line. §218 excludes routine operational chat; do not turn every command
   or housekeeping exchange into a documentation entry.
 - §220: do not document typo/spelling corrections, correction logs or mnemonic
   asides. Use correct technical names directly in explanatory prose. Keep
@@ -61,8 +200,8 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 
 ## 2. Stack & layout (locked unless the designer says otherwise)
 - Product identity (§230): display **PDF Minify**, package `pdf_minify`,
-  machine/settings/temp slug `pdf-minify`. Keep the flat import-package layout;
-  do not add installation/layout work to a branding rename. All settings
+  machine/settings/temp slug `pdf-minify`. Keep the flat import-package
+  layout. All settings
   access uses `ui_qt/settings.py` and its one-time non-overwriting legacy
   migration. Tests/review runs isolate both namespaces before migration.
   Preserve exact quotes, licensed resources and frozen benchmark provenance;
@@ -71,8 +210,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   `ui_qt/` = widgets only. Pure-numpy thresholds.
 - REPOSITORY-OWNED: `pdf_minify/`, `tests/`, `tools/`, `docs/`,
   `requirements*.txt`, `.venv/` (git-ignored, via `setup_local.sh`).
-- SYSTEM (apt, never vendored): `python3`, `jbig2`, `mutool`, `pdfimages`,
-  Qt6 C++ libs. Never `sudo pip install`; pip targets `./.venv` only.
+- SYSTEM (apt, never vendored): `python3`, `jbig2` and `zopfli`, plus the
+  inspection tools `mutool` and `pdfimages`; the Qt runtime comes from the pip
+  wheels. Never `sudo pip install`; pip targets `./.venv` only.
 
 ## 3. Product rules
 
@@ -225,7 +365,7 @@ each line.
   Include the real mini-click Escape capture, explicit Discard Changes label,
   and enabled/disabled standard Revert icon (§197) and retained selection.
 
-## 6. Run-and-review logging (designer ruling — process, not UI/feature design)
+## 6. Run-and-review logging (§14)
 - The app logs everything important to stdout: startup, open (path + page count),
   preset selection, preview renders (page/strategy/T/size), save params,
   job progress/completion, cancel requests, view-mode changes, warnings.
@@ -234,6 +374,7 @@ each line.
   timings (render/threshold ms), per-page job progress.
 - Default (no flag) stays INFO: quiet enough to run, complete enough to review
   what happened from the log alone.
+- Errors and tracebacks reach the log as well as any popup (§102).
 
 ## 7. Certified platform and packaging (§176)
 
@@ -248,3 +389,19 @@ each line.
   (including multiprocessing, native tools, temp ownership and exact display)
   before promotion. A documentation request does not authorize installing
   packaging tools, changing other projects, publishing or pushing releases.
+
+## Design traps and failed attempts
+
+- **Self-marking issues fixed.** Worker checks were recorded as fixes the
+  designer had not confirmed (§147). Only a dated explicit confirmation closes
+  an issue.
+- **Paraphrased verbatim entries.** Collapsed spaces, merged messages and
+  shortened text made the log unreliable (§273). Copy each message exactly,
+  one per entry, with its source.
+- **Docs turned into run logs.** Dated test counts, "captures viewed" notes and
+  changelogs buried the rules (§§279/289). Git history keeps that record.
+- **Inventing beyond the request.** A question or a narrow request became a
+  broader feature: custom rename artwork from a question about a standard
+  icon (§120), and a session-history store nobody asked for (§153).
+- **Rewriting pushed history.** Amending and force-pushing commits already on
+  origin replaced their history (§291). Squash only unpushed commits.
