@@ -1,9 +1,65 @@
-# Persistence vs temp work dirs (designer §123)
+# Persistence vs temp work dirs
+
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+### Temp and developer files
+
+**§123** (2026-10-13)
+
+```text
+The temp dir for the app should be the standard temp dir for the os, for linux it's /tmp/ I think, but the framework (qt?) should be able to provide this information, right? It would be different per OS, and this is what I want. Please review and do your research and correct. This is also a design ruling and an issue, please document accordingly. Also, make a persistence and temp work dir docs and cross reference accordingly.
+```
+
+**§152** (2026-10-13)
+
+```text
+So the temp dir should be in a dir with the process id number?  Is this possible?
+```
+
+**§153** (2026-10-13)
+
+```text
+Why keep all sessions?  That is not what I asked for, also, two live applications cannot share a PID, or yes?  Why did you invent something beyond my request and design ruling?
+```
+
+**§15** (2026-10-09)
+
+```text
+don't go outside the local dir, make a local ./.tmp/ and gitignore it.
+```
+
+### Saved settings
+
+**§91** (2026-10-10)
+
+```text
+Also, the app should remember the last opened file.
+```
+
+**§155** (2026-10-13)
+
+```text
+you should give the filter a UUID and never permit two filters to have the same UUID, check when loading, in case someone copy/paste filters.  These UUIDs are only for internal use, name tis dirs with the UUID.  I think this is modern best practices, no?  Python has UUID generation, not tied to the network card?  Or just make a random UUID generator, if python does not have.
+```
+
+**§226** (2026-10-15, selected option)
+
+```text
+Change all saved filters to 300 DPI
+```
+
+**§230** (2026-10-16)
+
+```text
+Also, rename this project to "PDF Minify", rename anything in the repo and I will rename the repo itself later.  Also, why is there a dir that restates pdf_minimalist, why not app, source, code, or something like that?
+```
 
 Two buckets, never mixed. Temp is disposable and regenerable; persistence is
-user data that must survive restarts. Cross-refs: `ARCHITECTURE.md`
-(single-path flow), `DESIGN.md` (behavior), `issues.md` B54, `TODO.md` 123.
-Saved/live filter ownership is canon in `FILTER_LIFECYCLE.md` (§149).
+user data that must survive restarts. Related pages: `ARCHITECTURE.md`
+(single-path flow) and `FILTER_LIFECYCLE.md` (saved/live filter ownership).
 
 ## Temp — OS standard temp dir via Qt (designer ruling §123)
 
@@ -79,15 +135,20 @@ otherwise). Pending copies retain their source until completed safely.
   save/copy/rename filter), never as a side effect of background work. Internal
   UUID/schema repairs on load (§155) are identity migration, not recipe edits;
   they do not set `*` or restart filtering.
-- Explicit resolution migration (§226): `core.filter_defaults` sets every
-  existing saved/custom raster recipe to 300 DPI once, including previously
-  explicit DPI values. `_apply_custom_presets` performs this before saved
-  specs/artifact keys are constructed and persists `customPresets` plus
-  `rasterDefaultsRevision = 1` in the same settings store. Retain UUIDs,
-  names, order, codecs and non-DPI parameters. A malformed marker is treated
-  as unmigrated without hiding valid custom records. Later deliberate DPI
-  edits are saved normally and are not reset on later launches. Tests and
-  screenshot tools use isolated settings.
+- Versioned recipe migrations (`core/filter_defaults.py`) each run once,
+  gated by a revision marker in the same settings store, inside
+  `_apply_custom_presets` before saved specs and artifact keys are built:
+  - 300 DPI for every saved raster recipe, including explicit DPI values
+    (§226, `rasterDefaultsRevision = 1`);
+  - Best as every app filter's stream policy (§257, `streamDefaultsRevision = 1`);
+  - Quality 75 for JPEG and JPEG2000, replacing an old JPEG2000 ratio (§272,
+    `qualityDefaultsRevision = 2`).
+
+  Each keeps UUIDs, names, order, codecs and other parameters, and persists
+  `customPresets` with its marker. A malformed marker is treated as unmigrated
+  without hiding valid custom records. Later deliberate edits are saved
+  normally and are not reset on later launches. Tests and screenshot tools use
+  isolated settings.
 
 ### Application-name migration (§230)
 
@@ -101,7 +162,7 @@ makes it one-time, including when the old store is empty; later removals or
 edits in the new store must not be undone by another legacy import. Failed
 settings synchronization must be reported, not marked successful.
 
-This is independent of the existing UUID and one-time 300-DPI migrations;
+This is independent of the UUID repairs and the recipe migrations above;
 their markers and all filter data travel with the settings. Runtime temps
 and logs move to `<os-temp>/pdf-minify/`; there is no migration/deletion of
 legacy scratch directories or saved output PDFs. Review tools read raw
@@ -111,7 +172,15 @@ then run the application factory only inside that isolated location.
 ## Deliberately NOT in OS temp — repo `./.tmp/` (gitignored)
 
 Dev-tool review outputs, not app scratch: offscreen screenshots
-(`tools/shot.py`), benchmark evidence (current integrated runners emit
-Markdown/JSON, not CSV), demo PDFs
+(`tools/shot.py`), benchmark evidence (Markdown and JSON), demo PDFs
 (`tools/make_demo.py` — explicitly never `/tmp`, so review files stay
 findable next to the project). The app itself writes nothing here.
+
+## Design traps and failed attempts
+
+- **Inventing retention.** A session-history layer kept every run's files,
+  which was never asked for (§153). There is one PID directory per GUI process,
+  removed on normal exit.
+- **`setdefault` for test settings isolation (B23).** The shell may already
+  export `XDG_CONFIG_HOME`, so tests set it explicitly; otherwise they write
+  the designer's real settings.
