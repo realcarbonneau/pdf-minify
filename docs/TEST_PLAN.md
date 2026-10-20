@@ -1,5 +1,28 @@
 # Test Plan
 
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§59** (2026-10-10)
+
+```text
+please complete your work, don't stop half compelted.  Also make a full test suite please and run each time please.
+```
+
+**§139** (2026-10-13)
+
+```text
+Ok, this highlight is good.  you can document and harden the test cases for this.  Also make a full suite of test cases that run automatically, so you don't have to run each one at a time.  Also, next issue, the DnD does NOT show the drop indicator vertical bar, this is wrong, I already defined this many times.
+```
+
+**§241** (2026-10-16)
+
+```text
+This “full suite before every ship” is incorrect.  Full suite of test after code changed, not documentation changes, right?
+```
+
 ## Validation triggers (§241)
 
 Run the full suite after code-affecting changes, including test, dependency,
