@@ -1,10 +1,103 @@
 # Controlled compression experiments
 
-Designer §§238–268. The primary measured-size tables are in
+Designer §§238–271. The primary measured-size tables are in
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
-## LOSSY-03 — current-standard fixed stream controls everywhere (§268)
+## LOSSY-05 — fixed q75 baseline throughout (§271; COMPLETE)
+
+Restore the stable `101 − q` JPX mapping; hold JPEG q75/JPEG2000 q75 and
+300 DPI constant across all six complete PDFs and native/FFPR modes. Keep
+all other codec/profile/native/Best settings fixed. This is the approved
+working baseline, not a proven equal-quality match. Per-image LOSSY-04 fits
+do not supply experimental q values.
+
+The primary inventory remains 24 complete PDFs: reuse the twelve unchanged
+JPEG outputs with pinned source/producer/output provenance, and freshly
+save twelve JPX outputs through the production saver. Verify identical
+prepared RGB geometry/samples, actual JPEG payloads and native content per
+pair; no reference JPEG drives JPX rate control. Reuse is rejected on any
+source, payload, native or all-page readback mismatch.
+
+The fixed-stream inventory remains 60 complete PDFs: reuse the thirty
+unchanged JPEG controls, save thirty JPX controls from the completed JPX
+preparations, and verify encoded images byte-for-byte, native decoded bytes,
+metadata, geometry and 72/300-DPI page pixels. No control path composes,
+resizes or re-encodes images. Update all main, binary, focused-photo and
+residual-reference table cells, percentages, bold minima, labels and
+conclusions from this one dataset. Preserve every historical manifest and
+unaffected measurement; no estimated sizes, timing ranking or CSV.
+
+Completed 2026-10-19: all **24 primary PDFs and 60 controls** are published
+with actual sizes and hashes. Twelve primary JPEG files and thirty JPEG
+controls were revalidated and reused; twelve primary JPX files and thirty
+JPX controls were freshly saved. All 78 paired canvas samples and JPEG
+payload fingerprints match; every output passes native/image/geometry and
+all-page 72/300-DPI readback checks. All 36 ordinary-format controls also
+pass QPDF checks; Brotli controls use the recorded supporting MuPDF decoder.
+The four primary rows and all 22 affected supporting rows use the fixed
+baseline. Provenance, measured results and caveats are centralized in the
+integrated report. Visual review identified the pre-existing native-photo
+overlay problem [B116](../issues.md#b116--open--native-overlay-brochure-output-obscures-some-source-artwork);
+it is not fixed or claimed as original-appearance equivalence here.
+The focused selection passes 193 tests; the full suite passes all 1008,
+with no expected failures. See `TEST_PLAN.md` for scope and GUI review.
+This completed measurement precedes the subsequent B116 compositor repair.
+The integrated tables explicitly retain that producing scope, not repaired
+native-photo sizes. `tools/check_b116.py` supplies separate real-file repair
+validation without relabeling the old measurements.
+
+## LOSSY-04 — conventional-q visual-quality matching (§§269/270; partial scope measured)
+
+**Historical calibration diagnostics, not benchmark settings:** §271 rejects
+per-image q selection and adopts one fixed q75/q75 pair for LOSSY-05. Retain
+this experiment's actual observations without promoting its fitted values
+to active size comparisons or app controls.
+
+§270's consolidated sources and actual candidate derivation are in
+[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md). Execute the matching
+experiment, not another ratio-only size study. Preserve JPEG q75 as the
+reference and the familiar fixed q scale; independent quality observations
+choose the JPEG2000 setting, not a desired percentage saving.
+
+Keep the familiar 0–100 quality scales stable across GUI, recipes and
+documentation. Use JPEG q75 as the reference and determine the JPEG2000
+actual q that gives the closest practical visual match, not a renamed
+JPEG-reference input or a predetermined file-size advantage. Published
+visual-matching evidence supplies starting candidates, not a universal
+q56 conversion. Use the same original prepared 300-DPI/full-resolution
+colour pixels and fixed lossy profiles, with native and FFPR controlled
+separately. Compare actual decoded outputs; the optional calibration
+protocol in `LOSSY_IMAGE_QUALITY.md` describes metric-assisted and visual
+checks. Do not make perfect universal calibration a blocker for a documented
+practical matching baseline.
+
+Record the real tested q values, backend mapping, matching evidence and
+known content variation. If one fixed candidate is not an adequate corpus
+baseline, report that evidence rather than silently normalize individual
+images while labeling them all q75. Measure final complete PDFs at the
+selected actual settings and propagate changes to all affected comparisons.
+Preserve LOSSY-02/03 artifacts and unaffected BW/indexed/PNG/lossless data.
+Completed research scope, 2026-10-19: all 78 original RGB canvases and
+reference JPEG payloads were verified against LOSSY-02. The first encoded
+canvas from each of eleven image-bearing native/FFPR cases was actually
+matched by SSIMULACRA2, with PSNR diagnostics and decoded-pixel crop review.
+The old fixed-ratio scale reaches the one-point tolerance on 5/11 cases;
+the documented PSNR-control alternative reaches 9/11. Both scan cases fail
+the integer-step tolerance and show visible white-area noise at the nearest
+alternative setting; do not call them matched. The research document owns
+actual q tables, named scale definitions, sources and proof hashes.
+
+This research alone is not an all-page quality certificate, product-scale
+correction or final-PDF size refresh. §271 subsequently selects the fixed
+working baseline implemented and measured in LOSSY-05 above; the research
+control does not redefine saved filters or supply per-image benchmark q.
+
+## LOSSY-03 — historical normalized-q75 stream controls (§268)
+
+Superseded by LOSSY-05 (§271). The following records the completed earlier
+experiment, not the current fixed-q standard; its JPEG outputs are unchanged
+and reused only after exact provenance/preparation/output verification.
 
 The current quality standard is q75 for both codecs with JPEG 4:4:4 and
 JPX's study-based JPEG-reference mapping, at 300 DPI. LOSSY-02 already saved
@@ -41,7 +134,10 @@ not duplicated experiments. `tools/bench_lossy_controls.py` owns measurement;
 current table/fixture patch. The manifest/hash and actual sizes are centralized
 in the integrated report; regression verification is in `TEST_PLAN.md`.
 
-## LOSSY-02 — q75 JPEG versus study-matched q75 JPEG2000 (§267)
+## LOSSY-02 — historical reference-normalized q75 comparison (§267)
+
+Superseded by LOSSY-05 (§271). Its normalized JPX measurements are historical,
+not fixed-q75 measurements or calibrated visual equivalence.
 
 Replace only JPX's quality-to-ratio mapping: anchor each actual reference JPEG
 at selected q75 to the 2007 visual study's approximate 40→45 / 60→73 ratios.
@@ -273,7 +369,7 @@ only in their labels. The native-preserving controls show the contrast when
 fonts/text/vector programs remain. This intentionally scoped first experiment
 does not repeat every image palette or PNG variant: those are separate factors.
 All seven rows apply to every source, including image-free PDFs. §268
-refreshes both lossy rows with current profiles via LOSSY-03; the original
+refreshes both lossy rows with fixed-q75 profiles via LOSSY-05 (§271); the original
 q50/r192 files stay archived. The other five rows retain their measurements.
 
 Reuse verified candidate outputs and the already measured preserve-images
@@ -296,8 +392,9 @@ retained native text/vectors or packed-image compressor alternatives.
 Change only native/residual-stream compression: Brotli baseline versus
 Zopfli treatment. Encoded image payloads, source, recipe, 300-DPI samples,
 native drawing, fixed-width ID framing and final save policy stay fixed.
-§268 replaces the twelve original q50/r192 pairs with LOSSY-03's current
-q75 pairs; the other eighteen retain their verified evidence.
+§271 supplies the twelve current fixed-q75 pairs through LOSSY-05; the
+other eighteen retain their verified evidence. LOSSY-03's normalized-q
+pairs and the original q50/r192 pairs remain historical.
 
 Use five rows over all six whole PDFs (30 pairs). Reuse the verified Zopfli
 candidates from NATIVE-01. Save the 30 missing actual Brotli baselines from

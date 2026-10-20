@@ -1,4 +1,4 @@
-"""LOSSY-02: real q75/q75 comparison with study-based JPX mapping (§267).
+"""LOSSY-05: one fixed q75/q75 baseline across all complete PDFs (§271).
 
 Equal slider values are the approved working visual-quality baseline.
 No timing/CSV, synthetic size estimates or prerequisite quality calibration.
@@ -7,6 +7,7 @@ The observer records production inputs/results; it never changes encoding.
 
 import argparse
 from collections import Counter
+from copy import deepcopy
 from dataclasses import asdict
 import hashlib
 import json
@@ -46,9 +47,10 @@ def recipe(mode, force):
                 stream_compression="best", brotli_declaration=False)
 
 
-def identity(documents):
-    return dict(study="LOSSY-02-q75-jpeg-reference-v1", dpi=DPI, quality=QUALITY,
-                visual_quality_basis="designer-study-ratio-matched-working-baseline",
+def identity(documents, jpeg_reuse=None):
+    return dict(study="LOSSY-05-fixed-q75-v1", dpi=DPI, quality=QUALITY,
+                visual_quality_basis="designer-fixed-q75-working-baseline",
+                jpeg_reuse=jpeg_reuse,
                 documents=[dict(asdict(d), source_sha256=file_digest(d.source)) for d in documents],
                 environment=overview.study.environment(),
                 benchmark_sha256=file_digest(__file__), pillow=pillow_version,
@@ -102,7 +104,7 @@ def verify_record(record, *, rerender=True):
         if (reference["quality"] != QUALITY or reference["raw_sample_bytes"] != raw
                 or type(reference["jpeg_bytes"]) is not int or reference["jpeg_bytes"] <= 0
                 or reference["jpeg_ratio"] != raw / reference["jpeg_bytes"]
-                or reference["jpx_target_rate"] != quality.jpx_reference_rate(raw, reference["jpeg_bytes"])
+                or reference["jpx_target_rate"] != quality.jpx_quality_rate(QUALITY)
                 or len(reference["jpeg_sha256"]) != 64):
             raise ValueError("Changed or invalid measured quality reference")
         if record["mode"] == "color" and reference["jpeg_sha256"] != canvas["payload_sha256"]:
@@ -146,32 +148,26 @@ def measure(document, force, mode, folder, current_identity, *, resume=False):
     if output.exists():
         raise FileExistsError(f"Unverified existing lossy output: {output}")
     observed = []
-    encoder, jpeg_encoder = pipeline.color_canvas_payload, pipeline.jpeg_encode
-    references = []
-
-    def observe_jpeg(img, q=QUALITY):
-        data = jpeg_encoder(img, q)
-        raw = img.width * img.height * 3
-        references.append(dict(quality=q, raw_sample_bytes=raw, jpeg_bytes=len(data),
-                               jpeg_sha256=digest(data), jpeg_ratio=raw / len(data),
-                               jpx_target_rate=quality.jpx_reference_rate(raw, len(data))))
-        return data
+    encoder = pipeline.color_canvas_payload
 
     def observe(img, *args, **kwargs):
         samples = dict(width=img.width, height=img.height,
                        samples_sha256=digest(img.tobytes()))
-        prior_count = len(references)
         payload = encoder(img, *args, **kwargs)
-        if len(references) != prior_count + 1:
-            raise ValueError("Expected one actual JPEG reference per prepared canvas")
+        # Verification only: this JPEG never determines JPX's rate or input.
+        # It proves reused JPEG payloads still encode these exact source pixels.
+        data = payload['stream'] if mode == 'color' else pipeline.jpeg_encode(img, QUALITY)
+        raw = img.width * img.height * 3
+        reference = dict(quality=QUALITY, raw_sample_bytes=raw, jpeg_bytes=len(data),
+                         jpeg_sha256=digest(data), jpeg_ratio=raw / len(data),
+                         jpx_target_rate=quality.jpx_quality_rate(QUALITY))
         observed.append(dict(samples, filter=payload["filter"],
                              payload_sha256=digest(payload["stream"]),
-                             quality_reference=references[-1]))
+                             quality_reference=reference))
         return payload
 
     # Observation only: exact production helper, arguments and returned payload.
-    with (patch.object(pipeline, "color_canvas_payload", observe),
-          patch.object(pipeline, "jpeg_encode", observe_jpeg)):
+    with patch.object(pipeline, "color_canvas_payload", observe):
         pipeline.save_with_spec(document.source, str(output), spec, workdir=str(folder))
     if file_digest(document.source) != next(d["source_sha256"] for d in current_identity["documents"]
                                              if d["key"] == document.key):
@@ -225,9 +221,48 @@ def table(documents, records):
     return "\n".join(lines) + "\n"
 
 
-def run(folder, documents=DOCUMENTS, *, resume=False):
+def load_jpeg_reuse(path, expected_hash, documents):
+    """Import actual unchanged JPEG files; fresh paired JPX inputs prove reuse.
+
+    Old core identities are NOT relabeled as current: retain explicit source
+    manifest/record proofs. Every fresh JPX canvas replays the fixed JPEG
+    encoder solely to verify its paired imported payload, never to choose rate.
+    """
+    if file_digest(path) != expected_hash:
+        raise ValueError('Changed frozen JPEG reuse manifest')
+    data = json.loads(path.read_text())
+    old, current = data['identity'], identity(documents)
+    if (not data.get('complete') or old['dpi'] != DPI or old['quality'] != QUALITY
+            or any(old[k] != current[k] for k in ('documents', 'jpeg_profile', 'pillow', 'libjpeg_turbo'))):
+        raise ValueError('Incompatible JPEG preparation/profile/source')
+    result = {}
+    for original in data['records']:
+        if original['mode'] != 'color':
+            continue
+        row = deepcopy(original)
+        key = row['document'], row['force_raster']
+        if key in result:
+            raise ValueError('Duplicate imported JPEG case')
+        row['reused_from'] = dict(manifest=str(path), manifest_sha256=expected_hash,
+                                  record_sha256=digest(json.dumps(original, sort_keys=True).encode()))
+        for canvas in row['canvases']:
+            # This field describes the NEW comparison's fixed JPX target, not
+            # the unchanged JPEG encoding. Original metadata remains frozen.
+            canvas['quality_reference']['jpx_target_rate'] = quality.jpx_quality_rate(QUALITY)
+        verify_record(row)
+        result[key] = row
+    if set(result) != {(d.key, force) for d in documents for force in (False, True)}:
+        raise ValueError('Incomplete imported JPEG scope')
+    return result
+
+
+def run(folder, documents=DOCUMENTS, *, resume=False, reuse_jpeg=None, reuse_jpeg_sha256=None):
     folder.mkdir(parents=True, exist_ok=resume)
-    current = identity(documents)
+    if (reuse_jpeg is None) != (reuse_jpeg_sha256 is None):
+        raise ValueError('JPEG reuse needs its explicitly pinned manifest hash')
+    reused = load_jpeg_reuse(reuse_jpeg, reuse_jpeg_sha256, documents) if reuse_jpeg else {}
+    reuse = dict(manifest=str(reuse_jpeg), sha256=reuse_jpeg_sha256) if reuse_jpeg else None
+    current = identity(documents, reuse)
     checkpoint = folder / "metrics.json"
     if resume and checkpoint.exists() and json.loads(checkpoint.read_text())["identity"] != current:
         raise ValueError("Changed lossy study scope or producing implementation")
@@ -237,8 +272,9 @@ def run(folder, documents=DOCUMENTS, *, resume=False):
         for force in (False, True):
             for mode in MODES:
                 target = folder / document.key / ("ffpr" if force else "native") / mode
-                record = measure(document, force, mode, target, current,
-                                 resume=resume and target.exists())
+                record = (reused[document.key, force] if mode == 'color' and reused else
+                          measure(document, force, mode, target, current,
+                                  resume=resume and target.exists()))
                 records.append(record)
                 checkpoint.write_text(json.dumps(dict(identity=current, records=records, complete=False),
                                                  indent=2) + "\n")
@@ -247,7 +283,7 @@ def run(folder, documents=DOCUMENTS, *, resume=False):
     (folder / "table.md").write_text(markdown)
     checkpoint.write_text(json.dumps(dict(identity=current, records=records, complete=True), indent=2) + "\n")
     print(markdown, flush=True)
-    print(f"LOSSY-02 COMPLETE: {len(records)} verified complete PDFs", flush=True)
+    print(f"LOSSY-05 COMPLETE: {len(records)} verified complete PDFs; {len(reused)} JPEG measurements reused", flush=True)
     return records
 
 
@@ -255,8 +291,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument('--reuse-jpeg', type=Path)
+    parser.add_argument('--reuse-jpeg-sha256')
     args = parser.parse_args()
-    run(args.output, resume=args.resume)
+    run(args.output, resume=args.resume, reuse_jpeg=args.reuse_jpeg,
+        reuse_jpeg_sha256=args.reuse_jpeg_sha256)
 
 
 if __name__ == "__main__":

@@ -179,6 +179,67 @@ to the current integrated result; no timing ranks, CSV delivery, new GUI
 option or application codec change. See TODO §263 and LOSSY-03 in
 `COMPRESSION_EXPERIMENTS.md`.
 
+Designer §269 clarifies the quality-scale and matching requirement:
+> I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
+
+Both codecs retain stable, familiar 0–100 quality controls. GUI settings,
+benchmark recipes, table labels and documentation must use those same scales;
+do not redefine JPEG2000 q75 as a hidden JPEG-q75-equivalent setting. Different
+actual q values are permitted when they give the closest practical visual
+match: the comparison is JPEG q75 versus JPEG2000 at its matching actual q,
+with identical prepared pixels, DPI, colour sampling and other controlled
+settings. Hold native/FFPR modes separate and final-save policy fixed.
+
+§267's implemented per-image reference-ratio normalization is not a
+conventional JPEG2000 q setting. The arithmetic `101 − 45 = 56` under the
+previous mapping does not establish that fixed JPEG2000 q56 visually matches
+JPEG q75 across the corpus. Use published matching results as starting
+evidence, then determine and report actual matching settings; do not create
+an apparent codec advantage by choosing a smaller target and relabeling it
+q75. A working approximation is useful; undocumented normalization or an
+unrun quality match is not evidence. Preserve the real measured artifacts,
+but qualify their quality labels until this correction is implemented.
+See TODO §264, `LOSSY_IMAGE_QUALITY.md` and LOSSY-04 in
+`COMPRESSION_EXPERIMENTS.md`.
+
+Designer §270 requests the consolidated research and actual derivation:
+> You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
+
+`JPEG_JPEG2000_RESEARCH.md` owns the recovered public-study evidence,
+conditions, numeric derivations and codec-quality matching results. Keep
+image-only research numbers separate from final-PDF size measurements in
+`INTEGRATED_COMPRESSION.md`. Recover prior source references rather than
+discarding them at compaction. Distinguish equal-bit-rate PSNR, equal-PSNR
+and equal-perceived-quality results. Translate literature candidates onto
+the actual stable q scale, then test actual decoder output against the same
+uncompressed prepared pixels. Keep JPEG q75 fixed, measure perceptual and
+numeric differences, inspect matched/worst crops, and record actual q,
+profile, source/output hashes and any unmatched cases. Do not select a
+smaller byte budget and claim it demonstrated matched visual quality.
+No encoding-time ranking, desktop launch or raw-transcript publication.
+
+§271 supersedes §267's runtime JPEG-reference normalization and the
+per-image matching recommendation from LOSSY-04:
+> NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
+
+The approved working baseline is JPEG q75 versus JPEG2000 q75, at 300 DPI,
+in every input and native/FFPR experiment. JPEG2000 uses one image-independent
+`rate = 101 − q` mapping: q75 always targets 26:1, never PSNR 75 or a budget
+derived from a reference JPEG. Keep full-resolution chroma, the existing
+lossy profiles, native retention, FFPR and Best stream policy unchanged.
+Preserve explicit legacy rate/Lossless semantics and saved q values. Version
+effective identity so normalized artifacts cannot masquerade as fixed-q files;
+JPEG's encoder profile no longer participates in JPX quality identity.
+
+LOSSY-05 refreshes the affected complete-PDF measurements and every active
+table/denominator/conclusion. Reuse hash-verified unchanged JPEG outputs and
+their fixed-stream controls, proving actual JPEG payloads against the same
+fresh JPX-input pixels. Re-encode the changed JPX files once and repack those
+verified outputs for native/residual controls without more image processing.
+Preserve LOSSY-01–04 and unrelated evidence. Per-image fits remain research
+diagnostics only, not experimental settings or an approved product scale.
+See `LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_EXPERIMENTS.md` and TODO §264.
+
 Historical automatic choice (§57), superseded for explicit selections by
 §203: few-color images (≤256 distinct colors — logos,
 diagrams, flat screenshots) took a lossless true-Indexed version (designer
@@ -1056,6 +1117,12 @@ disagrees with those docs, those docs rule.
   by §171; FFPR is the flattened-fidelity choice. See `COMPRESSION.md`,
   B89 and TODO §§174/176/177; old per-image-only implementation is superseded
   as the target, not permission to reintroduce color JPEGs in BW.
+  B116's background-ownership repair applies that same rule to local opaque
+  panels enclosing later image paint. Distinguish individual occurrences by
+  source order: a foreground rectangle or translucent overlay is not a
+  background just because its geometry matches another fill. Native text
+  and foreground diagrams remain native; see `COMPRESSION.md` for the shared
+  plan and compound-stroke boundary.
 - BW raster policy (designer ruling §127): Force full-page raster ON
   flattens the page to one image; OFF keeps native text/vectors with one
   combined BW image canvas (§171; never color JPEGs in BW image output). The old mixed-JPEG

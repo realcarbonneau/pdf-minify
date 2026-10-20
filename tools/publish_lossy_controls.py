@@ -1,4 +1,4 @@
-"""Publish LOSSY-03 across all active tables; no encoding or estimated sizes."""
+"""Publish fixed-q LOSSY-05 across every active table; no estimated sizes."""
 
 import argparse
 from copy import deepcopy
@@ -82,6 +82,18 @@ def make_fixture(path):
         if (job["identity"]["environment"] != identity["environment"] or job["identity"]["case"] != expected
                 or row["result"] not in job["results"]):
             raise ValueError("Control differs from its producing verification")
+        if row.get('reused_from'):
+            reuse=identity['jpeg_control_reuse']
+            frozen=Path(reuse['manifest'])
+            if controls.lossy.file_digest(frozen)!=reuse['sha256'] or row['mode']!='color':
+                raise ValueError('Changed or mislabeled reused JPEG control provenance')
+            old=json.loads(frozen.read_text())
+            matches=[r for r in old['records'] if (r['document'],r['mode'],r['force_raster'],r['result']['native_policy'])==
+                     (row['document'],'color',row['force_raster'],row['result']['native_policy'])]
+            if len(matches)!=1 or row['reused_from']!=dict(reuse,record_sha256=controls.lossy.digest(json.dumps(matches[0],sort_keys=True).encode())):
+                raise ValueError('Changed reused JPEG producing record')
+            if any(row['result'][k]!=matches[0]['result'][k] for k in ('pdf','pdf_sha256','complete_pdf_bytes')):
+                raise ValueError('Reused JPEG control changed its actual file')
         records[row["document"], row["mode"], row["force_raster"], row["result"]["native_policy"]] = row
     rows = []
     for force in (False, True):
@@ -100,7 +112,7 @@ def make_fixture(path):
                         candidate=records[document.key, mode, True, "zopfli"])
             partition = ffpr.account_pair(pair)
             accounting.append(dict(document=document.key, mode=mode, accounting=partition))
-    return dict(designer_ruling=268, quality=75, dpi=300, jpx_quality_mapping=identity["jpx_quality_mapping"],
+    return dict(designer_ruling=271, quality=75, dpi=300, jpx_quality_mapping=identity["jpx_quality_mapping"],
                 measured_manifest=str(path), measured_manifest_sha256=controls.lossy.file_digest(path),
                 baseline_sha256=identity["baseline_sha256"],
                 unchanged_publication_sha256=best.PUBLICATION_SHA256,
@@ -108,7 +120,7 @@ def make_fixture(path):
 
 
 def validate_proof(proof):
-    if (proof.get("designer_ruling") != 268 or proof.get("quality") != 75 or proof.get("dpi") != 300
+    if (proof.get("designer_ruling") != 271 or proof.get("quality") != 75 or proof.get("dpi") != 300
             or proof.get("jpx_quality_mapping") != controls.lossy.quality.JPX_QUALITY_MAPPING
             or proof.get("documents") != [asdict(d) for d in controls.lossy.DOCUMENTS]
             or len(proof.get("rows", [])) != 10):

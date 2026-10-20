@@ -1554,3 +1554,71 @@ one-bit Flate versus raw storage, the fallback, and every codec cell in the
 34-PDF README inventory. The selection guard requires eleven original CCITT
 images and no JBIG2 for TM972. No source PDFs changed. Remains OPEN pending
 explicit designer confirmation. B114's separate runtime repair is recorded above.
+
+## B116 — OPEN — native-overlay brochure output obscures some source artwork
+
+Worker observation during the §271 fixed-q75 benchmark review, 2026-10-19:
+the first page of `examples/news-crater-lake-2026.pdf` (the photography
+representative in the LOSSY-05 manifest) retains
+the large lake photograph but hides the two framed inset photographs and
+the header emblem in BOTH native-preserving JPEG and JPEG2000 outputs.
+The inset locations show their surrounding flat colours instead. FFPR
+retains that artwork. The reused JPEG output predates the mapping change,
+so this is not evidence of a new JPEG2000 quality regression.
+
+Evidence: `.tmp/lossy-quality/q75-fixed-20261019/review/photos-native-screen.png`,
+`photos-native-crops.png` and corresponding `photos-ffpr-*` comparisons,
+rendered from the actual measured PDFs with the application's exact renderer.
+The master manifest pins original/filtered paths and hashes; no source file
+has been changed. Pairwise native/sample/payload checks pass, but they do
+not certify visual equivalence to the original source composition.
+
+Investigate the retained native fills, graphics states, soft-mask/Form
+ownership and stacking at those locations before assigning a root cause.
+§171 deliberately permits native/image interleaving differences, so first
+distinguish an existing overlay-policy limitation from an unintended
+resource/assembly defect. Do not silently change that policy, invent
+glyph/image masks or suppress the observation to improve a size comparison.
+Current native-mode size rows measure that stated recipe, not original-
+appearance equivalence; FFPR is the existing flattened-fidelity alternative.
+No repair or designer acceptance is claimed by the fixed-quality work.
+
+Root cause established for the requested repair: background classification
+recognizes only rectangles covering the entire page. On page 1, the opaque
+black header and purple/orange panel fills are local backgrounds, painted
+before their contained emblem/photos. They are excluded from the composed
+canvas and then replayed above it, hiding the images. This is not a missing
+image, codec-quality or soft-mask decoder failure.
+
+Repair contract: share one source-order backdrop plan between canvas and
+native-layer selection. Include opaque flat rectangular panels enclosing a
+later image, not arbitrary diagrams or rectangles painted above their images.
+Select individual paint occurrences, not every path sharing a bounding box.
+Keep native text, vector foreground, strokes, clipping, Form ownership and
+native opacity resources; do not introduce image/glyph masks or use FFPR as
+a silent fallback. Cover compound fill/stroke, repeated rectangles/Forms,
+rotation and the actual brochure.
+
+**Repair implemented and worker-verified — 2026-10-19. OPEN pending explicit
+designer confirmation.** `core/backdrops.py` supplies the immutable plan;
+the shared token-aware native filter applies it to both native and scratch
+layers. The scratch pass keeps original images/inline samples and selected
+background fills, while the original native foreground keeps text, diagrams
+and one copy of each compound stroke. Native Form/tag ownership remains intact.
+
+Seventeen dedicated regressions pass; the full suite passes **1025 tests**,
+with no expected failures. `tools/check_b116.py` saves the complete eight-page
+brochure with JPEG q75 and JPEG2000 q75/26:1 at 300 DPI. Both preserve native
+content/geometry, use identical paired input canvases and pass every page's
+72/300-DPI readback. Emblem and both inset-photo regions regain image detail
+in both codecs; RGB error against the same source preparation drops from
+over 59 levels to below four in all six comparisons. Actual full-page and
+1:1 300-DPI comparison crops were viewed: the missing artwork is restored.
+
+Proof: `.tmp/b116-local-backgrounds-20261019/proof.json`, SHA-256
+`00d7da9d329446dfbbb9a37a6242868ebeccb6e95f6c42dfc2fe81b54ee79df1`;
+captures `screen.png` and `crops-300dpi.png` in that folder. Historical
+benchmark files/manifests are unchanged and tables explicitly state their
+pre-B116 producing scope. No new masks, codec/quality/default change,
+source-file mutation, desktop launch or designer acceptance is claimed.
+See TODO §265, `COMPRESSION.md` and `TEST_PLAN.md`.

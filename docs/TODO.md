@@ -2566,3 +2566,42 @@ Brotli files use the recorded supporting reader, not false all-reader proof.
 designer acceptance.** See `DESIGN.md` §268, LOSSY-03 in
 `COMPRESSION_EXPERIMENTS.md`, `LOSSY_IMAGE_QUALITY.md`,
 `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`. The desktop remains closed.
+
+## 264 — DONE (designer §§269–271: stable quality scales and one fixed baseline)
+
+Stub: recovered public studies/derivations and measured eleven first-canvas
+quality diagnostics, retaining unmatched cases and separating PSNR targets
+from app q. §271 then selects one fixed working baseline: JPEG q75 and
+JPEG2000 q75 at 300 DPI, with JPX's image-independent `101 − q` mapping
+(26:1), not runtime normalization or per-image benchmark settings.
+
+LOSSY-05 corrects the production mapping, effective identity and GUI help;
+publishes 24 primary PDFs and 60 controls across every affected table;
+reuses 42 unchanged JPEG files with exact provenance/input/payload checks;
+and freshly saves 42 JPX files. All-page readback, image/native content,
+geometry, metadata and actual sizes/hashes pass. Historical artifacts and
+unaffected studies remain unchanged. Saved q values, explicit ratios,
+Lossless and other filter settings are preserved. Both 1×/2× offscreen
+quality/help reviews pass and were viewed; the desktop stays closed.
+All 193 focused checks and 1008 full-suite tests pass, with no expected failures.
+
+**Implementation verified 2026-10-19; not designer acceptance or a claim of
+universal equal visual quality.** The separately observed native-photo
+overlay defect B116 remains OPEN. See `DESIGN.md` §271, LOSSY-04/05 in
+`COMPRESSION_EXPERIMENTS.md`, `JPEG_JPEG2000_RESEARCH.md`,
+`LOSSY_IMAGE_QUALITY.md`, `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+
+## 265 — DONE (B116: local backgrounds hide native-mode image artwork)
+
+~~Correct background ownership so local panel fills do not hide image artwork.~~
+
+Stub: one source-order paint-occurrence plan now serves scratch composition
+and native foreground selection, preserving text/diagrams, compound strokes,
+clips, inline samples, opacity and repeated/tagged Forms. Seventeen focused
+regressions and 1025 full-suite tests pass. Two complete eight-page brochure
+outputs at 300 DPI/JPEG q75/JPEG2000 q75 pass native/pixel readback and restore
+the emblem/photos; full-page and 1:1 crops were viewed. Historical benchmark
+data remains immutable and explicitly pre-B116. Implementation verified
+2026-10-19, not designer acceptance; issue B116 stays OPEN pending confirmation.
+See [backdrops.py](../pdf_minify/core/backdrops.py), `COMPRESSION.md`,
+`TEST_PLAN.md` and B116 in `../issues.md`.

@@ -898,9 +898,9 @@ class MainWindow(QMainWindow):
         set_control_help(self.quality_control,
             "Higher quality usually makes larger files. Available for JPEG and lossy JPEG2000.",
             "Quality is a 0–100 index, not a percentage. Equal values are the working comparison baseline. "
-            "JPEG2000 measures JPEG at this Quality on the same pixels, then applies a study-based "
-            "compression-ratio mapping (40:1 to 45:1; 60:1 to 73:1). This is a working match, "
-            "not guaranteed equal visual quality for every image. "
+            "JPEG2000 uses a fixed mapping: target ratio = 101 minus Quality, so q75 always targets 26:1. "
+            "The mapping never depends on a reference JPEG or image content. "
+            "Equal values are not guaranteed equal visual quality for every image. "
             "JPEG uses full-resolution colour; lossy JPEG2000 uses 9/7 and colour decorrelation. "
             "Lossless ignores this value.")
         self.dpi = QComboBox()

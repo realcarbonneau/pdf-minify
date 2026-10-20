@@ -62,6 +62,32 @@ def test_real_controls_never_reencode_images_and_resume_is_strict(measured_contr
     assert [r["result"]["pdf_sha256"] for r in resumed] == [r["result"]["pdf_sha256"] for r in rows]
 
 
+def test_jpeg_control_reuse_verifies_existing_files_without_new_jpeg_saves(measured_controls,tmp_path,monkeypatch):
+    folder,document,previous=measured_controls
+    frozen=folder/'controls'/'metrics.json'
+    save=controls.study.save_combination
+    def only_jpx(base,target,case,variant,*args,**kwargs):
+        assert variant.startswith('jpx-')
+        return save(base,target,case,variant,*args,**kwargs)
+    monkeypatch.setattr(controls.study,'save_combination',only_jpx)
+    rows=controls.run(tmp_path/'reused',folder/'baseline'/'metrics.json',documents=(document,),workers=1,
+                      reuse_jpeg=frozen,reuse_jpeg_sha256=controls.lossy.file_digest(frozen))
+    assert len(rows)==10
+    for row in rows:
+        if row['mode']=='color':
+            old=next(r for r in previous if (r['mode'],r['force_raster'],r['result']['native_policy'])==
+                     ('color',row['force_raster'],row['result']['native_policy']))
+            assert row['result']['pdf']==old['result']['pdf']
+            assert row['result']['pdf_sha256']==old['result']['pdf_sha256']
+            assert row['reused_from']['sha256']==controls.lossy.file_digest(frozen)
+
+
+def test_jpeg_control_reuse_rejects_changed_frozen_proof(measured_controls):
+    folder,document,_=measured_controls
+    with pytest.raises(ValueError,match='frozen JPEG control'):
+        controls.load_control_reuse(folder/'controls'/'metrics.json','bad hash',{},(document,))
+
+
 def test_incomplete_and_changed_baseline_cannot_be_imported(baseline, tmp_path):
     import json
     folder, document = baseline

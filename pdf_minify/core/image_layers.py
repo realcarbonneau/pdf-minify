@@ -10,6 +10,7 @@ import numpy as np
 
 from .pdf_io import CancelledError
 from .canvas import flatten_rgb
+from .backdrops import BackdropPlan
 
 m = fitz.mupdf
 log = logging.getLogger("pdf_minify")
@@ -26,23 +27,14 @@ def _check_cancel(token):
 
 
 def _page_backdrops(page):
-    """Actual flat opaque page-covering rectangles, never glyph bboxes."""
-    backdrops = []
-    for drawing in page.get_drawings():
-        items = drawing["items"]
-        if (drawing["fill"] is not None and drawing["fill_opacity"] == 1
-                and len(items) == 1 and items[0][0] == "re"
-                and drawing["rect"].contains(page.rect)):
-            backdrops.append(drawing["rect"])
-    return backdrops
+    """One source-order plan for page fills and local image-panel backgrounds."""
+    return BackdropPlan.from_page(page)
 
 
 class _Selector(m.PdfSanitizeFilterOptions2):
-    def __init__(self, page, token, layer, backdrops):
+    def __init__(self, token, layer):
         super().__init__()
         self.token, self.layer = token, layer
-        self.page_matrix = page.transformation_matrix
-        self.backdrops = backdrops
         self.clip_only_text = False
         self.kept = 0
         self.use_virtual_culler()
@@ -63,10 +55,9 @@ class _Selector(m.PdfSanitizeFilterOptions2):
         if kind == m.FZ_CULL_IMAGE:
             layer = "images"
         else:
-            rect = fitz.Rect(bbox.x0, bbox.y0, bbox.x1, bbox.y1) * self.page_matrix
-            background = (kind in _PATH_PAINT and any(
-                max(abs(a - b) for a, b in zip(rect, backdrop)) < .01
-                for backdrop in self.backdrops))
+            # The token-aware scratch pass retains only planned backdrop
+            # fills. Never classify unrelated paths by bounding box here.
+            background = kind in _PATH_PAINT
             layer = "background" if background else "foreground"
         keep = layer == self.layer or (self.layer == "canvas" and layer in ("images", "background"))
         if keep:
@@ -88,7 +79,10 @@ def _filter(page, token, layer, *, backdrops=()):
     if layer == "foreground":
         from .native_layer import retain_native_foreground
         return retain_native_foreground(page, token, backdrops)
-    selector = _Selector(page, token, layer, backdrops)
+    if layer in ("background", "canvas"):
+        from .native_layer import retain_backdrop_fills
+        retain_backdrop_fills(page, token, backdrops)
+    selector = _Selector(token, layer)
     factory = _Factory(selector)
     options = m.PdfFilterOptions()
     # MuPDF 1.28.2's wrapper leaves no_update uninitialized on reused storage

@@ -1160,3 +1160,25 @@ one familiar Quality control rather than expose compression ratios.
 ## 268 — refresh every affected benchmark and document (verbatim, 2026-10-19)
 
 > ok, update all benchmarks and docs, and run the updated benchmarks that have not been done yet.
+
+## 269 — conventional quality scales and actual matching settings (verbatim, 2026-10-19)
+
+> I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
+
+## 270 — consolidate published comparisons and derive actual settings (verbatim excerpt, 2026-10-19)
+
+> You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
+
+## 271 — one fixed quality baseline across every experiment (verbatim excerpts, 2026-10-19)
+
+> NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
+
+> ok, tat is good
+
+Context: approval of JPEG q75 versus JPEG2000 q75 on the previous fixed
+`101 − q` scale (q75 → 26:1), at 300 DPI, without per-document adjustment
+or JPEG-reference normalization. This is a conservative working baseline,
+not a claim of measured equal visual quality. The subsequent implementation
+request authorizes correcting the app mapping and refreshing all affected
+benchmark sections; unchanged JPEG/BW/indexed evidence is reusable after
+verification. The app remains closed.

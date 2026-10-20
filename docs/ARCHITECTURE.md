@@ -47,6 +47,7 @@ or `code` names offer no required benefit for this rename. See the
       display.py      # exact read-only native PDF display, no AA/interpolation
       canvas.py       # full-color composition, one final DPI resize
       image_layers.py # native backdrop / transformed canvas / native overlay
+      backdrops.py    # source-order page/panel fill ownership (B116)
       native_layer.py # token edits preserving native Form/text state (B111)
       marked_content.py # orphaned whitespace ActualText repair, native parser
       defaults.py     # shared 300-DPI raster default
@@ -264,6 +265,14 @@ only orphaned whitespace ActualText in derived native fragments (B109), and
 places palette stencils directly rather than through nested clipped page
 Forms (B108). Native foreground uses token-aware bitmap/backdrop removal,
 preserving original operators and Form text-state inheritance (B111).
+B116 shares one immutable `BackdropPlan` between scratch canvas/background
+selection and native foreground removal. Flat opaque panels enclosing later
+image paint belong below the canvas, just like full-page backdrops. Matching
+is paint-occurrence-aware, not a bounding-box-wide deletion. The native token
+pass selects only those fills for scratch rendering; MuPDF then selects image
+and clip-only-text content. Compound strokes stay native and are painted once;
+inline images, clips, native opacity resources and repeated Form derivatives
+keep the existing parser/ownership rules. No new mask or fallback raster mode.
 B112 keeps the original native page/first Form owners and their pruned
 resources, so MCIDs, MCR `/Stm` and ParentTree still describe the actual native
 overlay. New background/canvas content is prepended as an Artifact; no page-

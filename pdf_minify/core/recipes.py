@@ -67,7 +67,7 @@ def _image_spec_key(spec):
                 JPEG_ENCODING_PROFILE, *raster)
     if mode == "jpx":
         setting, value = jpx_lossy_setting(spec)
-        quality_key = ((setting, value, JPX_QUALITY_MAPPING, JPEG_ENCODING_PROFILE)
+        quality_key = ((setting, value, JPX_QUALITY_MAPPING)
                        if setting == "quality" else (setting, value))
         profile = "jpx-rgb53-lossless-v1" if setting == "lossless" else JPX_ENCODING_PROFILE
         return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), quality_key, profile, *raster)

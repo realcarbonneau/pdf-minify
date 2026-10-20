@@ -1,14 +1,46 @@
 # Lossy image quality — q75 baseline and comparable settings
 
-Designer §§262–268; implementation trackers TODO §§259–263. The current
-approved starting setting is **q75 for JPEG and lossy JPEG2000**, at the
-existing 300 DPI. §264 supersedes §263's initial q90 setting.
-§266 explicitly adopts equal q75 values as the **working comparable-quality
-baseline**; §267 now anchors JPEG2000's internal mapping to JPEG's measured
-ratio using published visual-quality results. Run benchmarks now; do not block them on a proposed
-perceptual calibration. This is not a claim of experimentally proven universal
-equivalence, or a change to native
-text/vectors, FFPR, composition/resizing, PDF-stream compression or losslessness.
+## Current ruling — one fixed baseline (§271)
+
+JPEG q75 and JPEG2000 q75, both 300 DPI, are the approved working baseline
+for every input and native/FFPR experiment. JPX uses the image-independent
+`rate = 101 − q`: q75 always means a 26:1 target. Do not derive it from JPEG
+bytes, PSNR, input content or an individual matching result. The earlier
+reference-normalized mapping is superseded, not an alternative current
+standard. Equal q is a conservative working comparison, not proven equal
+visual quality. Keep JPEG 4:4:4, JPX 9/7/ICT/full-resolution components,
+native/FFPR semantics, explicit ratios, Lossless and saved q values intact.
+
+LOSSY-05 owns the implementation and all-section refresh. Reuse unchanged
+JPEG measurements and fixed controls with frozen provenance and exact
+paired-input/payload checks; freshly encode only changed JPX images. All
+active rows, controls, effects, minima and conclusions must use this baseline.
+Historical LOSSY-01–04 files remain immutable. The implementation/history
+below records the previous steps and does not override §271.
+
+Consolidated public studies, the recovered earlier derivations and the
+actual equivalence experiment are in
+[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md) (§270).
+
+**Quality-scale clarification (§§269/271).** GUI, benchmarks and docs use
+the same stable 0–100 controls. `jpeg-reference-study-v1` was a normalized
+JPEG-reference input, not the earlier scale's q75, and is superseded.
+LOSSY-02/03 retain their actual bytes/readback proofs as historical evidence,
+not fixed-q or perceptually matched results. q56 was a conditional literature
+candidate; subsequent measured diagnostics reject it as a general equivalent.
+
+LOSSY-04 now supplies actual first-canvas results for all eleven image-bearing
+native/FFPR cases: 5/11 matches on the old fixed-ratio scale and 9/11 on the
+separately named PSNR-control alternative, within one SSIMULACRA2 point.
+Both scan cases remain unmatched and visually flagged. See the consolidated
+research for actual settings and definitions; neither control is silently
+adopted as a replacement product scale or used to relabel existing PDF sizes.
+§271 selects one fixed q75 pair instead of per-image fits.
+
+Designer §§262–271; implementation tracker TODO §264. The approved
+**working comparable-quality baseline** is q75 for both codecs at 300 DPI,
+not experimentally proven universal equivalence. No native/vector, FFPR,
+composition/resizing, stream-policy or Lossless change is implied.
 
 ## User-facing control
 
@@ -26,7 +58,19 @@ uses named levels and Lossless;
 uses numeric JPEG2000 quality. Neither establishes a universally calibrated
 cross-codec scale or which number users choose most often.
 
-## Current mapping: `jpeg-reference-study-v1` (§267)
+## Current mapping: `darktable-rate-v2` (§271)
+
+`jpx_quality_rate(q) = 101 − checked_quality(q)` is independent of input
+pixels and JPEG output size. q0 → 101:1, q56 → 45:1, q75 → 26:1,
+q90 → 11:1 and q100 → 1:1; explicit Lossless remains separate. This is the
+previous documented application convention, not Qfactor or a PSNR target.
+The product JPX encoder never encodes a reference JPEG. Its effective key
+contains this mapping revision and JPX profile, not the JPEG profile.
+Existing q values and explicit legacy ratio/Lossless semantics stay intact.
+
+## Historical mapping: `jpeg-reference-study-v1` (superseded §267)
+
+The following describes the superseded LOSSY-02/03 implementation only.
 
 Quality still means **the selected common 0–100 value**, default 75. It
 does not now mean `101 − ratio`. For every already prepared RGB canvas:
@@ -70,14 +114,14 @@ Lossless and later deliberate edits remain intact. The effective key carries
 `jpeg-reference-study-v1` and the JPEG reference profile. Explicit `rate`
 recipes bypass this reference step and remain actual ratios.
 
-The current six-file benchmark remains a **study-informed working
+At this historical stage, the six-file benchmark used a **study-informed working
 comparable-quality baseline**, not measured universal quality equivalence.
 Record reference JPEG bytes/hash, prepared samples and the target ratio per
 canvas; prove that each JPX reference matches the paired actual JPEG output.
 Rank only actual final complete-PDF bytes. Do not force a JPX win or infer
 final PDF sizes from the target ratio. LOSSY-02 supersedes LOSSY-01 in the
-four current lossy overview rows. §268 now extends this standard to all
-active binary/focused/residual comparisons; old binary files stay immutable
+four then-current lossy overview rows. §268 extended that standard to all
+active binary/focused/residual comparisons; old binary files stayed immutable
 historical evidence, not active lossy baselines. LOSSY-03 reuses the completed
 images and has measured all 60 missing general-stream controls, without image encoding.
 
@@ -132,7 +176,7 @@ logos and diagrams, not a claim that 4:4:4 always produces the smallest file.
 | JPEG2000 wavelet | Pillow default reversible 5/3, rate-limited | For lossy output, `irreversible=True` (9/7); keep 5/3 for Lossless; cap decomposition levels to valid image dimensions |
 | JPEG2000 colour transform | Pillow default `mct=0` (independent RGB) | `mct=1` for RGB; with 9/7 this uses irreversible colour decorrelation, without spatial subsampling |
 | JPEG2000 layout | One image-sized tile, one quality layer | Keep these; do not equate JPEG's 8×8 DCT blocks with JPEG2000 tiles/code blocks |
-| Quality | JPEG q75; JPX q75 → ratio 26 | q75/q75 with §267's JPEG-reference mapping; actual ratios depend on the shared raster |
+| Quality | JPEG q75; JPX q75 → ratio 26 | One fixed q75/q75 pair (§271); JPX always targets 26:1 on every input |
 | PDF assembly | Existing native/FFPR saver and PDF Streams policy | Hold native/FFPR, metadata, masks and outer-stream policy fixed; measure the complete saved PDF |
 
 ### Why these adjustments
@@ -180,7 +224,7 @@ encoder's output. Headless JPEG roundtrips share the production JPEG helper.
 
 ### Immediate comparison and optional later quality calibration
 
-**LOSSY-02 runs q75/q75 now**, on all six representative whole PDFs, native
+**LOSSY-05 runs fixed q75/q75**, on all six representative whole PDFs, native
 and FFPR separately. Measure final complete files and inspect the outputs.
 Keep the six-column size analysis in `INTEGRATED_COMPRESSION.md`, not a new
 scattered results document. The following stronger matching experiment is
@@ -190,9 +234,9 @@ optional later work, not a prerequisite for that baseline comparison:
    and FFPR cases separately; include photos, `images.pdf`, mixed text/images
    and `models-nasa-kepler.pdf`. Do not use screen captures as source pixels.
 2. Use JPEG q75/4:4:4/optimized Huffman as the fixed reference. Start JPX at
-   q75 with the §267 reference-derived ratio and fixed 9/7/MCT setup. Decode each actual image
+   q75 with the fixed 26:1 target and 9/7/MCT setup. Decode each actual image
    stream at full resolution and compare with the prepared original.
-3. Sweep JPX's ratio around that starting point to bracket JPEG's measured
+3. For calibration diagnostics only, sweep JPX's ratio around that point to bracket JPEG's measured
    [SSIMULACRA2](https://github.com/cloudinary/ssimulacra2) score, then narrow
    the bracket. If an endpoint does not bracket it, extend the search; do not
    invent a universal quality conversion or hide differing page results.
@@ -201,7 +245,8 @@ optional later work, not a prerequisite for that baseline comparison:
    especially fine coloured text, chart edges, photo detail and ringing.
    Metrics are a matching aid, not a guarantee of legibility. Any metric
    downsampling is analysis only, never a display/preview smoothing change.
-5. Save complete PDFs through the real saver, check decoder compatibility
+5. Freeze ONE global q before any subsequent benchmark, never per-document
+   fitted values. Save complete PDFs through the real saver, check decoder compatibility
    and rank **measured final file bytes** only after quality qualification.
    Exclude compute time. Do not put these unrun candidates into existing
    measured tables or infer their sizes from codec ratios.
@@ -217,11 +262,10 @@ change to existing recipes. No backend or dependency change is made here.
 
 ## Saved recipes and compatibility
 
-§267 changes the effective mapping identity, not the persisted q value or
-quality-default migration revision. Keep all current q values and deliberate
-edits. The new reference-derived ratio is computed internally per canvas;
-do not persist it as the user's Quality, expose it as another knob or
-reuse a prior mapping's completed file.
+§271 changes the effective mapping identity, not the persisted q value or
+quality-default migration revision. Keep current q values and deliberate
+edits. Derive the same target ratio from the same q for every canvas; never
+reuse a normalized mapping's completed file under the new identity.
 
 Persist `jpeg_q` for JPEG and `jpx_q` for JPEG2000. Apply q75 once to all
 existing app filters using either mode, preserving every other setting and
@@ -245,21 +289,28 @@ JPEG2000 files or 4:2:0 JPEG files.
 ## Measurement boundary and verification
 
 [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) uses the current
-standard for **all active lossy rows**: the overview's 24 LOSSY-02 PDFs and
-60 additional LOSSY-03 fixed controls. The latter reuse the completed encoded
-images and save 48 Zopfli/Brotli controls plus 12 standard-Flate FFPR
-references. The same files feed binary effects, fixed sizes, focused photos,
+standard for **all active lossy rows**: LOSSY-05's 24 complete PDFs and
+60 fixed controls. Twelve unchanged JPEG primary files and thirty controls
+are reused with verified provenance; twelve JPX primary files and thirty
+controls are freshly saved. The controls use completed encoded images,
+never repeated filtering/encoding. The same files feed binary effects, fixed sizes, focused photos,
 FFPR accounting and residual effects; each pair uses its own actual measured
 denominator. No image encoder or compose/resize step runs again.
 
 Source/baseline/output hashes, profile identity, exact image/native content
 and all-page 72/300-DPI readback guard reuse. Unaffected BW/indexed, PNG and
-lossless measurements remain frozen. Historical q50/r192 and fixed-ratio
-q75 artifacts stay immutable, never relabeled or mixed into current lossy
+lossless measurements remain frozen. Historical q50/r192 and earlier q75
+artifacts stay immutable, never relabeled or mixed into current lossy
 rows. The integrated report owns current sizes, manifest hashes and
 conclusions; this document owns the settings and method. The additional
 proof is pinned in `tests/fixtures/lossy_controls_sizes.json` without rewriting
 the original fixed-encoder fixtures.
+
+The subsequent B116 background-ownership repair does not change q, sampling
+or codec profiles. LOSSY-05's tables remain frozen pre-B116 measurements,
+clearly marked in the integrated report, not freshly measured repaired-file
+sizes. The B116 validation protocol is separate from quality calibration
+and full integrated benchmark publication.
 
 The previous LOSSY-01 fixed-ratio q75 manifest is immutable at
 `.tmp/lossy-quality/q75-full-chroma-20261019/metrics.json` (SHA-256
@@ -273,6 +324,29 @@ slider/spinner debounce and Save/Save As/Discard/Cancel/Revert, and viewed
 offscreen GUI captures. Run the full suite after code changes. Keep the
 designer's explicit leave-closed instruction; do not reopen their desktop app
 merely to review an offscreen build.
+
+### Current fixed-baseline verification — 2026-10-19 (§271)
+
+**1008 full-suite tests and 193 focused checks pass**, with no expected
+failures. LOSSY-05 publishes all 24 primary PDFs and 60 controls: 42 unchanged
+JPEG files revalidated/reused and 42 JPX files freshly saved. All 84 actual
+file sizes/hashes, 78 paired canvas samples/JPEG fingerprints, native content
+and all-page 72/300-DPI readback checks pass. The 36 ordinary-format controls
+also pass QPDF checks; Brotli readback uses the recorded supporting MuPDF build.
+All affected overview, binary, focused and residual rows now use the fixed
+q75/q75 baseline. Historical manifests and unrelated data remain unchanged.
+
+Both 1×/2× offscreen quality/help reviews pass and were viewed. Actual PDF
+screen/crop review exposed the pre-existing native-photo overlay issue B116;
+it remains OPEN, not hidden by pairwise checks. This is implementation
+verification, not designer acceptance or proven equal visual quality. The
+desktop app remains closed. See `TEST_PLAN.md` and the integrated report
+for detailed scope and immutable provenance.
+
+### Historical verification — superseded implementation stages
+
+The following results describe their named stages, not the current §271
+implementation or the present fixture contents.
 
 Previous q90 stage verified 2026-10-18: **38 focused quality/migration/lifecycle
 checks and 872 full-suite tests passed**, with no expected failures. Actual normal-scale full

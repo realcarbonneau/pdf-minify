@@ -1,10 +1,10 @@
-"""Shared quality and study-informed JPX ratios (§267), not quality guarantees."""
+"""Stable user-facing quality controls (§271), not quality guarantees."""
 
 import math
 from numbers import Integral
 
 DEFAULT_LOSSY_QUALITY = 75
-JPX_QUALITY_MAPPING = "jpeg-reference-study-v1"
+JPX_QUALITY_MAPPING = "darktable-rate-v2"
 JPEG_ENCODING_PROFILE = "jpeg444-huffman-v1"
 JPX_ENCODING_PROFILE = "jpx97-ict-v1"
 
@@ -16,25 +16,13 @@ def checked_quality(value):
     return int(value)
 
 
-def jpx_reference_rate(raw_bytes, jpeg_bytes):
-    """Map a measured JPEG ratio using §267's approximate 40→45 / 60→73.
+def jpx_quality_rate(quality):
+    """Fixed conventional scale: q75 always targets 26:1 on every input.
 
-    Byte counts describe the SAME prepared raster and reference JPEG, not
-    complete PDFs. Interpolate between study anchors; outside, retain the
-    nearest relative gain (an explicit heuristic, NOT proven equivalence).
-    Small/header-heavy images can have a ratio below 1; OpenJPEG needs >=1.
+    Never derive this value from JPEG bytes, source complexity or PSNR.
+    Explicit historical ratios and Lossless bypass this quality control.
     """
-    for size in (raw_bytes, jpeg_bytes):
-        if isinstance(size, bool) or not isinstance(size, Integral) or size <= 0:
-            raise ValueError("Reference byte counts must be positive integers")
-    ratio = raw_bytes / jpeg_bytes
-    if ratio <= 40:
-        target = ratio * (45 / 40)
-    elif ratio >= 60:
-        target = ratio * (73 / 60)
-    else:
-        target = 45 + (ratio - 40) * (28 / 20)
-    return max(1.0, target)
+    return 101 - checked_quality(quality)
 
 
 def jpx_lossy_setting(params):

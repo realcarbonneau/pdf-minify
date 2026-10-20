@@ -324,6 +324,24 @@ vectors remain original native PDF operators above the canvas, except simple
 opaque flat page-covering rectangle fills, which are retained below it. Colored
 flat page backdrops are also kept underneath: they must not conceal the image
 canvas. The BW image canvas itself has a white background.
+
+B116 extends that same backdrop treatment to local opaque flat rectangular
+panels enclosing an image painted later in the original PDF. Source paint
+order distinguishes these backgrounds from foreground diagrams; a rectangle
+painted after its images is not promoted merely because it overlaps them.
+Use one immutable per-page paint-occurrence plan for both partitions, including
+repeated geometry and nested Forms. In the scratch image/background layers,
+keep only the selected fills; retain their simultaneous strokes exclusively
+in the native foreground. Preserve real clipping and opacity resources.
+Color composition includes these backgrounds at their original image-relative
+positions; BW retains its existing white image-canvas policy. No source text
+or foreground diagram becomes a bitmap, and no coverage mask is invented.
+As with the existing page-backdrop rule, separating a compound fill/stroke
+can differ from PDF's atomic knockout at translucent stroke/fill overlaps;
+the native stroke's geometry, color and opacity stay intact and it is painted
+once. FFPR remains the exact flattened-composition alternative.
+This is the PDF model's distinction between combined and separate paints;
+see Adobe's [Special Path-Painting Considerations](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/pdfreference1.7old.pdf).
 This classification uses MuPDF's actual vector drawing records, not text
 bounding-box rasterization or approximate glyph silhouettes. Native annotations,
 links and page boxes remain on the copied page. Clean unused original image

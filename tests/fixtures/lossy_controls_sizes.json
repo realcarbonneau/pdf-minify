@@ -1,11 +1,11 @@
 {
-  "designer_ruling": 268,
+  "designer_ruling": 271,
   "quality": 75,
   "dpi": 300,
-  "jpx_quality_mapping": "jpeg-reference-study-v1",
-  "measured_manifest": ".tmp/lossy-controls/q75-all-sections-20261019/metrics.json",
-  "measured_manifest_sha256": "72ceaaa600ef6584c10531cabdffbc266444618944cff6074c60a6bf21defb44",
-  "baseline_sha256": "f42191ff54fe1cf5081c9497c253e763263191c43983861876906c806683b05b",
+  "jpx_quality_mapping": "darktable-rate-v2",
+  "measured_manifest": ".tmp/lossy-controls/q75-fixed-all-sections-20261019/metrics.json",
+  "measured_manifest_sha256": "8afa354aeea3a8364c8318b4876f7939e684c9079f7f61f716d3395748f5aab6",
+  "baseline_sha256": "d0d015cc4dffd677f4c85e97a171b8bb7f651e45bb6dec208df1589065219efc",
   "unchanged_publication_sha256": "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d",
   "documents": [
     {
@@ -107,27 +107,27 @@
       "label": "JPEG2000 q75 + Zopfli native",
       "sizes": [
         187455,
-        5452054,
-        8680739,
-        184637,
-        609801,
-        3019187
+        8124633,
+        17281813,
+        352511,
+        885906,
+        4327823
       ],
       "pdf_sha256": [
-        "669d08c761c155662cb67c967c34ac64417ea5d30181d2a1c4dfa460562d58a0",
-        "d3f81cfaa8502ef6ce330b43eaea64dd06bb20e74db19fac433359a9fb42c1c6",
-        "ba09d9719f4ba707f730f876ceec64770e7dcdc9a3756dac47e65ded160d7316",
-        "3fb4d437863be69028cb19b4a113bbd8af37f462769024acc154fb2e06134e3a",
-        "4ebfcce177d48c6730b82ad75d760b4664139835235688c98ba43638fa784b45",
-        "49637bf7bdbd471ffb1d924435bed4db0e48aefcc22284d741f4115584a0b31c"
+        "e41556ee785366b87cc7ea2bde34aa43a5b306ac533361625ab825aaf9030105",
+        "d0b7a4980cd4370dc34beb6837633c2592899b6cc43077c77010d3e854f000a4",
+        "30557bee816f6fbfec261a8a1d848d0bb0a92cbc4c5d8669e098990a5661eae8",
+        "2053a932aef4b8fd2c5de756d3356709ede0ab5f7ce39d32fd62c042d4be19c5",
+        "ab4c6e483c7f635502ffc04a005233dd7063863c495a2c2110f914f3771fa12c",
+        "9bc93a8073e080fe62c4db387b243fefb1b0f02108b072ab52a07c52b61dad11"
       ],
       "base_sha256": [
-        "3a982c5df2314986fa2b2582677d4b3d32e87a86be2c6e95f7c43cc9ab6dfa73",
-        "7c68f50c8d1e3b0d4d692745dd74e5c1452396541777c85b5a86674b12cf45cf",
-        "285db9bd044fcfef66e689367260d3c6f98f5cd153d34659e6c0e2eb8c589259",
-        "eb0f912cbbfdd6841976793d2c929f5b31af9a890a9e32c31bbbbe910c78a7fc",
-        "b07e917799fd2c08bf276884d224fd40c24bdd70fa529313c12a8c1aed989ea6",
-        "234a0eb0209e1741bdaf51e430f10b6187c3454a4eff0aa82db7498f0fc45d7a"
+        "f309c0d3682934f86675c2ac9448b714ed152b64ae7d27865cd900bd1bd83e21",
+        "eee1fc772a8af3b2407c3f4914f824757f939ef18df3ecac15b3fc6edaca40b5",
+        "fea7a8626aedf4cd767de7c1e6c0baf0a5b50661504106412926659b9e43f9d0",
+        "5197111179add050bf89aa0d4d2de6d6d36b74a17d0c83ee0150e6697e7f2cee",
+        "c2175c19df321eaae489ba5317066ffee5a9ecf4905e90894a4cc8446c4b5961",
+        "0e4ead6d5537f6bbaee87f0e9faab37312158b1fc2c88c718844aecd9d4c2678"
       ]
     },
     {
@@ -137,27 +137,27 @@
       "label": "JPEG2000 q75 + Brotli native",
       "sizes": [
         182487,
-        5449722,
-        8579077,
-        184625,
-        602072,
-        2767947
+        8122301,
+        17180151,
+        352499,
+        878177,
+        4076583
       ],
       "pdf_sha256": [
-        "7f4db51b3f81d95951852b1f9c692a56a620a073ead1c3010c72423b43d68b6e",
-        "8d4d6caae407c1b6706efab4ea682c11778d92afc807bbd25263a6827a9c152a",
-        "b68ebf78a5203faa29b6400781125b5fb3316fabb85d22cceda892207f708aef",
-        "8442aa993512c4b8112bd776939a0ee04f5773dda4bd43a04995485ff9bfb730",
-        "0d79af6919ef571dd852cddb4342ad3c2fed73f91dc77231a7ae37d5161cba6a",
-        "27217e6bb1dc4a390ab6194447497ac73b17604e9bf426b4ee92b225820c23d8"
+        "e9378b79ad5d9111d6cf761ef1be70dbc739ce5e17c93d78457fe7d4d073f291",
+        "c9531af17dd6ca58801ec7a8ce5635c472965b224b76ede1d1c9b114d53f8747",
+        "faec54a3064ebdd5dc104247585fe0459a9b0deeedf85032bb01692c7ba9683b",
+        "f3fc7cfd089fbc8e53deefecf42c86351eebc60afc4ed9c061a602768892e515",
+        "a2d87931a20961e81b98c1e489aa37f09a20df2cce37cfe95f893d231248f26e",
+        "1e29a9db1e7c2dd89399b1bdd2c9ff253d5a73ac773bf320111bc55f97ca921a"
       ],
       "base_sha256": [
-        "3a982c5df2314986fa2b2582677d4b3d32e87a86be2c6e95f7c43cc9ab6dfa73",
-        "7c68f50c8d1e3b0d4d692745dd74e5c1452396541777c85b5a86674b12cf45cf",
-        "285db9bd044fcfef66e689367260d3c6f98f5cd153d34659e6c0e2eb8c589259",
-        "eb0f912cbbfdd6841976793d2c929f5b31af9a890a9e32c31bbbbe910c78a7fc",
-        "b07e917799fd2c08bf276884d224fd40c24bdd70fa529313c12a8c1aed989ea6",
-        "234a0eb0209e1741bdaf51e430f10b6187c3454a4eff0aa82db7498f0fc45d7a"
+        "f309c0d3682934f86675c2ac9448b714ed152b64ae7d27865cd900bd1bd83e21",
+        "eee1fc772a8af3b2407c3f4914f824757f939ef18df3ecac15b3fc6edaca40b5",
+        "fea7a8626aedf4cd767de7c1e6c0baf0a5b50661504106412926659b9e43f9d0",
+        "5197111179add050bf89aa0d4d2de6d6d36b74a17d0c83ee0150e6697e7f2cee",
+        "c2175c19df321eaae489ba5317066ffee5a9ecf4905e90894a4cc8446c4b5961",
+        "0e4ead6d5537f6bbaee87f0e9faab37312158b1fc2c88c718844aecd9d4c2678"
       ]
     },
     {
@@ -256,28 +256,28 @@
       "policy": "zopfli",
       "label": "Color FFPR + JPEG2000 q75; optimized residual streams",
       "sizes": [
-        6767913,
-        5411346,
-        22584569,
-        189019,
-        6921190,
-        8109133
+        5828120,
+        8083925,
+        17129168,
+        373096,
+        8709385,
+        11303362
       ],
       "pdf_sha256": [
-        "08c29eebe3ba466bcc0284dfb517ad82ff0e10c26c8245712cec20eb9e143fed",
-        "bd60eda647732883bf75bbff9d2bd9b664a63ed33c87c495eb513b45ebae8431",
-        "b2e3326109115e9b48cfbc50a6e4c345a0cc82245cbe22e68c5a3f34c53aaff7",
-        "134e0bf4a6da77cd6d06536bf8b486c5604e6164616ddb75252942546cbb0836",
-        "dcb46c82d6b0a70edf0f57edd0c6d249aecfa20dd80dab2634b5cb58a4dd3fb1",
-        "708488e757ecd30a72968fcb738494aa3bd36183252c7fab8ed87b167aef4014"
+        "a66427f22cf0febaede63c406d74f5e72e1d953e3824893def3352e17cb900f6",
+        "80126fee155e8cabe45360c01353dbcdb5a85655bfed26ed0b9063f8ed14f437",
+        "bc3ec9109f5de606688ef6fc6720d539f3ab11de87d793cdc886a37910a992c4",
+        "9ae9b20281330677bcea0dba566899bca06167aff8371faf26a14ee4a0e539bf",
+        "e69c9136cd6ebc135fb42f292a3e1be4d002de7cb37cc06af83c24d5a8b83f72",
+        "07fb6cc1843373521e102d811c832fcff438c0506054c6490d44eb0a8196d6b4"
       ],
       "base_sha256": [
-        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
-        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
-        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
-        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
-        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
-        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+        "e46618a85090fc17bfa8b46dbcb56e5c4a36734e0ebd3ab4c7c594d3e19e9cd4",
+        "f09edf471643c79ece676479e3c818ae83561148e053535e28ccf0a922d0d27d",
+        "0b2d018d60beace63b8a09a9b9a488c0dee235378e98b5d90fd435463346af6a",
+        "cca803967174de9cdc6ce7165d6bc74d4a7df67280eb70f3d8966cfbd22dd22d",
+        "c1512edc33e6d0e7b83bb0d5c292bdeaead8d7f1f724eff7e5ee72123c1604d9",
+        "2c2860a954d64d8957e7efd324f82d745de2fdcfb0eb2d4a9c4e63c8c4ab5006"
       ]
     },
     {
@@ -286,28 +286,28 @@
       "policy": "brotli",
       "label": "Color FFPR + JPEG2000 q75 + Brotli residual streams",
       "sizes": [
-        6767916,
-        5411360,
-        22584571,
-        189022,
-        6921193,
-        8109136
+        5828123,
+        8083939,
+        17129170,
+        373099,
+        8709388,
+        11303365
       ],
       "pdf_sha256": [
-        "15ddccff907f9bd7177b37b04c22550dc8a96c5ea7037f20f72aa9a5bd2ec54f",
-        "f51e9575ed623b866435b76ebec83a0b83f212be044b8d0e985e0ecb933bccd3",
-        "77d899495d64cdce0d52bd6b7bb3b3708e9b743556fd2675b5bdfdd4ff1f1a0d",
-        "cb7fb8fb53fbc159fdc486902191fa9a9a23d0deb592389622adee5633de1f07",
-        "6920ab71759af9bb84ab6d033a331d52efd69334f1ca56d6984db4f431c48f18",
-        "544bf20cd463a30407ccf4abf4c7822a6648aadb2c8a0d1e4cca303ab9c12476"
+        "dcd8d6da343e52e73f1fdbf838e261b2f21d250e4038b596f71b5c6ed4d8b6ac",
+        "ba12b5552b6fbf4fd72e33e3047a4ee508e53ef945b3e25b412fc384555af1a8",
+        "7eb0cc8db72fa3bc3311c6fc6a7e1975179e0c295ecaea55f13ce66533e35acf",
+        "513e777babde6123c23b185eb24f9b1afb9d04742ec9e3289aaef2e8f7d37d9d",
+        "c60d302960f22a9ec81f7d87e690837a268f6a011451bab7285872400ff416b4",
+        "a502c98e20e6af431203dd7d370f9373a0e3c764c96db8dfb632171c62235afe"
       ],
       "base_sha256": [
-        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
-        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
-        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
-        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
-        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
-        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+        "e46618a85090fc17bfa8b46dbcb56e5c4a36734e0ebd3ab4c7c594d3e19e9cd4",
+        "f09edf471643c79ece676479e3c818ae83561148e053535e28ccf0a922d0d27d",
+        "0b2d018d60beace63b8a09a9b9a488c0dee235378e98b5d90fd435463346af6a",
+        "cca803967174de9cdc6ce7165d6bc74d4a7df67280eb70f3d8966cfbd22dd22d",
+        "c1512edc33e6d0e7b83bb0d5c292bdeaead8d7f1f724eff7e5ee72123c1604d9",
+        "2c2860a954d64d8957e7efd324f82d745de2fdcfb0eb2d4a9c4e63c8c4ab5006"
       ]
     },
     {
@@ -316,28 +316,28 @@
       "policy": "flate",
       "label": "Color FFPR + JPEG2000 q75 + Classic Flate (reference) residual streams",
       "sizes": [
-        6767913,
-        5411346,
-        22584569,
-        189019,
-        6921190,
-        8109133
+        5828120,
+        8083925,
+        17129168,
+        373096,
+        8709385,
+        11303362
       ],
       "pdf_sha256": [
-        "2ca3adfb1736e3372c1b205909c297019ce4044a36ea91da8c48eec5e0a15755",
-        "449781f1eb1b719d4f0e3ab162124acc627d922f36c85583a8f59c0238ba2090",
-        "6774c84d163843f62ed37b9f3cd0e9fe48dcb7f648bf5400b72234c01b73f4d3",
-        "0eaae207c36aa898d72c49bf9e2e0f557f422501decdece77deea05c61841de7",
-        "3192fefadd294385bcce095bfa08f333da4f29f13a7cbaf6e4bb9d64984d4b89",
-        "9ab843ced734eb1459e538bf05d02fd71dddabefb4668f56fe822fb07b69f5ca"
+        "4cd77bf7de10d2f80bb38d0b45bc32ed4e37d9ff6f343d488780b60026bbc796",
+        "4ac5be3bf222d5470395585ea5f21b81409e4b400ece3b7c77935b6ac29f26c8",
+        "dc5b3f7eb518b74fd42dec7ef047931f006e2fa5a37b80bed951e996e514d4f4",
+        "33c9845539bc2b25e0fa750b259d1a922e6744bc2d3478d7c95f596f2454405a",
+        "ea8c0ded97a40f0a19413b9e18bafff52674b7eb07ac11226e88ede01e595a7a",
+        "0b86443302fc922beca8c71508ba8f4ea31da66b3c9d5cd80eccd5c25ccc5910"
       ],
       "base_sha256": [
-        "8c1ca44cb1f50f7c2f34666c1a8248a5ab9a633a6b8363756d028cf1734c2893",
-        "f2a591642dd9c1b91d26784cb35e41841cad75c74a45b4ded8c3d27d2c4685c4",
-        "ddfae2fa066bd6ff9519dba849482097d2bdf0b88b334764b57348d0732a4479",
-        "6b778ac832e35666e44d15528541f1eeff1654040960c5c210714698a8db9952",
-        "d7805ee9ec37e0e2ef348fc93c17cad2d8c246bf21b1dfdc10c7cdeb06a06f64",
-        "d8825b8430f6aaa85d965108960824eac5222d5b9ed372d2fb027b1d27a4f1d5"
+        "e46618a85090fc17bfa8b46dbcb56e5c4a36734e0ebd3ab4c7c594d3e19e9cd4",
+        "f09edf471643c79ece676479e3c818ae83561148e053535e28ccf0a922d0d27d",
+        "0b2d018d60beace63b8a09a9b9a488c0dee235378e98b5d90fd435463346af6a",
+        "cca803967174de9cdc6ce7165d6bc74d4a7df67280eb70f3d8966cfbd22dd22d",
+        "c1512edc33e6d0e7b83bb0d5c292bdeaead8d7f1f724eff7e5ee72123c1604d9",
+        "2c2860a954d64d8957e7efd324f82d745de2fdcfb0eb2d4a9c4e63c8c4ab5006"
       ]
     }
   ],
@@ -447,38 +447,38 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 6765278,
+          "images": 5825490,
           "native": 47,
           "container": 1065,
           "other_streams": 0,
-          "syntax": 1526,
+          "syntax": 1521,
           "pages": 6,
           "brotli_declaration": "null",
           "native_decoded_bytes": 43,
-          "complete_pdf_bytes": 6767916,
+          "complete_pdf_bytes": 5828123,
           "images_signature": [
             [
-              "20f0386bb2b527a2a9d2e9a69daa81c9d75f7e220a04b7424b20730b1a372db4",
+              "07a9b5d9ba41b2b7c0fd855717c5bc14f024f74da155c23f7b99daa54ce62c0b",
               1
             ],
             [
-              "357113af93460a118043fa150490967a9af267cde06aa1d4a9499e74858b3de5",
+              "53cf9d8cc8c3445f145c813602e5a172cae32e39f406ccd43e8a239a48882566",
               1
             ],
             [
-              "63ad3a3a24f02ba420dc715c6a0261413b76feb80fcb3322f09104a5527b871d",
+              "672a63de4a9d3c336f975de99ca0ee87db5a3051d3e594bf09a1c267b39581fe",
               1
             ],
             [
-              "745c88581e72b8d9d155c3d32597b92583b0105af6fa72d9181965b659de450d",
+              "89dfc8330818e80aa68edd43491297c472fb957939d554a2b15cf8975d6968a2",
               1
             ],
             [
-              "7f56beba1b681ce285c7d4c45fc1db7eeb2c995c6e112159a110a3e123950004",
+              "aa6f8a61954d992694ff80b06487c70a518047548478a09c96022ba79a307fb6",
               1
             ],
             [
-              "ea8d37b72a3787c577b95c79a2520e6dedba30f5c1108f7fbfaec075b18ecab4",
+              "bd8b9206e319a006dafeab30eb28a3bf299b6864915faf44b1b2c591dbdafa3d",
               1
             ]
           ],
@@ -490,38 +490,38 @@
           ]
         },
         "zopfli": {
-          "images": 6765278,
+          "images": 5825490,
           "native": 45,
           "container": 1065,
           "other_streams": 0,
-          "syntax": 1525,
+          "syntax": 1520,
           "pages": 6,
           "brotli_declaration": "null",
           "native_decoded_bytes": 43,
-          "complete_pdf_bytes": 6767913,
+          "complete_pdf_bytes": 5828120,
           "images_signature": [
             [
-              "20f0386bb2b527a2a9d2e9a69daa81c9d75f7e220a04b7424b20730b1a372db4",
+              "07a9b5d9ba41b2b7c0fd855717c5bc14f024f74da155c23f7b99daa54ce62c0b",
               1
             ],
             [
-              "357113af93460a118043fa150490967a9af267cde06aa1d4a9499e74858b3de5",
+              "53cf9d8cc8c3445f145c813602e5a172cae32e39f406ccd43e8a239a48882566",
               1
             ],
             [
-              "63ad3a3a24f02ba420dc715c6a0261413b76feb80fcb3322f09104a5527b871d",
+              "672a63de4a9d3c336f975de99ca0ee87db5a3051d3e594bf09a1c267b39581fe",
               1
             ],
             [
-              "745c88581e72b8d9d155c3d32597b92583b0105af6fa72d9181965b659de450d",
+              "89dfc8330818e80aa68edd43491297c472fb957939d554a2b15cf8975d6968a2",
               1
             ],
             [
-              "7f56beba1b681ce285c7d4c45fc1db7eeb2c995c6e112159a110a3e123950004",
+              "aa6f8a61954d992694ff80b06487c70a518047548478a09c96022ba79a307fb6",
               1
             ],
             [
-              "ea8d37b72a3787c577b95c79a2520e6dedba30f5c1108f7fbfaec075b18ecab4",
+              "bd8b9206e319a006dafeab30eb28a3bf299b6864915faf44b1b2c591dbdafa3d",
               1
             ]
           ],
@@ -735,7 +735,7 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 5406276,
+          "images": 8078855,
           "native": 273,
           "container": 1871,
           "other_streams": 0,
@@ -743,50 +743,50 @@
           "pages": 11,
           "brotli_declaration": "null",
           "native_decoded_bytes": 245,
-          "complete_pdf_bytes": 5411360,
+          "complete_pdf_bytes": 8083939,
           "images_signature": [
             [
-              "2cc942a07c31a79ce5f611a56ae1d5e9a12ddfd4331262c86e39b6f1e986c747",
+              "064513da81d645b1a9bc4b27d377183e635f1ade8505477e38aa260b02bf5227",
               1
             ],
             [
-              "4ccb558d885cea0c7f05346921a99b39b4a9ea5824d6ed29f0e5d1d2538e45aa",
+              "0b68eb790d877883ee2b8856bcdc8b565b9a111102c4a5505b54120496744ead",
               1
             ],
             [
-              "513bad7efeacffefdeabaf564d68cde9fe53a5d97af37664abef5c109b1aed92",
+              "2b52016653f8f4efbfd89a36de05b24b43682351e67ee4f7b19ad20cec78949e",
               1
             ],
             [
-              "53360d45e4e756a0a18a920d01bbabb7c70e7311381efb6a55d88e941385a5fe",
+              "3e9d12090419c90d52167f939902231df6d86d679f038065335cdc497b52113a",
               1
             ],
             [
-              "7315004ae3cb6f34ef28212739f4c94b3dd4ef530a1af8729fabb998b28b8887",
+              "50e628c8f168affc75d1239fcdfb1d0c820a9547f79fe4215e5cde3e3315e6a0",
               1
             ],
             [
-              "7771737349492a54de6328faf0ae9264ea1648c725edbb58f1d45e663ec50fe4",
+              "55e1b533a3e78018a10c53a27cfe5e91fba4b013a1414124ec6eca9a9e8b0037",
               1
             ],
             [
-              "83e2c03ab349ea17cacfadc19b96dddfdbc05820c2c2175d57d7cd6de21e3781",
+              "699bb61a102ab67ab28103ff6a1b664ef54f0daeada37537fdf35d805a4ea24e",
               1
             ],
             [
-              "947a087f892126a76371a7794f3d625aef8a76e4d5a37feb89bf1f3fc4deae3f",
+              "7e754fca7f646ca316c8d67029b41ff850ae656c80c3da3271b5fc0b33e0e5cc",
               1
             ],
             [
-              "98675ab24c1277a5cb32c0e8c3296c42edf7227181b8ddc082db6db6002d32a9",
+              "842d268717374e5e3bf215048a58b635316d9c4b2cb6297645bdb23bc49abdbc",
               1
             ],
             [
-              "a8ef928012418f70668b9e72828b16feab1aef3dcf4803f534eafa3c0ba4068c",
+              "87a6686d69dc7d6952a97b59c3e3dd6ae8733206dbb1fd5ae2860910c92cd88a",
               1
             ],
             [
-              "aa73f670c8ea5339fb8239bc0387aa2281fdd9165e4d55dbfcf316c4d4c4a5f7",
+              "de608042b3df7e83b2c0a37dc9c9c1250a7f814cc5b499525d5a9dd8adced091",
               1
             ]
           ],
@@ -822,7 +822,7 @@
           ]
         },
         "zopfli": {
-          "images": 5406276,
+          "images": 8078855,
           "native": 266,
           "container": 1871,
           "other_streams": 0,
@@ -830,50 +830,50 @@
           "pages": 11,
           "brotli_declaration": "null",
           "native_decoded_bytes": 245,
-          "complete_pdf_bytes": 5411346,
+          "complete_pdf_bytes": 8083925,
           "images_signature": [
             [
-              "2cc942a07c31a79ce5f611a56ae1d5e9a12ddfd4331262c86e39b6f1e986c747",
+              "064513da81d645b1a9bc4b27d377183e635f1ade8505477e38aa260b02bf5227",
               1
             ],
             [
-              "4ccb558d885cea0c7f05346921a99b39b4a9ea5824d6ed29f0e5d1d2538e45aa",
+              "0b68eb790d877883ee2b8856bcdc8b565b9a111102c4a5505b54120496744ead",
               1
             ],
             [
-              "513bad7efeacffefdeabaf564d68cde9fe53a5d97af37664abef5c109b1aed92",
+              "2b52016653f8f4efbfd89a36de05b24b43682351e67ee4f7b19ad20cec78949e",
               1
             ],
             [
-              "53360d45e4e756a0a18a920d01bbabb7c70e7311381efb6a55d88e941385a5fe",
+              "3e9d12090419c90d52167f939902231df6d86d679f038065335cdc497b52113a",
               1
             ],
             [
-              "7315004ae3cb6f34ef28212739f4c94b3dd4ef530a1af8729fabb998b28b8887",
+              "50e628c8f168affc75d1239fcdfb1d0c820a9547f79fe4215e5cde3e3315e6a0",
               1
             ],
             [
-              "7771737349492a54de6328faf0ae9264ea1648c725edbb58f1d45e663ec50fe4",
+              "55e1b533a3e78018a10c53a27cfe5e91fba4b013a1414124ec6eca9a9e8b0037",
               1
             ],
             [
-              "83e2c03ab349ea17cacfadc19b96dddfdbc05820c2c2175d57d7cd6de21e3781",
+              "699bb61a102ab67ab28103ff6a1b664ef54f0daeada37537fdf35d805a4ea24e",
               1
             ],
             [
-              "947a087f892126a76371a7794f3d625aef8a76e4d5a37feb89bf1f3fc4deae3f",
+              "7e754fca7f646ca316c8d67029b41ff850ae656c80c3da3271b5fc0b33e0e5cc",
               1
             ],
             [
-              "98675ab24c1277a5cb32c0e8c3296c42edf7227181b8ddc082db6db6002d32a9",
+              "842d268717374e5e3bf215048a58b635316d9c4b2cb6297645bdb23bc49abdbc",
               1
             ],
             [
-              "a8ef928012418f70668b9e72828b16feab1aef3dcf4803f534eafa3c0ba4068c",
+              "87a6686d69dc7d6952a97b59c3e3dd6ae8733206dbb1fd5ae2860910c92cd88a",
               1
             ],
             [
-              "aa73f670c8ea5339fb8239bc0387aa2281fdd9165e4d55dbfcf316c4d4c4a5f7",
+              "de608042b3df7e83b2c0a37dc9c9c1250a7f814cc5b499525d5a9dd8adced091",
               1
             ]
           ],
@@ -1039,7 +1039,7 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 22581268,
+          "images": 17125867,
           "native": 43,
           "container": 1370,
           "other_streams": 0,
@@ -1047,38 +1047,38 @@
           "pages": 8,
           "brotli_declaration": "null",
           "native_decoded_bytes": 39,
-          "complete_pdf_bytes": 22584571,
+          "complete_pdf_bytes": 17129170,
           "images_signature": [
             [
-              "5b9e4136c016d4b4e060a6391eb195a9ad1afa5db5f08bf2244fb7888f539b04",
+              "086a95ecd33fadb16dd08235bd29c3625ffb01c418c89bcfc09c8b457154567f",
               1
             ],
             [
-              "70f9632ad52891470a6b535cbfed69240307fc32fc510aecc1ab584d9c1dfc10",
+              "2b91d795fc506c9eb3e28f49f18dfe13a57edec63e5744fe2ea2903236e69e5d",
               1
             ],
             [
-              "91de94c5e67d0f5e674bf7fc773afa4db0bfddba10b125d3bfcb3a78f1c47357",
+              "4286a9037009cc60b673d50c46114c3411cbf67535230ef6e25824ea64eb1eea",
               1
             ],
             [
-              "9801b07b59f1f3844e6455b5c929ede58f128eff12de5d35bb2fae753ba21b9e",
+              "8e63d4397123533e4129443f59c06765ba4bb5a5028d6411a6f556491f5dd6ca",
               1
             ],
             [
-              "af048a90a6a374cec8e438f69998523f2f0daddc640f6d705bc1181b6d54d998",
+              "99727064a71a665c4e29ef038f6a0cf070936da5677b2d56369b75370e9d53d7",
               1
             ],
             [
-              "df8d2aee4bdfd6e51cb09acb935a94aa73cbb4627ae056c12aeac42bbe0d68c5",
+              "c2cccd5abe004e05f2d70701ccb167448e329ae8a4a5e86d86b2b3416a3dd4f9",
               1
             ],
             [
-              "e40c6f27951c09ee0a8aaa3ee071bbf72c84602b8cd5e410826f534e3cd8b36b",
+              "d6fcc027e0ed1a65400fd65b8cfb506f47b8667e1037f5fa8c4b8efb5f186a22",
               1
             ],
             [
-              "fc1b13ae348510f86143a8a02b2ac0496ff0efe257af5eb4939232af3b796c9e",
+              "f5ee2f83c12a6708f1f401aed749d46dd3c2c9b7675d5ef42261e17a3c681d04",
               1
             ]
           ],
@@ -1090,7 +1090,7 @@
           ]
         },
         "zopfli": {
-          "images": 22581268,
+          "images": 17125867,
           "native": 42,
           "container": 1370,
           "other_streams": 0,
@@ -1098,38 +1098,38 @@
           "pages": 8,
           "brotli_declaration": "null",
           "native_decoded_bytes": 39,
-          "complete_pdf_bytes": 22584569,
+          "complete_pdf_bytes": 17129168,
           "images_signature": [
             [
-              "5b9e4136c016d4b4e060a6391eb195a9ad1afa5db5f08bf2244fb7888f539b04",
+              "086a95ecd33fadb16dd08235bd29c3625ffb01c418c89bcfc09c8b457154567f",
               1
             ],
             [
-              "70f9632ad52891470a6b535cbfed69240307fc32fc510aecc1ab584d9c1dfc10",
+              "2b91d795fc506c9eb3e28f49f18dfe13a57edec63e5744fe2ea2903236e69e5d",
               1
             ],
             [
-              "91de94c5e67d0f5e674bf7fc773afa4db0bfddba10b125d3bfcb3a78f1c47357",
+              "4286a9037009cc60b673d50c46114c3411cbf67535230ef6e25824ea64eb1eea",
               1
             ],
             [
-              "9801b07b59f1f3844e6455b5c929ede58f128eff12de5d35bb2fae753ba21b9e",
+              "8e63d4397123533e4129443f59c06765ba4bb5a5028d6411a6f556491f5dd6ca",
               1
             ],
             [
-              "af048a90a6a374cec8e438f69998523f2f0daddc640f6d705bc1181b6d54d998",
+              "99727064a71a665c4e29ef038f6a0cf070936da5677b2d56369b75370e9d53d7",
               1
             ],
             [
-              "df8d2aee4bdfd6e51cb09acb935a94aa73cbb4627ae056c12aeac42bbe0d68c5",
+              "c2cccd5abe004e05f2d70701ccb167448e329ae8a4a5e86d86b2b3416a3dd4f9",
               1
             ],
             [
-              "e40c6f27951c09ee0a8aaa3ee071bbf72c84602b8cd5e410826f534e3cd8b36b",
+              "d6fcc027e0ed1a65400fd65b8cfb506f47b8667e1037f5fa8c4b8efb5f186a22",
               1
             ],
             [
-              "fc1b13ae348510f86143a8a02b2ac0496ff0efe257af5eb4939232af3b796c9e",
+              "f5ee2f83c12a6708f1f401aed749d46dd3c2c9b7675d5ef42261e17a3c681d04",
               1
             ]
           ],
@@ -1215,7 +1215,7 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 188141,
+          "images": 372218,
           "native": 39,
           "container": 222,
           "other_streams": 0,
@@ -1223,10 +1223,10 @@
           "pages": 1,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 189022,
+          "complete_pdf_bytes": 373099,
           "images_signature": [
             [
-              "43982570aeaf2bba6ec44382aa89fa3fcb9b2816ea4d194ef41616f39aed1deb",
+              "12378138951c81df07a5f214cb5bd04aabd1d786743cc0a1964b8f60bb8b6d01",
               1
             ]
           ],
@@ -1238,7 +1238,7 @@
           ]
         },
         "zopfli": {
-          "images": 188141,
+          "images": 372218,
           "native": 37,
           "container": 222,
           "other_streams": 0,
@@ -1246,10 +1246,10 @@
           "pages": 1,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 189019,
+          "complete_pdf_bytes": 373096,
           "images_signature": [
             [
-              "43982570aeaf2bba6ec44382aa89fa3fcb9b2816ea4d194ef41616f39aed1deb",
+              "12378138951c81df07a5f214cb5bd04aabd1d786743cc0a1964b8f60bb8b6d01",
               1
             ]
           ],
@@ -1399,50 +1399,50 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 6917593,
+          "images": 8705789,
           "native": 39,
           "container": 1500,
           "other_streams": 0,
-          "syntax": 2061,
+          "syntax": 2060,
           "pages": 9,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 6921193,
+          "complete_pdf_bytes": 8709388,
           "images_signature": [
             [
-              "0395e8073941d0be8217342b214637bf6715b9459f8044ccf77eb4b3c7b088df",
+              "0c48b95e9afcbbde42740f9ae9a186dbab790508aa880fea10fbfa13a7907cb7",
               1
             ],
             [
-              "09c92cdbe3bee0d470ebed01af11311bb41124e514a55828ec8d99b9ce87c4f6",
+              "40823489d28759e97054ccf6c858fd94890e983be16e223ea21731661df1200b",
               1
             ],
             [
-              "4dd6453ba1a4a323d6aec33f3385d55f354e36ef90e15b1bdd66619de15f8cc5",
+              "455987ad8ef5a640c97f057ec77a98d7881d995c7aa976dfc1a8bf4e570f4d4a",
               1
             ],
             [
-              "98b863aeca9752f8261e7d2e9c0c82df8e79bc555312ee2e0d87428a186a10fb",
+              "565764788a535853fde32551457000c621ec72bf4075555b20c2410eab8f7087",
               1
             ],
             [
-              "c74a12dc934be14daddda3873188f48371b9e3936c7027097067f9fd8ccda487",
+              "588d8cffde6c7feaafc707d9345a3e37b4fa89de9c820c42351b3dbd82911d61",
               1
             ],
             [
-              "c9ec2440799f6c5e176fbbd19faa071a83ce4f63de58368d1cad81f349fd0584",
+              "6a234768f941a555be2377a5e87695057fcd6ec8bd85ab9795b9c1a1bb35fda1",
               1
             ],
             [
-              "d6c2dba016da35b20f4258e04297f49239a168d6cf1d53ff932617d8cfedccae",
+              "cb00b30db21161cc24d339a832f3151a8f4a75570a6ab1a94076c94130f4960e",
               1
             ],
             [
-              "dbd4c65242dfead028836cfacce1734894f350efa60d75f3e355c7e685a52e3d",
+              "f3dffc663c42bfb9bc4679524525d2c9eca20bcfb88a2c02cbcd789c1ec9462c",
               1
             ],
             [
-              "e28ced05a2c3a5e660184d18abd6f84e623b0aa8a1c691fb40e882cc6266ebe6",
+              "fd975e16cc85feea568d688d82ab864f19cc049f670c736f70f071f1975b7ab0",
               1
             ]
           ],
@@ -1454,50 +1454,50 @@
           ]
         },
         "zopfli": {
-          "images": 6917593,
+          "images": 8705789,
           "native": 37,
           "container": 1500,
           "other_streams": 0,
-          "syntax": 2060,
+          "syntax": 2059,
           "pages": 9,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 6921190,
+          "complete_pdf_bytes": 8709385,
           "images_signature": [
             [
-              "0395e8073941d0be8217342b214637bf6715b9459f8044ccf77eb4b3c7b088df",
+              "0c48b95e9afcbbde42740f9ae9a186dbab790508aa880fea10fbfa13a7907cb7",
               1
             ],
             [
-              "09c92cdbe3bee0d470ebed01af11311bb41124e514a55828ec8d99b9ce87c4f6",
+              "40823489d28759e97054ccf6c858fd94890e983be16e223ea21731661df1200b",
               1
             ],
             [
-              "4dd6453ba1a4a323d6aec33f3385d55f354e36ef90e15b1bdd66619de15f8cc5",
+              "455987ad8ef5a640c97f057ec77a98d7881d995c7aa976dfc1a8bf4e570f4d4a",
               1
             ],
             [
-              "98b863aeca9752f8261e7d2e9c0c82df8e79bc555312ee2e0d87428a186a10fb",
+              "565764788a535853fde32551457000c621ec72bf4075555b20c2410eab8f7087",
               1
             ],
             [
-              "c74a12dc934be14daddda3873188f48371b9e3936c7027097067f9fd8ccda487",
+              "588d8cffde6c7feaafc707d9345a3e37b4fa89de9c820c42351b3dbd82911d61",
               1
             ],
             [
-              "c9ec2440799f6c5e176fbbd19faa071a83ce4f63de58368d1cad81f349fd0584",
+              "6a234768f941a555be2377a5e87695057fcd6ec8bd85ab9795b9c1a1bb35fda1",
               1
             ],
             [
-              "d6c2dba016da35b20f4258e04297f49239a168d6cf1d53ff932617d8cfedccae",
+              "cb00b30db21161cc24d339a832f3151a8f4a75570a6ab1a94076c94130f4960e",
               1
             ],
             [
-              "dbd4c65242dfead028836cfacce1734894f350efa60d75f3e355c7e685a52e3d",
+              "f3dffc663c42bfb9bc4679524525d2c9eca20bcfb88a2c02cbcd789c1ec9462c",
               1
             ],
             [
-              "e28ced05a2c3a5e660184d18abd6f84e623b0aa8a1c691fb40e882cc6266ebe6",
+              "fd975e16cc85feea568d688d82ab864f19cc049f670c736f70f071f1975b7ab0",
               1
             ]
           ],
@@ -1671,62 +1671,62 @@
       "mode": "jpx",
       "accounting": {
         "brotli": {
-          "images": 8104512,
+          "images": 11298740,
           "native": 39,
           "container": 1988,
           "other_streams": 0,
-          "syntax": 2597,
+          "syntax": 2598,
           "pages": 12,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 8109136,
+          "complete_pdf_bytes": 11303365,
           "images_signature": [
             [
-              "1095a53ef4dca571e6b28191b754394ddce274602c6afd6ed55f088f60304bde",
+              "0c1c11242f593bfe937ae80c15e2f326106651c005e9163745476f907c7c0a0b",
               1
             ],
             [
-              "1d950b8034cb70dce9ecc5daa5288aa07f961c35db3efbb7e2a82b4093fd0f8f",
+              "0f6940c446720003a33415f94d5b8db2bf85d2165ec317de73fa34a589e3b0b1",
               1
             ],
             [
-              "226ca3259a5c1ae94a56d8b8840f6a046cc2c8ecd925885960c7eb5fcb262aeb",
+              "3338f9d8ebd1ce451d8cd1ce4e521a9c009a57803c57b35cd1e9d83832a80793",
               1
             ],
             [
-              "29e91bfe827929fed3b003d9930047d8dab555aed66a225ac3cad48b8f6318a1",
+              "392d98ff8d0abecb4032a1fd556829349ca7a676ecd78adba9fe290b042af9e9",
               1
             ],
             [
-              "499caefa558347675bb4e99bded8cd6f9b6da9780901670820628420c2f77026",
+              "7cb09df4f30bed6eee47ee2f361ef2ad9ee748a2dee102db2c04b077e1348719",
               1
             ],
             [
-              "a2d9608eaf272b91ba0ea3f6308550bef9d06c93b6ace3ba1ebb808e6e02794a",
+              "849d3818e9b7c978a282f1846bee596979005afc9da749e5c91f0c25bb0ff155",
               1
             ],
             [
-              "a43abc3f188e8d6bb77127486fa54a9784c63194f001f6c2deca5adc0c8e0281",
+              "90337200d87d689c26e2fd80dbf89ca5f2cdf50e634eea47cbc73b5b41d64d46",
               1
             ],
             [
-              "ac18066faf77470df335abd5f6ac43e610556639701234adebb2151f16d82253",
+              "9c92f1712f34fdcf413d822649a8996e952c0bfe6294b454407f76419b51268b",
               1
             ],
             [
-              "dee87ef3f3976ab71e188d1339e087ff2e0624cee18b9945612986f9c9a944d0",
+              "9d87b3d1993e4782108a742d0679f9597001530259a5326cf135378ad641c2a1",
               1
             ],
             [
-              "e4d72a632a58521f041c7d975fe8a5b9f43ca6fc4fc0725860c79fb82e9eac8d",
+              "ae0479c5df2c34bd55a057ab45a32e7cbc17093c6de7353de0644c03122d2f0d",
               1
             ],
             [
-              "e518e39abd42b56cf398eb2b1e3814a35952bef89e570cb837ff16feac46a82d",
+              "dad29988fe608b8ef7272c33ff8ac0883f6ed509699587229e8e80342ddbde7b",
               1
             ],
             [
-              "f082b1304512fa7c9e552d2fda4d18c38f6b3a522a68631d0e3d63bdbc334c47",
+              "f89570cb2c0f0b8a333d6713046f5cb2fcc5e8fe549a91058e1f70eaef653db8",
               1
             ]
           ],
@@ -1738,62 +1738,62 @@
           ]
         },
         "zopfli": {
-          "images": 8104512,
+          "images": 11298740,
           "native": 37,
           "container": 1988,
           "other_streams": 0,
-          "syntax": 2596,
+          "syntax": 2597,
           "pages": 12,
           "brotli_declaration": "null",
           "native_decoded_bytes": 35,
-          "complete_pdf_bytes": 8109133,
+          "complete_pdf_bytes": 11303362,
           "images_signature": [
             [
-              "1095a53ef4dca571e6b28191b754394ddce274602c6afd6ed55f088f60304bde",
+              "0c1c11242f593bfe937ae80c15e2f326106651c005e9163745476f907c7c0a0b",
               1
             ],
             [
-              "1d950b8034cb70dce9ecc5daa5288aa07f961c35db3efbb7e2a82b4093fd0f8f",
+              "0f6940c446720003a33415f94d5b8db2bf85d2165ec317de73fa34a589e3b0b1",
               1
             ],
             [
-              "226ca3259a5c1ae94a56d8b8840f6a046cc2c8ecd925885960c7eb5fcb262aeb",
+              "3338f9d8ebd1ce451d8cd1ce4e521a9c009a57803c57b35cd1e9d83832a80793",
               1
             ],
             [
-              "29e91bfe827929fed3b003d9930047d8dab555aed66a225ac3cad48b8f6318a1",
+              "392d98ff8d0abecb4032a1fd556829349ca7a676ecd78adba9fe290b042af9e9",
               1
             ],
             [
-              "499caefa558347675bb4e99bded8cd6f9b6da9780901670820628420c2f77026",
+              "7cb09df4f30bed6eee47ee2f361ef2ad9ee748a2dee102db2c04b077e1348719",
               1
             ],
             [
-              "a2d9608eaf272b91ba0ea3f6308550bef9d06c93b6ace3ba1ebb808e6e02794a",
+              "849d3818e9b7c978a282f1846bee596979005afc9da749e5c91f0c25bb0ff155",
               1
             ],
             [
-              "a43abc3f188e8d6bb77127486fa54a9784c63194f001f6c2deca5adc0c8e0281",
+              "90337200d87d689c26e2fd80dbf89ca5f2cdf50e634eea47cbc73b5b41d64d46",
               1
             ],
             [
-              "ac18066faf77470df335abd5f6ac43e610556639701234adebb2151f16d82253",
+              "9c92f1712f34fdcf413d822649a8996e952c0bfe6294b454407f76419b51268b",
               1
             ],
             [
-              "dee87ef3f3976ab71e188d1339e087ff2e0624cee18b9945612986f9c9a944d0",
+              "9d87b3d1993e4782108a742d0679f9597001530259a5326cf135378ad641c2a1",
               1
             ],
             [
-              "e4d72a632a58521f041c7d975fe8a5b9f43ca6fc4fc0725860c79fb82e9eac8d",
+              "ae0479c5df2c34bd55a057ab45a32e7cbc17093c6de7353de0644c03122d2f0d",
               1
             ],
             [
-              "e518e39abd42b56cf398eb2b1e3814a35952bef89e570cb837ff16feac46a82d",
+              "dad29988fe608b8ef7272c33ff8ac0883f6ed509699587229e8e80342ddbde7b",
               1
             ],
             [
-              "f082b1304512fa7c9e552d2fda4d18c38f6b3a522a68631d0e3d63bdbc334c47",
+              "f89570cb2c0f0b8a333d6713046f5cb2fcc5e8fe549a91058e1f70eaef653db8",
               1
             ]
           ],

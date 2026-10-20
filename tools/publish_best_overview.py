@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools import bench_best_overview as bench
-from tools.publish_lossy_quality import current_primary
+from tools.publish_lossy_quality import current_primary, current_summary
 
 MAIN = "## Overview — final complete-file bytes"
 OLD_BINARY = "## FFPR residual compression — Zopfli versus Brotli baseline"
@@ -202,15 +202,16 @@ def replace_once(text, before, after):
 def rewrite(before, report, publication, path):
     text = before
     text = replace_once(text, "Designer §§210–214/220–254; TODO §§226–252.",
-                        "Designer §§210–214/220–268; TODO §§226–263.")
+                        "Designer §§210–214/220–271; TODO §§226–264.")
     text = text.replace("verification: 2026-10-16–17", "verification: 2026-10-16–19", 1)
     text = replace_once(text, "All **177 integrated Brotli outputs** were",
                         "The fixed-encoder study's **177 integrated Brotli outputs** were")
     start = "**Current selected results after the B114 preparation repair and §254 refresh.**"
     paragraph = next(p for p in text.split("\n\n") if p.startswith(start))
     text = replace_once(text, paragraph,
-        "**Versioned selection (§§258/265–268).** The overview has **19 recipes × six complete PDFs = 114 measured sizes**: "
-        "90 retained measurements and 24 LOSSY-02 outputs. LOSSY-03 adds 60 verified current q75 controls. "
+        "**Versioned selection (§§258/271).** The overview has **19 recipes × six complete PDFs = 114 measured sizes**: "
+        "90 retained measurements and 24 LOSSY-05 fixed-q75 outputs (12 unchanged JPEG files reused, 12 JPX files freshly saved). "
+        "LOSSY-05 also supplies 60 verified current q75 controls (30 unchanged JPEG files reused, 30 JPX files freshly saved). "
         "The Zopfli/Brotli reference has 114 pairs (90 retained, 24 refreshed); PNG prediction retains "
         "its **96 fixed-encoder pairs**, and NATIVE-01 has **42 pairs** (30 retained, 12 refreshed). "
         "The 392-file fixed-encoder publication remains immutable. "
@@ -220,12 +221,13 @@ def rewrite(before, report, publication, path):
         "Best; the current q75 files use the production saver. Their J* payloads\n"
         "are not image-row predicted. The 96 PNG pairs keep their fixed encoders\n"
         "and original denominators. No replacement size is estimated.\n\n"
-        "**Lossy baseline (§§265–267).** The four current lossy overview rows use\n"
+        "**Lossy baseline (§271).** The four current lossy overview rows use\n"
         "**JPEG q75 / JPEG2000 q75** as the working comparable-quality baseline,\n"
-        "with study-based JPEG-reference ratio matching, full-resolution colour,\n"
+        "with one fixed JPX 26:1 target, full-resolution colour,\n"
         "fixed lossy profiles and actual 300-DPI\n"
-        "whole-file measurements. §268 applies this standard to all active lossy\n"
-        "fixed controls and binary/focused/residual comparisons. The original\n"
+        "whole-file measurements. §271 applies this standard to all active lossy\n"
+        "fixed controls and binary/focused/residual comparisons. "
+        "**Every active lossy comparison now uses this same standard.** The original\n"
         "**JPEG q50 / JPX r192** files stay archived, never relabeled q75.\n"
         "See [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).")
     text = replace_once(text,
@@ -251,7 +253,7 @@ def rewrite(before, report, publication, path):
     text = text.replace(
         "BW uses **Otsu**, except the explicitly labeled Simple thresholds. JPEG uses\n",
         "The current lossy overview compares JPEG q75 and JPEG2000 q75 under the\n"
-        "designer's study-informed working comparable-quality baseline: 4:4:4 JPEG and full-resolution\n"
+        "designer's fixed-q75 working comparable-quality baseline: 4:4:4 JPEG and full-resolution\n"
         "9/7 + RGB MCT JPEG2000. See `LOSSY_IMAGE_QUALITY.md`.\n\n"
         "The following older quantities describe historical fixed-encoder controls.\n"
         "BW uses **Otsu**, except the explicitly labeled Simple thresholds. Historical JPEG uses\n", 1)
@@ -279,7 +281,7 @@ def rewrite(before, report, publication, path):
         "[specialized binary experiment](#stream-compression--zopfli-versus-brotli-baseline)\n"
         "owns the fixed-encoder comparison and its reference sizes.\n\n"
         "The retained BW/indexed/reference cells use the measured **§258\n"
-        "predictor-preserving** policy. The four lossy rows are current LOSSY-02\n"
+        "predictor-preserving** policy. The four lossy rows are current LOSSY-05\n"
         "saves through the production pipeline, with J* payloads protected from\n"
         "general recompression. Historical outputs and producers stay frozen.\n\n"
         "Transformed packed-image rows use PNG prediction OFF; the unresampled\n"
@@ -296,6 +298,7 @@ def rewrite(before, report, publication, path):
         "input and fidelity group only. The two q75 codecs share a comparison\n"
         "group; native/FFPR, palettes and lossless references remain distinct.\n"
         "A smaller encoding need not beat the original.\n\n"
+        + current_summary()+"\n"
         + current_primary(display_table(bench.table(bench.overview.DOCUMENTS, bench.RECIPES, report["records"]))) + "\n"
     )
     text = text[:main_start] + primary + text[png_start:]
@@ -318,7 +321,7 @@ def rewrite(before, report, publication, path):
     binary = (
         '<a id="ffpr-residual-compression--zopfli-versus-brotli-baseline"></a>\n\n'
         + BINARY + "\n\n"
-        "**Expanded binary reference (§§258/268).** Brotli is the baseline and Zopfli\n"
+        "**Expanded binary reference (§§258/271).** Brotli is the baseline and Zopfli\n"
         "the treatment for all 19 overview recipes / **114 pairs**: 90 retained\n"
         "pairs and 24 current q75 lossy pairs. Source,\n"
         "prepared samples/palette, DPI, threshold/quality, native content, ID\n"
@@ -342,7 +345,7 @@ def rewrite(before, report, publication, path):
         + display_table(bench.binary_table(bench.overview.DOCUMENTS, bench.RECIPES, publication)) + "\n"
         "### FFPR/J* subset — current NATIVE-02 findings\n\n"
         "The five FFPR/J* recipes above contain **30 pairs**: 18 retained\n"
-        "BW/colored-JBIG2/lossless pairs and 12 current q75 pairs from LOSSY-03.\n"
+        "BW/colored-JBIG2/lossless pairs and 12 current q75 pairs from LOSSY-05.\n"
         "Their byte accounting is refreshed for the twelve new pairs. Statements\n"
         "in this subsection refer to that subset, not every binary row.\n\n" + subset
         + fixed_controls_section(publication) + "\n"

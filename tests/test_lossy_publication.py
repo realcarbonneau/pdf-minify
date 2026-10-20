@@ -14,8 +14,8 @@ from tools import publish_lossy_quality as publication
 
 def example_proof():
     return dict(quality=75, dpi=300, documents=[asdict(d) for d in publication.bench.DOCUMENTS],
-                jpx_quality_mapping="jpeg-reference-study-v1",
-                visual_quality_basis="designer-study-ratio-matched-working-baseline",
+                jpx_quality_mapping="darktable-rate-v2",
+                visual_quality_basis="designer-fixed-q75-working-baseline",
                 rows=[dict(label=label, mode=mode, force_raster=force,
                            sizes=[1000 + offset] * 6)
                       for offset, (force, mode, label, _) in enumerate(publication.LABELS)])
@@ -35,6 +35,9 @@ def test_overlay_updates_only_four_lossy_rows_and_is_idempotent():
     assert "| JPEG q75 | **1,000** |" in result
     assert "| JPEG2000 q75 | 1,001 |" in result
     assert publication.overlay(result, proof) == result
+    summary=publication.current_summary(proof)
+    assert 'smaller in 0, larger in 12, and tied in 0' in summary
+    assert 'equal visual quality' in summary
 
 
 @pytest.mark.parametrize("kind", ["missing", "duplicate", "wrong-quality", "wrong-columns", "non-measured", "old-mapping"])
@@ -90,10 +93,10 @@ def test_source_bound_nonpainted_native_images_are_preserved_but_unknown_pixels_
 
 def test_actual_published_q75_rows_are_pinned_separately_from_historical_controls():
     proof = json.loads(publication.FIXTURE.read_text())
-    assert proof["designer_rulings"] == [265, 266, 267]
+    assert proof["designer_rulings"] == [265, 266, 271]
     assert proof["quality"] == 75 and proof["dpi"] == 300
-    assert proof["visual_quality_basis"] == "designer-study-ratio-matched-working-baseline"
-    assert proof["jpx_quality_mapping"] == "jpeg-reference-study-v1"
+    assert proof["visual_quality_basis"] == "designer-fixed-q75-working-baseline"
+    assert proof["jpx_quality_mapping"] == "darktable-rate-v2"
     assert proof["jpeg_profile"] == "jpeg444-huffman-v1"
     assert proof["jpx_profile"] == "jpx97-ict-v1"
     assert len(proof["measured_manifest_sha256"]) == 64

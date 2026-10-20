@@ -9,11 +9,14 @@ strings/objects and consumes inline images through its actual image decoder.
 import pymupdf as fitz
 
 from .pdf_io import CancelledError
+from .backdrops import BackdropPlan
 
 m = fitz.mupdf
 _PAINT = {"S", "s", "f", "F", "f*", "B", "B*", "b", "b*", "n"}
 _FILL_REMOVED = {"f": b" n ", "F": b" n ", "f*": b" n ",
                  "B": b" S ", "B*": b" S ", "b": b" s ", "b*": b" s "}
+_FILL_ONLY = {"f": b" f ", "F": b" f ", "f*": b" f* ",
+              "B": b" f ", "B*": b" f* ", "b": b" h f ", "b*": b" h f* "}
 
 
 def _inline_end(stream, lexer, native, resources):
@@ -80,17 +83,18 @@ class NativeContext:
         return target
 
 
-class _Foreground:
-    def __init__(self, page, token, backdrops, context):
+class _NativeFilter:
+    def __init__(self, page, token, backdrops, context, layer):
         self.doc, self.token = page.parent, token
         if context.doc is not self.doc:
             raise ValueError("Native context belongs to another document")
         self.context = context
         self.native = m.pdf_document_from_fz_document(self.doc.this)
         self.to_page = page.transformation_matrix
-        self.backdrops = backdrops
+        self.backdrops = (backdrops or BackdropPlan()).cursor()
+        self.layer = layer
 
-    def rewrite(self, data, resources, matrix, opacity=1, ancestors=()):
+    def rewrite(self, data, resources, matrix, ancestors=()):
         if len(ancestors) > 64:
             raise RuntimeError("Native Form nesting exceeds safety limit")
         result_resources = m.pdf_copy_dict(resources)
@@ -128,27 +132,27 @@ class _Foreground:
             operator = lexer.m_internal.scratch
             values = [operand[2] for operand in operands]
             if operator == "q":
-                states.append((fitz.Matrix(matrix), opacity))
+                states.append(fitz.Matrix(matrix))
             elif operator == "Q" and states:
-                matrix, opacity = states.pop()
+                matrix = states.pop()
             elif operator == "cm":
                 matrix = fitz.Matrix(*values) * matrix
-            elif operator == "gs":
-                state = m.pdf_dict_gets(m.pdf_dict_get(resources, m.PDF_ENUM_NAME_ExtGState), values[0])
-                ca = m.pdf_dict_get(state, m.PDF_ENUM_NAME_ca)
-                if m.pdf_is_number(ca):
-                    opacity = m.pdf_to_real(ca)
             elif operator == "re":
                 x, y, w, h = values
-                rectangle = fitz.Rect(x, y, x + w, y + h) * matrix * self.to_page
+                rectangle = fitz.Rect(x, y, x + w, y + h).normalize() * matrix * self.to_page
                 segments += 1
             elif operator in ("m", "l", "c", "v", "y"):
                 segments += 1
             elif operator in _PAINT:
-                backdrop = (segments == 1 and rectangle is not None and opacity == 1
-                            and any(max(abs(a-b) for a, b in zip(rectangle, rect)) < .01
-                                    for rect in self.backdrops))
-                if backdrop and operator in _FILL_REMOVED:
+                backdrop = (operator in _FILL_REMOVED and segments == 1
+                            and rectangle is not None and self.backdrops.is_background(
+                                rectangle, stroked=operator in ("B", "B*", "b", "b*")))
+                if self.layer == "backdrops":
+                    # Scratch canvas/background input: keep only selected
+                    # fills. The original native layer owns their strokes.
+                    edits.append((start, end, _FILL_ONLY[operator] if backdrop else b" n "))
+                    kept += backdrop
+                elif backdrop:
                     # Preserve a simultaneous native stroke and any pending
                     # clipping path, rather than deleting the entire path.
                     edits.append((start, end, _FILL_REMOVED[operator]))
@@ -157,12 +161,20 @@ class _Foreground:
                     kept += 1
                 rectangle, segments = None, 0
             elif operator == "BI":
-                edits.append((start, _inline_end(stream, lexer, self.native, resources), b" "))
+                end = _inline_end(stream, lexer, self.native, resources)
+                if self.layer == "foreground":
+                    edits.append((start, end, b" "))
+                else:
+                    kept += 1
             elif operator == "Do":
                 obj = m.pdf_dict_gets(xobjects, values[0])
                 subtype = m.pdf_to_name(m.pdf_dict_get(obj, m.PDF_ENUM_NAME_Subtype))
                 if subtype == "Image":
-                    edits.append((operands[0][0], end, b" "))
+                    if self.layer == "foreground":
+                        edits.append((operands[0][0], end, b" "))
+                    else:
+                        m.pdf_dict_puts(result_xobjects, values[0], obj)
+                        kept += 1
                 elif subtype == "Form":
                     xref = m.pdf_to_num(obj)
                     if xref in ancestors:
@@ -174,7 +186,7 @@ class _Foreground:
                     transform = fitz.Matrix(*(m.pdf_array_get_real(form_matrix, i) for i in range(6))) if form_matrix else fitz.Matrix(1, 1)
                     content, own_resources, count = self.rewrite(
                         original_content, form_resources, transform * matrix,
-                        opacity, (*ancestors, xref))
+                        (*ancestors, xref))
                     if count or tagged:
                         target = self.context.derivative(xref, content, own_resources)
                         m.pdf_dict_puts(result_xobjects, values[0],
@@ -189,6 +201,8 @@ class _Foreground:
                     # that this policy authorizes deleting.
                     m.pdf_dict_puts(result_xobjects, values[0], obj)
                     kept += 1
+            elif operator == "sh" and self.layer == "backdrops":
+                edits.append((operands[0][0], end, b" "))
             elif operator in ("Tj", "TJ", "'", '"', "sh"):
                 kept += 1
             operands.clear()
@@ -199,7 +213,16 @@ class _Foreground:
 
 def retain_native_foreground(page, token, backdrops, *, context=None):
     """Remove replaced image paint while retaining original native semantics."""
-    filter = _Foreground(page, token, backdrops, context or NativeContext(page.parent))
+    return _rewrite_page(page, token, backdrops, "foreground", context=context)
+
+
+def retain_backdrop_fills(page, token, backdrops):
+    """Prepare scratch paint for MuPDF's image/text selector, never saved native text."""
+    return _rewrite_page(page, token, backdrops, "backdrops")
+
+
+def _rewrite_page(page, token, backdrops, layer, *, context=None):
+    filter = _NativeFilter(page, token, backdrops, context or NativeContext(page.parent), layer)
     owner = m.pdf_load_object(filter.native, page.xref)
     resources = m.pdf_dict_get_inheritable(owner, m.PDF_ENUM_NAME_Resources)
     content, resources, kept = filter.rewrite(page.read_contents(), resources, fitz.Matrix(1, 1))
@@ -211,6 +234,7 @@ def retain_native_foreground(page, token, backdrops, *, context=None):
     # object loaded before that operation.
     owner = m.pdf_load_object(filter.native, page.xref)
     m.pdf_dict_put(owner, m.PDF_ENUM_NAME_Resources, resources)
-    from .marked_content import repair_native_tags
-    repair_native_tags(page, token)
+    if layer == "foreground":
+        from .marked_content import repair_native_tags
+        repair_native_tags(page, token)
     return kept

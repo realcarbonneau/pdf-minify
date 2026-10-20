@@ -11,8 +11,8 @@ from tools import publish_lossy_controls as publisher
 
 
 def proof():
-    result = dict(designer_ruling=268, quality=75, dpi=300,
-                  jpx_quality_mapping="jpeg-reference-study-v1",
+    result = dict(designer_ruling=271, quality=75, dpi=300,
+                  jpx_quality_mapping="darktable-rate-v2",
                   documents=[asdict(d) for d in publisher.controls.lossy.DOCUMENTS], rows=[])
     for force in (False, True):
         for mode in publisher.controls.lossy.MODES:
@@ -77,7 +77,7 @@ def test_missing_table_rows_cannot_silently_skip_a_section():
 def test_actual_complete_controls_drive_every_active_lossy_table():
     current = json.loads(publisher.FIXTURE.read_text())
     publisher.validate_proof(current)
-    assert current["measured_manifest_sha256"] == "72ceaaa600ef6584c10531cabdffbc266444618944cff6074c60a6bf21defb44"
+    assert current["measured_manifest_sha256"] == "8afa354aeea3a8364c8318b4876f7939e684c9079f7f61f716d3395748f5aab6"
     assert current["unchanged_publication_sha256"] == publisher.best.PUBLICATION_SHA256
     baseline = json.loads(Path("tests/fixtures/lossy_quality_sizes.json").read_text())
     assert current["baseline_sha256"] == baseline["measured_manifest_sha256"]

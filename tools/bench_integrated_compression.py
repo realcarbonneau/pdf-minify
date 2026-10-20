@@ -36,6 +36,7 @@ def environment():
              "pdf_minify/core/predictors.py",
              "pdf_minify/core/display.py", "pdf_minify/core/image_layers.py",
              "pdf_minify/core/marked_content.py", "pdf_minify/core/native_layer.py",
+             "pdf_minify/core/backdrops.py",
              "pdf_minify/core/canvas.py",
              "pdf_minify/core/stencils.py", "pdf_minify/core/algorithms.py",
              "pdf_minify/core/defaults.py", "pdf_minify/core/quality.py", "pdf_minify/core/threshold.py",

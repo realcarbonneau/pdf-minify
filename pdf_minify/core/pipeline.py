@@ -23,7 +23,7 @@ from .image_layers import compose_page_images, compose_color_page
 from .algorithms import BW_MODES, COLOR_MODES
 from .stream_compression import STREAM_LABELS, permits_brotli, recompress_native_streams
 from .defaults import DEFAULT_DPI
-from .quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_lossy_setting, jpx_reference_rate
+from .quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_lossy_setting, jpx_quality_rate
 from .canvas import flatten_rgb
 
 log = logging.getLogger("pdf_minify")
@@ -236,15 +236,7 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: float | None = None,
     if setting == "lossless":
         img.save(buf, "JPEG2000", quality_mode="lossless", num_resolutions=resolutions)
     else:
-        if setting == "quality":
-            # Reference only: encode the SAME prepared pixels at the selected
-            # JPEG quality, then map its achieved ratio (§267). Never decode
-            # that JPEG or feed its lossy samples into the JPX encoder.
-            reference = jpeg_encode(img, value)
-            raw_bytes = img.width * img.height * len(img.getbands())
-            target_rate = jpx_reference_rate(raw_bytes, len(reference))
-        else:
-            target_rate = value  # explicit legacy ratio, no reference encode
+        target_rate = jpx_quality_rate(value) if setting == "quality" else value
         img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[target_rate],
                  irreversible=True, mct=int(img.mode == "RGB"),
                  num_resolutions=resolutions, codeblock_size=(64, 64),

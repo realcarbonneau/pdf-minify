@@ -95,6 +95,13 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   flattened appearance. Do not rasterize native artwork or invent
   glyph-shaped masks. Lossless content/font/container compression is distinct
   from image thresholding. See `COMPRESSION.md`, issues B89/B90.
+- B116: the shared backdrop plan includes local opaque flat panels enclosing
+  later image paint, not just full-page rectangles. Select paint occurrences
+  using source order; repeated geometry does not imply identical ownership.
+  Scratch rendering retains planned fills and original images/opacity/clips;
+  native foreground retains text/diagrams and compound strokes once. Preserve
+  Form/tag ownership and inline samples. Do not invent coverage masks or
+  silently substitute FFPR. See `backdrops.py` and `COMPRESSION.md`.
 - Color: 300 DPI + q75 for JPEG and lossy JPEG2000 (§264 supersedes §263), with a familiar
   Quality control (§262). JPEG2000 remains an explicit codec choice; its
   Lossless choice is unchanged. Never relabel a compression ratio as quality
@@ -108,7 +115,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   300-DPI whole-file comparisons now; a more rigorous calibration is a possible
   refinement, never a precondition for useful benchmarks. Prioritize lossy
   JPEG2000, not a lossless study or claims of universal codec superiority.
-- §267 replaces the fixed `101-q` JPEG2000 mapping with a study-based
+- Historical §267 (superseded by §271) replaced the fixed `101-q` mapping with a study-based
   JPEG-reference mapping. At the selected Quality encode the identical
   prepared pixels with the fixed JPEG profile, measure the actual raster
   ratio, and use 40→45 / 60→73 JPEG→JPX anchors. Interpolate inside that
@@ -128,6 +135,38 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   active rows/denominators and update labels/minima/effects/conclusions/tests
   together. Historical component evidence is explicitly historical, not a
   competing current standard. No new app codec/default or quality change.
+- §269 clarifies that GUI, recipes, benchmark labels and docs use the same
+  stable, conventional 0–100 quality scales. Find the JPEG2000 q that best
+  approximates JPEG q75 visually with the other comparison factors fixed;
+  do not redefine its q75 as a hidden JPEG-reference normalization. The
+  implemented §267 mapping needs correction under this clarification.
+  Study ratio anchors are starting evidence, not a universal q conversion;
+  `101 − 45 = 56` alone does not validate JPEG2000 q56 against JPEG q75.
+  Report the actual tested q values and matching basis, preserve measured
+  artifacts, and qualify the existing normalized-q labels until corrected.
+  See TODO §264 and `LOSSY_IMAGE_QUALITY.md`.
+- §270 requires one consolidated `JPEG_JPEG2000_RESEARCH.md`, recovering the
+  earlier study references and actual scope from conversation history.
+  Explain and derive equal-quality candidates rather than only saying
+  codec scales differ. Validate actual candidates against JPEG q75 using
+  identical prepared pixels, a perceptual metric plus numeric diagnostics
+  and visual review. Keep the stable q values visible; report practical
+  equivalence and exceptions honestly. Final-PDF sizes stay in the central
+  integrated analysis; no raw transcripts or historical size relabeling.
+- §271 supersedes §267's runtime reference-normalized quality mapping. One
+  fixed JPEG q75/JPEG2000 q75 baseline applies to every input and native/FFPR
+  experiment, at 300 DPI. JPX quality maps only to `101 − q` (q75 → 26:1),
+  independent of input/JPEG bytes or PSNR; no JPEG reference encoding in
+  production JPX. Keep explicit rates/Lossless, saved q values and profiles
+  unchanged. Invalidate normalized quality artifacts through versioned keys,
+  removing the unrelated JPEG profile from JPX identity. LOSSY-05 refreshes
+  every affected table from verified actual complete PDFs. Reuse unchanged
+  JPEG outputs/controls with explicit provenance and exact paired-pixel/
+  payload verification; encode changed JPX once, repack its stream controls
+  without image processing. Preserve historical proofs and unaffected data.
+  Per-image fits are research diagnostics, not benchmark settings. This is
+  a working visual-quality baseline, not a measured equivalence claim. Keep
+  the desktop app closed; offscreen verification is permitted.
 - §§224/225 supersede mixed-resolution defaults: all built-in raster filters
   and missing-DPI fallbacks use 300 DPI. §226 also requires a one-time migration
   of ALL existing saved raster recipes, including explicit custom DPI values,

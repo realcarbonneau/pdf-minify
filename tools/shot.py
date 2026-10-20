@@ -21,7 +21,7 @@ import fitz  # noqa: E402
 from PySide6.QtCore import QPoint, QRect, QSettings, QEvent, Qt  # noqa: E402
 from PySide6.QtGui import QColor, QIcon, QPalette, QHelpEvent  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
-from PySide6.QtWidgets import QApplication, QToolBar, QToolTip  # noqa: E402
+from PySide6.QtWidgets import QApplication, QToolBar, QToolTip, QWhatsThis  # noqa: E402
 from pdf_minify.ui_qt.app import MainWindow, setup_logging, FILTER_PROGRESS_ROLE  # noqa: E402
 from pdf_minify.ui_qt.icons import ICON_NAMES  # noqa: E402
 from pdf_minify import APP_ID  # noqa: E402
@@ -393,6 +393,17 @@ def quality_samples(w):
         w.panelScroll.viewport().grab().save(f".tmp/shot-{name}-panel-visible.png")
         w.panelScroll.widget().grab().save(f".tmp/shot-{name}-panel.png")
         w.quality_control.grab().save(f".tmp/shot-{name}-control.png")
+        if field=='jpx_q':
+            existing=set(app.topLevelWidgets())
+            QWhatsThis.showText(w.quality_control.mapToGlobal(QPoint(0,0)),
+                               w.quality_control.whatsThis(),w.quality_control)
+            app.processEvents()
+            popups=[widget for widget in app.topLevelWidgets() if widget not in existing and widget.isVisible()]
+            assert len(popups)==1, 'Native quality help popup was not shown'
+            popups[0].grab().save(f'.tmp/shot-{name}-help.png')
+            assert '26:1' in w.quality_control.whatsThis() and 'study-based' not in w.quality_control.whatsThis()
+            QWhatsThis.hideText()
+            app.processEvents()
     assert w._gen == generation and w._artifacts.results == prepared
     w.lossless_box.setChecked(True)
     assert not w.quality_control.isEnabled() and w.quality_value.value() == 75

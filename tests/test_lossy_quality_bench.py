@@ -60,7 +60,7 @@ def test_real_outputs_are_independent_and_match_production_canvases(real_study):
             for canvas in record["canvases"]:
                 reference = canvas["quality_reference"]
                 assert reference["quality"] == 75 and reference["jpeg_bytes"] > 0
-                assert reference["jpx_target_rate"] >= 1
+                assert reference["jpx_target_rate"] == 26
     markdown = (folder / "study" / "table.md").read_text()
     assert markdown.count(" q75 |") == 4 and "lossless" not in markdown.lower()
     assert "**" in markdown
@@ -71,6 +71,34 @@ def test_validated_resume_does_not_reencode(real_study, monkeypatch):
     folder, document, records = real_study
     monkeypatch.setattr(bench.pipeline, "save_with_spec", lambda *a, **k: pytest.fail("re-encoded complete output"))
     assert bench.run(folder / "study", (document,), resume=True) == records
+
+
+def test_verified_jpeg_reuse_saves_only_jpx_and_checks_actual_paired_payloads(real_study, tmp_path, monkeypatch):
+    folder, document, original = real_study
+    source = folder/'study'/'metrics.json'
+    save = bench.pipeline.save_with_spec
+    calls = []
+    def only_jpx(*args, **kwargs):
+        calls.append(args[2]['mode'])
+        assert args[2]['mode'] == 'jpx'
+        return save(*args, **kwargs)
+    monkeypatch.setattr(bench.pipeline,'save_with_spec',only_jpx)
+    current = bench.run(tmp_path/'reuse',(document,),reuse_jpeg=source,
+                        reuse_jpeg_sha256=bench.file_digest(source))
+    assert calls == ['jpx','jpx']
+    for row in current:
+        if row['mode']=='color':
+            before=next(r for r in original if r['mode']=='color' and r['force_raster']==row['force_raster'])
+            assert row['pdf']==before['pdf'] and row['pdf_sha256']==before['pdf_sha256']
+            assert row['reused_from']['manifest_sha256']==bench.file_digest(source)
+    for force in (False,True):
+        bench.verify_pair(*[r for r in current if r['force_raster']==force])
+
+
+def test_changed_jpeg_reuse_provenance_is_not_accepted(real_study):
+    folder,document,_=real_study
+    with pytest.raises(ValueError,match='frozen JPEG'):
+        bench.load_jpeg_reuse(folder/'study'/'metrics.json','wrong hash',(document,))
 
 
 def test_tampered_actual_pdf_is_not_a_measurement(real_study, tmp_path):
@@ -104,12 +132,12 @@ def test_pair_rejects_confounded_inputs_or_changed_native_content(real_study, ch
 def test_invalid_reference_or_old_mapping_is_not_current_measurement(real_study):
     _, document, records = real_study
     row = deepcopy(records[0])
-    row["canvases"][0]["quality_reference"]["jpx_target_rate"] = 26
+    row["canvases"][0]["quality_reference"]["jpx_target_rate"] = 45
     with pytest.raises(ValueError, match="quality reference"):
         bench.verify_record(row, rerender=False)
     current = bench.identity((document,))
-    assert current["jpx_quality_mapping"] == "jpeg-reference-study-v1"
-    assert current["study"] == "LOSSY-02-q75-jpeg-reference-v1"
+    assert current["jpx_quality_mapping"] == "darktable-rate-v2"
+    assert current["study"] == "LOSSY-05-fixed-q75-v1"
 
 
 def test_table_rejects_missing_duplicate_and_estimated_sizes(real_study):

@@ -10,7 +10,122 @@ is unchanged; committing or pushing does not require repeating verification.
 
 ## Current regression verification — 2026-10-19
 
-### Current standard across all affected benchmarks (§268)
+### B116 — source-order local background ownership
+
+**1025 passed**, `nice -n 10 ./test.sh`, exit 0 / FULL SUITE GREEN, no expected
+failures. Subsequent documentation-only notes do not require another full run.
+
+The 17 dedicated backdrop regressions pass. The overlapping
+backdrop/tagged-PDF/lossy-benchmark/control/image-stream selection passes
+86 tests. These are not additive counts.
+
+Coverage includes all six image codecs, a background and foreground with
+identical geometry, translucent overlays, simultaneous fill/stroke with one
+native outline, all four page rotations, repeated nested Forms, inline image
+samples and negative rectangle extents. The real brochure regression checks
+the NPS emblem and both inset-photo interiors against an independent original
+page composition with the same one-time source-density-to-target-DPI resize,
+not an inappropriate nearest-neighbour 72-DPI display comparison. Its
+lossless mean RGB error is below one level in each interior. Native text
+and existing tagged-page/Form ownership checks remain strict.
+
+`tools/check_b116.py` processes the complete eight-page brochure through the
+real saver at 300 DPI, JPEG q75 and JPEG2000 q75/26:1. Both outputs pass
+all-page 72/300-DPI readback, native-content/geometry and paired-canvas checks.
+All six codec/region combinations restore spatial image contrast; mean RGB
+error is under four levels against the same source preparation, versus over
+59 in the frozen missing-artwork baselines. This proves the repair's scope,
+not universal quality equivalence. The proof is
+`.tmp/b116-local-backgrounds-20261019/proof.json`, SHA-256
+`00d7da9d329446dfbbb9a37a6242868ebeccb6e95f6c42dfc2fe81b54ee79df1`.
+Exact-render `screen.png` and `crops-300dpi.png` accompany it.
+
+The previous benchmark manifests/files remain immutable; current tables are
+explicitly marked pre-B116 rather than relabeled as repaired measurements.
+The new planner participates in strict benchmark implementation identity.
+Actual full-page and 1:1 crop comparisons were viewed: the emblem and both
+panel photographs are restored in JPEG and JPEG2000. The desktop app stays
+closed. **Implementation verified 2026-10-19; not designer acceptance.** B116
+remains OPEN pending explicit confirmation.
+
+### Previous fixed quality baseline and complete-file refresh (§271)
+
+**1008 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused codec/primary/control/publication/overview/research selection
+passes **193 tests**. Subsequent documentation-only completion notes do not
+require another full run.
+
+Tests pin image-independent `101 − q` mapping (q75 → 26:1), endpoints and
+invalid inputs, real codestreams, preserved explicit ratios/Lossless and
+saved q values. Production JPX never invokes the JPEG encoder; its effective
+quality identity is versioned and independent of the JPEG profile. Imported
+JPEG evidence requires frozen manifest/record/output hashes, unchanged
+scope and actual paired pixel/payload verification. Reuse never weakens
+normal changed-code resume or accepts an incomplete/aliased control.
+
+LOSSY-05 publishes **24 primary PDFs and 60 controls**: 42 unchanged JPEG
+files are revalidated and reused, and 42 JPX files are freshly saved.
+All 84 distinct actual files match measured bytes/SHA-256. All 78 paired
+RGB canvases and JPEG payload fingerprints match; every output passes
+native/image/geometry and all-page 72/300-DPI readback checks. All twelve
+fresh JPX primary payload sets also reproduce LOSSY-01's original fixed-ratio
+payloads. The 36 ordinary-format controls pass QPDF; the 24 Brotli controls
+use the recorded supporting MuPDF decoder, not unsupported-reader certification.
+
+The main four rows and all 22 supporting rows use the current fixed-q
+dataset. Four overview and ten supporting Markdown rows visibly change
+(including bold minima); the other 172 table lines, old manifests and
+Best/PNG/FFPR historical fixtures stay byte-identical. Current fixtures
+pin actual complete-file proof; the integrated report owns sizes and hashes.
+
+Both isolated 1×/2× quality-only GUI/help reviews exit GREEN; actual window,
+panel, control and native What's This captures were viewed. Actual artwork
+and photo output was reviewed at screen scale and in 300-DPI crops with the
+app's exact renderer. This exposed the pre-existing native-photo overlay
+problem **B116**, which remains OPEN and is not an original-appearance or
+equal-visual-quality certificate. No desktop launch, new dependency,
+display smoothing or saved-filter migration. **Implementation verified
+2026-10-19; not designer acceptance.** The desktop app remains closed.
+
+### Previous research-only quality matching (§§269/270)
+
+Historical scope: the following records the research-only stage before
+§271's fixed baseline implementation and complete-file refresh.
+
+**1003 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
+The focused matching/publication selection passes **43 tests**. Subsequent
+documentation-only completion notes do not require another full run.
+
+LOSSY-04 verifies all 78 original RGB/JPEG preparations against LOSSY-02,
+then measures the first encoded canvas in each of eleven image-bearing
+native/FFPR cases. JPEG q75/4:4:4 is fixed. The prior ratio-based q control
+matches within one SSIMULACRA2 point on 5/11 cases; the separately named
+PSNR-control alternative matches 9/11. The two scan cases fail that tolerance
+and the selected q48 shows white-area noise. All eleven three-crop sheets
+were inspected at native pixels; this is not all-page calibration, ordinary
+screen/full-document review, designer acceptance or a new observer study.
+
+Tests cover stable parameter mappings, metric parsing/failure, endpoint
+limits, local non-monotonic points, actual PSNR, unchanged lossy encoder
+settings, exact crop pixels, paired references, scope/provenance and the
+audited publication fixture. The publisher checks source/JPEG/JP2 hashes,
+actual decoder samples, measured candidate selection and complete coverage;
+it never re-encodes or substitutes a desired size reduction. The metric's
+exact-identity preflight scores 100; its research-only binary/version is
+pinned, not a new runtime dependency or cross-implementation certification.
+
+All **186 integrated Markdown table lines remain unchanged**, as do the
+LOSSY-01/02/03 manifest hashes. Sources, derivations, actual q/score tables,
+exceptions and reproducible proof are in
+[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md) and
+`tests/fixtures/jpeg_jpeg2000_quality_match.json`.
+No production mapping/default, saved-filter migration, GUI change or desktop
+launch. At that stage TODO §264 remained OPEN for the product correction and
+complete-file follow-through; §271 subsequently completes that work.
+**Research implementation verified 2026-10-19; not designer
+acceptance.** The desktop app remains closed.
+
+### Previous normalized standard across all affected benchmarks (§268)
 
 **960 passed**, `./test.sh`, exit 0 / FULL SUITE GREEN, no expected failures.
 The focused benchmark/publication/overview/effect-table selection passed
