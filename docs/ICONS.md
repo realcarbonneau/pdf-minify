@@ -1,17 +1,48 @@
 # Action icons — desktop theme first, one stock fallback
 
-Designer rulings: `DESIGNER_VERBATIM.md` §§196/197, 2026-10-14
-(America/New_York). Work: TODO §201, issue B102.
+## Rulings (verbatim)
 
-§200 rejects the current appearance and requests a coded comparison lab.
-The current provider remains in place until the designer chooses replacements.
-See [ICON_LAB.md](ICON_LAB.md)
-for the Nuvola/Oxygen/GNOME/Breeze comparison, permanent codes and no-Apply rule.
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§114** (2026-10-10)
+
+```text
+And put the proper icons on the save, rename, duplicate buttons.
+```
+
+**§120** (2026-10-13)
+
+```text
+isn't there a standard rename icon that looks like a cursor with a letter or two? Also, remove the text on the filter buttons, rename, copy, save, and just keep the icon and tooltips.
+```
+
+**§196** (2026-10-14)
+
+```text
+Those icons look odd, in particular the undo and rename, are those standard icons? Standard KDE or nuvola?
+```
+
+**§197** (2026-10-14)
+
+```text
+ok, as you suggest.
+```
+
+**§200** (2026-10-14)
+
+```text
+I don't like those icons, make an icon lab menu item with a window with various options and codes for each so I can tell you my choices.  use icons from nuvola, oxygen and other similar libraries.
+```
+
+The current icons stay in place until the designer chooses replacements in the
+[Icon Lab](ICON_LAB.md) (§200). Work: TODO §201, issue B102.
 
 ## Ownership and mappings
 
-`ui_qt/icons.py` is the only action-icon provider. Call Qt's `QIcon.fromTheme`
-with the matching bundled fallback. Do not override the desktop theme or add
+`ui_qt/icons.py` is the only action-icon provider; `ActionIcons` binds all
+eight main-window actions and both button-lab toolbar pairs to it. Call Qt's
+`QIcon.fromTheme` with the matching bundled fallback. Do not override the desktop theme or add
 system-dependent absolute asset paths. Both the main window and button lab
 use this provider. Standard names:
 
@@ -61,14 +92,20 @@ backgrounds, normal/disabled states and 1×/2× rasterization; all action icons
 must render nonempty with unchanged logical sizes. Exercise a live palette/
 theme refresh without new PDF jobs or changing selection. Capture/view full
 windows and 1:1 enabled/disabled controls, both native-theme and forced-
-fallback cases. Full regression suite and normal supervised app restart
-remain required; only explicit designer confirmation closes B102.
+fallback cases.
 
-## Implementation
+## References
 
-`ActionIcons` binds all eight main-window actions and both button-lab toolbar
-pairs to the shared provider.
-
-References: [Qt QIcon theme/fallback/HiDPI support](https://doc.qt.io/qt-6/qicon.html),
+[Qt QIcon theme/fallback/HiDPI support](https://doc.qt.io/qt-6/qicon.html),
 [KDE Breeze](https://invent.kde.org/frameworks/breeze-icons),
 [freedesktop icon naming](https://specifications.freedesktop.org/icon-naming/latest/).
+
+## Design traps and failed attempts
+
+- **Hand-drawn glyphs.** Revert and rename were custom 32px QPainter drawings
+  that matched no theme (§§196/197). Use named theme icons with the bundled
+  Breeze fallback; never draw replacement artwork.
+- **Reading a question as a requirement.** §120 asked whether a standard rename
+  icon exists; it was implemented as custom artwork instead.
+- **Two source sizes in one SVG engine.** Qt's per-mode and state slots do not
+  choose between 16px and 22px sources. Pick the grid per control.
