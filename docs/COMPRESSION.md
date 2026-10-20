@@ -161,6 +161,17 @@ Both models, and every codec, follow the same order:
 4. Encode once with the selected codec.
 5. Run the final lossless pass (below) and save.
 
+## Encoder policy (§213)
+
+Each representation uses the strongest validated encoder. Encoding time and
+extra encoder dependencies are not reasons to keep a weaker one; reader
+support is the only trade-off. Zopfli and zlib write the same Flate format, so
+they are not different choices for the reader, while Brotli needs a reader
+that supports it. Reader support is tested on actual readers, never inferred
+from a PDF version label. Superseded encoders such as Classic Flate remain
+only as labelled benchmark references. The explicit Flate stream policy is
+still offered; aligning the fixed policies with this rule is TODO §217.
+
 ## Editable compression selection (§203)
 
 The **Image compression** choice is part of every recipe and is exact:
@@ -168,7 +179,7 @@ The **Image compression** choice is part of every recipe and is exact:
 | Choice | PDF filter | Representation |
 |---|---|---|
 | JBIG2 BW | `/JBIG2Decode` | 1-bit, lossless generic region |
-| JBIG2 Color | `/JBIG2Decode` | one coloured 1-bit stencil per non-white palette entry over an opaque white base ([LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md)) |
+| JBIG2 Color | `/JBIG2Decode` | one coloured 1-bit stencil per non-white palette entry over an opaque white base ([JBIG2.md](JBIG2.md#jbig2-color-one-stencil-per-palette-colour)) |
 | Flate BW | `/FlateDecode` | packed 1-bit samples |
 | Flate Color (palette) | `/FlateDecode` | true Indexed, 2–256 colours |
 | JPEG2000 | `/JPXDecode` | lossy at the Quality setting, or Lossless |
@@ -259,8 +270,7 @@ The native layer is derived with MuPDF's content filter and lexer
 ### Shared assembly repairs (B108–B112)
 
 These issues fixed the rules above; their traps are listed under
-[Design traps](#design-traps-and-failed-attempts). They remain OPEN until the
-designer confirms them in `issues.md`.
+[Design traps](#design-traps-and-failed-attempts).
 
 ## Validation
 
@@ -286,9 +296,7 @@ and [marked-content handling](https://github.com/ArtifexSoftware/mupdf/blob/1.28
 - [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md): measured complete-PDF sizes for every combination.
 - [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md): JPEG/JPEG2000 settings, the quality mapping and its measured evidence.
 - [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md): Best, Zopfli and Brotli for native and packed streams.
-- [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md): equal-pixel BW and indexed bitmap study.
-- [JBIG2.md](JBIG2.md) and [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md): JBIG2 encoder and coloured stencils.
-- [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md) and [COMPRESSION_EXPERIMENTS.md](COMPRESSION_EXPERIMENTS.md): combination review and experiment protocol.
+- [JBIG2.md](JBIG2.md): JBIG2 BW and coloured stencils (JBIG2 Color).
 - Code: `core/image_layers.py` (native filtering, BW and colour assembly),
   `core/canvas.py` (composition and the single resize), `core/pipeline.py`
   (`force_to_dpi`, `color_canvas_payload`, `jpx_encode`, `_save_optimized_pdf`),

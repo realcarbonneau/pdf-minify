@@ -86,10 +86,8 @@ otherwise). Pending copies retain their source until completed safely.
   `rasterDefaultsRevision = 1` in the same settings store. Retain UUIDs,
   names, order, codecs and non-DPI parameters. A malformed marker is treated
   as unmigrated without hiding valid custom records. Later deliberate DPI
-  edits are saved normally and are not reset on subsequent launches. This
-  authorized one-time migration is an exception to ordinary explicit-edit
-  persistence, not a background edit or an ongoing clamp. Tests and screenshot
-  tools use isolated settings; the designer's migration runs on their next launch.
+  edits are saved normally and are not reset on later launches. Tests and
+  screenshot tools use isolated settings.
 
 ### Application-name migration (§230)
 

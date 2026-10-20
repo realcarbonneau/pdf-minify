@@ -1,146 +1,48 @@
-# PDF Minify — Overview & Opinionated Defaults
+# PDF Minify — overview
 
-Current canon is in `DESIGN.md`, `UI_LAYOUT.md`, `ARCHITECTURE.md`,
-`FILTER_LIFECYCLE.md`, and `COMPRESSION.md`. All filters produce real saved
-PDFs in the background; previews/minis read those files, sizes are their exact
-whole-file byte counts, and export copies them. Selection and view changes do
-not process again. Live filter edits debounce and show `*`, with explicit
-Save / Save As… / Discard / Cancel when leaving an unsaved filter (§149).
+PDF Minify makes PDFs smaller. Open a PDF, compare filters side by side and
+save the one you want. Every filter produces a real saved PDF in the
+background; the preview, the strip minis and Export all read that file, and
+the size shown is its exact byte count. Selecting a filter or changing the
+view never reprocesses. Filter edits debounce, show `*`, and offer Save,
+Save As…, Discard or Cancel when you leave the filter (§149).
 
-Exact display (§§172–175) observes the actual PDFs at device/zoom resolution,
-without PDF-content AA, image interpolation or decoder averaging. This is
-read-only rendering, not repeated filtering. Native shapes refine on zoom.
-The dated certified current runtime is in [PLATFORMS.md](PLATFORMS.md);
-Task Coach-inspired cross-platform dependency/build plans are in
-[PACKAGING.md](PACKAGING.md) (§176). Unbuilt targets are not certified.
+The top-level design principles, word for word, open [DESIGN.md](DESIGN.md).
 
-Action icons (§197) use the desktop theme with a bundled stock Breeze SVG
-fallback, not custom glyphs. Naming, palette handling, licenses and packaging
-requirements are in [ICONS.md](ICONS.md).
-§200 rejects the current appearance and adds View → Icon Lab… for genuine
-Nuvola/Oxygen/GNOME/Breeze comparisons, permanent choice codes and a copyable
-per-action reply. Selections never apply automatically; see [ICON_LAB.md](ICON_LAB.md).
+## Key facts
 
-The designer's new low-color experiment is documented separately in
-[LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) (§§192–194): one colored
-lossless JBIG2 stencil per non-white palette entry. §203 subsequently makes
-this an optional explicit image codec; existing preset defaults are unchanged.
-Every filter can now edit Image compression independently of its name/template.
-§205 adds independent PDF stream compression (Flate, Zopfli-Flate or limited-
-reader-support Brotli). Design, measured full-PDF results and actual reader
-limits: [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
-§§255/256 add **Best (Zopfli/Brotli)**: measure actual complete homogeneous and
-mixed candidates for native AND packed-image streams, without changing image
-samples, quality or J* payloads. The two non-J* image choices are labeled Packed
-BW and Indexed color; existing mode IDs/defaults and fixed-policy recipes stay
-compatible. All source imagery still passes through the selected conversion.
-§257 subsequently sets all built-in app filters to Best and explicitly
-authorizes a one-time migration of every saved app filter's stream policy,
-preserving its UUID, other settings and later deliberate choices. Original
-and fixed-encoder benchmark evidence are unchanged.
-§§251–254 make the Brotli declaration opt-in **(Compatibility)** metadata,
-off by default, with the reader explanation in native tooltip/accessibility
-help. The shared [tooltip convention](TOOLTIPS.md) keeps that help view-only
-and removes inline explanatory layout space.
-§209 separately benchmarks image compression at equal pixels, size-only:
-[IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). Native-only
-Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
+- **Image compression** is chosen per filter: JBIG2 BW, colored JBIG2, Packed
+  BW, Indexed color, JPEG2000 or JPEG. The selected codec is never replaced
+  by another one (§203).
+- **Page model**: FFPR off keeps native text and vectors over one composed
+  image canvas; FFPR on flattens the whole page into one image (§§127/171).
+  Images are composed in full colour, resized once to the target DPI
+  (default 300) and then transformed (§§180/225).
+- **PDF streams**: every app filter uses Best (Zopfli/Brotli) (§257). Brotli
+  output needs a reader that supports it.
+- **Quality**: one 0–100 control, default 75, for JPEG and JPEG2000
+  (§§272/284). The app never chooses between the two (§287).
+- **Display**: the actual saved PDFs are drawn at device and zoom resolution,
+  without anti-aliasing or interpolation (§§172–175).
+- **Icons** follow the desktop theme with a bundled Breeze fallback (§197);
+  View → Icon Lab… compares icon sets (§200).
 
-§§222/223 make [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) the primary
-size analysis: realistic combination rows over six representative complete
-PDFs, then focused scenario tables, with all overhead included and no timing
-comparisons. Mixed general-codec pairs are excluded; the two component
-studies above support the analysis, not substitute for it.
+## Where things are
 
-§258 makes the main matrix Best-only: one measured row per image recipe,
-with the common stream policy explained in section prose, not repeated row
-suffixes. The specialized binary section owns fixed Zopfli/Brotli alternatives
-and reference sizes; PNG effects retain their own fixed-encoder denominators.
-Use actual new Best saves from verified preparations, never copied minima.
-The earlier fixed-study counts below describe its retained control inventory,
-not the current main-table row selection.
-
-[JBIG2.md](JBIG2.md) (§234) documents the current generic-region `-p` path,
-lossless/lossy feature boundaries, refinement limitations and TODO §240's
-size-only optimization research. No additional switches or advanced GUI
-fields are implemented by that documentation. §233 selects non-JBIG2 CCITT
-TM972 for the main BW column. TODO §239's fresh post-repair matrix is now
-published in the report; historical pre-B114 files retain their actual
-source/version. §§236/237 remove redundant Classic-Flate bitmap rows
-consistently from the overview and every focused section, retaining the
-unresampled reference. §§238–240 present the same 204 representative-study
-measurements as 156 baseline sizes and a separate 48-cell PNG-effect table,
-with signed changes against measured baselines. The 48 additional focused
-PDFs and residual-stream comparisons are unchanged pending PNG-only review.
-§235 repairs the
-already-JBIG2 JFK full-flow pixel/no-growth regression: all contracts now pass
-normally. B114 remains open only pending explicit designer confirmation.
-
-§§210/211 request [a reasonable-combinations table and UI review](COMPRESSION_COMBINATIONS.md).
-The proposed shared general-compressor/disabled-control design is separate
-from current capabilities; the documentation request alone approves no new
-selector behavior or saved-recipe migration. §§224/225 later authorize color
-FFPR across all six existing codecs and 300 DPI for every built-in raster
-default. §226 also authorizes a one-time migration of all saved/custom raster
-filters to 300 DPI, preserving UUIDs and all non-DPI settings. Later deliberate
-DPI edits remain intact. The current
-integrated overview and focused scenarios use 300 DPI throughout, rather than
-repeating lower-DPI variants; preserve-images controls remain unresampled.
-
-Designer §213 subsequently rules that encoding cost is not a product constraint:
-use the best validated encoding and drop superseded encoder choices. Zopfli
-needs only the existing Flate decoder, so the target is one optimized Flate
-format versus genuinely different reader-support requirements such as Brotli.
-The three fixed choices/defaults have not yet been fully aligned (TODO §217);
-Best is now an additional measured-choice policy, not a silent migration. This
-supersedes the historical Max/Balanced/Fast effort brief, not fidelity rules.
-
-HISTORICAL BRIEF BELOW — original JPEG defaults, DPI-ceiling wording,
-page-list/per-page-control plan, on-click work and size estimates are
-superseded or unimplemented. They are not current developer instructions.
-
-Target first: **LXDE on Debian 13 (trixie), Python 3.13**.
-Goal later: same codebase runs on Windows / macOS / other Linux.
-
-## What it does
-Drag-and-drop (or File > Open) a PDF, visualize per-page and global size wins,
-apply one of two opinionated pipelines, save a much smaller PDF.
-
-Two pipelines only (v0.1):
-1. **BW Document** — render page → grayscale → threshold → 1-bit → encode
-   with JBIG2 lossless. For scans, notes, books.
-2. **Color/Gray Recompress** — keep page as-is, extract embedded images,
-   downsample + recompress to JPEG (default) or JPEG2000 (opt-in). For slides,
-   photos in PDFs.
-
-No magic "auto-optimize" button that silently destroys quality. Every action
-shows before/after preview + bytes saved.
-
-## Opinionated defaults (max compression first)
-- DPI: render/threshold at 300 dpi, downsample color images to 150 dpi.
-- BW threshold: **Otsu auto** global, manual slider 0–255 overrides global,
-  per-page override table overrides global (GIMP Threshold equivalent = Simple mode).
-- BW encode: **JBIG2 lossless**; pages whose stream fails test-decode embed
-  1-bit PNG instead (never a corrupt page).
-  Lossy JBIG2 OFF by default (character-substitution risk, NARA forbids lossy for archives).
-- Color encode: **JPEG q=50, subsampling 4:2:0, optimize**, fallback to keep-original if larger.
-  JPEG2000 OFF by default (20% smaller but 5–10x slower + viewer lag on big pages).
-- PDF save: `garbage=4, deflate=1, use_objstms=1` (PyMuPDF), dedup images.
-- Speed knob: single `Effort: Max | Balanced | Fast` that maps to the above.
-  Max = smallest file, slowest. Fast = JBIG2 + JPEG only, no JP2, no Sauvola.
-- JPEG XL: **NOT used inside PDF in v0.1** (see `PDF_OPTIMIZATION_NOTES.md`).
-  Optional sidecar export later.
-
-## Non-negotiables
-- **ESC cancels anything in <200ms.** Every long loop checks a cancel event
-  per page, kills subprocesses (`jbig2enc`, `cjpeg`, etc.), cleans temp files.
-- No network. No telemetry. Local files only.
-- Never overwrite input. Output defaults to `<name>.reduced.pdf`.
-- Born-digital PDFs (selectable text / vector) get a warning before BW rasterize,
-  because BW mode in v0.1 destroys the text layer.
-
-## v0.1 scope
-- Open 1 PDF (DnD + button), page list with thumbnails, click page → large
-  before/after preview, global threshold slider + strategy dropdown, per-page
-  threshold override, size estimate label, Save + Cancel.
-- No OCR, no MRC sandwich, no multi-file batch (v0.2).
+| Topic | Page |
+|---|---|
+| Design principles, behaviour, presets | [DESIGN.md](DESIGN.md) |
+| Window layout, strip and controls | [UI_LAYOUT.md](UI_LAYOUT.md) |
+| Processing flow and background jobs | [ARCHITECTURE.md](ARCHITECTURE.md), [FILTER_LIFECYCLE.md](FILTER_LIFECYCLE.md) |
+| Compression design | [COMPRESSION.md](COMPRESSION.md) |
+| Measured complete-PDF sizes | [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) |
+| JPEG and JPEG2000 quality | [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md) |
+| PDF stream compression and reader limits | [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md) |
+| JBIG2 BW and Color | [JBIG2.md](JBIG2.md) |
+| Proposal, not implemented | [MIXED_MODE_OPTION.md](MIXED_MODE_OPTION.md) |
+| Icons and tooltips | [ICONS.md](ICONS.md), [ICON_LAB.md](ICON_LAB.md), [TOOLTIPS.md](TOOLTIPS.md) |
+| Settings and temporary files | [PERSISTENCE_AND_TEMP.md](PERSISTENCE_AND_TEMP.md) |
+| Certified platform, packaging, dependencies | [PLATFORMS.md](PLATFORMS.md), [PACKAGING.md](PACKAGING.md), [DEPENDENCIES.md](DEPENDENCIES.md) |
+| Developer rules and tests | [DEVELOPER_GUIDELINES.md](DEVELOPER_GUIDELINES.md), [TEST_PLAN.md](TEST_PLAN.md) |
+| Designer rulings, word for word | [DESIGNER_VERBATIM.md](DESIGNER_VERBATIM.md) |
+| Requirements, defects, dropped ideas | [TODO.md](TODO.md), [issues.md](../issues.md), [DROPPED.md](DROPPED.md) |

@@ -136,8 +136,7 @@ and verified; Task Coach having them does not certify or require them here.
   or another process's temporary files. Verify signing/notarization policy;
   do not tell users to bypass OS security as the standard release workflow.
 - Only after the gates pass, add a dated platform/artifact certificate to
-  `PLATFORMS.md`. Designer acceptance of individual issues is recorded
-  separately. Creating/pushing releases requires explicit authorization.
+  `PLATFORMS.md`. Creating/pushing releases requires explicit authorization.
 
 Primary references checked 2026-10-14: Task Coach's linked guide/workflows,
 [Python embeddable distribution](https://docs.python.org/3/using/windows.html#windows-embeddable),

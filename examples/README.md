@@ -1,6 +1,6 @@
 # examples/ — PDF optimization test corpus (committed to the repo)
 
-Corpus band (designer §35, supersedes the §24 band for new additions):
+Corpus band for new additions (designer §35):
 **3–50 pages, 200KB–50MB per file.** The nine pre-corpus files (1–2 pages,
 `bug1721218*`, `images`, `issue*`, `deed`, `form-fw9`, `manual-maytag`,
 `paper-arxiv`) are grandfathered.
@@ -62,39 +62,3 @@ validator status ERROR; direct browser download works).
 - Arizona Republican 1908-08-19 (10 newspaper pages): https://www.loc.gov/resource/sn84020558/1908-08-19/ed-1/
 - Andrew Jackson correspondence 1814 (12 manuscript pages): https://www.loc.gov/resource/maj.01022_0298_0309/
 - 17th-c. Spanish legal brief (10 pages): https://www.loc.gov/resource/llhsp.llhsp_brief_04-00441-00445/
-
-## Spot-checks 2026-10-09 (outputs to gitignored `.tmp/`, not committed)
-
-- Pre-corpus: `bug1721218` BW otsu −98% · `images` color q45 −88% · `issue1905` color q45 −20%.
-- Scans with current PNG-embedded 1-bit (no JBIG2 yet): `scan-jfk-dark-letter`
-  3,980,142 → 5,142,092 (**+29% bigger**), `scan-naca-report820` 1,660,774 →
-  2,472,530 (**+49% bigger**). Honest signal for two rulings: the optimizer must
-  sometimes decline to "optimize" (§35), and JBIG2 wiring is now the top
-  compression gap (queue).
-
-## Filter benchmark 2026-10-10 (designer §67 — every preset, preset defaults)
-
-`./.venv/bin/python tools/bench_filters.py` → `.tmp/bench_filters.csv`.
-KB (% of input). BW rules text/scans; color paths only touch oversized
-embedded images (else gc-only, e.g. `scan-naca-formulas` 93% across the row).
-
-| file | in | bw-otsu | bw-fast | color-j2k | color-max | color-i64 | color-p16 | orig |
-|---|---|---|---|---|---|---|---|---|
-| `deed-brevard` | 144K | 22K (15%) | 16K (11%) | 143K (99%) | 143K (99%) | 143K (99%) | 143K (99%) | 143K (99%) |
-| `form-fw9` | 141K | 27K (19%) | 18K (13%) | 125K (89%) | 125K (89%) | 125K (89%) | 125K (89%) | 125K (89%) |
-| `form-941-2026` | 842K | 146K (17%) | 89K (11%) | 817K (97%) | 817K (97%) | 817K (97%) | 817K (97%) | 817K (97%) |
-| `images` | 1494K | 4K (0%) | 3K (0%) | 192K (13%) | 179K (12%) | 230K (15%) | 177K (12%) | 1493K (100%) |
-| `paper-arxiv-1406.2661` | 530K | 28K (5%) | 18K (3%) | 301K (57%) | 328K (62%) | 372K (70%) | 348K (66%) | 490K (92%) |
-| `scan-naca-formulas` | 258K | 25K (10%) | 19K (7%) | 239K (93%) | 239K (93%) | 239K (93%) | 239K (93%) | 239K (93%) |
-
-## Palette benchmark 2026-10-10 (designer §67 — algo × format)
-
-`./.venv/bin/python tools/bench_palette.py` → `.tmp/bench_palette.csv`
-(13 embedded images from photo/mixed/form/diagram PDFs + flat/noise
-synthetics; algorithms × dither × 16/64/256 colors × storage formats).
-Findings: FASTOCTREE-no-dither beats MEDIANCUT on every corpus image at 64
-colors; dithered variants never win for Flate (noise deflates worse);
-Flate-Indexed beats Flate-RGB everywhere; JPEG still wins photos, JPX rate
-~192 matches JPEG q45 size at +4.5dB (hence the preset default); pngquant
-wins tiny flat graphics but times out on photos, so it stays out of the
-automatic path.

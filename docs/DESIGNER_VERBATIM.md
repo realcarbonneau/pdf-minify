@@ -12,7 +12,14 @@ stay unchanged and removed IDs are never reused (§218).
 
 From §272 on, each entry holds exactly one designer message in a fenced
 `text` block, so spacing renders exactly as typed; a `Source:` line names
-where it came from. Earlier entries keep their original blockquote form.
+where it came from. Earlier entries keep their original blockquote form,
+except §§139/141, restored exactly from their original source.
+
+Entries before §272 were recorded by an earlier worker and cannot be checked
+against the original messages, except §§139–141: their source is unclear.
+When a clear-source ruling supersedes or reconfirms an unclear-source entry,
+the old entry is deleted; the others stay until new rulings replace them
+(§290).
 
 ## 3 — app vision (original brief)
 > I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
@@ -89,9 +96,6 @@ where it came from. Earlier entries keep their original blockquote form.
 ## 29 — more real-world types (verbatim, 2026-10-09)
 > Why are there only 5 examples in the repo?  There are many types of pdf available on the internet, deeds, research papers, documentations, appliance manuals, etc...
 
-## 30 — original in filters (verbatim, 2026-10-09)
-> Also, why is original still in the filters?  Or did you not relaunch the latest version?
-
 ## 31 — terrible default pdf (verbatim, 2026-10-09)
 > why are you using that terrible pdf as a default?
 
@@ -104,283 +108,11 @@ where it came from. Earlier entries keep their original blockquote form.
 ## 34 — fit right or menu (verbatim, 2026-10-09)
 > For now, fit everything you can on the right side panel or in the menu.
 
-## 35 — optimization test corpus brief (verbatim, 2026-10-09)
-> document, compile and collect these, document in an examples md doc with descriptions, view them also.  # PDF optimization test corpus — initial collection
->
-> I'll target 18–24 public PDFs, with a strict range of 3–50 pages and 200 KB–50 MB per file. The objective is to find documents that stress different parts of a PDF optimizer, not merely different subject matter.
->
-> ## 1. Categories and sources
->
-> | Category                                  | Target sources                                     | What we'll test                                             |
-> | ----------------------------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-> | 1. Text-heavy research papers             | arXiv, universities, Mozilla                       | Font embedding, text preservation, equations                |
-> | 2. Forms and structured documents         | IRS, government agencies                           | Fine lines, form fields, tables                             |
-> | 3. Vector diagrams and technical drawings | NASA, USGS, engineering documents                  | Preserving vector precision and small labels                |
-> | 4. Photo-heavy publications               | NASA, National Park Service                        | JPEGli vs. JPEG 2000, image downsampling                    |
-> | 5. Mixed-layout brochures                 | NPS, museums, visitor guides                       | Photos, graphics, colored text on the same page             |
-> | 6. B&W scanned documents                  | Library of Congress, Internet Archive              | Fixed/adaptive thresholds, JBIG2                            |
-> | 7. Old books and newspapers               | Digital libraries, historic archives               | Yellowed paper, bleed-through, faded type                   |
-> | 8. Illustrated educational books          | NASA, public educational resources                 | Color illustrations, line art, large graphics               |
-> | 9. Scientific maps and charts             | USGS, NOAA                                         | Fine labels, dense linework, mixed raster/vector content    |
-> | 10. Corporate-style reports               | Public annual/impact reports                       | Charts, branding, transparency, font subsets                |
-> | 11. Manuals and instructions              | Open-source projects, hardware vendors             | Screenshots, diagrams, repetitive images                    |
-> | 12. PDF compatibility edge cases          | PDF.js, PDF Association, accessibility test suites | Annotations, metadata, transparency, special PDF structures |
->
-> I'll deliberately include both already-optimized PDFs and visibly inefficient ones. A good optimizer should sometimes report that it cannot improve a file without unacceptable quality loss.
->
-> ## 2. First selection: 22 candidate PDFs found
->
-> Here are 17 of the strongest candidates. These are links to the actual PDFs, not just search pages.
->
-> Sizes are publisher-listed or approximate; page counts have been checked directly for many of the smaller files. Larger files still need download-side verification.
->
-> | PDF / source                                                                                                                                 | Pages | Listed size | Optimization challenge            |
-> | -------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ----------- | --------------------------------- |
-> | [IRS Form 941 (2026)](https://www.irs.gov/pub/irs-pdf/f941.pdf)                                                                              | 3     | 822 KB      | Forms, fine lines, small text     |
-> | [Antietam Junior Ranger (ages 6 and under)](https://home.nps.gov/anti/learn/kidsyouth/upload/2018july25Jr-ranger-under-six-508-1.pdf)        | 6     | 222 KB      | Simple B&W worksheets             |
-> | [Mozilla TraceMonkey paper](https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf)                                         | 14    | \~1 MB      | Fonts, text columns, graphs       |
-> | [CDC: Trends in Births and Deaths](https://stacks.cdc.gov/view/cdc/174614/cdc_174614_DS1.pdf)                                                | 12    | 366 KB      | Vector charts and tables          |
-> | [NASA Great Observatories models](https://science.nasa.gov/wp-content/uploads/2023/05/HST_Compton_Chandra_PaperModels.pdf)                   | 37    | 348 KB      | Very compact line-art baseline    |
-> | [NASA Kepler model](https://science.nasa.gov/wp-content/uploads/2023/05/2017_Kepler_Paper_Models.pdf)                                        | 12    | 713 KB      | Technical illustrations           |
-> | [NASA TESS model](https://science.nasa.gov/wp-content/uploads/2023/05/TESS_Paper_model_v2-1.pdf)                                              | 8     | 1.6 MB      | Diagrams and labels               |
-> | [NASA Exoplanets coloring book](https://science.nasa.gov/wp-content/uploads/2023/10/Exoplanets_Coloring_Book_07-22-2016.pdf)                 | 28    | \~5 MB      | B&W illustration edges            |
-> | [Arches Junior Ranger guide](https://www.nps.gov/arch/planyourvisit/upload/Arches-Junior-Ranger-web.pdf)                                     | 20    | \~5 MB      | Mixed illustration and text       |
-> | [Crater Lake Reflections (2026)](https://www.nps.gov/crla/learn/news/upload/Crater_Lake_Reflections_Summer-Fall_2026_Low-Res_508.pdf)        | 8     | 5.29 MB     | Photos, newspaper columns         |
-> | [UNICEF Syria report, December 2024](https://www.unicef.org/syria/media/19811/file/Syria-Humanitarian-situation-report-29-December-2024.pdf) | 9     | 333 KB      | Small report with photos/charts   |
-> | [UNICEF Syria report, November 2024](https://www.unicef.org/syria/media/19821/file/Syria-Humanitarian-situation-report-November-2024.pdf)    | 9     | \~4 MB      | Larger report of similar type     |
-> | [UNICEF Learning Passport report](https://www.unicef.org/learningpassport/media/1606/file/Jan.-June%202025%20Progress%20Report.pdf.pdf)      | 32    | \~10 MB     | Photography and complex layouts   |
-> | [Antietam Junior Ranger (ages 9+)](https://home.nps.gov/anti/learn/kidsyouth/upload/Jr-Ranger-Booklet-2023-section-508.pdf)                  | 12    | 8.4 MB      | Richly illustrated booklet        |
-> | [NASA Swift model](https://science.nasa.gov/wp-content/uploads/2023/05/swmodguide5.pdf)                                                      | 32    | 15.2 MB     | Larger print-model file           |
-> | [Community Gardening Manual](https://cdn.atlantaregional.org/wp-content/uploads/communitygardeningmanual-june2022.pdf)                       | 40    | 25 MB       | Illustrated manual                |
-> | [East Point Agriculture Plan](https://cdn.atlantaregional.org/wp-content/uploads/east-point-city-agriculture-plan.pdf)                       | 43    | 26 MB       | Large, photo-rich planning report |
->
-> Sources for the listed sizes and page counts include NASA's model catalog, NPS publication pages, UNICEF's reports, CDC's archive and the Atlanta Regional Commission.
->
-> The full manifest also includes an architectural archive, a NIST standards document, an Arduino datasheet, a USGS geoscience document and a CDC medical journal.
->
-> ## 3. Corpus starter files
->
-> Download PDF test corpus starter
->
-> 22 source records · JSON manifest · Python downloader/validator · README
->
-> The package contains source links rather than copies of the PDFs. Its validator checks actual download sizes, page counts, SHA-256 hashes and embedded image compression types.
->
-> You can also get the individual files:
->
-> PDF manifest (JSON) · Download/validation script (Python)
->
-> Run on Debian/LXDE:
->
-> ```
-> sudo apt install python3 poppler-utils
-> python3 fetch_and_validate.py manifest.json ./downloads
-> ```
->
-> It creates `downloads/corpus_report.csv`, with `OK`, `OUT_OF_RANGE`, or `ERROR` for each candidate. I created and syntax-checked the script, but couldn't execute the remote downloads in this environment.
->
-> ## 4. What I particularly want to measure
->
-> For each qualifying PDF, the next useful measurements will be:
->
-> | Metric                          | Reason                                      |
-> | ------------------------------- | ------------------------------------------- |
-> | Total file size / page          | Basic compression benchmark                 |
-> | Embedded image count and codecs | Determine JPEG, JPX, JBIG2, Flate, etc.     |
-> | Largest embedded images         | Identify high-impact candidates             |
-> | Text and vector preservation    | Avoid destructive full-page rasterization   |
-> | Estimated B&W suitability       | Identify pages worth thresholding           |
-> | Before/after visual differences | Detect unacceptable quality loss            |
-> | Compression ratio by strategy   | Compare JPEGli, JPEG2000, grayscale, JBIG2 |
->
-> Two comparisons stand out already: the UNICEF reports show how similarly sized documents in page count can differ dramatically in bytes, while the NASA models show that dozens of illustration-heavy pages can fit in only a few hundred kilobytes. They should help test whether the optimizer knows when to compress and when to leave a well-optimized PDF alone.
->
-> The remaining priority gap is a set of genuinely scanned, noisy historic pages with confirmed 1-bit, grayscale, or color raster content. Those will be critical for evaluating your fixed-threshold, Sauvola/Otsu and lossless-JBIG2 pipelines.
-
-## 36 — historical scan test set (verbatim, 2026-10-09)
-> ## Confirmed additions: historical scan test set
->
-> I've now located actual scanned-document candidates, including one particularly useful example of dirty scan borders.
->
-> | Document                                                                                                                                                                                                                  | Pages | Why it's useful                                                                                  |
-> | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------ |
-> | [NACA Report 820 — Propellers in Yaw (1945)](https://ntrs.nasa.gov/api/citations/19930091897/downloads/19930091897.pdf)                                                                                                   | 23    | Aged printing, fine graph lines, equations, scan artifacts and imperfect text                    |
-> | [National Archives — Defense Department records schedule](https://www.archives.gov/files/records-mgmt/rcs/schedules/departments/department-of-defense/office-of-the-secretary-of-defense/rg-0330/nc1-330-78-07_sf115.pdf) | 12    | Mixed modern cover pages and historical scanned pages, dirty borders, speckling and uneven print |
->
-> I checked the actual PDF page counts and inspected rendered pages from both. Their download sizes still need verification.
->
-> These are the kinds of PDFs where threshold settings, despeckling, border removal and JBIG2 compression can make a meaningful difference — and where an overly aggressive threshold can destroy faint information.
->
-> ## Additional verified scanned PDFs
->
-> The National Archives' JFK records turn out to be an excellent source of real-world processing failures: handwritten documents, degraded photocopies, repeated office forms, ruled paper, and badly reproduced originals.
->
-> | Direct PDF                                                                                                           | Pages | Primary test                                         |
-> | -------------------------------------------------------------------------------------------------------------------- | ----- | ---------------------------------------------------- |
-> | [CIA handwritten index/file requests](https://www.archives.gov/files/research/jfk/releases/2018/104-10079-10231.pdf) | 30    | Forms, handwriting, variable contrast                |
-> | [Handwritten surveillance notes](https://www.archives.gov/files/research/jfk/releases/2018/104-10196-10045.pdf)      | 9     | Small cursive text, ink strokes, speckles            |
-> | [Handwritten list on ruled paper](https://www.archives.gov/files/research/jfk/releases/2018/104-10054-10408.pdf)     | 35    | Faded lines, very sparse handwritten content         |
-> | [Handwritten letter and attachments](https://www.archives.gov/files/research/jfk/releases/2018/104-10071-10069.pdf)  | 6     | Severely degraded reproduction, very dark background |
-> | [Poor-copy handwritten summaries](https://www.archives.gov/files/research/jfk/releases/104-10196-10330.pdf)          | 8     | Faint, broken characters and low contrast            |
-> | [NACA Technical Memorandum 972 (1941)](https://ntrs.nasa.gov/api/citations/19930094444/downloads/19930094444.pdf)    | 11    | Aged typewriting, annotations and diagrams           |
-> | [NACA Technical Memorandum 997 (1941)](https://ntrs.nasa.gov/api/citations/19930094420/downloads/19930094420.pdf)    | 23    | Formulas, weak print, noise and graphics             |
-> | [NACA boundary-layer formulas (1941)](https://ntrs.nasa.gov/api/citations/19930092712/downloads/19930092712.pdf)     | 7     | Heavy type, mathematical symbols and small marks     |
->
-> All eight page counts were confirmed from the actual PDF documents, and I inspected representative rendered pages.
->
-> The dark handwritten letter is especially valuable: automatic thresholding may make it worse. It provides a strong test for local contrast enhancement, background estimation and page-specific settings rather than blindly applying a global threshold.
->
-> ## Historical newspapers and older manuscripts
->
-> I also found a few useful Library of Congress collections:
->
-> - [Arizona Republican, August 19, 1908](https://www.loc.gov/resource/sn84020558/1908-08-19/ed-1/) — 10 newspaper pages, dense columns and historical printing.
-> - [Andrew Jackson correspondence, 1814](https://www.loc.gov/resource/maj.01022_0298_0309/) — 12 manuscript pages.
-> - [Seventeenth-century Spanish legal brief](https://www.loc.gov/resource/llhsp.llhsp_brief_04-00441-00445/) — 10 pages of historical printed material.
->
-> These are source records, not yet verified multipage PDF download files. Some Library of Congress viewers provide individual page PDFs instead of a combined document, so I've kept these separate from the automated downloads.
->
-> ## Updated test corpus
->
-> Download updated PDF corpus package
->
-> 32 direct PDF candidates · 10 historical scans · 5 additional archive leads · validator
->
-> Updated JSON manifest · Validation script
->
-> The remaining limitation is actual file size verification. I confirmed the page counts and visually examined the scanned documents, but remote PDF downloads were unavailable in this workspace. The validator will enforce the requested 200 KB–50 MB range and identify image codecs on a network-connected machine.
->
-> For the optimizer itself, I would make the faint handwriting, dark photocopies, and ruled-paper scans mandatory regression tests. They are substantially more revealing than clean PDFs when evaluating threshold strategies and JBIG2 compression.
+## 35 — optimization test corpus brief (verbatim excerpt, 2026-10-09)
+> document, compile and collect these, document in an examples md doc with descriptions, view them also.
 
 ## 37 — background previews (verbatim, 2026-10-09)
 > don't freeze the whole app when doing the previews, do it in background.  the thumnail previews have to show the same viewport.  I want the app to do the full processing of each preset in the background without freezing the system, maybe set a max cores usually at 50% of the system if the processing is one core at a time (is it?) and then when panning, you are just showing a view on the rendered file.  Show a progress bar on each file that is processing.  Later, we will have an option to sort the filters and set a max auto filters, or no max.
-
-## 38 — corpus audit: camera-captured documents (verbatim, 2026-10-09)
-> # Corpus audit: the biggest gap is real camera-captured documents
->
-> I reviewed all 32 direct-PDF candidates in the current manifest, plus the five Library of Congress discovery leads.
->
-> The collection is overly concentrated in NASA illustrations, historical aerospace scans, and National Archives paperwork. It has good coverage of ordinary PDFs, but almost no material designed to test difficult lighting in photographs of paper documents.
->
-> A faded archival scan is not equivalent to a phone photograph taken under a desk lamp. The latter may have white paper in shadow that's darker than ink elsewhere on the same page. A single global threshold cannot reliably separate those pixels.
->
-> ## 1. What I'd consolidate
->
-> | Overlapping group               | Current count | Recommendation                                                      |
-> | ------------------------------- | ------------- | ------------------------------------------------------------------- |
-> | NASA spacecraft models          | 4             | Keep Great Observatories and TESS; move Kepler and Swift to reserve |
-> | NARA JFK records                | 5             | Keep dark photocopy, faint handwriting, and ruled-paper examples    |
-> | Historic NACA technical reports | 4             | Keep Propellers in Yaw and TM 997                                   |
-> | CDC publications                | 2             | Keep the statistical-charts report; move MMWR to reserve            |
-> | Atlanta planning manuals        | 2             | Keep the 43-page East Point plan                                    |
-> | NPS activity booklets           | 3             | Keep a small B&W worksheet and one richly illustrated booklet       |
->
-> I would retain both 9-page UNICEF Syria reports for now. Their large advertised size difference makes them a useful controlled comparison, provided inspection confirms meaningfully comparable content.
->
-> That reduces the primary set from 32 to approximately 22–23 PDFs, before adding the missing classes. These are coverage-based decisions, not claims that the removed files are bad test material.
->
-> ## 2. The hardest missing test cases I've found
->
-> 1\. [DocShadow-SD7K](https://cxh-research.github.io/DocShadow-SD7K/) — highest priority
->
-> Real photographs of documents under difficult shadows, with corresponding shadow-free reference images. The researchers collected over 7,000 high-resolution pairs using different lighting conditions and occluders.
->
-> Stress: bright paper beside deep shadows, partial line obscuration, and preservation of tiny text.
->
-> The compressed full dataset is still about 9 GB; I'd extract a small, carefully selected subset rather than include the whole dataset.
->
-> 2\. [SmartDoc 2015](https://github.com/jchazalon/smartdoc15-ch1-dataset) — most practical phone-photo benchmark
->
-> Smartphone video frames containing printed letters, magazine pages, patents, tax documents, scientific papers, and datasheets, with blur, lighting changes, perspective distortion, and partial occlusion.
->
-> Stress: detecting the paper region and deciding whether to crop, rectify, normalize lighting, or preserve the photograph.
->
-> This dataset is explicitly licensed CC BY 4.0.
->
-> 3\. [DocUNet](https://www3.cs.stonybrook.edu/~cvl/docunet.html) — curved and warped pages
->
-> Real camera photographs of curved document pages, paired with flatbed scans and cropped versions.
->
-> Stress: gutter shadows, curved text baselines, local blur, perspective, and page-shape changes. The original-photo download is listed at 328 MB.
->
-> 4\. [DIBCO 2019](https://vc.ee.duth.gr/dibco2019/) — objective B&W threshold tests
->
-> Historical handwritten and printed documents with degraded backgrounds and reference binary images. This lets us quantify missed ink and false black pixels instead of relying entirely on visual judgment.
->
-> 5\. [SSD-DIS (2026)](https://doi.org/10.6084/m9.figshare.29401811) — diverse shadow shapes
->
-> A newer semi-synthetic document shadow dataset including text, graphics, handwriting, and multilingual pages. It offers a controlled complement to real-camera images.
->
-> These are publicly available image datasets, not ready-made multipage PDFs. For your optimizer, the proper approach is to assemble subsets of 3–50 original images into image-only PDFs, keeping source filenames and reference images outside the PDF for testing.
->
-> ## 3. Additional classes missing from the original corpus
->
-> Beyond the difficult photographs, the following deserve separate tests:
->
-> | Priority | Missing class                                         | Why it matters                                                    |
-> | -------- | ----------------------------------------------------- | ----------------------------------------------------------------- |
-> | Critical | Uneven illumination and flash glare                   | A global B&W threshold can erase text or turn shadows black       |
-> | Critical | Book gutter and curved pages                          | Requires illumination correction and possibly dewarping           |
-> | High     | Scanned PDF with invisible OCR text                     | Optimization must preserve selectable/searchable text             |
-> | High     | Already-compressed JBIG2, CCITT and MRC PDFs          | Avoid making highly optimized PDFs larger or worse                |
-> | High     | CMYK, ICC profiles, transparency                      | Prevent color changes and rendering errors                        |
-> | High     | PDF/A, PDF/UA and tagged documents                    | Preserve archival and accessibility properties                    |
-> | High     | Digital signatures, annotations and interactive forms | Avoid damaging document functionality                             |
-> | High     | Mixed per-page codecs and shared image objects        | Verify that page-specific optimization doesn't change other pages |
->
-> The [PDF Association's PDF corpora index](https://github.com/pdf-association/pdf-corpora) is a good source for these structural tests, including PDF/A, PDF/UA, PDF/X, and rendering compatibility suites.
->
-> ## 4. What the hardest photographed documents should test
->
-> I'd test the following sequence against each photographed page:
->
-> Processing ladder
->
-> 1. Original color image — preservation baseline
-> 2. Grayscale, without thresholding
-> 3. Fixed global threshold
-> 4. Otsu automatic threshold
-> 5. Sauvola / Wolf adaptive threshold
-> 6. Background illumination correction, then adaptive threshold
-> 7. Retain grayscale or color if B&W destroys information
->
-> The last option is essential. If a dark shadow and actual ink have overlapping brightness values, a simple global threshold cannot correctly distinguish them. If glare has clipped image detail entirely, even sophisticated software cannot reliably recover it.
->
-> For your application, I would make “B&W not recommended for this page” an important automatic recommendation rather than forcing every page through a compression strategy.
->
-> ## 5. Updated corpus files
->
-> I've created and checked the revised corpus package.
->
-> Download audited PDF corpus package
->
-> 26 KB · Manifests, audit, dataset references, validator and photo-to-PDF builder
->
-> # 23
->
-> Primary PDF candidates
->
-> # 9
->
-> Reserve candidates
->
-> # 8
->
-> External benchmark sources
->
-> Curated PDF manifest
->
-> New image dataset sources
->
-> Full audit and missing-class report
->
-> Photographs-to-PDF builder
->
-> The builder has been locally tested with a three-page JPEG sample: it produced a readable PDF with JPEG image streams and a provenance index containing source hashes.
->
-> Still outstanding: downloading the actual public source files, measuring the real byte sizes and assembling the hard-photo benchmark PDFs. This environment couldn't retrieve those remote files, so I haven't presented the new research datasets as already-built PDF samples.
->
-> My next priority would be a focused 12–16-page extreme-lighting test PDF using selected DocShadow-SD7K examples, followed by a SmartDoc handheld-photo PDF. Those two would probably reveal more about the quality of your future thresholding interface than another dozen clean government documents.
 
 ## 40 — product and stub rename (verbatim, 2026-10-09)
 > change the various names and stubs that has pdf-reducer, to pdf-minimalist.
@@ -679,17 +411,31 @@ where it came from. Earlier entries keep their original blockquote form.
 > Add canon instructions that you have to take screenshots (in a virtual frambuffer, same for the tests) and view the formats, layouts and other work you do to see if they make visual sense and follow modern best practices, or else you are just programming blind for GUI work!
 
 ## 139 — highlight approved + auto suite + drop bar missing (verbatim, 2026-10-13)
-> Ok, this highlight is good. you can document and harden the test cases for this. Also make a full suite of test cases that run automatically, so you don't have to run each one at a time. Also, next issue, the DnD does NOT show the drop indicator vertical bar, this is wrong, I already defined this many times.
+
+Source: designer message in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20.
+
+```text
+Ok, this highlight is good.  you can document and harden the test cases for this.  Also make a full suite of test cases that run automatically, so you don't have to run each one at a time.  Also, next issue, the DnD does NOT show the drop indicator vertical bar, this is wrong, I already defined this many times.
+```
 
 ## 140 — drop Original from the filter dropdown (verbatim, 2026-10-13)
 > Remove the "Original" option from the filter dropdown, that is NOT an option, it is the default for the left side preview, always.
 
 ## 141 — drag ghost needs true uniform transparency (verbatim, 2026-10-13)
-> Also, typical DnD should have some transparency, what is modern GUI best ptractices?
->
-> NO! That is not correct, the whole ghost should have the same transparency percentage. What you did is incorrect, with some parts being fully transparent, and other full opaque and I don't know what oyu did with letters, but that is definately incorrect and not modern best practices. Did you even look at the transparency render during a DnD ghost operation???
->
-> tell me what you did for transparency, because it just doesn't work
+
+Source: three designer messages in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20. The first two came before §140, the third after it.
+
+```text
+Also, typical DnD should have some transparency, what is modern GUI best ptractices?
+```
+
+```text
+NO! That is not correct, the whole ghost should have the same transparency percentage.  What you did is incorrect, with some parts being fully transparent, and other full opaque and I don't know what oyu did with letters, but that is definately incorrect and not modern best practices.  Did you even look at the transparency render during a DnD ghost operation???
+```
+
+```text
+tell me what you did for transparency, because it just doesn't work
+```
 
 ## 142 — ghost is the selected blue mini at about 50% (verbatim, 2026-10-13)
 > The ghost should be blue exactly as it is when I click on it to start the DnD, but probably 50% when over white, because of transparency, or some similar strategy. Follow modern best practices for GUI, the previous worker was not skilled and did mediocre work, I don't trust it's work.
@@ -862,9 +608,6 @@ where it came from. Earlier entries keep their original blockquote form.
 ## 193 — layered-color JBIG2 scope: design and benchmarks before integration (verbatim, 2026-10-14)
 > Design and benchmark first
 
-## 194 — dedicated cross-referenced developer document for layered-color JBIG2 (verbatim, 2026-10-14)
-> create a new dev document for this and cross reference and document your design and benchmarks
-
 ## 195 — remove redundant working labels (verbatim, 2026-10-14)
 > Also, drop the "working..." label, it's obvious it's working by the progress bar...
 
@@ -877,8 +620,7 @@ where it came from. Earlier entries keep their original blockquote form.
 ## 198 — reduce the previous progress-bar enlargement (verbatim, 2026-10-14)
 > I previously asked to increase the progress bar by 50%, I want to change that to only 25% of it's original size.
 
-## 199 — clarify progress-bar scale (verbatim, 2026-10-14)
-Clarification question: should the mini bar be 25% larger (1.25×), or one-quarter (0.25×), of its original size? Selected answer:
+## 199 — clarify progress-bar scale (selected option, 2026-10-14)
 > 25% larger — 1.25× original
 
 ## 200 — reject the current icons and request an icon lab with choice codes (verbatim, 2026-10-14)
@@ -923,8 +665,6 @@ Clarification question: should the mini bar be 25% larger (1.25×), or one-quart
 ## 219 — separate PNG-predictor comparisons from the main algorithm-size analysis (verbatim, 2026-10-15)
 > are all of your *+PNG benchmarks larger than the non +PNG versions?  It looks like that at first glance.  That seems obvious.  I think you should delegate that comparison specifically to a separate doc and state that this is to be exepected, and removed from the main analysis to avoid noise.
 
-Superseded by §220: retain the paired predictor columns in the main tables.
-
 ## 220 — retain all benchmark columns; omit typo-correction commentary (verbatim excerpt, 2026-10-15)
 > ok, then leave in the tables as it was.  Also, clean this up, we should NOT have typo correction discussions in the docs.
 
@@ -943,8 +683,7 @@ Superseded by §220: retain the paired predictor columns in the main tables.
 ## 225 — default every filter to 300 DPI; avoid redundant DPI benchmark variants (verbatim, 2026-10-15)
 > I think we should also convert all the filters to 300dpi default for now.  We know that lower dpi will be smaller in general, it's not useful to have variations of this, it doesn't provide information and causes comparison problems.
 
-## 226 — migrate every existing saved filter to 300 DPI (verbatim, 2026-10-15)
-Clarification question: should existing saved filters that explicitly specify 150 or 200 DPI also be changed to 300 DPI, or should explicit saved values be preserved? Selected answer:
+## 226 — migrate every existing saved filter to 300 DPI (selected option, 2026-10-15)
 > Change all saved filters to 300 DPI
 
 ## 227 — group the integrated overview by BW, indexed color and full color (verbatim excerpt, 2026-10-16)
@@ -977,39 +716,8 @@ Clarification question: should existing saved filters that explicitly specify 15
 ## 236 — approve ten complete benchmark-row removals (verbatim excerpt, 2026-10-16)
 > ok, proceed.
 
-Approval refers to the following ten complete rows proposed immediately before
-this reply, not individual cells or all Classic-Flate references:
-
-- Overview / Black and white (BW + Otsu): `BW + Classic Flate (reference)`,
-  `BW + Classic Flate (reference) + PNG prediction`,
-  `BW FFPR + Classic Flate (reference)`, and
-  `BW FFPR + Classic Flate (reference) + PNG prediction`.
-- Overview / Indexed color — low palettes:
-  `Indexed 5 colors + Classic Flate (reference)`,
-  `Indexed 5 colors + Classic Flate (reference) + PNG prediction`,
-  `Color FFPR; indexed 5 colors + Classic Flate (reference)`, and
-  `Color FFPR; indexed 5 colors + Classic Flate (reference) + PNG prediction`.
-- Focused scenarios / Logos/artwork — palette count:
-  `Indexed + Classic Flate (reference)` and
-  `Indexed + Classic Flate (reference) + PNG prediction`.
-
-Keep the unresampled Classic-Flate control, other focused Classic-Flate rows,
-and the retained Zopfli/Brotli plain/predicted comparisons. This narrows §214's
-reference coverage, not its removal of Classic Flate from product choices.
-Every remaining overview combination still requires all six measured inputs
-under §229; archived measurements remain immutable.
-
-Superseded in focused scope by §237: remove the same redundant bitmap
-references consistently from every focused section, not Logos/artwork alone.
-
 ## 237 — apply redundant-row removal consistently to focused tables (verbatim, 2026-10-16)
 > Obviously, if a row was considered redundant in the overview, is should also be dropped from the focused view, or else the statement that the row has low added values was incorrect.
-
-Apply §236's redundancy decision to every occurrence of the removed
-Classic-Flate bitmap combinations in focused tables. Do not reintroduce them
-as supplemental measurements. The unresampled preserve-images control is
-not one of those removed rows and remains a reference under §214. Keep
-Zopfli/Brotli prediction pairs and every representative input for retained rows.
 
 ## 238 — isolate lossless optimization effects with measured baseline comparisons (verbatim, 2026-10-16)
 > Your analysis is not well structured.  When an optimization does not change the final pdf visualization, like PNG prediction and optimized residual streams, split them out into their own tables to make single changes tests, this is the scientific method.  So for all the combination where PNG optimization is relevant, make a new table, with the rows for each of the baseline (eg "Indexed 5 colors + Brotli", etc) and the six columns, but the result size in the table will be for the "PNG prediction" version and beside it put the % improvement over the baseline (eg -1.2%, or +2.5%, etc)  The -% is good.  DO you follow?
@@ -1017,32 +725,14 @@ Zopfli/Brotli prediction pairs and every representative input for retained rows.
 ## 239 — only measured complete-PDF sizes (verbatim, 2026-10-16)
 > There is no "predicted PDF bytes", no predicted.  Only measured.  Why did you say predicted?
 
-Sizes are actual saved-file bytes. PNG prediction names the reversible
-encoding operation, never a size estimate. The signed percentage is computed
-from the two measured complete-file sizes, not estimated component savings.
-
 ## 240 — review PNG prediction before other optimization tables (verbatim, 2026-10-16)
 > Start with only "PNG prediction" so that I can review an make sure it is correct.
-
-PNG prediction is the current implementation scope. Leave residual-stream
-comparisons unchanged; further optimization-table restructuring follows review.
 
 ## 241 — full-suite trigger is code changes, not documentation or publication (verbatim, 2026-10-16)
 > This “full suite before every ship” is incorrect.  Full suite of test after code changed, not documentation changes, right?
 
-This clarifies the earlier §59 workflow: run the full suite after code-
-affecting changes. Documentation-only edits require relevant documentation
-checks, not a full test run. A commit/push of unchanged, already-tested code
-does not itself trigger another full suite.
-
 ## 242 — expand PNG coverage and build the next controlled experiment (verbatim, 2026-10-16)
 > Add more combos with PNG Prediction testing, but so far, it looks like it's never beneficial with Brotli.    Then plan and build the next binary benchmark experiment table.
-
-Expand eligible packed-image PNG pairs; the current Brotli observation is
-corpus evidence, not proof that prediction can never help. Each next experiment
-must identify one changed factor, a matching measured baseline, fixed source/
-pixels/recipe and signed complete-file size changes. This authorizes proceeding
-beyond §240's PNG-only first review, not unrelated GUI/default changes.
 
 ## 243 — percentage-only PNG-prediction effect table (verbatim, 2026-10-17)
 > also, remove the sizes from the binary test table "PNG prediction — measured effect versus baseline"
@@ -1070,10 +760,7 @@ beyond §240's PNG-only first review, not unrelated GUI/default changes.
 ## 250 — treatment titles directly above effect tables (verbatim, 2026-10-17)
 > You need to put a table title directly before those two table that clearly and concisely states the experimental treatment in the cells of the table.  Show me here first for headers, the I will confirm.
 
-The designer approved the two proposed titles (verbatim approval excerpt):
 > ok, proceed
-
-Approved wording is recorded in `DESIGN.md` §250.
 
 ## 251 — opt-in Brotli declaration and Brotli-only compatibility control (verbatim, 2026-10-17)
 > Also, we should remove the "extension specification" for all the tests and filters by default, but add it as a compatibility option when Brotli is selected.  Only show that option for Brotli, which is different than our existing pattern to always show the option by grey it out when not applicable.
@@ -1087,8 +774,6 @@ Approved wording is recorded in `DESIGN.md` §250.
 ## 254 — remeasure the tables after changing the Brotli default (verbatim, 2026-10-17)
 > Did you redo the tables?  Why is brotli still larger?
 
-The designer approved remeasuring affected Brotli cases and updating the
-published tables, reusing verified prepared images (verbatim approval excerpt):
 > Yes
 
 > You have to rerun everything brotli...
@@ -1128,64 +813,9 @@ published tables, reusing verified prepared images (verbatim approval excerpt):
 
 > Ok, then leave it always tested for both, fix your tree to show the test for both.
 
-## 262 — familiar JPEG2000 quality control (verbatim excerpt, 2026-10-18)
-
-> We have to use the parameter that users are most used to, that is the most common.
-
-Context: the user-facing JPEG2000 export setting, rather than an encoder's
-compression ratio, PSNR or other low-level parameter.
-
-## 263 — q90 starting point for both lossy color codecs (verbatim, 2026-10-18)
-
-> is this the default  "4:4:4"?   Also, use q90 for both jpg and jpeg2000 for now please as a start.  Should they be somewhat similar if the assumed range is 0-100?
-
-## 264 — q75 starting point and comparable codec settings research (verbatim, 2026-10-18)
-
-> change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
-
-## 265 — prioritize configured lossy JPEG2000 and comparable benchmarks (verbatim, 2026-10-19)
-
-> I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
-
-## 266 — equal slider values are the working comparison baseline (verbatim, 2026-10-19)
-
-> If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
-
-## 267 — use the study-based JPEG/JPEG2000 quality comparison (verbatim, 2026-10-19)
-
-> ok, use that please
-
-Context: approval of the preceding conditional comparison: if JPEG at the
-selected Quality achieves 40:1, use approximately 45:1 for JPEG2000; at
-60:1, use approximately 73:1. These are readings from the 2007 study's
-average visual-quality curve, not a universal quality equivalence. Keep
-one familiar Quality control rather than expose compression ratios.
-
 ## 268 — refresh every affected benchmark and document (verbatim, 2026-10-19)
 
 > ok, update all benchmarks and docs, and run the updated benchmarks that have not been done yet.
-
-## 269 — conventional quality scales and actual matching settings (verbatim, 2026-10-19)
-
-> I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
-
-## 270 — consolidate published comparisons and derive actual settings (verbatim excerpt, 2026-10-19)
-
-> You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
-
-## 271 — one fixed quality baseline across every experiment (verbatim excerpts, 2026-10-19)
-
-> NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
-
-> ok, tat is good
-
-Context: approval of JPEG q75 versus JPEG2000 q75 on the previous fixed
-`101 − q` scale (q75 → 26:1), at 300 DPI, without per-document adjustment
-or JPEG-reference normalization. This is a conservative working baseline,
-not a claim of measured equal visual quality. The subsequent implementation
-request authorizes correcting the app mapping and refreshing all affected
-benchmark sections; unchanged JPEG/BW/indexed evidence is reusable after
-verification. The app remains closed.
 
 ## 272 — JPEG2000 quality equivalence to JPEG q75 (verbatim, 2026-10-19)
 
@@ -1230,7 +860,6 @@ Well if if "4:2:0" matches a lower Q for JPEG2000, then that is not good, we sho
 ## 277 — option 2 approval (verbatim, 2026-10-19)
 
 Source: designer message in the Claude Code session of 2026-10-19; exact text.
-Replies to (worker text, not designer words): "**Both reduced colour (4:2:0):** JPEG at its normal 4:2:0 default, and JPEG 2000 reduced the same way, using the guideline's own 4:2:0 weights (Table 3)." Superseded by §278.
 
 ```text
 Yes, option 2 please and document properly.
@@ -1271,7 +900,6 @@ I think the compression docs should be organized as the first one being for the 
 ## 282 — publisher scripts update only measured numbers; tables and text curated by hand (verbatim, 2026-10-20)
 
 Source: designer message in the Claude Code session of 2026-10-20; exact text.
-Replies to (worker text, not designer words): "My recommendation is to rename the file, delete the sentence checks, and keep the checks that tie each table to its measurements."
 
 ```text
 ok, as you suggest, but the scripts should only be updating the benchmarks, not various texts in the file, right?  Maybe the benchmark results on the matching line specifically?  Thus you curate the tables manually?
@@ -1315,4 +943,36 @@ Source: designer message in the Claude Code session of 2026-10-20; exact text.
 
 ```text
 Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
+```
+
+## 288 — mini caption's last line cut off; look at the GUI results (verbatim, 2026-10-13)
+
+Source: designer message in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13), sent just before §139 and not logged at the time; copied exactly from its export on 2026-10-20. Subject (worker text, not designer words): the last caption line under each strip mini, the size, was cut off at the bottom.
+
+```text
+Now, the last row of the text is trucated by the view, don't you see this?  This is terribly bad!  Are you even looking at the GUI results?  
+```
+
+## 289 — scrub means remove completely, with no reference or cleanup log (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+squash, commit and push.  Then review the docs for additional useless chatter that the previous worker kept, list me the top 10 useless chatter that we can scrub from the docs.  Also, when I use the word scrub, that means completely remove, and remove reference, and not log that is was cleaned.  The only history that would remain is in the git history.
+```
+
+## 290 — unclear-source entries: delete when superseded or reconfirmed by clear rulings (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+ok, for Item 9, Item 10.  For option 1, clean up if you have superceding rulings that override old ones that are not clear about the source, same for one that have been reconfirmed by clear more recent rulings, you can delete the old duplicate unclear source ones.  The rest, you can leave as unclear source and clear when new rulings come in.  Ok for option 2 JBIG2 as you suggest.  Then do the analysis of the next document carefully, one at a time.  You can also squash, commit and push
+```
+
+## 291 — squash only unpushed commits, by theme; keep pushed history (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+Why forced push, I want to keep some history, when I say squash and push, that means to squash the commits since the last commit that was pushed to origin, to avoid noisy commit history.  The commits should be squashed and pushed by theme/fix/batch.
 ```

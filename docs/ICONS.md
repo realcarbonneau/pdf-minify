@@ -1,19 +1,12 @@
 # Action icons — desktop theme first, one stock fallback
 
 Designer rulings: `DESIGNER_VERBATIM.md` §§196/197, 2026-10-14
-(America/New_York). Work: TODO §201, issue B102 (designer acceptance pending).
+(America/New_York). Work: TODO §201, issue B102.
 
 §200 rejects the current appearance and requests a coded comparison lab.
-The current provider remains in place until the designer chooses replacements;
-its implementation is not acceptance of the glyphs. See [ICON_LAB.md](ICON_LAB.md)
+The current provider remains in place until the designer chooses replacements.
+See [ICON_LAB.md](ICON_LAB.md)
 for the Nuvola/Oxygen/GNOME/Breeze comparison, permanent codes and no-Apply rule.
-
-Revert/rename were custom 32px QPainter drawings; Copy/Save tried the system
-theme, zoom used another custom pair, and export/stop could have no icon at
-all. The rename code incorrectly treated §120's STANDARD icon question as a
-custom-artwork requirement. §197 approves consistent native-theme lookup with
-one standard fallback family; it supersedes that interpretation and the
-earlier theme-independent zoom workaround, not action semantics or sizes.
 
 ## Ownership and mappings
 
@@ -71,20 +64,10 @@ windows and 1:1 enabled/disabled controls, both native-theme and forced-
 fallback cases. Full regression suite and normal supervised app restart
 remain required; only explicit designer confirmation closes B102.
 
-## Implemented evidence — 2026-10-14
+## Implementation
 
 `ActionIcons` binds all eight main-window actions and both button-lab toolbar
-pairs to the shared provider. Nineteen isolated icon cases pin source hashes,
-stock optical grids, themes/fallbacks, device sizes/states and actual control
-and toolbar palettes; the app-level regression forbids new filtering and
-checks unchanged recipes, prepared results, selection and enabled flags.
-The complete suite passed 339 cases; the final focused 33-case icon/lab/app
-subset also passed at 2×. Whole windows and 1:1 enabled/disabled controls
-were actually viewed for native Breeze and forced fallback, light/dark,
-100%/2×. No new dependency was installed. The original app exited normally,
-its whole group was verified gone, and the icon build was restarted before
-the subsequent progress-scale request. See `TEST_PLAN.md` / `PLATFORMS.md`
-for dated stage/final-run evidence. B102 remains OPEN for designer acceptance.
+pairs to the shared provider.
 
 References: [Qt QIcon theme/fallback/HiDPI support](https://doc.qt.io/qt-6/qicon.html),
 [KDE Breeze](https://invent.kde.org/frameworks/breeze-icons),

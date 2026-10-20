@@ -64,29 +64,6 @@ window reuse and no application-action/settings/filter/job mutations. Use
 `tools/shot.py` to capture/view the actual lab at normal/2×, light/dark,
 selected/disabled states and narrow-window scrolling, including 1:1 crops.
 Run the full regression suite and follow the shared developer verification
-rules in `DEVELOPER_GUIDELINES.md`. Only explicit designer confirmation
-closes the issue; selection codes themselves are not permission to infer
-unmentioned production changes.
-
-## Implemented evidence — 2026-10-14
-
-37 permanent choices cover seven action rows and four families, including
-curved-arrow/page-revert, copy/Save As and stop/cancel visual alternatives.
-121 original PNG size variants cover 30 distinct Nuvola/Oxygen/GNOME glyphs;
-seven existing Breeze SVG glyphs complete the matrix. Resource data is 268KB
-before git compression, not whole theme bundles. Package/hash provenance
-and unmodified notices/licenses are in `assets/icon_lab/`; no pip/apt package
-was installed. `tests/test_icon_lab.py` pins every initial code meaning,
-stock hashes/dimensions, family-specific loading without theme inheritance,
-normal/disabled/HiDPI rendering, radio/copy/clear/keyboard/scroll behavior.
-The main-window regression additionally proves direct menu access, one-window
-reuse, retained review choices and no production-icon/settings/filter/job
-mutation. Full suite: **382 passed in 78.93s**. Focused cases: **43 passed**
-at 100% (3.72s) and 2× (4.37s).
-
-`tools/shot.py --icon-lab-only` passed at both scales, using the actual menu
-dialog, no PDF processing. Unselected, light/dark selected fixtures, lower
-rows, 640×520 top and bottom-right scrolling and 1:1 code/icon cards were
-actually viewed. Paint-fixture choices are not designer choices and were
-never applied to the app. Runtime/version evidence is recorded in
-`PLATFORMS.md`; B104 remains OPEN for designer acceptance.
+rules in `DEVELOPER_GUIDELINES.md`. Selection codes are not permission to
+infer unmentioned production changes. Paint-fixture choices are not designer
+choices and are never applied to the app.

@@ -1,11 +1,10 @@
 # Dependencies: LOCAL (this dir) vs SYSTEM (apt / OS)
 
-Checked on this machine (Debian 13 trixie, Python 3.13.5) on 2026-10-09.
-That table is a historical inventory. The current **certified** runtime and
-versions are recorded in [PLATFORMS.md](PLATFORMS.md) (2026-10-14); the actual
-pip-provided Qt is 6.12.0, not the separately installed apt Qt 6.8.2.
-[PACKAGING.md](PACKAGING.md) separates runtime, build and validation dependencies
-and documents planned cross-platform distribution; no installers exist yet.
+The certified runtime and its exact versions are in [PLATFORMS.md](PLATFORMS.md).
+The app uses the Qt bundled with the pip PySide6 wheels (6.12.0), not the
+separately installed apt Qt. [PACKAGING.md](PACKAGING.md) separates runtime,
+build and validation dependencies and plans cross-platform distribution; no
+installers exist yet.
 
 ## SYSTEM — installed via apt, shared by the OS, NOT in this repo
 | Package | Status here | Why system |
@@ -33,54 +32,30 @@ sudo apt install python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qt
 | `pdf_minify/` | all app source (`core/` headless + `ui_qt/` GUI) |
 | `pdf_minify/ui_qt/assets/breeze/` | stock LGPL-3-or-later Breeze icon subset, provenance, notices and license texts; portable fallback, not a system-theme dependency |
 | `pdf_minify/ui_qt/assets/icon_lab/` | curated Nuvola/Oxygen/GNOME PNG resources, original hashes and notices/licenses for §200's comparison lab; not a system package or Task Coach dependency |
-| `tests/` | pytest suite + future fixtures in `tests/data/` |
+| `tests/` | pytest suite and its fixtures |
 | `tools/check_env.py` | prints system-vs-local diagnostic |
 | `requirements.txt` | `pymupdf, PySide6-Essentials, Pillow, numpy` → installed into `.venv`, NOT system-wide |
 | `.venv/` | local virtualenv (created by `setup_local.sh`, git-ignored) |
-| `*.md` | design docs (overview, architecture, UX, test plan, this file) |
+| `docs/` | design and developer documentation |
 
 Rule: `pip install` always goes to `./.venv` (via `setup_local.sh`).
 `apt install` goes to the OS. Never `sudo pip install`.
 
-2026-10-14 BW composition audit: require **PyMuPDF >=1.28.2**, the verified
-native MuPDF PDF-filter binding version. It is installed in this project's
-`.venv`; the older system apt build is not the implementation dependency.
-Font subsetting uses MuPDF's native API; no fontTools/OpenCV/new Python dependency.
-`pdfimages` independently verifies saved 1-bit image payloads in the benchmark.
+## Notes
 
-2026-10-14 action icons (§197): existing PySide6-Essentials 6.12.0 supplies
-QtSvg and the SVG icon-engine plugin; no new pip/apt dependency was added.
-The copied development-source theme was Debian `breeze-icon-theme`
-4:5.116.0-1, but the running app never needs it installed. Bundle the
-repository-owned subset and Qt SVG support per `ICONS.md` / `PACKAGING.md`.
-
-2026-10-14 Icon Lab (§200): 121 original PNG size variants cover 30 stock
-glyphs from Nuvola 15.08.3-2 (official Debian archive), Oxygen 5:6.1.0+dfsg-2
-and GNOME 3.12.0-6; seven existing Breeze glyphs complete 37 coded choices.
-The resource bank stores lossless base64 and decodes original bytes in memory
-with existing Qt PNG support. No new pip/apt dependency was installed. Keep
-Nuvola's original copyright/artwork addendum and each family's full notices
-and license texts; see `ICON_LAB.md` / the resource manifest.
-
-2026-10-15 explicit compression (§§203–205): the existing jbig2 encoder is shared
-by BW and colored stencils. Native Flate uses Python zlib; optional Zopfli uses
-the existing `/usr/bin/zopfli`, with a clear failure if selected but unavailable.
-Brotli uses the verified bundled MuPDF 1.28.2 native encoder/decoder: no brotli
-Python package or new install. Older readers may not decode its PDF 2.0
-extension. QPDF 12.2.0 and Poppler 25.03.0 are independent BENCHMARK tools,
-not runtime dependencies; they fail Brotli decoding in the measured cases.
-See `NATIVE_STREAM_COMPRESSION.md` for versions, complete sizes and limitations.
-
-§257 now makes Best the app default. Normal filter processing therefore
-requires both system `zopfli` and the existing MuPDF Brotli encoder/decoder;
-there is no silent missing-encoder fallback. No additional Python dependency
-is introduced. Explicit legacy headless recipes can still select ordinary Flate.
-
-Latest product ruling §213: encoding dependency convenience is not a reason
-to retain inferior compression. The optional-Zopfli description above records
-the historical explicit-choice boundary, superseded for app defaults by §257;
-it is not a reason to keep separate zlib/Zopfli user choices.
-Target packaging must provide the selected best validated encoder and fail
-clearly if unavailable, not silently substitute weaker output to save setup
-or processing work. Remaining legacy-choice/packaging alignment is tracked in TODO §217;
-no dependency was installed by the documentation update.
+- **PyMuPDF ≥ 1.28.2** is required for MuPDF's native PDF-filter binding; it
+  is installed in `.venv`, not taken from the older apt build. Font subsetting
+  uses MuPDF's own API, with no extra Python dependency.
+- **Encoders.** `jbig2` serves both JBIG2 BW and JBIG2 Color. Best needs
+  `/usr/bin/zopfli` and the Brotli encoder/decoder bundled in MuPDF 1.28.2;
+  there is no Python Brotli package. A missing selected encoder is a clear
+  error, never a silent fallback (§§203/213). Packaging must ship the
+  encoders the app selects (TODO §217).
+- **Icons.** PySide6-Essentials supplies QtSvg and the SVG icon plugin. The
+  bundled Breeze subset (from Debian `breeze-icon-theme` 4:5.116.0-1) and the
+  Icon Lab resources (Nuvola 15.08.3-2, Oxygen 5:6.1.0+dfsg-2, GNOME
+  3.12.0-6) live in the repository, so no icon theme needs to be installed.
+  Their notices and licenses stay with them; see `ICONS.md` and `ICON_LAB.md`.
+- **Validation tools.** QPDF 12.2.0, Poppler 25.03.0 and `pdfimages` check
+  benchmark output; they are not runtime dependencies, and the installed QPDF
+  and Poppler cannot decode Brotli streams.

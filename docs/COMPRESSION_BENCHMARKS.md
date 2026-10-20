@@ -147,16 +147,6 @@ if it rounds to 0.00%, no bold please
 
 ### Lossy settings
 
-**§271** (2026-10-19)
-
-```text
-NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
-```
-
-```text
-ok, tat is good
-```
-
 **§272** (2026-10-19)
 
 ```text
@@ -206,10 +196,9 @@ can you put id tags on the lines to ensure full match, even if the row descripti
 - **Other native-mode rows predate the B116 composition repair.** The known
   visible effect is on the photo brochure's first page, where two framed
   inset photographs and the header emblem are missing; FFPR keeps them.
-  These rows are re-measured next.
 - The non-lossy overview cells used Best with each image's PNG predictor
-  kept as prepared (§258). Since §260, Best also tries prediction on and off;
-  those cells are not yet re-measured with that search.
+  kept as prepared (§258); they were measured before Best began trying
+  prediction on and off (§260).
 - Brotli outputs carry no compatibility declaration (the default since §251).
 
 ## Six representative PDFs
@@ -468,6 +457,8 @@ quality, native content, PDF ID framing, writer settings) is held fixed.
 Cells show `100 × (treatment − baseline) / baseline` from exact byte counts.
 Negative favours the treatment. Bold marks a displayed reduction; +0.00% is
 never bold. Exact byte counts live in the fixtures listed in section 3.
+The side meant to stay fixed is checked byte for byte: native streams across
+each PNG-prediction pair, image streams across each stream-compression pair.
 
 ### PNG prediction — measured effect versus baseline
 
@@ -688,13 +679,25 @@ Across the 30 FFPR pairs the change ranges from −34 B to +0 B: 2 smaller,
 28 tied. The 12 native-preserving pairs are all smaller, by at least 145 B,
 because far more native content remains to compress.
 
+### Proposed next — JBIG2 repeated-row prediction OFF/ON
+
+Proposed, not run or approved (TODO §240). Change only JBIG2 generic-region
+typical prediction: baseline `jbig2 -p` against `jbig2 -p -d`, which predicts
+repeated rows losslessly ([JBIG2.md](JBIG2.md#generic-coding-and--d)). Four
+rows over the six PDFs (24 pairs): BW/Otsu and five-colour JBIG2 Color, each
+native and FFPR, at 300 DPI with everything else fixed. Image-free cases are
+saved as no-op controls. Every image and stencil must decode exactly, and
+MuPDF, Poppler and Ghostscript must read each file; an unreadable file is
+never a size win.
+
 ## 3. Method and provenance
 
 ### Measurement protocol
 
 - Every cell is a complete PDF saved through the production composer, image
-  encoders and final lossless pass. No size is estimated or derived from
-  component sizes.
+  encoders and final lossless pass. No size is estimated, derived from
+  component sizes or copied from another row. A file reused from an earlier
+  run keeps its original provenance and is never relabelled as newly encoded.
 - Preparations (composed and resized canvases) are frozen and reused, so a
   control never repeats image processing; each control is still its own
   saved file.

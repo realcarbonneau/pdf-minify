@@ -1,52 +1,30 @@
-# Mixed mode — PROPOSAL, not implemented (designer §§126/127)
+# Mixed mode — parked proposal, not implemented
 
-> Current §§168–171: FFPR OFF keeps native text/vectors over one combined
-> BW image canvas. This is NOT the rasterized-text proposal below. What remains parked here is only the
-> never-built variant B (JBIG2 text layer + images) and the record of the
-> removed wrong implementation (variant A: vector pass-through + color
-> JPEGs — that one contradicted BW output and is gone for good).
+## Rulings (verbatim)
 
-Status: separate future option. Documented only — nothing here is built,
-and the old mixed implementation was removed from the product (see §4).
-Quotes in `DESIGNER_VERBATIM.md` §126; work log `TODO.md` 126; `issues.md`
-B57. Evidence for every claim in `MIXED_MODE_ANALYSIS.md`.
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
 
-## 1. What "mixed" meant (the removed implementation)
+**§126** (2026-10-13)
 
-For a BW filter with the raster checkbox OFF, save copied each text page
-unchanged (`insert_pdf` — vector text, fonts, everything) and only
-recompressed its embedded images (JPEG q45 @150dpi). Forced pages were
-flattened to one 1-bit JBIG2 image. Measured on `images.pdf`: 178,766 B
-mixed vs 4,127 B forced — the gap was 129 KB of kept color JPEGs plus
-42 KB of transparency masks.
+```text
+What is a mixed path? I never specified this and it's not indicated as an option. is that to take all the BW text and make a JBIG2 layer in additional to the images? Put this as a new separate option with it's own doc, for now, this should not be implemented, as you can see, you made a mess of this, and it just causes confusion. I never asked for this.
+```
 
-## 2. The designer's alternative: JBIG2 text layer + images
+## The proposal
 
-Instead of passing text through as vectors, rasterize each page, threshold
-it, and store the TEXT pixels as one JBIG2 layer while keeping the PICTURE
-regions as compressed images — the classic scanned-document sandwich, but
-built from a born-digital page. Text stays selectable only if an invisible
-text layer is added back on top (extra work, extra failure modes).
+Rasterize each page, threshold it, and store the text pixels as one JBIG2
+layer while keeping the picture regions as compressed images: the classic
+scanned-document sandwich, built from a born-digital page. Text stays
+selectable only if an invisible text layer is added back on top.
 
-## 3. Why it is parked, not built
+This is not FFPR. FFPR off keeps native text and vectors over one combined
+image canvas; FFPR on rasterizes the whole page (§§127/168–171).
 
-- It was never specified or offered as an option — the checkbox hid it as
-  a side effect, which caused every round of confusion in §§103–119.
-- A BW filter that embeds 129 KB of color JPEGs contradicts the filter's
-  own preview (black-and-white blobs); either semantic needs its own
-  preview/mini/amount contract, not a silent branch.
-- The single-path flow (§122) must come first: any future mixed variant
-  has to BE a saver whose temp files preview/minis/amounts read back —
-  not another parallel implementation.
+## If it is ever built
 
-## Issues on this page
-
-B57 — see `issues.md` (gated log).
-
-## 4. What to rule if it ever returns
-
-- Offered explicitly (named option in the Filter row), never a checkbox
-  side effect.
-- One semantic only: vector pass-through (variant A, already measured) or
-  JBIG2 text layer + images (variant B, unbuilt) — not both.
-- Preview/minis/amounts contract written before any code, per §122.
+- It is offered as an explicitly named option, never as a side effect of
+  another control.
+- Like every filter, it is one saver whose saved file the preview, minis and
+  size read back (§122). Its preview, mini and size behaviour is written down
+  before any code.

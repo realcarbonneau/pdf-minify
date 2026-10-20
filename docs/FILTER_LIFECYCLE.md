@@ -1,8 +1,7 @@
 # Filter recipes, live drafts, and real filtered files — canon (§§122/149)
 
 The designer's full ruling is preserved verbatim in `DESIGNER_VERBATIM.md`
-§149. This specification supersedes split preview/mini/estimator jobs and
-the old file-slot/spec-slot cache design. Cross-refs: `ARCHITECTURE.md`,
+§149. Cross-refs: `ARCHITECTURE.md`,
 `UI_LAYOUT.md`, `PERSISTENCE_AND_TEMP.md`, `TODO.md` §§150–157, issues B74–B79.
 
 ## One processing path and one source of truth
@@ -19,7 +18,7 @@ Selecting a filter, including its first visit, only displays its existing
 result or waits for that already queued result. It never starts another
 processing job. Zoom, pan, page changes, and DnD reorder are view changes:
 reframe existing pages and observe the actual PDFs at display resolution
-(§§172–175 supersede prepared-raster-only zoom). Native geometry redraw is
+(§§172–175). Native geometry redraw is
 read-only display, not filter reprocessing. Evicting optional display bitmaps must not
 invalidate or rerun a real filtered file. Only a new input or an actual
 effective recipe change authorizes filtering work.
@@ -34,15 +33,14 @@ copy the draft's actual mode/policy, not the source template's original mode.
 Changes use the same 300ms timer and explicit switch transaction described
 below. UUID/name/order remain unchanged on Save; a named copy gets a new UUID.
 
-§§262–264 add the common Quality control: `jpeg_q` for JPEG, `jpx_q` for
-JPEG2000, with a q75 starting point and a versioned one-time saved-filter
-migration (§264 replaces §263's q90; revision 2 must migrate revision 1 stores).
+The common Quality control (§272) stores `jpeg_q` for JPEG and `jpx_q` for
+JPEG2000, default 75, with a versioned saved-filter migration that also
+upgrades revision 1 stores.
 Quality edits use this same transaction and timer. Lossless JPX ignores its
 retained inactive quality. Keep explicit legacy ratio recipes distinct from
 quality in effective keys; see [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).
-§265 also versions the fixed JPEG/JPEG2000 encoder profiles in effective keys.
-§267 versions the study-based JPX quality mapping and its reference JPEG
-profile as well. Saved q values remain unchanged; a changed encoding policy
+The JPEG and JPEG2000 encoder profiles and the JPEG2000 quality mapping are
+versioned in effective keys. Saved q values remain unchanged; a changed encoding policy
 invalidates old completed results, not filter UUIDs or saved/draft ownership.
 No new user-facing encoder controls or independent preview transformation are
 introduced. Selection still observes the actual saved result only.
@@ -132,8 +130,8 @@ Processing completion for an active pending copy must apply its prepared
 result when ready, whereas other late arrivals cannot steal selection.
 
 Explicit Revert Changes (§162): an icon-only action beside the filter
-dropdown with tooltip "Revert Changes". §197 replaces the custom arrow with
-the standard `document-revert` theme/Breeze icon, not history Undo. Enable it only
+dropdown with tooltip "Revert Changes", using the standard `document-revert`
+theme/Breeze icon (§197), not history Undo. Enable it only
 while the active filter has a live draft. Its explicit action discards that
 draft, restores saved controls/preview/mini and clears `*`, using the same
 safe artifact ownership as Discard Changes. Keep selection and other filters
@@ -150,9 +148,8 @@ switching while work is pending. Check exact file retention/deletion and
 late arrivals after discard and copies of identical recipes in separate UUID
 directories. Pending copies retain their source; subsequent edits cannot
 delete another filter's saved files. Validate IDs and pasted aliases on load.
-Tests cannot mark these issues designer-confirmed.
 
-## Related rulings consolidated (§150 audit)
+## Related rulings
 
 The quotes remain unchanged in `DESIGNER_VERBATIM.md`; this index records
 their operative meaning and routes it to its canonical topic, without making
@@ -172,102 +169,10 @@ old implementation descriptions into designer decisions.
 | Progress, cancellation, safe close | §§3, 37, 43, 85, 89, 94, 95, 149 | No artificial 50% milestone; true work progress; Cancel Save isn't Undo; closing never destroys live QThreads. `ARCHITECTURE.md` / this doc |
 | Verification and acceptance | §§14, 19, 59, 62, 90, 102, 104, 125, 137, 139, 147, 149, 150 | Docs lead; logs/real artifacts/call counts, full suite, viewed screenshots, restart; only dated explicit designer acceptance closes issues. `DEVELOPER_GUIDELINES.md` |
 
-## Contradiction and implementation audit
+## Editable compression (§§203–205)
 
-1. `DESIGN.md` put page/crop in the processing key and allowed reprocessing
-   on those changes, contradicting §§37/44/47/48. Only input identity and
-   full effective saver parameters identify processing work.
-2. Worker notes attributed "two background slots" to §90; the actual ruling
-   says not to restart filters on selection. That architecture was never a
-   designer requirement and is retired.
-3. Architecture called the single path "locked/not yet implemented" while
-   behavior/README described exact final sizes as done. Inspection found
-   neither a `save_with_spec` entry point nor saved files in the GUI flow.
-   The implementation was preview transformations plus payload sums. The
-   replacement creates real PDFs and measures their entire file size.
-4. `jobs.py` independently applied transforms at preview and mini DPI, then
-   computed estimates separately; export ran a fourth path. These functions
-   are removed from GUI code. Minis are just scaled derivatives of prepared
-   pixels read from the real filtered PDF, not another filter application.
-5. The preview cache held only two visited filters, so initial and later
-   visits necessarily dispatched work. Prepared pages now live beside the
-   real PDF in disk-backed buffers; selecting any completed filter needs no
-   job, without keeping every full document in RAM.
-6. Control-loading signals restarted timers; some key inputs (quality/rate/
-   page-size and all live mini parameters) were missing. Recipe identity now
-   contains every effective saver input, excludes disabled controls and names,
-   and control loading blocks signals. Saved JPEG2000 lossless state is kept.
-7. Save Filter invalidated completed output; Copy copied saved parameters,
-   not the live edit. Both now use explicit saved/draft ownership, reusing
-   completed or already queued results instead of rerunning them.
-8. Compression notes called payload totals "real" with overhead intentionally
-   omitted and an open mask-count gap. Neither is permissible under
-   §§53/55/122/149; whole-file measurement removes both discrepancies.
-9. `UX_DESIGN.md` still described Tk, a page list, on-click rendering and
-   estimates; `00_OVERVIEW.md` advertised similar superseded UI. Those are
-   marked historical, with current canon routed to the topic docs.
-10. §64's older DPI-ceiling wording is superseded by §129's exact-DPI ruling.
-    Core compression still has documented small-image/alpha/1-bit preservation
-    exceptions and a keep-original-if-smaller policy. These are explicit
-    remaining constraints, not a claim that every source has been resampled;
-    their broader policy review is tracked under existing B60 in
-    `COMPRESSION.md`. This flow repair makes preview/size/export agree with
-    what the real saver does; it does not silently change codec policy.
-11. Real-file concurrent smoke exposed the startup sweeper removing every
-    empty directory, including fresh workers belonging to another running
-    app (B78). One PID directory per process, a held Qt process lock, and
-    age-gated empty-directory cleanup protect live work. Encoder scratch is
-    inside that owned job directory, not anonymous global temp. An extra
-    `session-…` level was a worker addition rejected in §153, not canon.
-12. Reading actual saved files exposed corrupted JPEG/JPX/JBIG2/Flate streams
-    hidden by simulated previews (B79). PyMuPDF automatic compression wrapped
-    pre-encoded bytes before code assigned the inner codec's Filter metadata.
-    Encoded updates now disable automatic compression. Zopfli's default gzip
-    wrapper was another independent error: use and validate zlib-wrapped
-    Deflate. Real saved-image and page readback tests cover these paths; corrupt
-    output cannot be published as a successful preview. The formerly blamed
-    sparse JBIG2 fixture now decodes correctly; genuine invalid-stream fallback
-    is tested separately.
-13. Submitting jobs from concurrently starting manager QThreads could reorder
-    selected-first/strip-order priority. Submission now occurs in the GUI's
-    ordered queue; heavy processing still runs in spawn processes.
-
-14. B81 (§§156/157): the custom mouseMove drag left Qt's own pressed index/
-    DraggingState armed. Later mouse movement could start Qt's unoverridden
-    default drag and its source-row removal, after the custom drop already
-    moved the row. A separate mutable ID/order array then addressed the wrong
-    item or a nonexistent one. The regression reproduces that pre-fix state.
-    One Qt startDrag override, UUID-only MIME, one model move, model-derived
-    order, and UUID-addressed content updates repair the ownership; no repaint
-    patches or missing-item suppression. Duplicate persisted ordering is also
-    normalized so it cannot instantiate the same UUID twice.
-
-Historical TODO entries are implementation history, not current acceptance.
-TODO §122 correctly remained OPEN, but surrounding documents contradicted
-that status by describing a completed single path. Its stated open design
-questions were settled by §127 and reiterated by §149; do not ask again.
-
-Historical implementation/verification for §§149–162 is tracked by TODO
-§§150–162 and issues
-B74–B81. The original 124-test flow/identity suite, real lifecycle GUI smoke, and native
-drag gestures at 100%/200% passed, with captures actually viewed. The B81
-extension brought the suite to 131 tests and checks eight native
-gestures plus 33 post-reorder clicks at each scale. B81 is explicitly
-designer-confirmed on 2026-10-14 (§159); B74–B80 remain unconfirmed.
-The new mini-padding/background issues B82/B83 are tracked separately;
-their three regression cases brought the suite to 134 tests. §§160–162 add
-16 selection/revert regressions for a then-total of 150. The real modal
-tests include mouse, keyboard and post-reorder cancellation, both visible and
-current selection, repeated attempts with one prompt each, retained drafts/
-files, and revert before/during/after processing without new work.
-
-Latest integration (§§203–205, 2026-10-15): six image modes and independent
-native-stream policy use these same saved/draft transactions and shared
-300ms timer. Effective keys ignore inactive fields; Save As persists the
+Six image modes and the independent native-stream policy use these same
+saved/draft transactions and the shared 300ms timer. Effective keys ignore inactive fields; Save As persists the
 draft's actual mode/policy and selects the new copy, and built-in override
-reload restores the saved mode. Seven new lifecycle cases are included in
-the final **429 passed** suite; real-file modal smoke and both-scale captures
-were viewed. See `TEST_PLAN.md`, `COMPRESSION.md` and
-`NATIVE_STREAM_COMPRESSION.md`. B105/B106 remain unconfirmed.
-The separate native callback cancellation/serialization defect observed on
-shutdown is B107 OPEN; it is not certified repaired by these tests.
+reload restores the saved mode. See `COMPRESSION.md` and
+`NATIVE_STREAM_COMPRESSION.md`.

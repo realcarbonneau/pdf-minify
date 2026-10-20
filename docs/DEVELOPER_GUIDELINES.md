@@ -25,6 +25,9 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   delete rather than re-archive/requote, with no renumbering or ID reuse.
   Keep reproducible benchmark/test evidence and source-version identifiers,
   not a diary of process IDs, startup timestamps or routine delivery events.
+- **Scrub** (§289): remove the material completely, remove every reference
+  to it, and record nothing about the cleanup in any doc, log, TODO or issue.
+  Git history is the only record.
 - Implementation completion is not designer acceptance (§147). In `issues.md`,
   use `FIXED — DESIGNER CONFIRMED — YYYY-MM-DD` only for an explicit designer
   confirmation, with its verbatim ruling and exact scope. Use the designer's
@@ -51,6 +54,10 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   diagnoses; these are not spelling discussions. Explicit cleanup requests
   remove editorial material without re-archiving it or changing retained
   designer quotations.
+- Unclear-source entries (§290): entries before §272, except §§139–141,
+  cannot be checked against the original messages. When a clear-source
+  ruling supersedes or reconfirms one, delete the old entry and point its
+  references to the clear ruling; leave the others until new rulings come in.
 
 ## 2. Stack & layout (locked unless the designer says otherwise)
 - Product identity (§230): display **PDF Minify**, package `pdf_minify`,
@@ -61,427 +68,114 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   Preserve exact quotes, licensed resources and frozen benchmark provenance;
   keep the actual GitHub remote unchanged until the designer renames it.
 - Python + PySide6 (Qt6) GUI + PyMuPDF pipeline. `core/` = headless, NO Qt imports.
-  `ui_qt/` = widgets only. Pure-numpy thresholds (no hard OpenCV dep).
+  `ui_qt/` = widgets only. Pure-numpy thresholds.
 - REPOSITORY-OWNED: `pdf_minify/`, `tests/`, `tools/`, `docs/`,
   `requirements*.txt`, `.venv/` (git-ignored, via `setup_local.sh`).
 - SYSTEM (apt, never vendored): `python3`, `jbig2`, `mutool`, `pdfimages`,
   Qt6 C++ libs. Never `sudo pip install`; pip targets `./.venv` only.
 
-## 3. Opinionated product rules (from the brief)
-- Designer §213 supersedes the old Max/Balanced/Fast encoding-effort brief:
-  this is an opinionated best-compression suite. Encoder speed/cost and
-  dependency convenience are not reasons to retain superseded encoding
-  choices. Preserve the chosen image representation/fidelity; minimize actual
-  complete PDF bytes within the intended reader-support requirements.
-  Distinguish decoder FORMAT from encoder implementation: Zopfli produces
-  ordinary FlateDecode data, with no new reader requirement. Target one
-  optimized Flate choice using the best validated encoder, not separate
-  fast-zlib versus Zopfli products. Retain alternate formats for meaningful
-  size outcomes or reader-support requirements, never merely as a faster or
-  easier-to-install option. Current runtime has not yet been aligned; see
-  TODO §217 and `COMPRESSION_COMBINATIONS.md`. No arbitrary performance cutoff
-  or silent weaker-encoder fallback under a best-compression label.
-- BW: Otsu auto default, Simple (= GIMP Threshold) + Adaptive + Sauvola available,
-  global T slider + per-page override. Encode JBIG2 lossless (each page's
-  stream is test-decoded before embedding). §203 adds explicit Flate BW and
-  forbids silent codec substitution: a failed selected JBIG2 leaves a clear
-  error and the saved file intact. Only legacy automatic headless helpers
-  retain the earlier 1-bit PNG fallback contract.
-  Lossy JBIG2 OFF by default (glyph-substitution risk).
-- BW OFF (§§168–171): text AND vector diagrams remain native, preserving
-  original fonts, geometry, colors and opacity. §171 chooses ONE combined BW
-  image canvas and a native overlay; plain white page backdrops stay below it.
-  Exact original native/image interleaving is not required; use FFPR for the
-  flattened appearance. Do not rasterize native artwork or invent
-  glyph-shaped masks. Lossless content/font/container compression is distinct
-  from image thresholding. See `COMPRESSION.md`, issues B89/B90.
-- B116: the shared backdrop plan includes local opaque flat panels enclosing
-  later image paint, not just full-page rectangles. Select paint occurrences
-  using source order; repeated geometry does not imply identical ownership.
-  Scratch rendering retains planned fills and original images/opacity/clips;
-  native foreground retains text/diagrams and compound strokes once. Preserve
-  Form/tag ownership and inline samples. Do not invent coverage masks or
-  silently substitute FFPR. See `backdrops.py` and `COMPRESSION.md`.
-- Lossy colour quality (§§262–278): one **Quality** control, 0–100, default
-  75 at 300 DPI, for JPEG and lossy JPEG2000. The same number must mean
-  comparable visual quality for both codecs (§272), through one fixed rule
-  for every page and experiment (§271): never a setting fitted per image or
-  derived from the JPEG result, and never a compression ratio called quality.
-  Encoders come from standard packages only (§278): Pillow with libjpeg-turbo
-  and OpenJPEG. JPEG uses 4:4:4 to match JPEG2000's full-resolution colour
-  (§§276/278). JPEG2000 maps Quality to one PSNR target per 512-pixel tile,
-  calibrated against JPEG on the benchmark pages (§284); recalibrate and
-  version the mapping if encoders or the benchmark set change. No technical
-  encoder controls in the GUI; JPEG2000 Lossless stays a separate checkbox.
-  Settings, measured evidence and traps: `LOSSY_IMAGE_QUALITY.md`.
-- When a lossy setting changes, re-measure every affected benchmark table
-  from actual complete PDFs (§268) and fill the tagged rows only (§§282/283);
-  see `COMPRESSION_BENCHMARKS.md`.
-- §§224/225 supersede mixed-resolution defaults: all built-in raster filters
-  and missing-DPI fallbacks use 300 DPI. §226 also requires a one-time migration
-  of ALL existing saved raster recipes, including explicit custom DPI values,
-  to 300 DPI. Preserve stable UUIDs and other settings; keep DPI editable and
-  respect deliberate post-migration values on subsequent launches. Current integrated overview AND
-  focused scenarios use 300 DPI, without lower-DPI variation tables.
-  Preserve-images controls are explicitly unresampled. §224 also authorizes
-  color FFPR: flatten whole-page full color, resize once, then transform/encode
-  with the selected existing codec. Extend the existing saver/capability/key
-  path, not an independent preview or benchmark-only product implementation.
-  Repair B108–B112 rather than suppress diagnostics or relax exact checks.
-  Native foreground must preserve original operators/Form text-state
-  inheritance. Use token-aware bitmap/backdrop removal and pruned native
-  resources, not a final sanitizing cleanup that rewrites retained content.
-  Keep native page/Form ownership consistent with the source structure tree;
-  prepend the replacement raster as an Artifact, not a grafted native page.
-  Use an immutable original for every canvas and one explicit per-document
-  native context across shared Forms. Never strip accessibility metadata to
-  hide retained images. Check all live image streams, not just page resources.
-  Parse inline-image boundaries with the decoder, never regex.
-- §203: compression is editable recipe state, never locked by the seed
-  preset. Expose the six explicit choices documented in `COMPRESSION.md`;
-  persist actual saved mode through Save/Save As/load. Explicit codecs cannot
-  silently substitute another codec. Threshold method (not an unqualified
-  Strategy or universally automatic strategy) covers manual AND automatic BW
-  thresholding. Both palette codecs share the existing exact palette helper;
-  production and benchmark tooling share core stencil code. Existing defaults,
-  UUIDs, native artwork and real-file/edit lifecycle remain unchanged.
-- §§204/205 distinguish image codecs from lossless native-stream compression.
-  A separate PDF stream policy (Flate default, Zopfli-Flate, limited-support
-  Brotli) is effective recipe state. Share the core adapter with benchmark
-  tooling; verify decoded bytes, image-byte preservation, whole-PDF sizes and
-  installed readers. Keep empty streams plain; MuPDF 1.28.2's zero-byte Brotli
-  result is invalid and its decoder can hang. Do not silently fall back or
-  advertise the new extension as universally supported. See
-  `NATIVE_STREAM_COMPRESSION.md`.
-- §§210/211 request a compression-combination table and UI recommendation,
-  not implementation. `COMPRESSION_COMBINATIONS.md` marks current versus
-  proposed capabilities explicitly. §256 later approves Best's shared
-  packed-image/native encoding only. Other shared fixed-policy changes and
-  FFPR fixed general-compression states are not approved replacements for the
-  existing selectors. §224 subsequently authorizes color FFPR through the
-  existing checkbox/saver. Never treat a worker recommendation as a designer
-  ruling or silently migrate saved mixed-codec recipes.
-- §220 supersedes §219's documentation split; §§238–240 now move the primary
-  integrated overview's PNG rows into a separate measured-effect table.
-  Retain the plain and PNG measurements. Explain that prediction
-  precedes the same compressor; any percentage compares with that encoder's
-  plain counterpart using complete PDF bytes. Preserve both wins and losses;
-  do not assert universal growth. No benchmark variant or product behavior
-  changes merely to simplify presentation.
-- §221: highlight the smallest complete-PDF size in each same-input bitmap
-  comparison row using Markdown bold, including ties. Do not compare unrelated
-  inputs or mix timing/quality fields into the minimum; reader-support caveats
-  remain independent of the size highlighting.
-- §222: the primary compression comparison is an integrated matrix of actual
-  complete saved PDFs across image/predictor and native-stream policies, not
-  separate image/native savings estimates. Report final file bytes only as
-  the optimization metric; no timing rankings or payload-size substitutes.
-  Keep exact recipe/fidelity and reader requirements explicit. Separate
-  component studies are supporting diagnostics, not evidence for unmeasured
-  combined outputs.
-- §§223/231: present realistic combinations as rows over six representative
-  complete-PDF cases (the original five plus NASA Kepler technical illustrations),
-  with descriptive labels and focused scenario tables.
-  Packed-image/native policies share their general compressor; omit mixed
-  general-codec pairings from the published analysis. Keep specialized image
-  codecs' meaningful native alternatives, a classic-Flate reference and
-  plain/predicted comparisons. Bold minima within the SAME input and fidelity
-  group, not across unrelated PDF columns after transposing. Existing raw
-  cross-product artifacts remain evidence, not product recommendations.
-  This is benchmark scope/presentation, not authority to migrate saved mixed
-  recipes, implement new controls or change product defaults.
-  Reject new source-to-preparation diagnostics before accepting a frozen
-  production baseline. Report a bad candidate as FAILED and a rejected
-  shared preparation as PREP FAILED, with no size/minimum; the latter does
-  not imply every dependent codec independently failed. Preserve valid
-  independent results and expose any processing defects. §224 requests repair
-  of B108–B111; worker verification is distinct from designer acceptance.
-- §§227/228: group the primary integrated overview as BW, indexed color / low
-  palettes, then full color, retaining every representative PDF column and all
-  measured combinations in one continuous Markdown table with one header.
-  Use unnumbered divider rows with the title only in the far-left cell and
-  otherwise blank measurement cells; no separate tables, numbered headings
-  or HTML colspan.
-  Put unresampled preserve-images references above the groups in the same
-  table, and native-retaining rows before FFPR within each group.
-  Indexed FFPR stays indexed. Preserve every size and existing per-fidelity
-  bold minimum; expected codec strengths do not establish universal winners
-  or authorize codec/default changes. Focused tables remain unchanged.
-- §232: label the overview BW divider **Black and white (BW + Otsu)**.
-  Omit redundant `; keep native` from published combination labels and their
-  generator; absence of FFPR implies native text/vector preservation. Keep
-  FFPR and native-stream compressor names explicit. No threshold, recipe,
-  measured size or bold-minimum change is implied; focused Simple threshold
-  columns remain explicitly labeled.
-- §229: benchmark every row against every input, including redundant no-image
-  cases. With §§231/236 the 34 × 6 study requires 204 measured cells, not
-  image-free N/A cells. NASA Kepler is a whole 12-page input, not an extract.
-  Save/verify an actual complete output per row; do not copy another row's
-  size or alias a control file. An unused image codec is a valid no-op while
-  native/font/container compression still runs. Annotate it, never invent a
-  bitmap to exercise the encoder. Prior exact-row measurements may be reused
-  only with strict compatible-code/source/preparation/output provenance.
-- §233: the main BW scan must not already use JBIG2. Use the complete
-  11-page CCITT `scan-naca-tm972.pdf`, keeping six columns and every retained row.
-  Keep `scan-jfk-poor-copies.pdf` separately as B114's full-flow regression:
-  unchanged-resolution lossless JBIG2 must preserve original samples/geometry
-  and not increase complete-file bytes. Cover native/FFPR, compare a compatible
-  preserve-images control, and keep intentional transformations distinct.
-  Check source image `/Filter` values, not extraction/export extensions (B115).
-  Never relabel an old input's size as a replacement measurement or mark a
-  documented known failure fixed. Historical artifacts stay immutable.
-- §234: maintain `JBIG2.md` as the dedicated encoder/embedding/safety reference
-  and TODO §240 as the detailed optimization exploration plan. Current `-p`
-  generic-region measurements do not prove optimal JBIG2 settings. Research
-  `-d`, symbol settings/refinement and shared dictionaries with exact pixels,
-  whole-file size and reader gates; no lossy/default/UI changes are approved
-  merely by asking for documentation. B114's worker-verified repair is not
-  designer acceptance; its issue remains open until explicitly confirmed.
-- §235: preserve actual fractional image/mask sampling density in composition,
-  never ceil it to whole DPI and create an unintended resize. Keep the one
-  final target-DPI resize and existing layer/encoder policy. Same-density
-  JBIG2 must pass original-sample, all-page-pixel and complete-file no-growth
-  checks normally, not as expected failures. Cover genuinely fractional DPI;
-  refresh affected measurements without rewriting historical provenance.
-- §§236/237 narrow benchmark reference coverage: remove the eight Classic-Flate
-  BW/indexed native/FFPR overview rows and equivalent bitmap rows throughout
-  ALL focused tables, not just Logos/artwork. The measurement inventory is
-  34 × 6 = 204 actual cells, split for display under §§238–240 below.
-  Keep the unresampled Classic-Flate control,
-  Zopfli/Brotli predictor pairs, and full coverage of every retained row.
-  Share combination selection; do not reintroduce removed rows as supplemental
-  references. Preserve frozen supersets; document verified selections separately.
-- §§238–240: the first review isolated PNG prediction only, keeping
-  residual-stream comparisons unchanged until §242 authorized the next study.
-  That initial overview displays 26
-  baseline rows / 156 sizes; the PNG table displays eight baseline-labeled
-  rows × six PDFs / 48 measured sizes plus signed percentage change from
-  each matching measured baseline. Negative is smaller. Paired sources,
-  recipes, prepared pixels and native policies must match. No estimates or
-  fabricated/no-op replacements; retain independently measured no-image
-  controls and all 204 measured dispositions. Preserve focused-scenario data
-  and historical artifacts; change presentation, not encoding or strict reuse.
-- §242 expands PNG coverage to 16/64-color native/FFPR baselines with both
-  general compressors over all six PDFs. Add visible measured plain baselines,
-  retain signed full-file deltas and exact paired verification, and encode only
-  missing cases. Historical reuse needs explicit bounded compatibility proof
-  without relaxing normal resume gates. A no-win Brotli sample is not a
-  universal theorem. Plan each next controlled experiment with one named
-  changed factor. NATIVE-01 compares standard-Flate reference against named
-  optimized native/residual encoders, keeping image payloads byte-identical:
-  five specialized FFPR rows plus two native-content controls, all six sources.
-  Reference-only Classic Flate does not restore it as a product choice.
-  See `COMPRESSION_EXPERIMENTS.md` and TODO §§243/244.
-- §243 makes the PNG-prediction effect table percentage-only: remove candidate
-  byte counts, retaining signed measured full-file changes, paired-effect
-  emphasis (updated by §§247–249), baseline labels and all six columns.
-  Keep measured baseline sizes
-  in the overview and exact byte evidence in frozen manifests. Update the
-  reusable formatter; focused and native/residual size tables are unchanged.
-- §244 underlines Brotli labels in that PNG table only, without changing
-  shared row identities or measured percentages. Overall-winner claims must
-  compare actual same-fidelity complete files, distinguish unique wins/ties
-  and reader tiers, and preserve counterexamples. A corpus result is not
-  authority to remove prediction/codecs. The proposed next JBIG2 `-d` A/B
-  study remains unrun until requested; see `COMPRESSION_EXPERIMENTS.md`.
-- §§245/246 add a Brotli-baseline/Zopfli-treatment table for FFPR with five
-  specialized J* codecs over all six PDFs / 30 pairs. Hold image payloads
-  byte-identical; vary residual/native compression only. Reuse verified
-  Zopfli files and save missing Brotli baselines through the shared saver.
-  Explain regressions with measured stream/container/syntax accounting and
-  metadata-only controls; do not mistake page count for the changed factor.
-  Use Zopfli as the short table label, retaining the FlateDecode explanation
-  in prose. Shorten presentation only, not frozen measurement identities,
-  saved settings or GUI controls. See `COMPRESSION_EXPERIMENTS.md`.
-- §§247–249 standardize signed percentage differences to two decimal places,
-  computed from original measured complete-file bytes. Normalize rounded zero
-  to `+0.00%` and never bold a zero percentage, even for a tiny actual reduction.
-  Percentage-only effect tables bold displayed negative changes only; exact
-  byte-count emphasis and raw evidence remain independent. Place the full
-  FFPR Brotli-baseline/Zopfli-treatment section immediately after PNG prediction,
-  before focused scenarios. Preserve measurements/identities and Brotli
-  underlines; do not re-encode or rerender the corpus for presentation changes.
-- §250: put a concise treatment/baseline title directly above each PNG and
-  FFPR Brotli–Zopfli percentage-effect table, after the explanatory prose.
-  Use the approved level-three headings in `DESIGN.md`; preserve section
-  anchors, measurements, precision and emphasis. This is documentation-only.
-- §251 supersedes automatic Brotli declaration: `brotli_declaration` defaults
-  OFF in legacy/new recipes, core saves and benchmarks/tests. Remove only the
-  Brotli declaration when off, preserving unrelated extension entries/source
-  versions. The opt-in compatibility checkbox is visible ONLY for Brotli, an
-  explicit exception to the visible-but-disabled convention. Label it
-  **Include Brotli extension declaration (Compatibility)** (§252). Persist its
-  choice, but include it in effective identity/debounced edits only for Brotli
-  (extended to Best under §§255/256 below). Share
-  the saver and strict provenance gates; frozen declaration-ON measurements
-  remain historical, never relabeled/reduced by estimated overhead subtraction.
-- §§253/254: remove inline Brotli help/layout space and use native contextual
-  tooltips with keyboard/accessibility equivalents (`TOOLTIPS.md`). Remeasure
-  actual declaration-OFF complete files and update all affected tables/minima/
-  conclusions, not just a historical-policy banner. Reuse verified prepared
-  samples and rerun every published Brotli image/native encoding, including
-  supporting studies and plain/PNG/9/11 variants. Verify the rendered graph;
-  metadata-only finalization may reuse this rerun's fresh encoded streams.
-  Never guess new bytes by subtracting metadata or repeat image processing.
-- §§255/256 add **Best (Zopfli/Brotli)** to PDF streams. It covers native
-  streams AND general-compressed packed BW/indexed image streams (including
-  eligible raw/sample images and masks), but never JPEG/JPEG2000/JBIG2 payloads.
-  The normal compose/resize/transform pipeline converts all source imagery;
-  there is no source-CCITT preservation exception or new CCITT output option.
-  Keep sample bytes, dimensions, palettes, opacity, native geometry, FFPR and
-  visual settings unchanged during this lossless encoding stage. Preserve
-  existing image predictors, rather than silently adding/removing prediction.
-  Compare both encoders per eligible stream
-  and actual complete all-Zopfli/all-Brotli/mixed candidates with stable IDs;
-  retain the smallest measured file, preferring fewer Brotli streams on ties.
-  Empty streams remain plain. Missing/failed selected encoders are errors,
-  not fallback. Existing explicit policies/defaults/recipes remain unchanged.
-  Best is Brotli-capable: show its opt-in Compatibility checkbox, include it
-  in effective identity and use native reader-support help. Add the declaration
-  only when the selected output actually uses Brotli. Follow the one shared
-  edit/artifact lifecycle and keep original binary studies separate. Existing
-  explicit policies retain their native-only saved-recipe semantics; adding
-  Best does not silently migrate recipes or remove packed-image options.
-- §257 explicitly authorizes Best for ALL app filters: seed built-ins with
-  Best and migrate every saved custom/built-in-override stream policy once,
-  including explicit old policies. Preserve every other field and the
-  untouched Original reference. Save the revision/records and check settings
-  synchronization before materializing recipes/starting filter jobs. Later
-  deliberate choices remain editable/persistent; do not clamp at every load.
-  This changes app defaults, not explicit benchmark recipes/frozen evidence
-  or the headless legacy missing-policy fallback. See `filter_defaults.py`.
-- §258 makes the integrated main table Best-only: one actual measured output
-  per image recipe/input, with Best explained once in section prose, not row
-  suffixes. Move fixed Zopfli/Brotli alternatives into the specialized binary
-  section and keep the FFPR residual-only subset/accounting identifiable.
-  Keep Classic-Flate controls outside this main matrix. Do not use a minimum
-  of old sizes as a Best measurement. Reuse verified prepared images through
-  the real shared saver, preserving exact samples/native content and J* bytes.
-  Keep PNG pairs fixed-encoder controls, never compare them against a new
-  Best baseline. Frozen measurements and their producer identities remain
-  immutable; the overview policy changes, not application recipes or encoding.
-- §259 keeps the specialized fixed-size reference always visible, with no
-  details/summary drawer. Put a measured PNG-prediction decision tree at the
-  top of its results section: distinguish prepared J* payloads/no bitmap
-  from packed BW/indexed samples, then encoder and content. Scope Brotli's
-  no-win result to the current corpus and retain the noisy-BW counterexample.
-  Best preserves the predictor; do not claim it searches OFF/ON. No app
-  behavior/default, frozen measurement or reader-support change is implied.
-  Keep publisher output and presentation regressions aligned.
-- §260 supersedes Best's predictor-preserving runtime boundary: test OFF/ON
-  with both general encoders for eligible image rows, not native/J* streams.
-  Explicit Zopfli has Off/On/Best predictor state; Best forces automatic Best.
-  Use the shared real-file saver and effective recipe lifecycle, not a new
-  filter or repeated image processing. Skip by actual applicability, never
-  by absence of source PNG files or a no-win corpus heuristic. Frozen §258
-  sizes remain explicitly predictor-preserving historical evidence.
-- §261 keeps that search unchanged and makes both encoder branches explicit
-  in the tree: Best's Zopfli and Brotli branches each directly state that they
-  test prediction OFF/ON. Keep study observations outside operational branches;
-  do not infer a fixed-Brotli GUI control or alter measured table cells.
-- §§180/182: for BW image layers and color, compose original imagery/masks
-  in full color first, resize the canvas ONCE to target DPI, then gray/BW,
-  palette or codec transforms. No post-threshold/palette resize, per-image
-  RGB/mask rewrite or duplicate original/upscaled filtering. Preserve native
-  text/vectors (§170); BW uses the §171 white canvas, color the actual flat
-  page backdrop. See `COMPRESSION.md` for source-density/scratch policy.
-- NO JPEG XL inside PDFs (not in the spec, viewers can't open it).
-- Never overwrite input; default `<name>.reduced.pdf`.
-- Warn before rasterizing born-digital (selectable-text) PDFs in BW mode.
-- Canon §§122/149: every filter runs the real saver once per input/effective
-  recipe. Preview and minis read that completed PDF; amount is its exact full
-  file size; export copies it. No GUI estimator or independent filter-preview
-  transformation. First selection, repeat selection, zoom/pan/page changes,
-  and DnD never reprocess. Live edits alone debounce one filter and show `*`.
-  Keep saved and draft recipes/artifacts separate; resolve dirty switches with
-  Save / Save As… / Discard / Cancel before changing selection. Artifact
-  ownership and late-worker cleanup follow `FILTER_LIFECYCLE.md`.
-  §189: successful Save As creates AND selects its named copy, including
-  resolution of a mini/dropdown/keyboard switch. Carry that destination
-  explicitly through the transaction; do not subsequently activate the
-  originally clicked filter. Canceled/blank naming cancels the entire switch.
-- §183: one shared 300ms trailing edit timer (proposed default) covers every
-  recipe control, sliders AND numeric typing/steps AND dropdowns/toggles.
-  Immediate value/dirty feedback; latest immutable recipe, exact saved-file
-  publication, no per-widget processing timers. Keep view-only framing separate.
+## 3. Product rules
+
+Standing rules. Rulings, details and measurements live in the page named on
+each line.
+
+**Encoding**
+- Use the strongest validated encoder for each representation. Reader
+  support is the only trade-off, never encoding speed or dependency
+  convenience (§213). A missing or failing selected encoder is a clear error
+  that leaves the saved file intact, never a silent fallback or substitution
+  (§203). `COMPRESSION.md` (Encoder policy).
+- Compression is editable recipe state, never locked by the seed preset: six
+  explicit image choices and an independent PDF streams policy, with the
+  actual mode persisted through Save/Save As/load (§§203–205). `COMPRESSION.md`.
+- BW: Threshold method covers manual Simple (= GIMP Threshold) and automatic
+  Otsu (default), Adaptive and Sauvola. JBIG2 is lossless, and each stream is
+  decoded and checked before embedding; lossy JBIG2 stays off (§§203/234).
+  `COMPRESSION.md`, `JBIG2.md`.
+- Every app filter uses **Best (Zopfli/Brotli)** for PDF streams (§257). Best
+  covers native and packed BW/indexed image streams, tests PNG prediction off
+  and on for eligible image rows, and never recompresses JPEG, JPEG2000 or
+  JBIG2 payloads (§§255/256/260). The opt-in Brotli declaration is added only
+  when the chosen output uses Brotli (§251). Empty streams stay plain.
+  `COMPRESSION.md`, `NATIVE_STREAM_COMPRESSION.md`.
+- No JPEG XL inside PDFs: it is not in the PDF specification and viewers
+  cannot open it (`DROPPED.md` D1).
+
+**Page preparation**
+- FFPR off keeps native text and vector diagrams, with their fonts, geometry,
+  colours and opacity, over one combined image canvas; FFPR on flattens the
+  whole page (§§127/168–171). Never rasterize native artwork or invent
+  glyph-shaped masks. `COMPRESSION.md`.
+- Compose original imagery and masks in full colour, resize once to the
+  target DPI (default 300; §§180/182/225), then threshold, reduce the palette
+  or encode. No second resize and no per-image rewrite. Keep fractional
+  source density; never round it up to a whole DPI (§235). `COMPRESSION.md`.
+- Native-layer edits go through MuPDF's content filter and lexer, never regex;
+  they keep structure-tree ownership and accessibility metadata, and every
+  canvas is read from the immutable original (B108–B112, B116).
+  `COMPRESSION.md` (Composition rules).
+
+**Lossy quality**
+- One Quality control, 0–100 and default 75, drives JPEG and lossy JPEG2000.
+  The same number means comparable visual quality through one fixed rule for
+  every page (§§272/284), with standard packages only (§278). If the
+  encoders or the benchmark pages change, recalibrate and version the
+  JPEG2000 mapping. The app never chooses between JPEG and JPEG2000 (§287).
+  `LOSSY_IMAGE_QUALITY.md`.
+
+**Benchmarks**
+- Report only complete saved PDFs: never estimates, component sums or sizes
+  copied from another row (§§222/229/239). Each binary experiment changes one
+  named factor against a measured baseline (§238). `COMPRESSION_BENCHMARKS.md`.
+- When a setting used by the benchmarks changes, re-measure every affected
+  table (§268). Scripts fill only the tagged numbers; tables and text are
+  curated by hand (§§282/283). `COMPRESSION_BENCHMARKS.md`.
+- A benchmark input must not already use the codec under test (§233). Check
+  source `/Filter` values, not extracted file types (B115). `JBIG2.md`.
+
+**Files and flow**
+- Every filter runs the real saver once per input and effective recipe;
+  preview, minis, size and export all read that saved PDF (§§122/149).
+  Selection, zoom, pan, page changes and drag-and-drop never reprocess.
+  `FILTER_LIFECYCLE.md`.
+- Live edits share one trailing debounce (§183) and mark the filter `*`.
+  Leaving a dirty filter offers Save / Save As… / Discard / Cancel; a
+  successful Save As creates and selects its copy (§189). `FILTER_LIFECYCLE.md`.
+- Never overwrite the input; the default output name is `<name>.reduced.pdf`.
 
 ## 4. UX rules (the designer's picky-UI standard)
-- Exact PDF display (§§172/173): original AND filtered panes observe their
-  actual PDFs without extra bitmap smoothing/filtering. AA is allowed for
-  native text/vector drawing, never raster content (including rasterized
-  text in FFPR). Do not hide grey interpolation with a second threshold or
-  rerun filter processing for view changes. Saved bitmap samples stay exact.
-  §§174/175 select no PDF-content AA at all, and zoom renders actual native
-  PDF geometry at device resolution rather than enlarging a prepared raster.
-  Bound display rendering to visible regions; keep saved files immutable.
-- Preset filter-strip (camera-filter UX) + main original/preview panes.
-  View menu controls orientation of BOTH main panes and filter thumbnails
-  (side-by-side H / stacked V). See `DESIGN.md`.
-- Smooth `QGraphicsView`: wheel = scroll/pan, Ctrl+wheel = zoom-to-cursor, drag = pan, PgUp/PgDn = pages,
-  fit-on-load, neighbor-page prefetch. No jank on old LXDE hardware.
-- Escape cancels an active drag/dialog or running PDF export; otherwise it
-  is a quiet no-op, not Undo (§85, superseding the brief's "ANYTHING"). The UI
-  stays responsive; close cancels filtering asynchronously. Do not claim
-  <200ms external-encoder termination without measuring it.
-- PCManFM DnD (`text/uri-list`) + Open button fallback; 1024×600-friendly.
-- Main-region spacing (§188): use the shared UI_PADDING token (4 logical
-  pixels) for outer insets and gutters. The root alone owns outer padding;
-  PreviewPair owns zero-margin equal/stacked pane/header layouts. No visible
-  minis title, placeholder row or accumulated default wrapper margins. Align
-  preview/panel bottoms and the strip's side edges; retain native control
-  interiors, panel overflow and stable splitter sizing. See `UI_LAYOUT.md`.
-- Mini progress (§§185/187/190/191/198/199): native default-control style, 1.25 times
-  its height and percentage font, centered in the FULL mini frame. Keep the
-  shared 4px side inset; opaque backing only inside bar bounds, with no extra
-  white padding. The status-bar control itself is not enlarged. Use the same
-  delegate for the viewport and uniform 75% drag snapshot; true progress and
-  completion never change cell geometry or dispatch filtering.
-- Action icons (§197): one native-theme-first provider for the main window
-  and button lab, with stock Breeze SVG fallback assets and their licenses.
-  No custom glyph drawings or unrelated fallback symbols. Match the actual
-  control/toolbar palette, preserve action semantics/sizes/state, and refresh
-  on theme/palette changes without filtering or changing selection. Revert
-  uses `document-revert`, not history Undo. See `ICONS.md`.
-- Icon Lab (§200): current icon appearance is rejected, not accepted. Expose
-  a direct View menu comparison with genuine stock-family assets and permanent
-  choice codes; retain their provenance/licenses. Per-action radio selection,
-  background review and Copy choices never mutate production icons/settings
-  or filter/selection/processing state. See `ICON_LAB.md`.
+- Both panes show the actual saved PDFs with no PDF-content anti-aliasing,
+  image interpolation or extra smoothing; zoom redraws native geometry at
+  device resolution (§§172–175). Render only visible regions; saved files
+  stay immutable.
+- Viewer input: wheel scrolls, Ctrl+wheel zooms to the cursor, drag pans,
+  PgUp/PgDn move by page, and a new file fits on load. No jank on old LXDE
+  hardware.
+- Escape cancels an active drag, dialog or PDF export; otherwise it does
+  nothing and is never Undo (§85). The UI stays responsive, and closing the
+  window cancels filtering asynchronously.
+- PDF drag-and-drop from the file manager (`text/uri-list`) with an Open
+  fallback; the window works at 1024×600.
+- Layout, spacing and mini progress follow `UI_LAYOUT.md`; action icons and
+  the Icon Lab follow `ICONS.md` and `ICON_LAB.md`.
 
 ## 5. Workflow
-- Designer §241 clarifies §59: run `./test.sh` (full
-  `./.venv/bin/python -m pytest tests/ -q`) after code-affecting changes,
-  including tests, dependencies, build or configuration changes that can
-  affect execution. Documentation-only edits, including comment-only changes,
-  need relevant documentation checks, not the full suite. Reuse a passing
-  result for unchanged code; committing/pushing is not a new test trigger.
-- Designer ruling §62: after every new build, stop the running app by its
-  verified desktop PID, confirm it exited, then relaunch in a separate
-  session. Use `setsid --wait ./run.sh …` in a retained execution session:
-  the app has no controlling terminal, while the supervisor reports its
-  actual exit status. Poll that execution session when reporting app status;
-  successful startup alone does not establish that it remains running.
-  An abruptly terminated supervisor can leave its detached GUI and workers
-  alive: session exit/nonzero status alone does NOT prove app exit. Confirm
-  the desktop GUI PID and process group independently, especially if no
-  `APP_EXIT` line was reported. Record GUI PID/PGID alongside the retained
-  execution session. Never report the app closed from supervisor status alone.
-  Respect an explicit designer closure/leave-closed instruction: do
-  not automatically reopen the app to complete or repeat this workflow.
-  Never choose Save/Discard for the designer merely to automate a restart;
-  leave their unsaved-data decision to them.
-  Use retained tool/session state for immediate run status, not permanent
-  launch-history TODOs. Keep actual startup/exit failures and their regression
-  evidence in the relevant issue/test records. The size-only bitmap protocol
-  (§209) collects no compute-time comparisons; temporary workstation scheduling
-  does not belong in the design log.
-  Confirm `window shown` + preview applied in
-  `${TMPDIR:-/tmp}/pdf-minify/pdf-minify.log`. Never leave the
-  designer on a stale build. Sandbox process lists may not include desktop
-  processes; check the desktop context when resolving a PID.
+- Run `./test.sh` (the full suite) after code-affecting changes, including
+  tests, dependencies, build or configuration that affect execution;
+  documentation-only edits need the relevant documentation checks (§241,
+  `TEST_PLAN.md`).
+- After every new build, stop the running app, confirm its desktop GUI PID and
+  process group have exited, and relaunch it in a separate session with
+  `setsid --wait ./run.sh …` (§62). Supervisor exit status alone does not
+  prove the app exited. Confirm `window shown` and an applied preview in
+  `${TMPDIR:-/tmp}/pdf-minify/pdf-minify.log`. Never leave the designer on a
+  stale build, but respect an instruction to leave the app closed, and never
+  choose Save or Discard for the designer to automate a restart.
+- Commits (§291): "squash and push" squashes only the local commits made since
+  the last commit pushed to origin, one commit per theme, fix or batch, then
+  pushes normally. Never amend, rebase or force-push commits already on origin.
 - `python3 tools/check_env.py` then `./.venv/bin/python tools/check_env.py`.
 - Qt smoke: `QT_QPA_PLATFORM=offscreen ./.venv/bin/python -c "...MainWindow..."`.
-- Record per-test metrics (bytes in/out, % saved, secs, preset, viewer check).
 
 ## 5b. Screenshot canon (designer ruling §137 — GUI work is never blind)
 
@@ -517,13 +211,12 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   It checks the rendered 75% ghost, drop position, selection, and immediate
   visible caption numbering (actual X11 window pixels) over the
   strip, previews, controls, and below the strip, plus Escape cancellation.
-  B81 adds the 11-filter layout, sub-threshold native movement, repeated tail
-  moves, and 33 post-reorder clicks; validate row count/UUID set, Qt NoState,
-  existing artifacts/no filtering, and first normal caption pixels. Qt slot
-  exceptions must FAIL the smoke, never just print and return GREEN.
-  B84–B86 additionally require an actual dirty-mini native click, modal Escape,
-  and Revert button click: current AND selected filter stay edited on Cancel,
-  files/dirty state stay intact, and Revert reuses the saved file without work.
+  It also covers an 11-filter layout, sub-threshold movement, repeated tail
+  moves and clicks after reordering (row count, UUID set, no filtering,
+  caption pixels), and any Qt slot exception fails it. A dirty-mini native
+  click, modal Escape and the Revert button must keep both filters edited on
+  Cancel, keep files and dirty state intact, and reuse the saved file on
+  Revert without work.
   View the captured `.tmp/drag-*.png` images. Settings are isolated.
 - Filter-lifecycle changes additionally run
   `QT_QPA_PLATFORM=offscreen ./.venv/bin/python tools/filter_smoke.py`; view
@@ -545,7 +238,7 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
 ## 7. Certified platform and packaging (§176)
 
 - `PLATFORMS.md` records the actual tested OS/architecture/desktop, interpreter,
-  Qt/PDF/native-tool versions and dated evidence. Certify the measured scope,
+  Qt/PDF/native-tool versions, certificate date and limits. Certify the measured scope,
   not every version admitted by broad source requirements or another project's
   supported platforms. Platform verification is not designer issue acceptance.
 - `PACKAGING.md` adapts the reviewed sibling/upstream Task Coach packaging

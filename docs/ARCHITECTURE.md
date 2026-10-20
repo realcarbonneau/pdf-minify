@@ -1,31 +1,18 @@
 # Architecture & Tech Stack
 
-## Decision (locked per designer rulings §6–§8, DROPPED D2): Python + PyMuPDF + Pillow + numpy, GUI = PySide6 (Qt6)
+## Stack (locked, designer rulings §§6–8)
 
-| Option | LXDE fit | Cross-platform | Preview speed | Verdict |
-|---|---|---|---|---|
-| PySide6 (Qt6) | good via apt or pip wheel | excellent DnD/HiDPI | best | **built — locked** |
-| Tkinter (stdlib) + Pillow | excellent, zero extra GUI dep | good | OK but janky zoom | **superseded (D2)** — fails the designer's picky-UI standard |
-| PyGObject GTK3 | most native on LXDE | painful on Win/Mac | good | rejected (portability) |
-| Electron / Tauri | too heavy for old LXDE boxes | excellent | good | rejected |
+Python with PyMuPDF, Pillow and numpy, and a PySide6 (Qt6) GUI built directly
+in `pdf_minify/ui_qt/`; the Tkinter-first alternative is `DROPPED.md` D2.
+Pipeline code in `core/` must never import Qt. Installation and the
+local-versus-system split are in `DEPENDENCIES.md`.
 
-Qt is built directly (`pdf_minify/ui_qt/`); there is no Tk code and no Tk-first
-staging step. Pipeline code in `core/` must never import Qt.
-
-## Dependencies (Debian 13)
-```
-sudo apt install python3-pymupdf python3-pil python3-numpy \
-  python3-opencv  # optional, for Otsu/adaptive/Sauvola speed
-  jbig2 poppler-utils  # optional: best BW encoder + pdfimages debug
-pip install -r requirements.txt  # into local ./.venv (PySide6, pymupdf, Pillow, numpy)
-```
-- `PyMuPDF (fitz)` — open/render/replace images, `rewrite_images`, save with
-  `garbage/deflate/use_objstms`. The local requirement is >=1.28.2 for the
-  verified native filter bindings; Debian's older system build is not used.
-- `Pillow` — JPEG encode, 1-bit PNG payloads, numpy↔QImage preview bridge.
-- `numpy` — threshold math without OpenCV. OpenCV used only if present.
-- `jbig2` (external system package) — the BW encoder: per-page streams via
-  `jbig2 -p`, test-decoded before embedding, 1-bit PNG where undecodable.
+- `PyMuPDF` (≥ 1.28.2, in `.venv`) — open, render, filter native content and
+  save; the native PDF-filter bindings need this version.
+- `Pillow` — JPEG and JPEG2000 encoding, image bridges.
+- `numpy` — threshold and palette math.
+- `jbig2` (system package) — JBIG2 BW and JBIG2 Color encoder; each stream is
+  decoded and checked before embedding, and a failure is a clear error.
 
 ## Module layout (actual)
 
@@ -93,8 +80,7 @@ PDF, exact file size, and prepared page data used by both views. Existing work
 is reused even on first selection; scroll, pan, zoom, page turns and strip
 clicks only view/reframe that result. Live recipe changes debounce only the
 edited filter; saved and live artifacts remain separate until an explicit
-Save / Save As… / Discard decision. The old mini-slot/spec-slot architecture
-and two-entry preview cache violated this rule and are superseded, not canon.
+Save / Save As… / Discard decision.
 See `FILTER_LIFECYCLE.md`, `UI_LAYOUT.md`, issues B74–B77, TODO §§150–152.
 
 ## Threading & ESC cancel design
@@ -202,38 +188,18 @@ baseline pane = the input file itself, rendered by the same page renderer
 Why this is robust and safe: preview, minis and amounts are OBSERVATIONS of
 the save output, so they cannot disagree with Save by construction — not by
 test coverage. Container overhead, soft masks, font subsets: included
-automatically, because they are measured, not modeled. Any divergence that
-used to be possible (thresholded preview vs vector-text save, estimated vs
-embedded bytes) becomes structurally impossible: there is no second
-implementation left to diverge.
-
-Historical, superseded by §122 and §§171/180/182: the old per-mode sketches
-below are retained only as history. Both observation flow AND image-layer
-saver internals have changed; do not restore these per-image loops.
-```
-BW internals: PDF page → fitz.get_pixmap(dpi) → numpy gray (0-255)
-  → threshold(strategy, T) → 1-bit PIL image
-  → encode JBIG2 (test-decoded; 1-bit PNG where undecodable)
-  → replace page with single image xref → save new PDF (garbage=4)
-Color internals:
-for each image xref: extract pix → downsample if > dpi_cap
-  → re-encode (JPEG / JPEG2000 / palette-Flate) → replace only if smaller
-→ save with gc + deflate
-```
+automatically, because they are measured, not modeled. There is no second
+implementation that could diverge from the saved file.
 
 ### Effective BW recipes (§§127/149/168–171)
 
 FFPR ON flattens each page to one 1-bit image; OFF keeps original text/vectors
-and optimizes existing images to 1-bit. §§168–171 require composition
-of overlapping imagery, retaining native text AND vector diagrams, not the old
-per-image mask waste. §171 simplifies the unshipped ordered-run prototype:
-ONE image canvas on white, original native text/vectors above it, plain white
-page-backdrop rectangles below it. MuPDF filters original PDF operators,
+and optimizes existing images to 1-bit. Overlapping imagery is composed into
+ONE image canvas on white, with original native text and vector diagrams above
+it and plain white page-backdrop rectangles below it (§§168–171). MuPDF filters original PDF operators,
 not approximate glyph silhouettes. Exact native/image interleaving is not
 required; FFPR provides the fully flattened appearance. `COMPRESSION.md`
-describes this policy and lossless PDF/font compression.
-This is not the discarded mixed-layer
-proposal. Both modes feed the same saved-file observation flow. Toggle affects
+describes this policy and lossless PDF/font compression. Both modes feed the same saved-file observation flow. Toggle affects
 only the edited filter's draft, never unrelated results.
 
 ### Shared image-canvas preparation (§§180/182)
@@ -284,13 +250,13 @@ original catalog/structure too. Incompatible tagged derivatives fail clearly
 instead of silently splitting their parent mapping. No final sanitize pass
 rewrites native operators. See `COMPRESSION.md` for validation boundaries.
 
-### Layered-color JBIG2 study (§§192–194)
+### Editable compression (§§203–205, 255–257)
 
-§§203–205 subsequently make compression editable recipe state. The actual
+§§203–205 make compression editable recipe state. The actual
 saved/draft mode, not the seed preset mode, controls UI behavior and dispatch;
 mode is persisted on Save/Save As and loaded even for built-in overrides.
 `core/algorithms.py` describes six image choices; `core/stencils.py` owns the
-promoted colored-mask implementation reused by production and the study.
+colored-mask implementation ([JBIG2.md](JBIG2.md#jbig2-color-one-stencil-per-palette-colour)).
 `core/stream_compression.py` independently encodes non-image native resources
 after font subsetting and before the shared container save. Its policy is an
 effective cache input and uses the same dirty/edit/lifecycle controller.
@@ -305,31 +271,14 @@ candidate to verify decoded streams and protected J* bytes before atomically
 publishing the smallest file. Predictors and image samples remain unchanged;
 source CCITT still undergoes normal conversion. Best's declaration metadata is
 default-OFF and included on opt-in only when the winning output uses Brotli.
-That initial addition did not migrate fixed policies/defaults/saved recipes;
-§257's subsequent app migration is described below. Representation
-labels Packed BW/Indexed color avoid falsely promising Flate under Best; mode
+Representation labels Packed BW/Indexed color avoid falsely promising Flate under Best; mode
 IDs remain compatible. The GUI uses the existing shared edit/artifact lifecycle.
 §257 adds a one-time stream-default migration in `filter_defaults.py`, before
 effective recipes or jobs are created: all built-ins and saved app filters use
 Best, while later explicit choices remain editable/persistent. The settings
 owner preserves full saved records (including extra built-in-override metadata)
 and checks synchronization. Original and fixed benchmark recipes stay unchanged.
-The paragraph below describes the historical study boundary, not a prohibition
-on this later separately requested integration.
-
-[LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md) records the proposed colored
-1-bit stencil representation and actual full-PDF benchmark/decoder evidence.
-Prototype tooling reuses the existing RGB canvas, nearest-palette map, native
-layer assembler and PDF optimizer; the experiment splits only the final
-quantized bitmap canvas. No production codec, recipe identity, GUI control,
-saved artifact lifecycle or default changes during the study. This is not
-the parked rasterized-text mixed-mode design.
 
 ## Packaging
 - v0.1: `python3 -m pdf_minify` from source + `requirements.txt`.
 - Later: `.deb`, AppImage, `pipx`, Windows exe via PyInstaller (same `core/`).
-
-## Issues on this page
-
-B1, B3, B4, B6, B8, B11, B21, B24, B26, B33, B34, B35, B45, B46, B53 — see
-`issues.md` (gated log); substance lives in the sections above.

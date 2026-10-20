@@ -12,22 +12,10 @@ quotes is not the designer's.
 
 ### One familiar control
 
-**§262** (2026-10-18)
+**§272** (2026-10-19)
 
 ```text
-We have to use the parameter that users are most used to, that is the most common.
-```
-
-**§264** (2026-10-18)
-
-```text
-change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
-```
-
-**§265** (2026-10-19)
-
-```text
-I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
+I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
 ```
 
 **§275** (2026-10-19)
@@ -38,44 +26,10 @@ I already ruled the use case, this is for making pdfs smaller, thuse lossless or
 
 ### Same number, same quality, one setting
 
-**§266** (2026-10-19)
-
-```text
-If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
-```
-
-**§269** (2026-10-19)
-
-```text
-I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
-```
-
-**§271** (2026-10-19)
-
-```text
-NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
-```
-
-```text
-ok, tat is good
-```
-
-**§272** (2026-10-19)
-
-```text
-I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
-```
-
 **§284** (2026-10-20)
 
 ```text
 Ok, so a single setting is the correct direction, however, for the purpose of out benchmarking, we have to choose a single quality setting that provides the same visual results as jpg.  The reasoning is simple, if jpg q75 provides a certain compression and quality, then the newer J2K is expected to provide a smaller (or in the absolute worst case, the same size) file for the same visual quality level.  This is very simple and basic, I should not have to explain this.  Or else, benchmarks and a newer compression algorithm has no value.
-```
-
-**§270** (2026-10-19)
-
-```text
-You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
 ```
 
 ### Colour sampling and packages
@@ -214,7 +168,7 @@ Mean gap and mean size ratio (JPEG2000 / JPEG q75) per document and mode.
 | BW scan | 11 | +9.6 / 1.34 | −3.6 / 0.81 | +2.9 / 0.69 |
 
 The old 26:1 gave JPEG2000 noticeably *better* quality than JPEG q75 on most
-pages, which is why the earlier complete-PDF benchmarks showed it larger.
+pages, so complete-PDF sizes at that ratio showed it larger.
 A PSNR target, even per tile, still follows content type: flat artwork and
 mostly blank native pages come out worse, busy full-page renders better.
 
@@ -338,9 +292,9 @@ What this means:
   compared quality, not compression. A size target cannot track a
   quantization-based quality.
 - **Fitting JPEG2000 to the JPEG result per image.** Choosing each image's
-  JPEG2000 ratio from the JPEG file's ratio (the §267 study anchors) made
-  the comparison circular and gave every page a different setting; §271
-  rejected it.
+  JPEG2000 ratio from the JPEG file's ratio (the 2007 study's anchors) made
+  the comparison circular and gave every page a different setting; one
+  setting for every page is required (§284).
 - **Taking literature ratios as settings.** The 2007 observer ratios came
   from other encoders and photo scenes. Turned into a fixed q56, they scored
   21 points below JPEG q75 on our photo page.

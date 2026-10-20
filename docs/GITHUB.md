@@ -8,17 +8,18 @@ Copy-paste ready. Keep it factual — every claim below is true of the tree.
 PDF optimizer with a camera-filter UI: compare BW/color presets side-by-side and save much smaller PDFs.
 ```
 
-## Long description (option — README top mirrors this)
+## Long description
 
 ```
 PDF Minify shrinks PDFs with strong opinions and a live before/after
 workbench. Open a scan, a paper, a manual or a photo-heavy report, click
 through Threshold / Otsu / Sauvola black-and-white, JPEG, JPEG2000 and
 palette-indexed filters, and watch every filter's real output size update
-under its thumbnail. What you see is what saving writes: JBIG2 for BW,
-your choice of JPEG, JPEG2000 or palette Flate for color, garbage-collection
-for the rest. Panes stay synced, scrolling never recomputes, ESC cancels
-anything, and every size shown is measured encoder output — never a guess.
+under its thumbnail. What you see is what saving writes: JBIG2 or packed
+bits for BW, your choice of JPEG, JPEG2000 or palette Flate for color, and
+Zopfli/Brotli for the rest of the file. Panes stay synced, scrolling never
+recomputes, and every size shown is the exact size of the saved PDF — never
+a guess.
 ```
 
 ## Topics (Settings → General → Topics, each ≤50 chars)
@@ -32,7 +33,6 @@ qt6
 jbig2
 jpeg2000
 document-scanning
-ocr-workflow
 debian
 lxde
 python
