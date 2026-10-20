@@ -1,5 +1,50 @@
 # Architecture & Tech Stack
 
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+### Stack and layout
+
+**§6** (undated)
+
+```text
+what if I am really picky about smooth clean custom UI highly tailored for a specific job, like pan, zoom in/out mouse scroll, next page, prev page, DnD, etc.
+```
+
+**§230** (2026-10-16)
+
+```text
+Also, rename this project to "PDF Minify", rename anything in the repo and I will rename the repo itself later.  Also, why is there a dir that restates pdf_minimalist, why not app, source, code, or something like that?
+```
+
+### Background jobs and the single path
+
+**§37** (2026-10-09)
+
+```text
+don't freeze the whole app when doing the previews, do it in background.  the thumnail previews have to show the same viewport.  I want the app to do the full processing of each preset in the background without freezing the system, maybe set a max cores usually at 50% of the system if the processing is one core at a time (is it?) and then when panning, you are just showing a view on the rendered file.  Show a progress bar on each file that is processing.  Later, we will have an option to sort the filters and set a max auto filters, or no max.
+```
+
+**§51** (2026-10-10)
+
+```text
+WHen I open a new file, the right preview is the last to be updated, it should be always the first filter to be processed, ahead of all other priorities.  First open, it would be the first priority filter, but after, it would be whatever filter the user has selected, right?
+```
+
+**§43** (2026-10-10)
+
+```text
+the progress bar is supposed to be for EACH filter.
+```
+
+**§122** (2026-10-13)
+
+```text
+The preview need to show the saved file, DO NOT have multiple paths, this is the root cause of alot of your failures!! One single path, process the file, save temp, display temp file in preview, minis come from save temp files once they are processed. This is an important design ruling, please put this in the design under architecture and flow. Do you follow this flow? Do you understand why this is robust and safe?
+```
+
 ## Stack (locked, designer rulings §§6–8)
 
 Python with PyMuPDF, Pillow and numpy, and a PySide6 (Qt6) GUI built directly
@@ -39,7 +84,7 @@ or `code` names offer no required benefit for this rename. See the
       marked_content.py # orphaned whitespace ActualText repair, native parser
       defaults.py     # shared 300-DPI raster default
       filter_defaults.py # versioned saved-DPI/stream-default migrations
-      pipeline.py     # BW full-page raster + color JPEG recompress + gc copy
+      pipeline.py     # the real saver: compose, transform, encode, final lossless pass
       algorithms.py   # editable six-codec image recipe choices, no preset lock
       stencils.py     # exact colored JBIG2 masks, shared by product/benchmark
       stream_compression.py # independent lossless native content/font encoders
@@ -63,17 +108,13 @@ or `code` names offer no required benefit for this rename. See the
 
 Display name **PDF Minify** and machine identifier `pdf-minify` are declared
 once in the package root. The Qt entry point uses both; the main window and
-startup last-file lookup share the settings factory. Runtime scratch/logs
-use the new identifier; old user data is copied once, never deleted. Frozen
-benchmark archives and original designer/license records retain their exact
-historical identifiers. The designer will rename the GitHub repository
-separately; the remote and outer checkout directory are not changed here.
+startup last-file lookup share the settings factory. Project identity rules
+are in `DESIGN.md` (§230).
 
 ## Background jobs (designer rulings §§37/43/44/47/48/51/89/90/95)
 
 Heavy work runs in spawn-context worker PROCESSES (half-core cap), managed
-by thin QThreads that only forward key-addressed results — threads proved
-fatal for compute (bare aborts inside numpy with Qt signals in play).
+by thin QThreads that only forward key-addressed results.
 Process-once (§§44/122/149): on file open, queue every saved filter (selected
 first, then strip order). Each immutable effective recipe owns one real saved
 PDF, exact file size, and prepared page data used by both views. Existing work
@@ -97,16 +138,14 @@ See `FILTER_LIFECYCLE.md`, `UI_LAYOUT.md`, issues B74–B77, TODO §§150–152.
 - Closing resolves dirty state, writes per-job cancellation markers, cancels
   queued futures, and waits asynchronously for running work before deleting
   process-owned files. Pipeline cancellation is checked between pages/images/stages.
-- Responsiveness remains required. An already running external encoder can
-  take until its bounded subprocess timeout to exit; this repair does not claim
-  sub-200ms encoder termination. Do not destroy its QThread or files meanwhile.
+- The UI stays responsive. An external encoder that is already running may
+  take a while to exit after cancellation; do not destroy its QThread or files
+  meanwhile.
 
 ## Data flow — SINGLE PATH (designer rulings §§122/149, locked)
 
-There is exactly ONE way a filter result comes into existence. No parallel
-preview renderer, no mini renderer, no estimator — every past "preview
-wrong / amount wrong" failure came from two implementations of the same idea
-drifting apart. The flow:
+There is exactly ONE way a filter result comes into existence: no parallel
+preview renderer, no mini renderer, no estimator. The flow:
 
 ```
 input PDF + filter spec
@@ -136,8 +175,7 @@ baseline pane = the input file itself, rendered by the same page renderer
   not the current elided fragment. The widget ignores horizontal text size
   hints and paints the elision at its allocated width. Painting never mutates
   content/geometry. Filter/file state updates headers; the view-reframe timer
-  does not. This breaks the former loop: elided setText → changing minimum
-  widths → layout/splitter resize → delayed mini reframe → shorter setText.
+  does not.
 - Region composition (§188): the central root owns one shared 4-logical-pixel
   outer inset and gutter; PaneBlock gives all three regions the same header/
   content layout; PreviewPair owns its equal/stacked preview
@@ -171,8 +209,7 @@ baseline pane = the input file itself, rendered by the same page renderer
   dropdown and processing sequence derive from it. Caption/content updates
   bind to stable UUID-bearing items, not mutable position arrays. One Qt
   `startDrag` override owns native drags and a UUID-only payload; one `moveRow`
-  is the only drop mutation. The old parallel default/manual drag controllers
-  could leave Qt's pressed state armed and delete a source row after moving.
+  is the only drop mutation.
 - Dirty selection transaction (§161): scoped QSignalBlocker suppresses a
   view's intermediate row notifications while Qt runs normal press/release/
   key handlers. One selectionSettled notification follows the complete input
@@ -214,71 +251,58 @@ No per-image RGB/mask rewrite, independent tiled resize or post-filter resize.
 BW retains its white composition backdrop; color includes actual flat page
 backdrops. Native text/vectors, page boxes, links and annotations remain;
 native-only pages do not gain a canvas. FFPR deliberately renders the entire
-page instead. §224 extends this to every color codec as well as BW. Compose
-the full original page in RGB at at least target DPI (and higher if source
-bitmap density requires it), perform one final resize, then BW/palette/codec
-transforms. FFPR removes native painting even on image-free pages. §225 sets
-all built-in raster defaults and missing-DPI fallbacks to 300 DPI. §226 also
-migrates every saved/custom raster recipe once at settings load, before saved
-specs/artifacts are built. Persist the revision and migrated records; preserve
-UUID/name/order/non-DPI settings and later deliberate DPI edits. All modes still use `save_with_spec` and actual
-saved-file readback; no second GUI filter pipeline.
+page instead, for every codec, BW and colour (§224): compose the full
+original page in RGB at least at the target DPI (higher if source bitmap
+density requires it), perform one final resize, then the BW/palette/codec
+transform. FFPR removes native painting even on image-free pages. Raster
+filters default to 300 DPI (§225); `core/filter_defaults.py` moves older saved
+recipes to 300 DPI once at settings load (`PERSISTENCE_AND_TEMP.md`). All modes
+use `save_with_spec` and actual saved-file readback; there is no second GUI
+filter pipeline.
 
-The FFPR flag/page size are effective recipe inputs for color too; the single
-edit/debounce and artifact owner handle them without another processing path.
-Shared composition explicitly initializes native filter flags (B110), repairs
-only orphaned whitespace ActualText in derived native fragments (B109), and
-places palette stencils directly rather than through nested clipped page
-Forms (B108). Native foreground uses token-aware bitmap/backdrop removal,
-preserving original operators and Form text-state inheritance (B111).
-B116 shares one immutable `BackdropPlan` between scratch canvas/background
-selection and native foreground removal. Flat opaque panels enclosing later
-image paint belong below the canvas, just like full-page backdrops. Matching
-is paint-occurrence-aware, not a bounding-box-wide deletion. The native token
-pass selects only those fills for scratch rendering; MuPDF then selects image
-and clip-only-text content. Compound strokes stay native and are painted once;
-inline images, clips, native opacity resources and repeated Form derivatives
-keep the existing parser/ownership rules. No new mask or fallback raster mode.
-B112 keeps the original native page/first Form owners and their pruned
-resources, so MCIDs, MCR `/Stm` and ParentTree still describe the actual native
-overlay. New background/canvas content is prepended as an Artifact; no page-
-Form graft strands accessibility references or retains original photographs.
-Each file owns an explicit `NativeContext` for immutable Form inputs and
-equal-derivative reuse. Canvas preparation always reads a separate immutable
-original, including shared Forms on later pages. BW native mode keeps the
-original catalog/structure too. Incompatible tagged derivatives fail clearly
-instead of silently splitting their parent mapping. No final sanitize pass
-rewrites native operators. See `COMPRESSION.md` for validation boundaries.
+The FFPR flag and page size are effective recipe inputs for colour too; the
+single edit/debounce and artifact owner handle them. `core/backdrops.py` builds
+one immutable `BackdropPlan` shared by canvas preparation and native-foreground
+removal (B116); `core/native_layer.py` edits tokens while keeping original
+operators and Form text state (B111); each file owns a `NativeContext` for
+immutable Form inputs and equal-derivative reuse, and canvas preparation always
+reads a separate immutable original. The composition rules themselves are in
+`COMPRESSION.md` (Composition rules).
 
-### Editable compression (§§203–205, 255–257)
+### Editable compression (§§203–205, 255–257, 260)
 
-§§203–205 make compression editable recipe state. The actual
-saved/draft mode, not the seed preset mode, controls UI behavior and dispatch;
-mode is persisted on Save/Save As and loaded even for built-in overrides.
-`core/algorithms.py` describes six image choices; `core/stencils.py` owns the
-colored-mask implementation ([JBIG2.md](JBIG2.md#jbig2-color-one-stencil-per-palette-colour)).
-`core/stream_compression.py` independently encodes non-image native resources
-after font subsetting and before the shared container save. Its policy is an
-effective cache input and uses the same dirty/edit/lifecycle controller.
-Explicit codecs never silently substitute another encoder. See
+Compression is editable recipe state (§§203–205): the saved/draft mode, not
+the seed preset, controls UI behaviour and dispatch, and it is persisted on
+Save/Save As and for built-in overrides. `core/algorithms.py` lists the six
+image choices; `core/stencils.py` builds
+[JBIG2 Color](JBIG2.md#jbig2-color-one-stencil-per-palette-colour).
+`core/stream_compression.py` encodes non-image native resources after font
+subsetting and before the shared container save; its policy is an effective
+cache input. Explicit codecs never silently substitute another encoder.
+
+`core/best_streams.py` implements Best (§§255/256/260). After the same
+once-only preparation and font subsetting, it encodes native and eligible
+packed-image streams with Zopfli and Brotli, with PNG prediction off and on for
+image rows, verifies exact readback, and keeps encoded alternatives in scratch
+files. It compares the mixed, all-Zopfli and all-Brotli saves through the one
+`pipeline._write_optimized_pdf` writer with stable PDF-ID framing, reopens each
+candidate to verify decoded streams and protected J* bytes, then publishes the
+smallest file atomically. Image samples and source conversion are unchanged.
+The optional Brotli declaration is added only when the winning output uses
+Brotli. `core/filter_defaults.py` holds the versioned migrations (300 DPI,
+Best for app filters) applied before effective recipes are built. See
 `COMPRESSION.md` and [NATIVE_STREAM_COMPRESSION.md](NATIVE_STREAM_COMPRESSION.md).
-§§255/256 add `core/best_streams.py`: after the same once-only preparation and
-font subsetting, encode native and eligible packed-image streams with both
-Zopfli/Brotli, verify exact readback, and cache encoded alternatives in scratch
-files. Compare actual mixed/all-Zopfli/all-Brotli saves through the one
-`pipeline._write_optimized_pdf` writer with stable PDF-ID framing. Reopen each
-candidate to verify decoded streams and protected J* bytes before atomically
-publishing the smallest file. Predictors and image samples remain unchanged;
-source CCITT still undergoes normal conversion. Best's declaration metadata is
-default-OFF and included on opt-in only when the winning output uses Brotli.
-Representation labels Packed BW/Indexed color avoid falsely promising Flate under Best; mode
-IDs remain compatible. The GUI uses the existing shared edit/artifact lifecycle.
-§257 adds a one-time stream-default migration in `filter_defaults.py`, before
-effective recipes or jobs are created: all built-ins and saved app filters use
-Best, while later explicit choices remain editable/persistent. The settings
-owner preserves full saved records (including extra built-in-override metadata)
-and checks synchronization. Original and fixed benchmark recipes stay unchanged.
 
 ## Packaging
-- v0.1: `python3 -m pdf_minify` from source + `requirements.txt`.
-- Later: `.deb`, AppImage, `pipx`, Windows exe via PyInstaller (same `core/`).
+
+Packaging plans are in `PACKAGING.md`; the certified runtime is in
+`PLATFORMS.md`.
+
+## Design traps and failed attempts
+
+- **Compute in threads.** numpy work inside QThreads, with Qt signals in play,
+  aborted the process. Heavy work runs in spawn-context worker processes;
+  threads only forward results.
+- **Two implementations of one result.** Every past "preview wrong / amount
+  wrong" failure came from a separate preview, mini or size path drifting from
+  the saved file (§122). Everything observes the one saved PDF.
