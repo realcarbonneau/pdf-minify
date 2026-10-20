@@ -1,5 +1,16 @@
 # Dependencies: LOCAL (this dir) vs SYSTEM (apt / OS)
 
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§8** (undated)
+
+```text
+ok, start with that, I already stated alot of my objectives.  Can you put everything local in this directory?  Tell me what is local and what needs to be system packages?
+```
+
 The certified runtime and its exact versions are in [PLATFORMS.md](PLATFORMS.md).
 The app uses the Qt bundled with the pip PySide6 wheels (6.12.0), not the
 separately installed apt Qt. [PACKAGING.md](PACKAGING.md) separates runtime,
