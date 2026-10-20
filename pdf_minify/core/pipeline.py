@@ -23,7 +23,7 @@ from .image_layers import compose_page_images, compose_color_page
 from .algorithms import BW_MODES, COLOR_MODES
 from .stream_compression import STREAM_LABELS, permits_brotli, recompress_native_streams
 from .defaults import DEFAULT_DPI
-from .quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_lossy_setting, jpx_quality_rate
+from .quality import DEFAULT_LOSSY_QUALITY, JPX_TILE, checked_quality, jpx_lossy_setting, jpx_quality_psnr
 from .canvas import flatten_rgb
 
 log = logging.getLogger("pdf_minify")
@@ -233,14 +233,18 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: float | None = None,
     # Six resolutions is OpenJPEG's normal profile. Tiny helper inputs need
     # fewer decompositions; neither path introduces spatial subsampling.
     resolutions = min(6, min(img.size).bit_length())
+    lossy = dict(irreversible=True, mct=int(img.mode == "RGB"), num_resolutions=resolutions,
+                 codeblock_size=(64, 64), progression="LRCP")
     if setting == "lossless":
         img.save(buf, "JPEG2000", quality_mode="lossless", num_resolutions=resolutions)
+    elif setting == "quality":
+        # §284: one PSNR target per 512-pixel tile, calibrated against JPEG.
+        img.save(buf, "JPEG2000", quality_mode="dB", quality_layers=[jpx_quality_psnr(value)],
+                 tile_size=(JPX_TILE, JPX_TILE), **lossy)
     else:
-        target_rate = jpx_quality_rate(value) if setting == "quality" else value
-        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[target_rate],
-                 irreversible=True, mct=int(img.mode == "RGB"),
-                 num_resolutions=resolutions, codeblock_size=(64, 64),
-                 progression="LRCP", tile_size=None)
+        # Explicit legacy ratio: unchanged single-tile profile and meaning.
+        img.save(buf, "JPEG2000", quality_mode="rates", quality_layers=[value],
+                 tile_size=None, **lossy)
     return buf.getvalue()
 
 

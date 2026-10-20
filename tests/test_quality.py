@@ -9,7 +9,7 @@ import pytest
 
 from pdf_minify.core import pipeline, presets
 from pdf_minify.core.algorithms import with_algorithm
-from pdf_minify.core.quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_quality_rate
+from pdf_minify.core.quality import DEFAULT_LOSSY_QUALITY, checked_quality, jpx_quality_psnr
 from pdf_minify.core.recipes import preset_spec, spec_key
 
 
@@ -20,21 +20,31 @@ def artwork():
     return np.uint8(np.clip(base + rng.integers(-24, 25, base.shape), 0, 255))
 
 
-@pytest.mark.parametrize("q,rate", [(0,101),(1,100),(28,73),(56,45),(74,27),(75,26),(90,11),(100,1)])
-def test_jpx_quality_uses_one_fixed_scale_for_every_input(q, rate):
-    assert jpx_quality_rate(q) == rate
+def pillow_jpx(arr, db):
+    """The calibrated profile, written out independently of the app helper."""
+    img, buf = Image.fromarray(arr), io.BytesIO()
+    img.save(buf, "JPEG2000", quality_mode="dB", quality_layers=[db], irreversible=True, mct=1,
+             num_resolutions=min(6, min(img.size).bit_length()), codeblock_size=(64, 64),
+             progression="LRCP", tile_size=(512, 512))
+    return buf.getvalue()
+
+
+@pytest.mark.parametrize("q,db", [(0,34.5),(50,39.5),(60,40.5),(70,42.83),(75,44.0),(90,50.5),(100,54.83)])
+def test_jpx_quality_uses_the_calibrated_anchors_for_every_input(q, db):
+    assert jpx_quality_psnr(q) == db
 
 
 @pytest.mark.parametrize("q", [-1,101,True,False,10.5,'10',None,float('nan')])
-def test_jpx_fixed_scale_rejects_invalid_quality(q):
+def test_jpx_mapping_rejects_invalid_quality(q):
     with pytest.raises(ValueError, match="integer from 0 to 100"):
-        jpx_quality_rate(q)
+        jpx_quality_psnr(q)
 
 
-def test_fixed_scale_is_monotonic_and_does_not_accept_image_statistics():
-    assert [jpx_quality_rate(q) for q in range(101)] == list(range(101,0,-1))
+def test_mapping_is_monotonic_and_does_not_accept_image_statistics():
+    targets = [jpx_quality_psnr(q) for q in range(101)]
+    assert all(a < b for a, b in zip(targets, targets[1:]))
     with pytest.raises(TypeError):
-        jpx_quality_rate(75, 10000)
+        jpx_quality_psnr(75, 10000)
 
 
 @pytest.mark.parametrize("quality", [-1, 101, 90.5, "90", None, True])
@@ -82,15 +92,15 @@ def test_quality_and_rate_keys_are_distinct_and_lossless_ignores_both():
         preset_spec(dict(mode="jpx", params=dict(jpx_q=90, rate=192)))
 
 
-def test_real_jpx_quality_has_the_same_fixed_rate_on_every_input():
+def test_real_jpx_quality_has_the_same_fixed_target_on_every_input():
     arr = artwork()
     normal = pipeline.jpx_encode(arr, None, presized=True)
     q75 = pipeline.jpx_encode(arr, None, presized=True, jpx_q=75)
-    matched = pipeline.jpx_encode(arr, None, rate=26, presized=True)
     low = pipeline.jpx_encode(arr, None, presized=True, jpx_q=30)
-    assert normal == q75 == matched
+    assert normal == q75 == pillow_jpx(arr, 44.0)
+    assert q75 != pipeline.jpx_encode(arr, None, rate=26, presized=True)  # legacy ratio stays distinct
     q90 = pipeline.jpx_encode(arr, None, presized=True, jpx_q=90)
-    assert q90 == pipeline.jpx_encode(arr, None, rate=11, presized=True)
+    assert q90 == pillow_jpx(arr, 50.5)
     decoded = np.asarray(Image.open(io.BytesIO(q75)).convert("RGB"))
     coarse = np.asarray(Image.open(io.BytesIO(low)).convert("RGB"))
     mse = lambda value: np.mean((value.astype(float)-arr.astype(float))**2)
@@ -101,7 +111,7 @@ def test_jpx_never_encodes_a_reference_jpeg_or_uses_its_bytes(monkeypatch):
     arr = artwork()
     monkeypatch.setattr(pipeline, "jpeg_encode", lambda *a,**k: pytest.fail('JPX encoded a reference JPEG'))
     for source in (arr, np.full_like(arr,255), np.zeros_like(arr)):
-        assert pipeline.jpx_encode(source,None,presized=True,jpx_q=75) == pipeline.jpx_encode(source,None,rate=26,presized=True)
+        assert pipeline.jpx_encode(source,None,presized=True,jpx_q=75) == pillow_jpx(source, 44.0)
     pipeline.jpx_encode(arr, None, lossless=True, presized=True)
 
 
@@ -193,15 +203,6 @@ def test_benchmark_provenance_covers_the_quality_mapping():
     assert "pdf_minify/core/quality.py" in bench.environment()["implementation"]
 
 
-def test_q75_publication_keeps_historical_controls_distinct():
-    from pathlib import Path
-    from tools import publish_best_overview as publication
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    assert "**Lossy baseline (§271).**" in report
-    assert "JPEG q50 / JPX r192" in report
-    assert "Lossy baseline (§271)" in Path(publication.__file__).read_text()
-
-
 @pytest.mark.parametrize("mode,field", [("color", "jpeg_q"), ("jpx", "jpx_q")])
 @pytest.mark.parametrize("force", [False, True])
 @pytest.mark.parametrize("quality", [75, 90])
@@ -232,8 +233,7 @@ def test_quality_reaches_real_native_and_ffpr_saves(tmp_path, monkeypatch, mode,
         canvas.save(encoded, "JPEG", quality=quality, optimize=True, subsampling=0)
         expected = encoded.getvalue()
     else:
-        target = jpx_quality_rate(quality)
-        expected = pipeline.jpx_encode(np.asarray(canvas), None, rate=target, presized=True)
+        expected = pillow_jpx(np.asarray(canvas), jpx_quality_psnr(quality))
     assert payload["stream"] == expected
     with fitz.open(output) as doc:
         page = doc[0]

@@ -1,7 +1,10 @@
-"""Audit measured Best outputs and emit a documentation/fixture apply_patch.
+"""Audit measured Best outputs; emit a table-value/fixture apply_patch.
 
-No encoding or direct tracked-file writes. Fixed policies remain the separate
-binary experiment; PNG controls keep their original denominators.
+No encoding or direct tracked-file writes. The page's prose, labels and row
+order are curated by hand; this tool fills only the measured value cells of
+the `overview`, `zopfli-vs-brotli` and `fixed-controls` tables by table/row
+ID. Fixed policies remain the separate binary experiment; PNG controls keep
+their original denominators.
 """
 
 import argparse
@@ -14,66 +17,48 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools import bench_best_overview as bench
-from tools.publish_lossy_quality import current_primary, current_summary
+from tools import benchmark_tables as tables
+from tools.publish_lossy_quality import current_overview_values
 
-MAIN = "## Overview — final complete-file bytes"
-OLD_BINARY = "## FFPR residual compression — Zopfli versus Brotli baseline"
-BINARY = "## Stream compression — Zopfli versus Brotli baseline"
-PNG_GUIDANCE = """### Results and decision tree
-
-**Fixed-encoder measured result:** prediction reduces **0 of 48 Brotli** files
-and **18 of 48 Zopfli** files. With every measured same-fidelity algorithm
-eligible, none of the 96 PNG candidates is uniquely smallest. Reader limits
-matter: excluding Brotli leaves eight strict wins in the measured 16/64-color
-alternatives, not an exhaustive layered-JBIG2 search.
-
-Use the **prepared output image**, not its original file type, to branch:
-
-```text
-Prepared output image
-├─ No bitmap rows → no-op; no prediction decision.
-├─ JPEG / JPEG2000 / JBIG2 → PNG prediction not applicable to that payload.
-└─ Packed BW / indexed samples → apply the stream policy below.
-
-Best (Zopfli/Brotli)
-├─ Zopfli → test prediction OFF and ON.
-└─ Brotli → test prediction OFF and ON.
-
-Explicit Zopfli
-├─ Off → test prediction OFF only.
-├─ On → test prediction ON only.
-└─ Best → test prediction OFF and ON.
-
-Compare measured complete-PDF candidates; keep the smallest.
-```
-
-**Counterexample:** the earlier noisy-BW Brotli control improves **-2.90%**
-with prediction, although JBIG2 remains smaller. See the
-[measured evidence](IMAGE_STREAM_COMPRESSION.md#what-these-sizes-show).
-All current indexed-color photo/artwork PNG candidates grow; some
-mixed-paper indexed FFPR candidates shrink with Zopfli. Encoder and actual
-image content—not palette count or FFPR alone—determine the measured outcome.
-
-**Application policy (§§260/261):** Best performs the joint search rather than
-turning these content observations into skip heuristics. Explicit Zopfli's
-Off/On choices force their stated predictor; Best measures both. Compare
-actual complete saved PDFs, including predictor dictionaries and container
-overhead, without repeating image processing. Keep exact sample bytes and
-J* payloads. Native text/vector streams do not use image-row prediction.
-
-The source need not contain PNG files: prediction applies to the prepared
-pixel rows. No eligible bitmap rows or J* payloads are applicability skips,
-not evidence that prediction loses. Unsupported general-image layouts stay
-unchanged in automatic mode; explicit On reports an error. The existing
-114-file overview and 96 fixed-encoder pairs do **not** measure §260's new
-joint search; their measured sizes and denominators remain frozen.
-
-### Method and interpretation"""
+# Divider rows are curated by hand; their IDs are never filled.
+GROUP_IDS = {bench.REFERENCE: "group.reference", bench.BW: "group.bw",
+             bench.INDEXED: "group.indexed", bench.COLOR: "group.full-color"}
 
 
-def display_table(markdown):
-    """Shorten displayed row labels without rewriting frozen recipe identities."""
-    return markdown.replace(" + packed samples |", " |")
+def recipe_key(family, variant, native="zopfli"):
+    """Overview row ID (recipe key) of a measured family/variant combination.
+
+    Packed-sample variants are named per general compressor (`brotli-plain`);
+    the recipe catalogue records them under their Zopfli name.
+    """
+    plain = variant.replace(f"{native}-", "zopfli-", 1)
+    matches = [r.key for r in bench.RECIPES if r.family == family and r.variant == plain]
+    if len(matches) != 1:
+        raise ValueError(f"No benchmark recipe for {family}/{variant}/{native}")
+    return matches[0]
+
+
+def fixed_row_id(family, variant, native):
+    """Per-encoder row ID: `<recipe-key>.<zopfli|brotli>` or `reference.classic`."""
+    if native == "flate":
+        if family != "preserve-images":
+            raise ValueError(f"Classic Flate is only the unresampled reference, not {family}")
+        return "reference.classic"
+    if native not in ("zopfli", "brotli"):
+        raise ValueError(f"Unsupported fixed encoder: {native}")
+    return f"{recipe_key(family, variant, native)}.{native}"
+
+
+def recipe_rows(generated):
+    """Value cells of a generated recipe table (with dividers) by recipe key."""
+    ids, current = [], None
+    for recipe in bench.RECIPES:
+        if recipe.section != current:
+            current = recipe.section
+            ids.append(GROUP_IDS[current])
+        ids.append(recipe.key)
+    rows = tables.keyed_rows(generated, ids)
+    return {key: cells for key, cells in rows.items() if key not in GROUP_IDS.values()}
 
 
 def encoded_images(doc):
@@ -89,31 +74,29 @@ def fixed_label(recipe, policy, catalog):
     return bench.overview.display_label(label)
 
 
-def fixed_controls(publication):
-    """Relocate all fixed alternatives, including the old Classic reference."""
+def fixed_control_values(publication):
+    """Measured `fixed-controls` cells, including the Classic Flate reference."""
     overview = bench.overview
     index = bench.fixed_records(publication)
-    catalog = {(r["family"], r["variant"], r["native"]): r["label"] for r in publication["rows"]}
     rows = []
     for recipe in bench.RECIPES:
         for policy in (("flate", "zopfli", "brotli") if recipe.key == "reference" else ("zopfli", "brotli")):
             variant = recipe.variant.replace("zopfli-", f"{policy}-", 1)
-            label = fixed_label(recipe, policy, catalog)
-            rows.append(overview.Combination(recipe.family, variant, policy, label))
-    records = list(index.values())
-    raw = overview.matrix_markdown(overview.DOCUMENTS, rows, records)
-    return raw.replace("| Algorithm combination |", "| Fixed-policy combination |", 1)
+            rows.append(overview.Combination(recipe.family, variant, policy, recipe.label))
+    generated = overview.matrix_markdown(overview.DOCUMENTS, rows, list(index.values()))
+    return tables.keyed_rows(generated, [fixed_row_id(r.family, r.variant, r.native) for r in rows])
 
 
-def fixed_controls_section(publication):
-    """Keep the measured baseline sizes always visible (§259)."""
-    return (
-        "### Fixed-encoder controls — measured final PDF bytes\n\n"
-        "These are the relocated fixed-policy alternatives, not additional main\n"
-        "matrix choices. PNG OFF/ON calculations keep these encoder-specific\n"
-        "plain baselines. The Classic-Flate reference remains a control only.\n\n"
-        + fixed_controls(publication) + "\n"
-    )
+def overview_values(report):
+    """Best `overview` cells by recipe key; current lossy rows overlay §258's."""
+    values = recipe_rows(bench.table(bench.overview.DOCUMENTS, bench.RECIPES, report["records"]))
+    values.update(current_overview_values())
+    return values
+
+
+def binary_values(publication):
+    """`zopfli-vs-brotli` percentages by recipe key, from the fixed pairs."""
+    return recipe_rows(bench.binary_table(bench.overview.DOCUMENTS, bench.RECIPES, publication))
 
 
 def audit(path):
@@ -193,198 +176,11 @@ def fixture(report, publication, path):
                 documents=[asdict(d) for d in bench.overview.DOCUMENTS], rows=rows)
 
 
-def replace_once(text, before, after):
-    if text.count(before) != 1:
-        raise ValueError(f"Expected exactly one report fragment: {before[:90]}")
-    return text.replace(before, after, 1)
-
-
-def rewrite(before, report, publication, path):
-    text = before
-    text = replace_once(text, "Designer §§210–214/220–254; TODO §§226–252.",
-                        "Designer §§210–214/220–271; TODO §§226–264.")
-    text = text.replace("verification: 2026-10-16–17", "verification: 2026-10-16–19", 1)
-    text = replace_once(text, "All **177 integrated Brotli outputs** were",
-                        "The fixed-encoder study's **177 integrated Brotli outputs** were")
-    start = "**Current selected results after the B114 preparation repair and §254 refresh.**"
-    paragraph = next(p for p in text.split("\n\n") if p.startswith(start))
-    text = replace_once(text, paragraph,
-        "**Versioned selection (§§258/271).** The overview has **19 recipes × six complete PDFs = 114 measured sizes**: "
-        "90 retained measurements and 24 LOSSY-05 fixed-q75 outputs (12 unchanged JPEG files reused, 12 JPX files freshly saved). "
-        "LOSSY-05 also supplies 60 verified current q75 controls (30 unchanged JPEG files reused, 30 JPX files freshly saved). "
-        "The Zopfli/Brotli reference has 114 pairs (90 retained, 24 refreshed); PNG prediction retains "
-        "its **96 fixed-encoder pairs**, and NATIVE-01 has **42 pairs** (30 retained, 12 refreshed). "
-        "The 392-file fixed-encoder publication remains immutable. "
-        "The BW representative is the eleven-page CCITT NACA TM972 scan, not the already-JBIG2 JFK "
-        "regression fixture. B114 is worker-verified, not designer-confirmed acceptance.\n\n"
-        "**Policy boundary (§260).** The 90 retained cells use §258's predictor-preserving\n"
-        "Best; the current q75 files use the production saver. Their J* payloads\n"
-        "are not image-row predicted. The 96 PNG pairs keep their fixed encoders\n"
-        "and original denominators. No replacement size is estimated.\n\n"
-        "**Lossy baseline (§271).** The four current lossy overview rows use\n"
-        "**JPEG q75 / JPEG2000 q75** as the working comparable-quality baseline,\n"
-        "with one fixed JPX 26:1 target, full-resolution colour,\n"
-        "fixed lossy profiles and actual 300-DPI\n"
-        "whole-file measurements. §271 applies this standard to all active lossy\n"
-        "fixed controls and binary/focused/residual comparisons. "
-        "**Every active lossy comparison now uses this same standard.** The original\n"
-        "**JPEG q50 / JPX r192** files stay archived, never relabeled q75.\n"
-        "See [LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).")
-    text = replace_once(text,
-        "  compressor, not a second image/codec. The overview shows plain baselines; the separate PNG table isolates its measured effect.",
-        "  compressor, not a second image/codec. Its separate table compares each\n"
-        "  fixed encoder's own plain baseline, not the main matrix's policy.")
-    text = replace_once(text,
-        "- Packed BW/indexed images and native streams use the **same general\n"
-        "  compressor**. Mixed general-compressor pairings are excluded from the algorithm overview.\n"
-        "  The isolated native-stream experiment deliberately holds image bytes fixed. Specialized\n"
-        "  JPEG/JPEG2000/JBIG2 retain meaningful native Zopfli/Brotli alternatives.",
-        "- Fixed-encoder controls pair packed BW/indexed images and native streams\n"
-        "  with the **same general compressor**. Their specialized J* comparisons\n"
-        "  change native/residual compression only. Keep these controlled alternatives\n"
-        "  separate from the main matrix's stream-selection policy.")
-    text = replace_once(text,
-        "Rows without FFPR retain native text/vectors; preservation is implicit in\n"
-        "their labels (§232). A compressor followed by `native` identifies the\n"
-        "compression applied to those PDF streams, not the bitmap image codec.",
-        "Rows without FFPR retain native text/vectors; preservation is implicit in\n"
-        "their labels (§232). In fixed-encoder reference labels, `native` identifies\n"
-        "the stream compressor, not the bitmap image codec.")
-    text = text.replace(
-        "BW uses **Otsu**, except the explicitly labeled Simple thresholds. JPEG uses\n",
-        "The current lossy overview compares JPEG q75 and JPEG2000 q75 under the\n"
-        "designer's fixed-q75 working comparable-quality baseline: 4:4:4 JPEG and full-resolution\n"
-        "9/7 + RGB MCT JPEG2000. See `LOSSY_IMAGE_QUALITY.md`.\n\n"
-        "The following older quantities describe historical fixed-encoder controls.\n"
-        "BW uses **Otsu**, except the explicitly labeled Simple thresholds. Historical JPEG uses\n", 1)
-    residual_start = text.index("In FFPR rows, **residual streams**")
-    main_start = text.index(MAIN)
-    text = text[:residual_start] + (
-        "In FFPR rows, **residual streams** means the non-image PDF content left\n"
-        "after rasterization, mainly commands that position/draw the page images.\n"
-        "The historical fixed-control label **optimized residual streams** means\n"
-        "Zopfli for those remaining streams. It is confined to the supporting\n"
-        "experiment/reference data, not the new overview's policy or row labels.\n"
-        "JPEG/JPEG2000/JBIG2 encode images separately; the shared final writer\n"
-        "handles PDF object/xref packing independently.\n\n"
-    ) + text[main_start:]
-    main_start = text.index(MAIN)
-    png_start = text.index(bench.overview.PNG_SECTION)
-    primary = (
-        MAIN + "\n\n"
-        "Every row uses **Best (Zopfli/Brotli)** for native and eligible packed\n"
-        "BW/indexed streams. It keeps the smallest actual complete all-Zopfli,\n"
-        "all-Brotli or per-stream mixed save, without changing image codecs, quality, DPI,\n"
-        "prediction or J* payloads. Compatibility metadata is OFF; output can\n"
-        "require a Brotli-capable reader. This common policy is omitted from\n"
-        "row labels. The\n"
-        "[specialized binary experiment](#stream-compression--zopfli-versus-brotli-baseline)\n"
-        "owns the fixed-encoder comparison and its reference sizes.\n\n"
-        "The retained BW/indexed/reference cells use the measured **§258\n"
-        "predictor-preserving** policy. The four lossy rows are current LOSSY-05\n"
-        "saves through the production pipeline, with J* payloads protected from\n"
-        "general recompression. Historical outputs and producers stay frozen.\n\n"
-        "Transformed packed-image rows use PNG prediction OFF; the unresampled\n"
-        "reference keeps its existing image decoding parameters.\n\n"
-        "The unresampled reference does not compose, resize or recolor images.\n"
-        "It preserves their samples and geometry; eligible lossless image streams\n"
-        "can be repacked, so it does not promise identical encoded image bytes.\n"
-        "It is a benchmark control, not the app's untouched Original view.\n"
-        "All other image recipes use 300 DPI. Original file sizes remain above.\n"
-        "Classic-Flate controls are retained in the specialized reference, not\n"
-        "this matrix.\n\n"
-        "One continuous table retains BW, indexed color and full-color dividers,\n"
-        "with native-preserving rows before FFPR. Bold minima compare the same\n"
-        "input and fidelity group only. The two q75 codecs share a comparison\n"
-        "group; native/FFPR, palettes and lossless references remain distinct.\n"
-        "A smaller encoding need not beat the original.\n\n"
-        + current_summary()+"\n"
-        + current_primary(display_table(bench.table(bench.overview.DOCUMENTS, bench.RECIPES, report["records"]))) + "\n"
-    )
-    text = text[:main_start] + primary + text[png_start:]
-    text = replace_once(text,
-        "names its plain baseline in the overview above. Each cell shows the",
-        "names its own **fixed-encoder plain baseline**, retained in the specialized\n"
-        "reference controls below—not a Best result from the new overview.\n"
-        "No denominator or PNG measurement changes. Each cell shows the")
-    text = replace_once(text,
-        "files now included in this expanded overview.", "files retained in the fixed-encoder controls.")
-    text = replace_once(text, "**Does prediction ever win overall?** With all measured same-fidelity\nalgorithms eligible,",
-        "**Does prediction ever win overall?** In the fixed-encoder study, with all\nmeasured same-fidelity algorithms eligible,")
-    text = replace_once(text, bench.overview.PNG_SECTION + "\n\n",
-        bench.overview.PNG_SECTION + "\n\n" + PNG_GUIDANCE + "\n\n")
-    old_start = text.index(OLD_BINARY)
-    old_end = text.index("## Focused scenarios", old_start)
-    old = text[old_start:old_end]
-    subset = old[old.index("**Result with declaration OFF:"):]
-    subset = subset.replace("### Why Brotli can still be larger", "### Why Brotli can still be larger for the FFPR/J* subset")
-    binary = (
-        '<a id="ffpr-residual-compression--zopfli-versus-brotli-baseline"></a>\n\n'
-        + BINARY + "\n\n"
-        "**Expanded binary reference (§§258/271).** Brotli is the baseline and Zopfli\n"
-        "the treatment for all 19 overview recipes / **114 pairs**: 90 retained\n"
-        "pairs and 24 current q75 lossy pairs. Source,\n"
-        "prepared samples/palette, DPI, threshold/quality, native content, ID\n"
-        "framing, writer and declaration-OFF setting stay fixed. For packed\n"
-        "BW/indexed rows, this single general-encoder factor changes both image\n"
-        "and native streams. For J* and original-image references, only native/\n"
-        "residual streams change; their encoded image payloads stay identical.\n"
-        "Do not confuse either fixed-policy side with the overview's Best output.\n\n"
-        "In particular, the original-image fixed control preserves encoded images;\n"
-        "the main unresampled Best reference may also repack eligible image\n"
-        "streams. These controlled alternatives are not homogeneous Best candidates.\n"
-        "Fixed controls normalize PDF IDs and avoid re-subsetting fonts. Container\n"
-        "differences versus main-table production saves are not encoder effects;\n"
-        "compare only matched controls.\n\n"
-        "`Change (%) = 100 × (Zopfli bytes − Brotli bytes) / Brotli bytes`.\n"
-        "**Negative favors Zopfli; positive favors Brotli.** Cells show only\n"
-        "two-decimal measured full-file changes. Bold marks displayed negatives;\n"
-        "rounded +0.00% is never bold. Exact baseline/treatment sizes are retained\n"
-        "in the always-visible reference table and measured evidence below.\n\n"
-        "### Replace Brotli with Zopfli — final PDF size change (%)\n\n"
-        + display_table(bench.binary_table(bench.overview.DOCUMENTS, bench.RECIPES, publication)) + "\n"
-        "### FFPR/J* subset — current NATIVE-02 findings\n\n"
-        "The five FFPR/J* recipes above contain **30 pairs**: 18 retained\n"
-        "BW/colored-JBIG2/lossless pairs and 12 current q75 pairs from LOSSY-05.\n"
-        "Their byte accounting is refreshed for the twelve new pairs. Statements\n"
-        "in this subsection refer to that subset, not every binary row.\n\n" + subset
-        + fixed_controls_section(publication) + "\n"
-    )
-    text = text[:old_start] + binary + text[old_end:]
-    text = replace_once(text,
-        "Every cell below is another complete saved PDF or an explicitly reused cell\n"
-        "from the overview.",
-        "Every cell below is a fixed-encoder supporting control, not a Best result\n"
-        "from the new overview. Cells reuse their original measured files where applicable.")
-    marker = "The representative inventory is **50 combinations"
-    paragraph = next(p for p in text.split("\n\n") if p.startswith(marker))
-    text = replace_once(text, paragraph,
-        "§258 adds **114 new verified Best PDFs**, one per overview cell. Its measured manifest is "
-        f"`{path}` (SHA-256 `{bench.digest(path)}`). The fixed-encoder 392-file publication stays "
-        "immutable: 300 representative plain/PNG measurements, focused controls and the two native "
-        "experiments retain their actual producer identities. The expanded binary table reuses "
-        "114 existing pairs; it does not run or relabel those encoders again. "
-        "The [Best regression fixture](../tests/fixtures/best_overview_sizes.json) pins all 114 "
-        "new sizes/hashes plus both fixed-policy sizes per cell. Publication checks actual file "
-        "hashes, sources, frozen preparations, selection candidates and unchanged semantic graphs. "
-        "Best changes lossless storage, so its image-byte check compares exact decoded eligible "
-        "samples and exact protected J* payloads, not an impossible unchanged packed encoding. "
-        "The graph proof preserves the preparations' prior all-page render verification without "
-        "rerendering or repeating image transforms. No-image controls are independently saved.")
-    text = replace_once(text,
-        "Every\nfinal candidate is checked against its frozen preparation for encoded and\n"
-        "decoded image bytes, decoded native streams, geometry, metadata/attachments\n"
-        "and all-page no-AA pixels at 72 and 300 DPI.",
-        "Fixed-policy\nfinal candidates retain their checks against frozen preparations for encoded/\n"
-        "decoded image bytes, native streams and all-page 72/300-DPI pixels. The\n"
-        "new Best outputs use exact semantic-graph/sample/J* verification as above.")
-    text = replace_once(text, "Reproduce from the repository root, using fresh labels:",
-        "Reproduce the Best-only overview from the repository root, using fresh labels:\n\n"
-        "```sh\nnice -n 10 ./.venv/bin/python tools/bench_best_overview.py --label <best-label> --workers 2\n"
-        "./.venv/bin/python tools/publish_best_overview.py --measurements .tmp/compression-experiments/<best-label>/metrics.json --output .tmp/compression-experiments/<best-publication-label>\n```\n\n"
-        "The publisher audits actual files and emits an `apply_patch` patch. The\n"
-        "following older commands reproduce the separate Brotli-refresh study;\n"
-        "they are not required when changing only the overview policy:")
+def fill_tables(text, report, publication):
+    """Fill measured cells only; prose, labels and row selection stay curated."""
+    text = tables.fill(text, "overview", overview_values(report))
+    text = tables.fill(text, "zopfli-vs-brotli", binary_values(publication))
+    text = tables.fill(text, "fixed-controls", fixed_control_values(publication))
     # The frozen catalogue is historical evidence, not authority to restore
     # obsolete settings in active supporting tables after a newer publication.
     from tools.publish_lossy_controls import apply_current
@@ -413,9 +209,9 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     report, publication = audit(args.measurements)
-    source = Path("docs/INTEGRATED_COMPRESSION.md")
+    source = tables.PAGE
     before = source.read_text()
-    after = rewrite(before, report, publication, args.measurements)
+    after = fill_tables(before, report, publication)
     fixture_path = Path("tests/fixtures/best_overview_sizes.json")
     fixture_text = json.dumps(fixture(report, publication, args.measurements), indent=2) + "\n"
     args.output.mkdir(parents=True, exist_ok=False)

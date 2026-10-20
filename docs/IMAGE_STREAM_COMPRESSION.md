@@ -3,7 +3,7 @@
 Supporting component study: native compression is fixed in this document.
 The primary final-file comparison uses realistic combination rows over six
 representative PDFs, followed by focused scenarios (§223):
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 
 The component preparations below predate the uniform 300-DPI ruling
 and shared assembly repairs (§§224–226, B108–B112). They retain the original

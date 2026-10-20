@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 256. Routine execution requests are not TODOs (§218).
+new TODO ID is 268. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -2001,13 +2001,13 @@ eight-byte checksum rewrite was caught; normal product behavior is unchanged.
 The original matrix's 549 cells/files and tied bold minima were independently
 verified. Its exhaustive publication layout is superseded by designer §223 /
 TODO §226; the actual artifacts remain archived diagnostic evidence. The
-primary Markdown analysis remains `docs/INTEGRATED_COMPRESSION.md`.
+primary Markdown analysis remains `docs/COMPRESSION_BENCHMARKS.md`.
 Fourteen focused tests and fresh full suite **474 passed**. No benchmark
 timings, GUI codec/default change, desktop launch or issue acceptance claimed.
 
 ## 226 — DONE (designer §223: representative, realistic integrated size tables)
 ~~Publish realistic combination rows over five representative complete PDFs,
-with focused scenarios and actual final-file bytes.~~ `INTEGRATED_COMPRESSION.md`
+with focused scenarios and actual final-file bytes.~~ `COMPRESSION_BENCHMARKS.md`
 now has 42 descriptive rows, **210 verified overview PDFs**, no excluded
 cells and **62 focused PDFs**: **272 distinct final outputs**, zero rejected
 cells, after designer §229 / TODO §234 filled the former 22 gaps.
@@ -2027,7 +2027,7 @@ operators address B108–B112. All six codecs share the actual saver, full-color
 composition, one resize, effective recipe/dirty lifecycle and real-file readback.
 The uniform overview/focused run validates all 250 final files; full **552-test**
 suite, complete-source preflight and reviewed normal/2× offscreen captures pass.
-See `COMPRESSION.md`, `TEST_PLAN.md` and `INTEGRATED_COMPRESSION.md`.
+See `COMPRESSION.md`, `TEST_PLAN.md` and `COMPRESSION_BENCHMARKS.md`.
 Issue acceptance remains pending explicit designer confirmation.
 
 ## 228 — DONE (designer §225: uniform 300 DPI filter defaults and benchmarks)
@@ -2076,7 +2076,7 @@ Implementation completion is not designer acceptance or PDF/UA certification.
 ## 232 — DONE (designer §227: group the integrated overview by output type)
 ~~Group the primary overview as BW, indexed color / low palettes, then full
 color, with unresampled references above the groups.~~
-Stub: `INTEGRATED_COMPRESSION.md` groups 3 reference rows, then 15 BW,
+Stub: `COMPRESSION_BENCHMARKS.md` groups 3 reference rows, then 15 BW,
 15 indexed and 9 full-color rows across the same five PDF columns. The initial
 regrouping preserved all 210 cells (then 188 measured sizes and 22 gaps),
 labels and per-fidelity bold minima. §234 subsequently measures those gaps.
@@ -2089,7 +2089,7 @@ The separate-table presentation is superseded by designer §228 / TODO §233.
 
 ## 233 — DONE (designer §228: one continuous overview table with divider rows)
 ~~Use one continuous overview table with unnumbered title-only divider rows.~~
-Stub: `INTEGRATED_COMPRESSION.md` now has one header and one uninterrupted
+Stub: `COMPRESSION_BENCHMARKS.md` now has one header and one uninterrupted
 table: reference controls, BW, indexed color, then full color. Divider titles
 occupy only the far-left source cell; all five following cells are blank.
 Markdown render and data audits confirm one table, all 42 measurement rows,
@@ -2108,7 +2108,7 @@ caught B113's xref-stream ID bug; its shared preparation repair preserves all
 image-bearing/FFPR paths and keeps the strict cross-version import gate intact.
 The continuous table includes tied minima and annotated no-op repeats. New
 row-coverage/distinct-save and plain/xref-stream no-image tests pass; full
-**561-test** suite passes. See `INTEGRATED_COMPRESSION.md`, `TEST_PLAN.md` and
+**561-test** suite passes. See `COMPRESSION_BENCHMARKS.md`, `TEST_PLAN.md` and
 B113, which remains OPEN pending explicit designer confirmation.
 
 ## 235 — DONE (designer §230: rename the project to PDF Minify)
@@ -2141,7 +2141,7 @@ QPDF passes 207 ordinary outputs, excluding 107 unsupported Brotli outputs.
 The fresh **572-test** suite passes. The residual-stream legend explicitly
 means fixed Zopfli-Flate, not automatic best selection. No encoding-time
 comparison, new GUI choice/default, dependency or designer acceptance is claimed.
-See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+See `COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`.
 
 ## 237 — DONE (designer §232: explicit BW/Otsu heading and concise combination labels)
 
@@ -2152,7 +2152,7 @@ native-stream compressor names and focused Simple threshold columns stay
 explicit. An exact report audit preserves every measurement and bold minimum;
 regression coverage keeps generated and published combination labels aligned.
 This is presentation only; no filter, benchmark output or GUI behavior changes.
-See `DESIGN.md` §232 and `INTEGRATED_COMPRESSION.md`.
+See `DESIGN.md` §232 and `COMPRESSION_BENCHMARKS.md`.
 
 ## 238 — DONE (designer §§233/235 / B114: JBIG2 same-DPI end-to-end non-regression)
 
@@ -2178,7 +2178,7 @@ other affected preparations were newly measured with the §235 repair;
 §§236/237 select the current 34 rows. Actual stored filters, corpus inventory,
 published source descriptors, saved sizes/hashes and tied minima are guarded
 and audited. Historical JFK files remain regression evidence, not main-table
-rankings. The full suite passes 605 tests. See `INTEGRATED_COMPRESSION.md`,
+rankings. The full suite passes 605 tests. See `COMPRESSION_BENCHMARKS.md`,
 `DESIGN.md` §233 and `TEST_PLAN.md`. Implementation verified; B114/B115 remain
 OPEN pending explicit designer confirmation.
 
@@ -2231,7 +2231,7 @@ Keep BW and layered color, native and FFPR, and lossless and lossy separate.
 This is an exploration task, not authorization to enable lossy coding,
 install/change dependencies, replace current recipes, add advanced GUI fields,
 or silently change existing saved-filter results. See `JBIG2.md`, B114,
-`COMPRESSION.md` and `INTEGRATED_COMPRESSION.md`.
+`COMPRESSION.md` and `COMPRESSION_BENCHMARKS.md`.
 
 ## 241 — DONE (designer §§236/237: remove redundant benchmark rows consistently)
 
@@ -2246,7 +2246,7 @@ same-fidelity tied minima. Regression checks cover row absence/control
 retention, full no-image coverage and published source descriptors. Targeted
 80-test and actual 30-PDF subset checks pass, followed by the full 605-test
 suite. No GUI/default changes or designer defect acceptance. See
-`INTEGRATED_COMPRESSION.md`, `DESIGN.md` §§236/237 and `TEST_PLAN.md`.
+`COMPRESSION_BENCHMARKS.md`, `DESIGN.md` §§236/237 and `TEST_PLAN.md`.
 
 ## 242 — DONE (designer §§238–240: isolate the measured PNG-prediction effect)
 
@@ -2261,7 +2261,7 @@ The 110-test focused run and full 635-test suite pass; an independent actual-
 file audit verifies sizes/hashes and signed changes. No new encoding or
 residual-stream restructuring; focused data is unchanged. Implementation is
 verified, **not designer acceptance**; the PNG-only table awaits review.
-See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §§238–240 and `TEST_PLAN.md`.
+See `COMPRESSION_BENCHMARKS.md`, `DESIGN.md` §§238–240 and `TEST_PLAN.md`.
 
 ## 243 — DONE (designer §242: expand PNG prediction combinations)
 
@@ -2272,7 +2272,7 @@ compatible focused outputs reused with original provenance. Sources, palettes,
 pixels, native streams and complete sizes are verified; no-image controls and
 scoped wins/ties/losses remain explicit. New runner and paired publication
 tests pass in the full 654-test suite. **Implementation verified 2026-10-17;
-not designer acceptance.** See `INTEGRATED_COMPRESSION.md`,
+not designer acceptance.** See `COMPRESSION_BENCHMARKS.md`,
 `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`, `tools/bench_png_extension.py`.
 
 ## 244 — DONE (designer §242: next one-factor benchmark experiment)
@@ -2287,7 +2287,7 @@ all-page rendering, native decoding, file hashes and visible paired arithmetic
 are verified. All 362 current files / 471 size cells pass the independent
 publication audit; the full 654-test suite passes. No UI/default changes.
 **Implementation verified 2026-10-17; not designer acceptance.** See
-`INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`,
+`COMPRESSION_BENCHMARKS.md`, `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`,
 `tools/bench_residual_streams.py`, `tools/publish_compression_experiments.py`.
 
 ## 245 — DONE (designer §243: percentage-only PNG effect table)
@@ -2299,7 +2299,7 @@ emphasis. Overview, focused and native/residual sizes remain unchanged;
 reusable generation preserves this presentation. A data-only audit checks
 192 saved files against original measurements, without re-encoding. Targeted
 41-test and full 660-test runs pass. **Implementation verified 2026-10-17;
-not designer acceptance.** See `INTEGRATED_COMPRESSION.md`, `DESIGN.md` §243,
+not designer acceptance.** See `COMPRESSION_BENCHMARKS.md`, `DESIGN.md` §243,
 `TEST_PLAN.md`, `tools/bench_compression_overview.py`.
 
 ## 246 — DONE (designer §244: Brotli annotation and PNG overall-winner analysis)
@@ -2312,7 +2312,7 @@ comparisons distinguish no-image ties, real compressor gains and incomplete
 reader-tier coverage. JBIG2 `-d` OFF/ON is documented as a 24-pair proposal,
 not run or promoted to a product setting. Targeted 41-test and full 660-test
 runs pass. **Implementation verified 2026-10-17; not designer acceptance.**
-See `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, `DESIGN.md`
+See `COMPRESSION_BENCHMARKS.md`, `COMPRESSION_EXPERIMENTS.md`, `DESIGN.md`
 §244, `TEST_PLAN.md` and existing JBIG2 optimization TODO §240.
 
 ## 247 — DONE (designer §§245/246: FFPR Zopfli versus Brotli and short labels)
@@ -2326,7 +2326,7 @@ metadata-only controls isolate 166 B of current writer declaration overhead
 (specification SHOULD, not SHALL), alongside actual payload/filter/Length
 costs. Labels shorten to Zopfli without changing identities or old numeric
 tables. Targeted 106-test and full 674-test runs pass. **Implementation
-verified 2026-10-17; not designer acceptance.** See `INTEGRATED_COMPRESSION.md`,
+verified 2026-10-17; not designer acceptance.** See `COMPRESSION_BENCHMARKS.md`,
 `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md`, `DESIGN.md` §§245/246,
 `tools/bench_ffpr_compressors.py`. No GUI/default change.
 
@@ -2340,7 +2340,7 @@ The complete FFPR explanation moves with its table; Brotli underlines and raw
 measurement identities remain intact. Targeted 117-test and full 679-test runs
 pass. **Implementation verified 2026-10-17; not designer acceptance.** No corpus
 encoding/rendering or GUI/default change. See `DESIGN.md` §§247–249,
-`COMPRESSION_EXPERIMENTS.md`, `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+`COMPRESSION_EXPERIMENTS.md`, `COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`.
 
 ## 249 — DONE (designer §250: explicit treatment titles above effect tables)
 
@@ -2350,7 +2350,7 @@ Stub: both approved level-three headings sit immediately above their tables;
 section anchors and all measured cells remain unchanged. Documentation checks
 verify exact wording, placement and unchanged table data. No code or benchmark
 changes; reuse the existing 679-test result under §241. Title wording approved
-by the designer 2026-10-17. See `DESIGN.md` §250 and `INTEGRATED_COMPRESSION.md`.
+by the designer 2026-10-17. See `DESIGN.md` §250 and `COMPRESSION_BENCHMARKS.md`.
 
 ## 250 — DONE (designer §§251/252: opt-in Brotli compatibility declaration)
 
@@ -2387,7 +2387,7 @@ graphs/streams/hashes verified; all tables, minima, fixtures and conclusions
 refreshed. FFPR: 29 Brotli increases of 2–105 B, one 66 B reduction, explained
 by exact payload/syntax accounting with no declaration cost. Full suite:
 718 passed. **Implementation verified 2026-10-17; not designer acceptance.**
-See `INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md`, supporting
+See `COMPRESSION_BENCHMARKS.md`, `COMPRESSION_EXPERIMENTS.md`, supporting
 component documents and `TEST_PLAN.md`. Frozen ON artifacts remain historical.
 
 ## 253 — DONE (designer §§255/256: Best Zopfli/Brotli stream compression)
@@ -2431,7 +2431,7 @@ Source/preparation/recipe/output hashes, exact semantic graphs and protected
 J* bytes pass the independent publication audit. No application code or
 settings change. **105 focused tests; 794 full-suite tests passed.**
 **Implementation verified 2026-10-17; not designer acceptance.** See
-`INTEGRATED_COMPRESSION.md`, `DESIGN.md` §258, `COMPRESSION_EXPERIMENTS.md`,
+`COMPRESSION_BENCHMARKS.md`, `DESIGN.md` §258, `COMPRESSION_EXPERIMENTS.md`,
 `TEST_PLAN.md`, `tools/bench_best_overview.py` and `tools/publish_best_overview.py`.
 
 ## 256 — DONE (designer §259: visible controls and PNG-prediction decision tree)
@@ -2445,7 +2445,7 @@ match; frozen fixtures verify the counts/content observations. Every published
 table row is unchanged; no corpus encoding or app/settings change.
 **107 focused tests; 796 full-suite tests passed. Implementation verified
 2026-10-17; not designer acceptance.** See `DESIGN.md` §259,
-`INTEGRATED_COMPRESSION.md`, `COMPRESSION_EXPERIMENTS.md` and `TEST_PLAN.md`.
+`COMPRESSION_BENCHMARKS.md`, `COMPRESSION_EXPERIMENTS.md` and `TEST_PLAN.md`.
 
 ## 257 — DONE (designer §260: automatic PNG prediction with Best)
 
@@ -2474,7 +2474,7 @@ Presentation regressions require both branches and publisher/report agreement.
 All measured values, runtime and settings remain unchanged.
 **107 focused checks; 834 full-suite tests passed. Implementation verified
 2026-10-18; not designer acceptance.** See `DESIGN.md` §261,
-`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+`COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`.
 
 ## 259 — DONE (designer §§262/263: familiar q90 JPEG/JPEG2000 starting point)
 
@@ -2525,7 +2525,7 @@ mistaken for artwork-codec failures. Real screen/300-DPI output and 1×/2×
 GUI captures were viewed; the desktop app remains closed.
 **908 full-suite tests, 69 focused codec/publication checks and 33 overview
 checks passed. Implementation verified 2026-10-19; not designer acceptance.**
-See `LOSSY_IMAGE_QUALITY.md`, `INTEGRATED_COMPRESSION.md`,
+See `LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_BENCHMARKS.md`,
 `COMPRESSION_EXPERIMENTS.md`, `TEST_PLAN.md` and
 `tests/fixtures/lossy_quality_sizes.json`.
 
@@ -2545,7 +2545,7 @@ Actual artwork/photo screen/crop views and both 1×/2× UI reviews were viewed.
 **942 full-suite tests and 186 focused quality/benchmark/publication/overview
 checks passed. Implementation verified 2026-10-19; not designer acceptance.**
 See `DESIGN.md` §267, `LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_EXPERIMENTS.md`,
-`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`. The desktop remains closed.
+`COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`. The desktop remains closed.
 
 ## 263 — DONE (designer §268: current standard across all affected benchmarks)
 
@@ -2565,7 +2565,7 @@ Brotli files use the recorded supporting reader, not false all-reader proof.
 **960 full-suite tests passed. Implementation verified 2026-10-19; not
 designer acceptance.** See `DESIGN.md` §268, LOSSY-03 in
 `COMPRESSION_EXPERIMENTS.md`, `LOSSY_IMAGE_QUALITY.md`,
-`INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`. The desktop remains closed.
+`COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`. The desktop remains closed.
 
 ## 264 — DONE (designer §§269–271: stable quality scales and one fixed baseline)
 
@@ -2588,8 +2588,8 @@ All 193 focused checks and 1008 full-suite tests pass, with no expected failures
 **Implementation verified 2026-10-19; not designer acceptance or a claim of
 universal equal visual quality.** The separately observed native-photo
 overlay defect B116 remains OPEN. See `DESIGN.md` §271, LOSSY-04/05 in
-`COMPRESSION_EXPERIMENTS.md`, `JPEG_JPEG2000_RESEARCH.md`,
-`LOSSY_IMAGE_QUALITY.md`, `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+`COMPRESSION_EXPERIMENTS.md`, `LOSSY_IMAGE_QUALITY.md`,
+`LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`.
 
 ## 265 — DONE (B116: local backgrounds hide native-mode image artwork)
 
@@ -2605,3 +2605,41 @@ data remains immutable and explicitly pre-B116. Implementation verified
 2026-10-19, not designer acceptance; issue B116 stays OPEN pending confirmation.
 See [backdrops.py](../pdf_minify/core/backdrops.py), `COMPRESSION.md`,
 `TEST_PLAN.md` and B116 in `../issues.md`.
+
+## 266 — DONE (designer §§272/276/278/284: JPEG2000 quality that matches JPEG q75)
+
+~~JPEG2000 q75 must look like JPEG q75 through one fixed setting, with
+matching colour sampling and standard packages only, so the benchmarks
+compare sizes at equal visual quality.~~
+
+Stub: JPEG stays 4:4:4. JPEG2000 maps Quality to one PSNR target per
+512-pixel tile (`jpeg-matched-tile-psnr-v1`, q75 → 44.0 dB), calibrated and
+measured at q50/60/75/90 so its median SSIMULACRA2 equals JPEG's at the same
+number (within 0.3 points). LOSSY-06 re-measured all 24 lossy PDFs and 60
+stream controls with the current compositor; JPEG2000 is smaller in 9 of 12
+complete-PDF pairs, with per-document quality gaps published beside them.
+Implementation verified 2026-10-20, not designer acceptance (issue B117).
+No automatic Best between JPEG and JPEG2000 (designer §287); the codec stays
+the filter's explicit choice. See `pdf_minify/core/quality.py`,
+`LOSSY_IMAGE_QUALITY.md` and `COMPRESSION_BENCHMARKS.md`.
+
+## 267 — OPEN (designer §§273/279–283: documentation structure)
+
+Each page opens with its relevant rulings (exact text), then present-tense
+documentation, then only the design traps and failed attempts likely to
+recur. Work iteratively, reviewing each page by hand (§280).
+
+Done 2026-10-20: top-level principles in `DESIGN.md`; `COMPRESSION.md` as
+the compression design page; `COMPRESSION_BENCHMARKS.md` (renamed from the
+integrated report) with tagged tables filled only by scripts (§§282/283);
+`LOSSY_IMAGE_QUALITY.md` absorbs the JPEG/JPEG2000 research page.
+
+Next, compression pages (§281): fold the per-ruling compression sections of
+`DESIGN.md` into the compression pages; retire `IMAGE_STREAM_COMPRESSION.md`,
+`COMPRESSION_COMBINATIONS.md`, `COMPRESSION_EXPERIMENTS.md`,
+`MIXED_MODE_ANALYSIS.md`, `MIXED_MODE_OPTION.md` and
+`PDF_OPTIMIZATION_NOTES.md`, keeping recurring lessons as traps; merge the
+design part of `LAYERED_COLOR_JBIG2.md` into `JBIG2.md`; clean
+`NATIVE_STREAM_COMPRESSION.md`. Then the verbatim-log decisions in issue B118
+and a short topic-based `DEVELOPER_GUIDELINES.md`.
+

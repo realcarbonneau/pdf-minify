@@ -1,13 +1,14 @@
 """Publish the complete default-OFF Brotli rerun, without invoking encoders.
 
 Frozen input manifests and non-Brotli controls remain immutable. This tool
-checks actual file hashes/sizes, updates every affected table and emits an
-apply_patch patch; it never edits tracked documentation or fixtures directly.
+checks actual file hashes/sizes, fills the measured value cells of every
+affected benchmark table by table/row ID and emits an apply_patch patch; it
+never edits tracked documentation or fixtures directly, and never writes
+prose, labels or headers of the hand-curated benchmark page.
 """
 
 import argparse
 from copy import deepcopy
-from dataclasses import asdict, replace
 import difflib
 import json
 from pathlib import Path
@@ -19,8 +20,13 @@ from tools import refresh_brotli_tables as refresh
 from tools import publish_compression_experiments as old_publication
 from tools import bench_compression_scenarios as scenarios
 from tools import bench_ffpr_compressors as ffpr
+from tools import benchmark_tables as tables
+from tools.publish_best_overview import fixed_row_id, recipe_key
 
 overview, residual = old_publication.overview, old_publication.residual
+# Focused palette/threshold tables vary the count/threshold by column, so
+# their row IDs name the transform without it (`indexed.brotli.png`).
+FOCUSED_BASES = {"indexed": "indexed", "bw-images": "bw"}
 
 
 def has_brotli(result):
@@ -197,13 +203,6 @@ def replace_tables(scope, tables):
     return "".join(output)
 
 
-def section(text, heading, tables):
-    before, scope = text.split(heading, 1)
-    stop = scope.find("\n## ")
-    body, after = (scope[:stop], scope[stop:]) if stop >= 0 else (scope, "")
-    return before + heading + replace_tables(body, tables) + after
-
-
 def focused_table(publication, specs, rows):
     """Columns select actual overview or focused records, sharing fidelity groups."""
     documents, records = [], []
@@ -220,53 +219,59 @@ def focused_table(publication, specs, rows):
     return overview.matrix_markdown(documents, rows, records)
 
 
-def integrated_tables(text, publication):
-    rows = tuple(overview.Combination(**r) for r in publication["rows"])
-    baseline = overview.matrix_markdown(overview.DOCUMENTS, overview.primary_rows(rows), publication["records"])
-    rendered = {old_publication.cells(line)[0]: line for line in baseline.splitlines()[2:]}
-    before, scope = text.split("## Overview — final complete-file bytes", 1)
-    body, after = scope.split(overview.PNG_SECTION, 1)
-    found = set()
-    lines = []
-    for line in body.splitlines():
-        label = old_publication.cells(line)[0] if line.startswith("| ") else None
-        if label in rendered:
-            found.add(label)
-        lines.append(rendered.get(label, line))
-    if found != set(rendered):
-        raise ValueError("Overview row selection/order changed")
-    text = before + "## Overview — final complete-file bytes" + "\n".join(lines) + "\n\n" + overview.PNG_SECTION + after
-    text = section(text, overview.PNG_SECTION, [overview.png_prediction_markdown(
-        overview.DOCUMENTS, rows, publication["records"])])
-    text = section(text, ffpr.SECTION, [ffpr.effect_table(overview.DOCUMENTS, ffpr.ROWS, publication["ffpr_pairs"])])
+def focused_row_id(row):
+    """Row ID of a focused-table combination; see FOCUSED_BASES."""
+    base = FOCUSED_BASES.get(row.family)
+    if base is None:
+        return fixed_row_id(row.family, row.variant, row.native)
+    if row.variant == "jbig2":
+        return f"{base}-jbig2.{row.native}"
+    predictor = row.variant.removeprefix(f"{row.native}-")
+    if predictor not in ("plain", "png"):
+        raise ValueError(f"Unexpected focused combination: {row.family}/{row.variant}")
+    return f"{base}.{row.native}" + (".png" if predictor == "png" else "")
+
+
+def focused_specs():
+    """(table ID, measured columns, combinations) of the six focused tables."""
     photo_rows = tuple(r for r in overview.ROWS if r.family in (
         "preserve-images", "jpeg-q50", "jpx-r192", "jpx-lossless", "jpeg-q50-ffpr", "jpx-r192-ffpr", "jpx-lossless-ffpr"))
-    indexed_rows = tuple(replace(r, label=r.label.replace(" 5 colors", ""))
-                         for r in overview.ROWS if r.family == "indexed")
+    indexed_rows = tuple(r for r in overview.ROWS if r.family == "indexed")
     bw_rows = tuple(r for r in overview.ROWS if r.family == "bw-images")
     native_rows = tuple(r for r in overview.ROWS if r.family == "preserve-images")
-    tables = [
-        focused_table(publication, [("photos", "Color photos", "photos")], photo_rows),
-        focused_table(publication, [("art", "5 colors", "art"), ("a16", "16 colors", "art-16"),
-                                    ("a64", "64 colors", "art-64")], indexed_rows),
-        focused_table(publication, [("mixed", "5 colors", "mixed"), ("m16", "16 colors", "mixed-16"),
-                                    ("m64", "64 colors", "mixed-64")], indexed_rows),
-        focused_table(publication, [("scan", "NACA TM972", "scan"), ("naca", "NACA formulas", "naca")], bw_rows),
-        focused_table(publication, [("art", "Otsu", "art"), ("t180", "Simple T180", "art-t180"),
-                                    ("t210", "Simple T210", "art-t210")], bw_rows),
-        focused_table(publication, [("native", "Form W-9", "native"), ("941", "Form 941", "form941"),
-                                    ("kepler", "NASA Kepler", "extra:kepler")], native_rows)]
-    # Preserve the existing descriptive column headings; only measured cells change.
-    scope = text.split("## Focused scenarios", 1)[1].split(residual.SECTION, 1)[0]
-    headers = [line for line in scope.splitlines() if line.startswith("| ") and
-               ("Algorithm combination" in line or "Combination |" in line)]
-    if len(headers) != 6:
-        raise ValueError("Changed focused table headers")
-    tables = [header + "\n" + table.split("\n", 1)[1] for header, table in zip(headers, tables)]
-    text = section(text, "## Focused scenarios", tables)
-    text = section(text, residual.SECTION, list(residual.tables(
-        overview.DOCUMENTS, residual.ROWS, publication["native_pairs"])))
-    return text
+    return (
+        ("focused-photos", [("photos", "Color photos", "photos")], photo_rows),
+        ("focused-artwork", [("art", "5 colors", "art"), ("a16", "16 colors", "art-16"),
+                             ("a64", "64 colors", "art-64")], indexed_rows),
+        ("focused-mixed", [("mixed", "5 colors", "mixed"), ("m16", "16 colors", "mixed-16"),
+                           ("m64", "64 colors", "mixed-64")], indexed_rows),
+        ("focused-scan", [("scan", "NACA TM972", "scan"), ("naca", "NACA formulas", "naca")], bw_rows),
+        ("focused-thresholds", [("art", "Otsu", "art"), ("t180", "Simple T180", "art-t180"),
+                                ("t210", "Simple T210", "art-t210")], bw_rows),
+        ("focused-native", [("native", "Form W-9", "native"), ("941", "Form 941", "form941"),
+                            ("kepler", "NASA Kepler", "extra:kepler")], native_rows))
+
+
+def table_values(publication):
+    """Measured cells of every table this publication supplies, by table/row ID."""
+    rows = tuple(overview.Combination(**r) for r in publication["rows"])
+    values = old_publication.table_values(rows, publication["records"], publication["native_pairs"])
+    values["zopfli-vs-brotli"] = tables.keyed_rows(
+        ffpr.effect_table(overview.DOCUMENTS, ffpr.ROWS, publication["ffpr_pairs"]),
+        [recipe_key(r.family, r.variant, r.native) for r in ffpr.ROWS])
+    for table_id, specs, combinations in focused_specs():
+        values[table_id] = tables.keyed_rows(focused_table(publication, specs, combinations),
+                                             [focused_row_id(r) for r in combinations])
+    return values
+
+
+def integrated_tables(text, publication):
+    """Fill measured cells only; labels, headers and prose stay curated."""
+    for table_id, cells in table_values(publication).items():
+        text = tables.fill(text, table_id, cells)
+    # The later LOSSY-05 controls supersede this study's q50/r192 cells.
+    from tools.publish_lossy_controls import apply_current
+    return apply_current(text)
 
 
 def component_tables(text, original, measurements, native=False):
@@ -404,8 +409,7 @@ def run(path, folder):
     if target.exists() and target.read_text() != content:
         raise ValueError("Changed frozen refreshed publication")
     target.write_text(content)
-    outputs = {"docs/INTEGRATED_COMPRESSION.md": integrated_tables(
-        Path("docs/INTEGRATED_COMPRESSION.md").read_text(), publication)}
+    outputs = {tables.PAGE.as_posix(): integrated_tables(tables.PAGE.read_text(), publication)}
     for name, source, native in (("IMAGE_STREAM_COMPRESSION", refresh.IMAGE, False),
                                  ("NATIVE_STREAM_COMPRESSION", refresh.NATIVE, True)):
         doc = f"docs/{name}.md"

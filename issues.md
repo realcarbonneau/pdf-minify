@@ -1248,7 +1248,7 @@ test or count the rejected file as a compression success. At discovery no
 product/display fix was implemented. A repair needs a fractional-page edge regression
 and exact whole-page checks for both production and benchmark assemblers;
 the standalone stencil test alone is insufficient. Scope: TODO §226 and
-`docs/INTEGRATED_COMPRESSION.md`. Keep OPEN.
+`docs/COMPRESSION_BENCHMARKS.md`. Keep OPEN.
 
 Repair under designer §224, 2026-10-15: `core.stencils.place_stencils` now
 paints the masks directly into the destination page with the same image
@@ -1286,7 +1286,7 @@ preparation. The overview now checks new source-to-preparation diagnostics
 even for reused production JPEG/JPX outputs; affected recipes are marked
 PREP FAILED with no size ranking. Preserve-images and deliberate FFPR are
 validated independently. No original input is replaced to hide the case.
-See TODO §226 and `docs/INTEGRATED_COMPRESSION.md` for the original rejected
+See TODO §226 and `docs/COMPRESSION_BENCHMARKS.md` for the original rejected
 measurements. At discovery no product fix was implemented.
 
 Repair under designer §224, 2026-10-15: extraction removed an image but kept
@@ -1441,7 +1441,7 @@ JBIG2 prepared-pixel comparisons pass. Artifacts are under
 The completed 300-DPI integrated study has 188 overview plus 62 focused final
 PDFs, all 250 validated with new provenance and zero rejected cells. Complete
 bytes/hashes and tied bold minima are independently audited. See
-`docs/INTEGRATED_COMPRESSION.md`. Keep OPEN pending explicit designer confirmation.
+`docs/COMPRESSION_BENCHMARKS.md`. Keep OPEN pending explicit designer confirmation.
 
 ## B113 — OPEN: no-image benchmark preparations fail when assigning IDs to an xref-stream PDF
 
@@ -1622,3 +1622,71 @@ benchmark files/manifests are unchanged and tables explicitly state their
 pre-B116 producing scope. No new masks, codec/quality/default change,
 source-file mutation, desktop launch or designer acceptance is claimed.
 See TODO §265, `COMPRESSION.md` and `TEST_PLAN.md`.
+
+## B117 — OPEN — JPEG2000 q75 is not equivalent to JPEG q75 (§272)
+
+Designer report §272: the previous work never derived a JPEG2000 quality
+setting equivalent to JPEG q75, which the benchmarks and users need.
+
+Cause: the app maps JPEG2000 q to a fixed compression ratio (`101 − q`, 26:1
+at q75). JPEG's q fixes quantization, so its size follows content (16:1 to
+216:1 on the benchmark pages); a fixed ratio cannot follow it. Measured on 67
+page images, JPEG2000 at 26:1 scores a median 8.1 SSIMULACRA2 points above
+JPEG q75 and is 5% larger in total, which explains why the complete-PDF
+benchmarks show it larger in 9 of 12 pairs.
+
+The JPEG committee's Qfactor method matches JPEG q75 at Q75 (median +0.8,
+96% of pages within ±5) with 34% fewer bytes, but standard OpenJPEG cannot
+produce it; the stock alternatives leave worst per-document gaps of 12 to 42 points,
+depending on the control.
+Repair 2026-10-20 (§284, standard packages per §278): JPEG2000 Quality now
+maps to one PSNR target per 512-pixel tile, calibrated so its median quality
+equals JPEG's at the same number (q75 → 44.0 dB). Single documents still
+differ (flat artwork about 19 points worse, full-page photos about 9
+better); the benchmarks list these gaps. All lossy benchmark rows were
+re-measured (LOSSY-06). Evidence: `docs/LOSSY_IMAGE_QUALITY.md`, TODO §266.
+Designer §287 keeps the pair comparable in the benchmarks with no automatic
+Best between them. Worker-verified; awaiting designer confirmation.
+
+## B118 — OPEN — verbatim record inexact and documentation corpus disorganized (§273)
+
+Designer report §273: the developer guidelines are poorly done; the
+designer's verbatim words must be exact, and the verbatim recordings are
+not well organized.
+
+Read-only audit, 2026-10-20 (no file changed by the audit itself):
+
+- Only 5 of 256 `DESIGNER_VERBATIM.md` entries have an original source in
+  the repository (`session-ses_ed9c.md` for §§139–141; earlier git versions
+  for §§14/15). Of those, only §140 is exact. §139 and §141 lost the
+  designer's double spaces; §141 merges three separate messages and was
+  numbered after §140 although part of it came later; §§14/15 were
+  shortened after recording without an elision mark. Entries §§119–142 show
+  the same space-collapsing pattern; the other 251 entries cannot be checked
+  from the repository.
+- One designer complaint in the session export was never recorded, in the
+  verbatim log or here: "Now, the last row of the text is trucated by the
+  view, don't you see this?  This is terribly bad!  Are you even looking at
+  the GUI results?" (`session-ses_ed9c.md`, line 643).
+- Text labelled verbatim that is not the designer's: pasted third-party
+  research inside §§35/36/38; multiple-choice option labels in §§199/226;
+  worker "Context:" notes and commentary in 14 entries (for example §267's
+  note records an interpretation that §§269/271 then rejected).
+- Organization: 15 missing IDs with no removal register; §138 precedes §137;
+  6 undated entries; five heading-label variants; at least 9 entries merge
+  several messages; at least 13 superseded rulings are unmarked.
+- `DEVELOPER_GUIDELINES.md` reads as a ruling-by-ruling changelog (64% of it
+  is one "product rules" section) with at least six internal contradictions
+  (e.g. Flate default versus Best everywhere; always relaunch versus keep
+  the app closed; superseded JPEG2000 matching procedures beside the current
+  rule), status reports, benchmark counts and duplicated `DESIGN.md` text.
+
+Partial repair 2026-10-20: verbatim entries from §272 on hold one message
+each, in fenced `text` blocks that preserve spacing exactly, with a source
+line; the JPEG/JPEG2000 quality rules in the guidelines were consolidated
+(see B117). The full restructuring (exact-text log, topic/supersession
+index, short topic-based rulebook) awaits the designer's decisions on: how
+to flag the unverifiable entries; splitting merged entries; restoring the
+§§139/141 spacing and §§14/15 wording from the repository sources; moving
+the pasted documents; re-confirming bare approvals (§267, §271); recording
+the missed line-643 complaint; and resolving the contradictory rules.

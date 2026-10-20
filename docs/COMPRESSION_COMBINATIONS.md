@@ -1,7 +1,7 @@
 # Reasonable compression combinations and control design
 
 This is the capability/UI design table, not a measured file-size matrix.
-Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) for the primary
+Use [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) for the primary
 comparison of actual complete saved PDFs: realistic combinations as rows
 over six representative PDF classes, followed by focused scenarios (§§223/231).
 

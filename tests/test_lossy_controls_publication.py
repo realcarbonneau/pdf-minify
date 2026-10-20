@@ -7,12 +7,13 @@ from pathlib import Path
 
 import pytest
 
+from tools import benchmark_tables as tables
 from tools import publish_lossy_controls as publisher
 
 
 def proof():
-    result = dict(designer_ruling=271, quality=75, dpi=300,
-                  jpx_quality_mapping="darktable-rate-v2",
+    result = dict(designer_ruling=284, quality=75, dpi=300,
+                  jpx_quality_mapping="jpeg-matched-tile-psnr-v1",
                   documents=[asdict(d) for d in publisher.controls.lossy.DOCUMENTS], rows=[])
     for force in (False, True):
         for mode in publisher.controls.lossy.MODES:
@@ -23,16 +24,31 @@ def proof():
     return result
 
 
-def test_all_twenty_two_affected_rows_update_without_touching_main_or_png():
-    original = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+AFFECTED = {
+    "zopfli-vs-brotli": {"jpeg", "jpx-lossy", "jpeg-ffpr", "jpx-lossy-ffpr"},
+    "fixed-controls": {f"{key}.{policy}" for key in ("jpeg", "jpx-lossy", "jpeg-ffpr", "jpx-lossy-ffpr")
+                       for policy in ("zopfli", "brotli")},
+    "focused-photos": {"jpeg.zopfli", "jpeg.brotli", "jpx-lossy.zopfli", "jpx-lossy.brotli",
+                       "jpeg-ffpr.zopfli", "jpx-lossy-ffpr.zopfli"},
+    "residual-reference": {"jpeg-ffpr.zopfli", "jpx-lossy-ffpr.zopfli"},
+    "residual-effect": {"jpeg-ffpr.zopfli", "jpx-lossy-ffpr.zopfli"},
+}
+
+
+def test_all_twenty_two_affected_rows_update_without_touching_other_cells_or_text():
+    original = tables.PAGE.read_text()
     updated = publisher.rewrite_tables(original, proof())
     assert publisher.rewrite_tables(updated, proof()) == updated
-    a = original.split("## Overview — final complete-file bytes", 1)[1].split(publisher.ffpr.SECTION, 1)[0]
-    b = updated.split("## Overview — final complete-file bytes", 1)[1].split(publisher.ffpr.SECTION, 1)[0]
-    assert a == b  # main matrix and all PNG data/denominators are unchanged
-    assert not any("q50" in line or "r192" in line for line in updated.splitlines() if line.startswith("|"))
-    assert "JPEG q75 + Zopfli native" in updated
-    assert "Color FFPR + JPEG2000 q75; optimized residual streams" in updated
+    assert sum(len(rows) for rows in AFFECTED.values()) == 22
+    changed = set()
+    for table_id in tables.table_ids(original):
+        before, after = (tables.read_table(text, table_id) for text in (original, updated))
+        assert (before.header, before.labels, list(before.rows)) == (after.header, after.labels, list(after.rows))
+        changed |= {(table_id, key) for key in before.rows if before.rows[key] != after.rows[key]}
+    assert changed == {(table_id, key) for table_id, keys in AFFECTED.items() for key in keys}
+    # Only those 22 lines differ; prose and every other line stay byte-identical.
+    diff = [(a, b) for a, b in zip(original.splitlines(), updated.splitlines(), strict=True) if a != b]
+    assert len(diff) == 22
 
 
 @pytest.mark.parametrize("bad", ["quality", "mapping", "missing", "duplicate", "size", "label", "columns"])
@@ -66,18 +82,24 @@ def test_fixed_overlay_does_not_mislabel_old_best_bytes():
     assert original["label"] == "JPEG q50" and original["best"] == [500]*6
 
 
-def test_missing_table_rows_cannot_silently_skip_a_section():
-    text = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    start = text.index("## Focused scenarios")
-    stop = text.index("### Logos/artwork", start)
-    with pytest.raises(ValueError, match="all 22"):
-        publisher.rewrite_tables(text[:start]+text[stop:], proof())
+@pytest.mark.parametrize("table_id", sorted(AFFECTED))
+def test_missing_table_or_row_cannot_silently_skip_an_affected_table(table_id):
+    text = tables.PAGE.read_text()
+    with pytest.raises(ValueError, match=f"Missing benchmark table tag: {table_id}"):
+        publisher.rewrite_tables(text.replace(f"<!-- table: {table_id} -->", ""), proof())
+    row_id = sorted(AFFECTED[table_id])[0]
+    table = tables.read_table(text, table_id)
+    tagged = f"<!-- row: {row_id} --> {table.labels[row_id]}"
+    start = text.index(tagged, text.index(f"<!-- table: {table_id} -->"))
+    line_start, line_end = text.rindex("\n", 0, start) + 1, text.index("\n", start) + 1
+    with pytest.raises(ValueError, match=f"Missing row {row_id}"):
+        publisher.rewrite_tables(text[:line_start] + text[line_end:], proof())
 
 
 def test_actual_complete_controls_drive_every_active_lossy_table():
     current = json.loads(publisher.FIXTURE.read_text())
     publisher.validate_proof(current)
-    assert current["measured_manifest_sha256"] == "8afa354aeea3a8364c8318b4876f7939e684c9079f7f61f716d3395748f5aab6"
+    assert current["measured_manifest_sha256"] == "674a9e88d9f5cc7f0ea9a350864fa2155f448589a1d12741723a435991fedb83"
     assert current["unchanged_publication_sha256"] == publisher.best.PUBLICATION_SHA256
     baseline = json.loads(Path("tests/fixtures/lossy_quality_sizes.json").read_text())
     assert current["baseline_sha256"] == baseline["measured_manifest_sha256"]
@@ -85,11 +107,9 @@ def test_actual_complete_controls_drive_every_active_lossy_table():
     for row in current["rows"]:
         for field in ("pdf_sha256", "base_sha256"):
             assert len(row[field]) == 6 and all(len(h) == 64 for h in row[field])
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
+    report = tables.PAGE.read_text()
     assert publisher.rewrite_tables(report, current) == report
     assert publisher.apply_current(report) == report
-    assert "Every active lossy comparison now uses this same standard." in report
-    assert current["measured_manifest_sha256"] in report
     assert len(current["ffpr_accounting"]) == 12
     expected = {(d.key, mode) for d in publisher.controls.lossy.DOCUMENTS for mode in publisher.controls.lossy.MODES}
     assert {(r["document"], r["mode"]) for r in current["ffpr_accounting"]} == expected

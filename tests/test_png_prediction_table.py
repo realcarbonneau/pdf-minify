@@ -168,36 +168,30 @@ def test_no_prediction_rows_produce_no_empty_effect_table():
 
 def test_published_effect_table_is_percentage_only_and_retains_audited_measured_changes():
     from tools import bench_png_extension as extension
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    primary, effects = report.split(overview.PNG_SECTION, 1)
-    effects = effects.split("\n## ", 1)[0]
+    from tools import benchmark_tables as tables
+    from tools.publish_best_overview import fixed_row_id
+    page = tables.PAGE.read_text()
     # Original measured bytes, not reconstructed from previously rounded deltas.
     fixture = json.loads(Path("tests/fixtures/png_prediction_sizes.json").read_text())
     assert fixture["original_publication_sha256"] == "9864f717f7ea0f1f879f8a3d7537229ffe9e62d6817228dc510945d6adc9e7e9"
     assert fixture["publication_sha256"] == "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d"
     assert fixture["brotli_declaration"] is False
     assert fixture["documents"] == [d.key for d in overview.DOCUMENTS]
-    parse = lambda line: [cell.strip() for cell in line.split("|")[1:-1]]
     # §258 moves fixed-encoder baselines out of the Best-only overview. The
     # actual PNG denominator must remain its own encoder's visible control.
-    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("## Focused scenarios", 1)[0]
-    baselines = {cells[0]: cells[1:] for line in controls.splitlines()
-                 if line.startswith("| ") for cells in [parse(line)]}
-    rows = [parse(line) for line in effects.splitlines() if line.startswith("| ")]
-    assert len(rows) == 17 and len(rows[0]) == 7  # one header and sixteen pairs
-    assert sum("<ins>Brotli</ins>" in row[0] for row in rows[1:]) == 8
-    for row in rows[1:]:
-        if "Brotli" in row[0]:
-            assert "<ins>Brotli</ins>" in row[0]
-        else:
-            assert "<ins>" not in row[0]
-        row[0] = row[0].replace("<ins>", "").replace("</ins>", "")
-    assert {row[0] for row in rows[1:]} == {overview.display_label(b.label) for b, _ in overview.png_pairs(extension.publication_rows())}
+    baselines = tables.read_table(page, "fixed-controls").rows
+    effects = tables.read_table(page, "png-effect")
+    assert len(effects.header) == 7
+    pairs = overview.png_pairs(extension.publication_rows())
+    assert len(pairs) == len(fixture["rows"]) == 16
+    ids = [fixed_row_id(plain.family, plain.variant, plain.native) for plain, _ in pairs]
+    assert set(effects.rows) == set(ids)
     audited = 0
-    for row, expected in zip(rows[1:], fixture["rows"], strict=True):
-        assert len(row) == 7
-        assert row[0] == expected["label"]
-        for cell, baseline, a, b in zip(row[1:], baselines[row[0]], expected["baseline"], expected["png"], strict=True):
+    for row_id, (plain, _), expected in zip(ids, pairs, fixture["rows"], strict=True):
+        assert expected["label"] == overview.display_label(plain.label)
+        cells = effects.rows[row_id]
+        assert len(cells) == 6
+        for cell, baseline, a, b in zip(cells, baselines[row_id], expected["baseline"], expected["png"], strict=True):
             match = re.fullmatch(r"(\*\*)?([+-]\d+\.\d{2}%)(\*\*)?", cell)
             assert match, cell
             assert int(baseline.replace("*", "").replace(",", "")) == a > 0
@@ -210,18 +204,13 @@ def test_published_effect_table_is_percentage_only_and_retains_audited_measured_
     assert audited == 96
 
 
-def test_published_decision_tree_leads_the_section_and_matches_measured_results():
-    from tools import publish_best_overview as publisher
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    effects = report.split(overview.PNG_SECTION, 1)[1].split("\n## ", 1)[0]
-    assert effects.startswith("\n\n" + publisher.PNG_GUIDANCE + "\n\nOnly **image-row PNG prediction**")
+def test_pinned_png_measurements_keep_their_encoder_and_content_outcomes():
     fixture = json.loads(Path("tests/fixtures/png_prediction_sizes.json").read_text())
     for encoder, reductions in (("Brotli", 0), ("Zopfli", 18)):
         rows = [row for row in fixture["rows"] if encoder in row["label"]]
         pairs = [(a, b) for row in rows for a, b in zip(row["baseline"], row["png"], strict=True)]
         assert len(pairs) == 48
         assert sum(b < a for a, b in pairs) == reductions
-        assert f"**{reductions} of 48 {encoder}**" in publisher.PNG_GUIDANCE
     indexed = [row for row in fixture["rows"] if "indexed" in row["label"].lower()]
     assert len(indexed) == 12
     for row in indexed:
@@ -232,22 +221,3 @@ def test_published_decision_tree_leads_the_section_and_matches_measured_results(
     mixed_ffpr = [row for row in indexed if "FFPR" in row["label"] and "Zopfli" in row["label"]]
     assert len(mixed_ffpr) == 3
     assert all(row["png"][mixed] < row["baseline"][mixed] for row in mixed_ffpr)
-    assert "**Counterexample:**" in publisher.PNG_GUIDANCE
-    tree = publisher.PNG_GUIDANCE.split("```text\n", 1)[1].split("\n```", 1)[0]
-    assert (
-        "Best (Zopfli/Brotli)\n"
-        "├─ Zopfli → test prediction OFF and ON.\n"
-        "└─ Brotli → test prediction OFF and ON."
-    ) in tree
-    assert (
-        "Explicit Zopfli\n"
-        "├─ Off → test prediction OFF only.\n"
-        "├─ On → test prediction ON only.\n"
-        "└─ Best → test prediction OFF and ON."
-    ) in tree
-    assert "see Zopfli below" not in tree
-    assert "see Brotli below" not in tree
-    assert "Compare measured complete-PDF candidates; keep the smallest." in tree
-    assert "Fixed Brotli study" not in tree
-    assert "favored" not in tree
-    assert "96 fixed-encoder pairs do **not** measure §260's new" in publisher.PNG_GUIDANCE

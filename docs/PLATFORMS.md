@@ -60,7 +60,7 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
   42 combination rows across six whole-PDF columns. Independent QPDF
   12.2.0 syntax checks pass 207 ordinary-format files; 107 unsupported Brotli
   outputs are excluded from that reader check. The primary size analysis is
-  [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). No new dependency,
+  [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md). No new dependency,
   installer/OS/reader certification or designer acceptance is implied.
 - Previous size-only bitmap stage: **460 passed**, `./test.sh`, 2026-10-15, exit 0.
   The separate size-only bitmap study (§209) adds 31 headless cases and

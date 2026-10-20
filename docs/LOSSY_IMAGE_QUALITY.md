@@ -1,413 +1,362 @@
-# Lossy image quality — q75 baseline and comparable settings
+# Lossy image quality — JPEG and JPEG2000
 
-## Current ruling — one fixed baseline (§271)
+How the app's one **Quality** control drives JPEG and lossy JPEG2000, what
+"the same quality" has to mean for both, and the measured evidence behind
+the JPEG2000 mapping. Sizes of complete PDFs are in
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 
-JPEG q75 and JPEG2000 q75, both 300 DPI, are the approved working baseline
-for every input and native/FFPR experiment. JPX uses the image-independent
-`rate = 101 − q`: q75 always means a 26:1 target. Do not derive it from JPEG
-bytes, PSNR, input content or an individual matching result. The earlier
-reference-normalized mapping is superseded, not an alternative current
-standard. Equal q is a conservative working comparison, not proven equal
-visual quality. Keep JPEG 4:4:4, JPX 9/7/ICT/full-resolution components,
-native/FFPR semantics, explicit ratios, Lossless and saved q values intact.
+## Rulings (verbatim)
 
-LOSSY-05 owns the implementation and all-section refresh. Reuse unchanged
-JPEG measurements and fixed controls with frozen provenance and exact
-paired-input/payload checks; freshly encode only changed JPX images. All
-active rows, controls, effects, minima and conclusions must use this baseline.
-Historical LOSSY-01–04 files remain immutable. The implementation/history
-below records the previous steps and does not override §271.
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
 
-Consolidated public studies, the recovered earlier derivations and the
-actual equivalence experiment are in
-[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md) (§270).
+### One familiar control
 
-**Quality-scale clarification (§§269/271).** GUI, benchmarks and docs use
-the same stable 0–100 controls. `jpeg-reference-study-v1` was a normalized
-JPEG-reference input, not the earlier scale's q75, and is superseded.
-LOSSY-02/03 retain their actual bytes/readback proofs as historical evidence,
-not fixed-q or perceptually matched results. q56 was a conditional literature
-candidate; subsequent measured diagnostics reject it as a general equivalent.
+**§262** (2026-10-18)
 
-LOSSY-04 now supplies actual first-canvas results for all eleven image-bearing
-native/FFPR cases: 5/11 matches on the old fixed-ratio scale and 9/11 on the
-separately named PSNR-control alternative, within one SSIMULACRA2 point.
-Both scan cases remain unmatched and visually flagged. See the consolidated
-research for actual settings and definitions; neither control is silently
-adopted as a replacement product scale or used to relabel existing PDF sizes.
-§271 selects one fixed q75 pair instead of per-image fits.
+```text
+We have to use the parameter that users are most used to, that is the most common.
+```
 
-Designer §§262–271; implementation tracker TODO §264. The approved
-**working comparable-quality baseline** is q75 for both codecs at 300 DPI,
-not experimentally proven universal equivalence. No native/vector, FFPR,
-composition/resizing, stream-policy or Lossless change is implied.
+**§264** (2026-10-18)
 
-## User-facing control
+```text
+change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
+```
 
-Expose **Quality**, 0–100, as the existing native slider plus editable spinner
-pattern. Higher means higher quality, usually larger files; it is a quality
-index, not a percentage of preserved information. JPEG2000 keeps a separate
-Lossless checkbox. Disable Quality for other image codecs and for Lossless;
-retain the inactive value. Use the shared edit timer, effective recipe key,
-dirty star and Save / Save As / Discard / Cancel / Revert transaction.
+**§265** (2026-10-19)
 
-The familiar convention is quality, not a requested compression ratio:
-[Adobe](https://developer.adobe.com/acrobat-pdfl-sdk/guides/pdfcreation/pdf-create-usingsettings#jpeg2000)
-uses named levels and Lossless;
-[darktable](https://docs.darktable.org/usermanual/development/en/special-topics/program-invocation/darktable-cli/#j2k-jpg2000)
-uses numeric JPEG2000 quality. Neither establishes a universally calibrated
-cross-codec scale or which number users choose most often.
+```text
+I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
+```
 
-## Current mapping: `darktable-rate-v2` (§271)
+**§275** (2026-10-19)
 
-`jpx_quality_rate(q) = 101 − checked_quality(q)` is independent of input
-pixels and JPEG output size. q0 → 101:1, q56 → 45:1, q75 → 26:1,
-q90 → 11:1 and q100 → 1:1; explicit Lossless remains separate. This is the
-previous documented application convention, not Qfactor or a PSNR target.
-The product JPX encoder never encodes a reference JPEG. Its effective key
-contains this mapping revision and JPX profile, not the JPEG profile.
-Existing q values and explicit legacy ratio/Lossless semantics stay intact.
+```text
+I already ruled the use case, this is for making pdfs smaller, thuse lossless or super high quality images are not a concern, we want something simple for most users.
+```
 
-## Historical mapping: `jpeg-reference-study-v1` (superseded §267)
+### Same number, same quality, one setting
 
-The following describes the superseded LOSSY-02/03 implementation only.
+**§266** (2026-10-19)
 
-Quality still means **the selected common 0–100 value**, default 75. It
-does not now mean `101 − ratio`. For every already prepared RGB canvas:
+```text
+If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
+```
 
-1. Encode a reference JPEG using the selected Quality and the same fixed
-   4:4:4/optimized-Huffman helper as actual JPEG output. Measure
-   `R = raw sample bytes / reference JPEG bytes`; use raster bytes, not the
-   original PDF or final PDF size.
-2. Derive JPEG2000's target from the approximate visual-quality anchors:
+**§269** (2026-10-19)
 
-   | JPEG achieved ratio | JPEG2000 target ratio |
-   |---:|---:|
-   | 40:1 | 45:1 |
-   | 60:1 | 73:1 |
+```text
+I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
+```
 
-   The source is [Allen, Triantaphillidou and Jacobson (2007), Figure 14,
-   p. 257](https://library.imaging.org/admin/apis/public/api/ist/website/downloadArticle/jist/51/3/art00009#page=10).
-   These are approximate readings from the average curve excluding
-   “African tree”, not exact tabulated results or q75 settings. The study
-   used 16 scenes, ten observers and actual compression ratios, not our
-   libraries' quality indices. The earlier
-   [2000 study](https://www.researchgate.net/publication/37435598_JPEG_2000_still_image_coding_versus_other_standards)
-   used PSNR at equal bit budgets; it is not the source of a visual matching
-   conversion.
-3. Use `45 + (R − 40) × 28/20` within 40–60. Below 40 use
-   `R × 45/40`; above 60 use `R × 73/60`; the target is at least 1.
-   Outside-range relative gains are a bounded implementation heuristic,
-   **not a demonstrated study result**. No arbitrary 101:1 ceiling or
-   universal visual-quality guarantee is introduced.
-4. Encode JPX from the original prepared pixels at that target with the
-   existing 9/7/ICT/full-resolution profile. Never decode the reference JPEG
-   and recompress it. No extra composition, resizing, display smoothing or
-   extra filter job is involved. The reference JPEG is not exported, not
-   embedded and not a silent fallback. Encoding effort is not a constraint.
+**§271** (2026-10-19)
 
-Thus at selected **q75**, a canvas whose reference JPEG achieves 40:1 gets
-JPX target 45:1; a different q75 canvas at 60:1 gets target 73:1. The prior
-slider would label those targets q56/q28, but §267 does **not** set all
-app quality values to either number. Existing saved q values, filter UUIDs,
-Lossless and later deliberate edits remain intact. The effective key carries
-`jpeg-reference-study-v1` and the JPEG reference profile. Explicit `rate`
-recipes bypass this reference step and remain actual ratios.
+```text
+NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
+```
 
-At this historical stage, the six-file benchmark used a **study-informed working
-comparable-quality baseline**, not measured universal quality equivalence.
-Record reference JPEG bytes/hash, prepared samples and the target ratio per
-canvas; prove that each JPX reference matches the paired actual JPEG output.
-Rank only actual final complete-PDF bytes. Do not force a JPX win or infer
-final PDF sizes from the target ratio. LOSSY-02 supersedes LOSSY-01 in the
-four then-current lossy overview rows. §268 extended that standard to all
-active binary/focused/residual comparisons; old binary files stayed immutable
-historical evidence, not active lossy baselines. LOSSY-03 reuses the completed
-images and has measured all 60 missing general-stream controls, without image encoding.
+```text
+ok, tat is good
+```
 
-## Previous mapping: `darktable-rate-v1` (historical §§262–266)
+**§272** (2026-10-19)
 
-- JPEG: Pillow/libjpeg `quality=q`, `optimize=True`, explicit `subsampling=0`
-  (4:4:4), under the fixed `jpeg444-huffman-v1` profile (§265).
-- JPEG2000: Pillow/OpenJPEG `quality_mode="rates"`, with rate **101 − q**.
-  Thus **q75 → 26:1**, not 75:1 and not 75 dB; explicit q90 still means
-  11:1. This is the numeric mapping in
-  [darktable 5.2.1's normal JPEG2000 exporter](https://github.com/darktable-org/darktable/blob/release-5.2.1/src/imageio/format/j2k.c#L324-L335),
-  extended to q0 (101:1) for our 0–100 control. §265 replaces the old lossy
-  reversible/RGB-independent configuration with `jpx97-ict-v1`: 9/7, RGB MCT,
-  full-resolution components, one tile/layer and LRCP progression. Keep the
-  transform lossy even at q100; explicit Lossless is the separate edge case.
-- Explicit Lossless: reversible 5/3, no lossy rate target, unchanged behavior.
+```text
+I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
+```
 
-This superseded mapping was an implementation choice, **not the JPEG committee's Qfactor
-quantization guideline**, and not a claim to duplicate all darktable settings.
-The current Pillow adapter has no Qfactor input: passing `quality=75` would be
-ignored, `rates=[75]` would mean 75:1, and `dB=[75]` would mean a PSNR target.
-Do not silently make any of those substitutions. See
-[Pillow's JPEG2000 options](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg-2000).
+**§284** (2026-10-20)
 
-The two q75 values are the designer's working comparable-quality assumption.
-This JPX mapping sets a raster compression budget; JPEG q75 sets quantization
-tables. Record both mechanisms in the method, but do not use that distinction
-as a reason to postpone the actual comparison. Inspect results and refine
-the baseline with evidence if a meaningful discrepancy is found.
+```text
+Ok, so a single setting is the correct direction, however, for the purpose of out benchmarking, we have to choose a single quality setting that provides the same visual results as jpg.  The reasoning is simple, if jpg q75 provides a certain compression and quality, then the newer J2K is expected to provide a smaller (or in the absolute worst case, the same size) file for the same visual quality level.  This is very simple and basic, I should not have to explain this.  Or else, benchmarks and a newer compression algorithm has no value.
+```
 
-## Fixed sampling and encoder settings — research checked 2026-10-19
+**§270** (2026-10-19)
 
-Local backends checked: Pillow 12.3.0, libjpeg-turbo 3.1.4.1 and OpenJPEG
-2.5.4. The recommendations use options available in these installed encoders;
-no encoder installation or upgrade is needed for the adopted sampling,
-wavelet or colour-transform settings.
+```text
+You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
+```
 
-**Adopted by §§265/266; implementation and measurement tracked in TODO §261:**
-use JPEG **4:4:4** and JPEG2000 **full-resolution components** for the main
-comparison. Both then retain colour samples at every pixel before lossy
-coding, rather than giving JPEG an additional spatial colour reduction.
-This is a clean baseline for this project's mix of photos, coloured text,
-logos and diagrams, not a claim that 4:4:4 always produces the smallest file.
-4:2:0 remains useful for photo-focused size/quality studies, separately.
+### Colour sampling and packages
 
-| Setting | Previous app at q75 | Adopted comparable baseline |
+**§274** (2026-10-19)
+
+```text
+So you have equivalence or can you estimate it?  And do you think we should use "4:2:0" also by default and for benchmarks?
+```
+
+**§276** (2026-10-19)
+
+```text
+Well if if "4:2:0" matches a lower Q for JPEG2000, then that is not good, we should keep it was it was before, matching JPEG200, or reducing JPEG2000 color setting to match jpg  4:2:0, no?
+```
+
+**§278** (2026-10-20)
+
+```text
+Don't change standard packages, if you can't change JPEG2000, adjust the JPG settings to match.
+```
+
+### No automatic choice between the codecs
+
+**§285** (2026-10-20)
+
+```text
+what is the big picture?  Is J2K generally better then JPG?  All things equal?   This is the assumption since it is newer, there would be no point in having a newer algorithm that does not provide improvements.
+```
+
+**§287** (2026-10-20)
+
+```text
+Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
+```
+
+## Current settings
+
+- **Quality** is one integer 0–100 per filter, default 75, shared by JPEG and
+  lossy JPEG2000 (`core/quality.py`). Higher means better quality and
+  usually larger files; it is not a percentage. It is disabled for other
+  codecs and when JPEG2000 Lossless is checked; the stored value is kept.
+- **JPEG**: Pillow with libjpeg-turbo, `quality=q`, `subsampling=0` (4:4:4),
+  `optimize=True` (profile `jpeg444-huffman-v1`).
+- **JPEG2000**: Pillow with OpenJPEG 2.5.4, `irreversible=True` (9/7),
+  `mct=1` (RGB colour decorrelation), full-resolution components, up to six
+  resolutions (fewer for tiny images), 64×64 code blocks, LRCP, one layer and
+  512×512-pixel tiles (profile `jpx97-ict-tile512-v1`).
+- **JPEG2000 quality mapping** `jpeg-matched-tile-psnr-v1`
+  (`quality.jpx_quality_psnr`): Quality becomes one PSNR target per tile,
+  the same for every image, calibrated against JPEG (§284; see
+  [The JPEG2000 mapping](#the-jpeg2000-mapping-284)). q75 → 44.0 dB.
+- **Explicit legacy ratios** in old recipes keep their meaning and the
+  single-tile profile `jpx97-ict-v1`.
+- **JPEG2000 Lossless** is a separate checkbox (reversible 5/3, no quality).
+- **No automatic choice** (§287): a filter uses the codec it names. No Best
+  option chooses between JPEG and JPEG2000; the benchmarks compare them at
+  the same Quality.
+
+## What "the same quality" requires
+
+JPEG's quality number scales its quantization tables. The coarseness of
+detail is fixed and the file size follows the content: on the 67 benchmark
+page images, JPEG q75 compresses between 16:1 and 216:1. A JPEG2000 setting
+can only match that if it also fixes quality rather than size.
+
+Stock OpenJPEG, through Pillow, offers two controls: a target ratio
+(`quality_mode="rates"`) and a target PSNR in dB (`quality_mode="dB"`),
+applied to the whole image or to each tile. Neither fixes quantization. The
+JPEG committee's **Qfactor** method does: it derives every wavelet band's
+quantization step from one Q of 1–100, using the same scaling as libjpeg
+(`50/Q` below 50, `2 − Q/50` above), colour-transform gains and visual
+weights ([guideline WG1 N101553 v2, 2026](https://ds.jpeg.org/documents/jpeg2000/wg1n101553-112-COM-Controlling_JPEG_2000_quality_using_Qfactor_v2.pdf)).
+Its authors designed it so that "the subjective quality of the resulting
+imagery is roughly comparable to that of JPEG at the same Qfactor", tested on
+8-bit 4:2:0 images up to Q85 ([HTJ2K white paper, p. 16](https://htj2k.com/wp-content/uploads/white-paper.pdf)).
+Kakadu, Grok (≥ 20.3.12, AGPL) and OpenJPH (HTJ2K only) implement it;
+OpenJPEG and Pillow do not, because they expose no step sizes.
+
+## Measured comparison
+
+### Method
+
+- **Images**: the 67 distinct 300-DPI RGB canvases that the production
+  composer prepares for the six benchmark PDFs, native and FFPR (the scan's
+  FFPR canvases are identical to its native ones and counted once).
+- **Reference**: JPEG q75, 4:4:4, the app's exact encoder settings.
+- **Candidates**: one fixed JPEG2000 setting for every page, using the app's
+  JPEG2000 profile. Qfactor was encoded with a research build of OpenJPEG
+  2.5.4 that accepts explicit step sizes; in ratio and PSNR modes its output
+  is byte-identical to Pillow's apart from the encoder's version comment.
+  Every coding pass is kept.
+- **Score**: SSIMULACRA2 (Rust implementation 0.5.2) of each decoded image
+  against its original. The authors' guide: 70 high quality, 80 very high,
+  90 visually lossless ([README](https://github.com/cloudinary/ssimulacra2)).
+  "Gap" is JPEG2000 score minus JPEG q75 score on the same page; positive
+  means JPEG2000 looks better.
+- Data, harness and encoder patch:
+  `.tmp/jpeg-jpx-research/stock-vs-qfactor-20261020/` (`results.jsonl`,
+  SHA-256 `9294f0f4a2150bc77140f4c1177e13ed561e2578215348606e74f1e72b32f1ef`).
+  These are image-only results, not complete-PDF sizes.
+
+### Results by control
+
+Every row is an actually encoded setting, applied unchanged to all 67 pages.
+
+| JPEG2000 control and setting | Standard packages? | Median gap | 10th–90th percentile | Worst page | Pages within ±5 | Total bytes vs JPEG |
+|---|---|---:|---:|---:|---:|---:|
+| Ratio 26:1 (old q75) | yes | +8.1 | −1.2 to +11.8 | −15.1 | 28% | 1.05 |
+| Ratio 60:1 | yes | −2.0 | −41.6 to +5.6 | −75.1 | 39% | 0.49 |
+| PSNR 40 dB, whole page | yes | −0.1 | −28.6 to +8.1 | −68.3 | 43% | 0.70 |
+| PSNR 40 dB per 512-pixel tile | yes | −7.5 | −26.6 to +4.1 | −38.3 | 36% | 0.78 |
+| **PSNR 44 dB per 512-pixel tile (new q75)** | yes | **+0.3** | **−16.6 to +9.0** | **−26.0** | **48%** | **1.02** |
+| PSNR 46 dB per 512-pixel tile | yes | +3.2 | −10.2 to +10.9 | −17.1 | 40% | 1.15 |
+| Qfactor Q75 | no (patched encoder) | +0.8 | −4.0 to +4.0 | −5.7 | 96% | 0.66 |
+
+FFmpeg's built-in JPEG 2000 encoder, which has a constant-quality setting,
+needs 3.5 times the bytes of OpenJPEG at the same score on a test page; it
+would misrepresent JPEG2000.
+
+### Results by document
+
+Mean gap and mean size ratio (JPEG2000 / JPEG q75) per document and mode.
+
+| Pages | n | Old q75: ratio 26:1 | New q75: 44 dB per tile | Qfactor Q75 |
+|---|---:|---:|---:|---:|
+| Flat-color artwork, native | 1 | +5.8 / 1.60 | −19.1 / 0.46 | +0.7 / 0.37 |
+| Flat-color artwork, FFPR | 1 | +5.9 / 1.63 | −19.0 / 0.47 | +0.7 / 0.40 |
+| Technical illustrations, native | 9 | +4.3 / 1.33 | −10.8 / 0.37 | −3.5 / 0.25 |
+| Technical illustrations, FFPR | 12 | +10.0 / 1.27 | +2.1 / 0.95 | +0.6 / 0.67 |
+| Mixed text/images, native | 2 | +3.3 / 0.99 | −12.5 / 0.30 | −3.8 / 0.24 |
+| Mixed text/images, FFPR | 9 | +11.5 / 1.16 | +2.1 / 0.95 | +3.5 / 0.73 |
+| Native text/vectors, FFPR | 6 | +5.1 / 0.83 | +9.4 / 0.99 | +3.6 / 0.75 |
+| Color photos, native | 8 | +6.3 / 1.95 | −4.8 / 0.89 | −3.9 / 0.45 |
+| Color photos, FFPR | 8 | −5.2 / 0.68 | +9.4 / 1.19 | −0.7 / 0.69 |
+| BW scan | 11 | +9.6 / 1.34 | −3.6 / 0.81 | +2.9 / 0.69 |
+
+The old 26:1 gave JPEG2000 noticeably *better* quality than JPEG q75 on most
+pages, which is why the earlier complete-PDF benchmarks showed it larger.
+A PSNR target, even per tile, still follows content type: flat artwork and
+mostly blank native pages come out worse, busy full-page renders better.
+
+### Equal quality, page by page
+
+Bytes the standard JPEG2000 encoder needs to look exactly like JPEG q75 on
+each page, as a ratio to JPEG's bytes; below 1.00 is smaller. Each page's
+JPEG2000 size is interpolated between its two measured per-tile PSNR targets
+that bracket JPEG's score.
+
+| Pages | Pages matched | Median | Range |
+|---|---:|---:|---:|
+| Native text/vectors, FFPR (the W-9 form) | 6 of 6 | 0.72 | 0.57–0.88 |
+| BW scan | 10 of 11 | 0.82 | 0.75–0.95 |
+| Mixed text/images, FFPR | 9 of 9 | 0.86 | 0.76–1.25 |
+| Color photos, FFPR | 8 of 8 | 0.86 | 0.80–1.03 |
+| Technical illustrations, FFPR | 12 of 12 | 0.91 | 0.64–1.24 |
+| Technical illustrations, native | 5 of 9 | 0.63 | 0.20–1.23 |
+| Mixed text/images, native | 1 of 2 | 0.15 | — |
+| Color photos, native | 8 of 8 | 1.21 | 0.93–1.31 |
+| Flat-color artwork, native and FFPR | 0 of 2 | — | — |
+
+Unmatched pages score below JPEG q75 even at the highest target measured,
+52 dB per tile. Pages of letters (forms, scans, full-page renders of text)
+need 9–28% fewer bytes; embedded colour photos need 21% more. Which codec is
+smaller at equal quality depends on the page and on the encoder. The fixed
+q75 target turns the text-page advantage into better quality at about the
+same size, as in the W-9 and newspaper full-page rows of the benchmarks.
+
+### Colour sampling (4:2:0)
+
+- JPEG 4:2:0 q75 against JPEG 4:4:4 q75: median −1.0 points and 10% fewer
+  bytes in total; up to 35% fewer on colour artwork, and 8% fewer with no
+  quality change on grey scans.
+- JPEG2000 cannot store 4:2:0 compatibly: subsampled components (sYCC)
+  decode correctly in MuPDF, Ghostscript and Pillow but **wrongly in Poppler
+  25.03** (PSNR 15 dB), which most Linux viewers use. Dropping the finest
+  colour band inside an ordinary full-size codestream is compatible, but it
+  needs explicit step sizes (Qfactor).
+- With that colour-reduced Qfactor, JPEG 4:2:0 q75 is matched at about Q70
+  rather than Q75 (median gap +0.6 at Q70, +2.5 at Q75). §276 rejects a
+  lower number for the same quality, and §278 rules out the patched encoder,
+  so **JPEG stays 4:4:4**, matching what JPEG2000 does.
+
+### Reader compatibility of the Qfactor files
+
+Qfactor changes only the step sizes in the standard QCD/QCC markers; the
+file is an ordinary JPEG 2000 Part 1 codestream. MuPDF, Poppler (decoded
+samples via `pdfimages`) and Ghostscript reproduce Pillow's decoded pixels
+exactly, and FFmpeg's independent decoder agrees within ±1 level.
+
+## The JPEG2000 mapping (§284)
+
+For the benchmarks and for users, JPEG2000 at Quality *q* has to look like
+JPEG at *q*, through one setting used for every page. With standard packages
+(§278) the best available control is a PSNR target per 512-pixel tile: it
+has the narrowest spread of the stock controls, and smaller 256-pixel tiles
+produced some far worse pages (worst −79).
+
+At each anchor the target was chosen so that the median quality difference
+from JPEG at the same Quality is zero over the 67 page images, and then
+measured directly:
+
+| Quality | JPEG2000 target (dB per tile) | Median gap | 10th–90th percentile | Pages within ±5 | Total bytes vs JPEG |
+|---:|---:|---:|---:|---:|---:|
+| 50 | 39.5 | +0.2 | −23.6 to +14.5 | 27% | 1.01 |
+| 60 | 40.5 | −0.2 | −22.9 to +13.2 | 30% | 0.98 |
+| 75 | 44.0 | +0.3 | −16.6 to +9.0 | 48% | 1.02 |
+| 90 | 50.5 | +0.3 | −6.6 to +4.0 | 85% | 1.02 |
+
+Between anchors the target follows straight lines, which continue beyond
+q50 and q90 (q0 → 34.5 dB, q100 → 54.8 dB). Those ends are not calibrated;
+low and very high qualities are not this app's use (§275).
+
+What this means:
+
+- **On a typical page JPEG2000 q75 now looks like JPEG q75**, and the
+  complete-PDF benchmarks compare sizes at that quality.
+- **Single documents still differ in both directions** (table above): flat
+  colour artwork about 19 points worse, native-mode pages 5–13 worse,
+  full-page photo and form pages about 9 better. The benchmark page lists
+  these gaps beside the lossy rows.
+- **Complete PDFs at q75** ([benchmarks](COMPRESSION_BENCHMARKS.md#overview--final-complete-file-bytes)):
+  JPEG2000 is smaller in 9 of 12 pairs, larger in 2 and tied in 1. Where it
+  is much smaller (flat artwork −52%, native technical and mixed pages
+  −35% to −37%) it also looks worse; where it looks better (full-page photo
+  and form renders) it is the same size or larger.
+- **Summed over all page images, stock JPEG2000 is about the size of JPEG**
+  (+2%), dominated by the large full-page photo renders. OpenJPEG's rate
+  control has no visual weighting, so it spends bits on detail that does not
+  show. The JPEG committee's Qfactor, with the same codestream format, would
+  be 34% smaller at matched quality and track JPEG on 96% of pages, but needs
+  a patched encoder (excluded by §278).
+
+## Evidence from published studies and tools
+
+| Source | What it shows | Limits |
 |---|---|---|
-| Prepared raster | Shared 300 DPI pipeline | Identical dimensions, 8-bit RGB pixels, flattening/resizing and colour interpretation for both; record the prepared-pixel hash |
-| JPEG sampling | Installed libjpeg default: 4:2:0 | Explicit `subsampling=0` (4:4:4); keep normal RGB-to-YCbCr conversion |
-| JPEG entropy coding | `optimize=True`, sequential Huffman | Keep optimized Huffman; progression is a separate lossless packaging experiment |
-| JPEG2000 sampling | Every RGB component has grid step (1, 1) | Keep full component resolution; do not manually blur/downsample chroma |
-| JPEG2000 wavelet | Pillow default reversible 5/3, rate-limited | For lossy output, `irreversible=True` (9/7); keep 5/3 for Lossless; cap decomposition levels to valid image dimensions |
-| JPEG2000 colour transform | Pillow default `mct=0` (independent RGB) | `mct=1` for RGB; with 9/7 this uses irreversible colour decorrelation, without spatial subsampling |
-| JPEG2000 layout | One image-sized tile, one quality layer | Keep these; do not equate JPEG's 8×8 DCT blocks with JPEG2000 tiles/code blocks |
-| Quality | JPEG q75; JPX q75 → ratio 26 | One fixed q75/q75 pair (§271); JPX always targets 26:1 on every input |
-| PDF assembly | Existing native/FFPR saver and PDF Streams policy | Hold native/FFPR, metadata, masks and outer-stream policy fixed; measure the complete saved PDF |
-
-### Why these adjustments
-
-[libjpeg-turbo's encoder documentation](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/main/doc/usage.txt)
-identifies 4:2:0 as its default and provides full-resolution chroma sampling.
-It distinguishes chroma quantization from subsampling: avoiding the latter
-does not eliminate lossy quantization. Thus 4:4:4 is a sampling match, not
-lossless colour or proof of equal perceived quality. The same documentation
-states that progressive and sequential JPEG can reconstruct the same image;
-do not add progression as another visual-quality knob.
-
-[GIMP's JPEG export manual](https://docs.gimp.org/3.2/en/file-jpeg-export.html)
-specifically identifies fine text and nearly flat colours as cases benefiting
-from no chroma subsampling. That supports the full-resolution baseline for
-this project's mixed documents, rather than using a photo-only assumption.
-
-[Pillow's documented options](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html#jpeg-2000)
-confirm its default 5/3 and disabled MCT. Its writer does not expose subsampled
-RGB components, so matching full-resolution channels is the direct supported
-route. The installed 12.3.0 adapter sets component `dx=dy=1` in
-[Jpeg2KEncode.c](https://github.com/python-pillow/Pillow/blob/12.3.0/src/libImaging/Jpeg2KEncode.c).
-
-The previous rate-limited 5/3 path **could still be lossy**: reversible transform
-does not mean the encoder retains every coding pass. However, lossy 9/7 plus
-colour decorrelation is the adopted lossy configuration:
-[OpenJPEG's own encoder](https://github.com/uclouvain/openjpeg/blob/master/src/bin/jp2/opj_compress.c)
-offers 9/7 and enables RGB-to-YCC MCT by default for three-component input;
-the separate [pylibjpeg-openjpeg encoder](https://github.com/pydicom/pylibjpeg-openjpeg/blob/main/openjpeg/utils.py)
-uses 9/7 with irreversible colour transformation for lossy encoding and no
-subsampling. This supports the configuration, **not a measured guarantee**
-that changing those settings improves every project document. Do not force
-JPEG to encode independent RGB just to imitate the previous JPX default.
-
-The fixed lossy profile explicitly selects LRCP, one quality layer, no
-image subdivision, 64×64 code blocks and at most six resolutions (fewer for
-small images). These are documented in
-[OpenJPEG's own options](https://github.com/uclouvain/openjpeg/blob/master/src/bin/jp2/opj_compress.c).
-No cinema profile, HTJ2K extension, ROI weighting, extra quality layers,
-chroma downsampling or display smoothing is added. Existing PDF/reader
-requirements remain separate from these standard JPEG2000 settings.
-`JPEG_ENCODING_PROFILE` and `JPX_ENCODING_PROFILE` are part of effective
-recipe identity, so an old completed artifact cannot masquerade as the fixed
-encoder's output. Headless JPEG roundtrips share the production JPEG helper.
-
-### Immediate comparison and optional later quality calibration
-
-**LOSSY-05 runs fixed q75/q75**, on all six representative whole PDFs, native
-and FFPR separately. Measure final complete files and inspect the outputs.
-Keep the six-column size analysis in `INTEGRATED_COMPRESSION.md`, not a new
-scattered results document. The following stronger matching experiment is
-optional later work, not a prerequisite for that baseline comparison:
-
-1. Freeze the same prepared raster for both codecs. Run native-preserving
-   and FFPR cases separately; include photos, `images.pdf`, mixed text/images
-   and `models-nasa-kepler.pdf`. Do not use screen captures as source pixels.
-2. Use JPEG q75/4:4:4/optimized Huffman as the fixed reference. Start JPX at
-   q75 with the fixed 26:1 target and 9/7/MCT setup. Decode each actual image
-   stream at full resolution and compare with the prepared original.
-3. For calibration diagnostics only, sweep JPX's ratio around that point to bracket JPEG's measured
-   [SSIMULACRA2](https://github.com/cloudinary/ssimulacra2) score, then narrow
-   the bracket. If an endpoint does not bracket it, extend the search; do not
-   invent a universal quality conversion or hide differing page results.
-   Record the actual ratio, mapping, encoder versions and metric scores.
-4. Check matched candidates visually at ordinary screen scale and 1:1,
-   especially fine coloured text, chart edges, photo detail and ringing.
-   Metrics are a matching aid, not a guarantee of legibility. Any metric
-   downsampling is analysis only, never a display/preview smoothing change.
-5. Freeze ONE global q before any subsequent benchmark, never per-document
-   fitted values. Save complete PDFs through the real saver, check decoder compatibility
-   and rank **measured final file bytes** only after quality qualification.
-   Exclude compute time. Do not put these unrun candidates into existing
-   measured tables or infer their sizes from codec ratios.
-
-The [JPEG committee's Qfactor v2 guideline](https://ds.jpeg.org/documents/jpeg2000/wg1n101553-112-COM-Controlling_JPEG_2000_quality_using_Qfactor_v2.pdf)
-describes a perceptually weighted JPEG2000 quantization scale for sRGB,
-including full-resolution colour. It is a more principled long-term quality
-control candidate than an inverted size ratio, but it is **not** our
-ratio-based mapping, not directly exposed by Pillow's adapter, and
-does not certify q75 equivalence to JPEG. Adopting it needs an explicit
-backend/mapping design and compatibility decision, not an undocumented
-change to existing recipes. No backend or dependency change is made here.
+| [Skodras et al. 2001](https://www.csd.uoc.gr/~hy371/bibliography/JPEG2000.pdf#page=17) | At visually comparable quality, JPEG2000 files 11–53% smaller than JPEG, more so at low bit rates | Historical encoders; ratios, not quality settings |
+| [Steingrímsson and Simon 2003](https://library.imaging.org/admin/apis/public/api/ist/website/downloadArticle/jist/47/6/art00015) | Observers' matches vary strongly with content and often favour JPEG below about 50:1; equal PSNR favours JPEG2000 more than observers do | No mapping of library quality settings |
+| [Allen et al. 2007](https://library.imaging.org/admin/apis/public/api/ist/website/downloadArticle/jist/51/3/art00009#page=10) | Average observer match about 40:1 JPEG ≈ 45:1 JPEG2000, 60:1 ≈ 73:1 | Graph readings; 16 photo scenes, other encoders |
+| [FADGI 2013](https://www.digitizationguidelines.gov/still-image/documents/JP2LossyCompression.pdf#page=15) | Text pages need local inspection; ratios across one collection spread from 8:1 to 351:1 | Archival masters, no JPEG mapping |
+| HTJ2K white paper and Qfactor guideline (above) | Q designed to match JPEG's Q subjectively | 4:2:0, Q ≤ 85; not in OpenJPEG |
+| Tool conventions | darktable: ratio `101 − q`; libvips `Q`: PSNR in dB, default 48 chosen to give "about the same filesize as regular jpg Q75"; ImageMagick and GIMP: PSNR in dB; Acrobat: undocumented levels | None is a quality match to JPEG |
 
 ## Saved recipes and compatibility
 
-§271 changes the effective mapping identity, not the persisted q value or
-quality-default migration revision. Keep current q values and deliberate
-edits. Derive the same target ratio from the same q for every canvas; never
-reuse a normalized mapping's completed file under the new identity.
+- Recipes store `jpeg_q` for JPEG and `jpx_q` for JPEG2000. A recipe with a
+  legacy explicit `rate` keeps that ratio; `rate` and `jpx_q` together are
+  rejected. Lossless ignores both.
+- The mapping name and both encoder profiles are part of each filter's
+  effective identity, so a completed file from another mapping or profile is
+  never reused as current output.
+- Saved q values never change with the mapping. A new mapping gets a new
+  identity, so every JPEG2000 filter re-encodes once.
 
-Persist `jpeg_q` for JPEG and `jpx_q` for JPEG2000. Apply q75 once to all
-existing app filters using either mode, preserving every other setting and
-identity, including a checked Lossless box. Remove the superseded active JPX
-`rate` field during that migration. Persist a checked migration revision
-before constructing saved effective specs or starting jobs. Subsequent saved
-quality edits must survive fresh-process reloads. Quality migration revision
-2 must run even when the previous q90 migration revision 1 is recorded.
+## Design traps and failed attempts
 
-Explicit legacy/headless `rate` recipes remain ratio-based, distinct from
-`jpx_q`, so archived benchmark inputs are reproducible. Do not reinterpret an
-old r192 file/recipe as q75 or silently change its bytes. Reject simultaneous
-effective `rate` and `jpx_q`; Lossless ignores either lossy parameter. Include
-the q-versus-r distinction in effective identity; disabled quality controls
-must not create edits or processing work.
-The ratio's meaning is preserved, but reproducing an old encoded bitstream
-also requires its recorded producing implementation/profile. The new lossy
-profile is not retroactively the producer of historical 5/3/RGB-independent
-JPEG2000 files or 4:2:0 JPEG files.
-
-## Measurement boundary and verification
-
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) uses the current
-standard for **all active lossy rows**: LOSSY-05's 24 complete PDFs and
-60 fixed controls. Twelve unchanged JPEG primary files and thirty controls
-are reused with verified provenance; twelve JPX primary files and thirty
-controls are freshly saved. The controls use completed encoded images,
-never repeated filtering/encoding. The same files feed binary effects, fixed sizes, focused photos,
-FFPR accounting and residual effects; each pair uses its own actual measured
-denominator. No image encoder or compose/resize step runs again.
-
-Source/baseline/output hashes, profile identity, exact image/native content
-and all-page 72/300-DPI readback guard reuse. Unaffected BW/indexed, PNG and
-lossless measurements remain frozen. Historical q50/r192 and earlier q75
-artifacts stay immutable, never relabeled or mixed into current lossy
-rows. The integrated report owns current sizes, manifest hashes and
-conclusions; this document owns the settings and method. The additional
-proof is pinned in `tests/fixtures/lossy_controls_sizes.json` without rewriting
-the original fixed-encoder fixtures.
-
-The subsequent B116 background-ownership repair does not change q, sampling
-or codec profiles. LOSSY-05's tables remain frozen pre-B116 measurements,
-clearly marked in the integrated report, not freshly measured repaired-file
-sizes. The B116 validation protocol is separate from quality calibration
-and full integrated benchmark publication.
-
-The previous LOSSY-01 fixed-ratio q75 manifest is immutable at
-`.tmp/lossy-quality/q75-full-chroma-20261019/metrics.json` (SHA-256
-`bc651088b5679afe28cc428501918a8f6df117da7d305a811b9c61e9596ee00b`).
-Its tests/evidence below describe that historical stage, not the new mapping.
-
-Verification covers endpoint/invalid-quality mapping, actual encoded JP2
-roundtrips and JPEG sampling, q-versus-r keys, lossless irrelevance, saver
-propagation, native/FFPR output, one-time migration and later explicit edits,
-slider/spinner debounce and Save/Save As/Discard/Cancel/Revert, and viewed
-offscreen GUI captures. Run the full suite after code changes. Keep the
-designer's explicit leave-closed instruction; do not reopen their desktop app
-merely to review an offscreen build.
-
-### Current fixed-baseline verification — 2026-10-19 (§271)
-
-**1008 full-suite tests and 193 focused checks pass**, with no expected
-failures. LOSSY-05 publishes all 24 primary PDFs and 60 controls: 42 unchanged
-JPEG files revalidated/reused and 42 JPX files freshly saved. All 84 actual
-file sizes/hashes, 78 paired canvas samples/JPEG fingerprints, native content
-and all-page 72/300-DPI readback checks pass. The 36 ordinary-format controls
-also pass QPDF checks; Brotli readback uses the recorded supporting MuPDF build.
-All affected overview, binary, focused and residual rows now use the fixed
-q75/q75 baseline. Historical manifests and unrelated data remain unchanged.
-
-Both 1×/2× offscreen quality/help reviews pass and were viewed. Actual PDF
-screen/crop review exposed the pre-existing native-photo overlay issue B116;
-it remains OPEN, not hidden by pairwise checks. This is implementation
-verification, not designer acceptance or proven equal visual quality. The
-desktop app remains closed. See `TEST_PLAN.md` and the integrated report
-for detailed scope and immutable provenance.
-
-### Historical verification — superseded implementation stages
-
-The following results describe their named stages, not the current §271
-implementation or the present fixture contents.
-
-Previous q90 stage verified 2026-10-18: **38 focused quality/migration/lifecycle
-checks and 872 full-suite tests passed**, with no expected failures. Actual normal-scale full
-window and 1×/2× panel/editor captures were viewed; both quality-only review
-runs finish GREEN. These are implementation checks, not designer acceptance.
-Published benchmark measurements remain unchanged.
-
-Previous q75-only stage verified 2026-10-18: **46 focused checks and 880 full-suite
-tests passed**, with no expected failures. Both isolated 1×/2× quality-only
-GUI runs exit 0 / QUALITY SHOTS GREEN; actual full-window, panel and editor
-captures were viewed, including Lossless/BW-disabled states. Codestream
-checks pin unchanged sampling and JPEG2000 transform settings. All numeric
-benchmark columns are unchanged; `git diff --check` passes. These are
-implementation checks, not designer acceptance; they are not reused as proof
-of the subsequent profile changes.
-
-Fixed-profile/q75-comparison stage verified 2026-10-19: **908 full-suite
-tests passed**, with no expected failures; **69 focused codec/publication
-checks and 33 overview checks passed**. LOSSY-01 completed all **24 actual
-whole-PDF outputs**, with identical prepared samples within each q75 pair,
-exact codec payloads, retained native content and all-page 72/300-DPI decoding.
-Publication also verifies source-bound native opacity-resource images and
-their equality across each pair, instead of deleting them or misclassifying
-them as the selected page-artwork codec. The output and proof hashes are
-pinned in `tests/fixtures/lossy_quality_sizes.json`.
-
-Both isolated 1×/2× quality-only GUI reviews finish GREEN and were viewed.
-Actual artwork/photo PDFs were inspected at screen scale and in 300-DPI
-edge/photo/text crops. Only the four lossy rows in the continuous integrated
-overview change; fixed q50/r192 controls and all PNG/native experiment
-measurements stay unchanged. No new encoder dependency, technical GUI
-control, display smoothing or desktop app launch was introduced.
-This is implementation verification, not designer acceptance. The desktop
-app remains closed.
-
-Study-reference stage verified 2026-10-19: **942 full-suite tests passed**;
-the focused quality/benchmark/publication/overview selection passes **186**,
-as does the separate overlapping quality/lifecycle selection. Both 1×/2×
-quality-only UI reviews exit GREEN and were viewed. LOSSY-02 completes all
-24 actual PDFs, with 78 verified prepared-canvas/reference pairs per codec.
-JPEG references match the actual selected JPEG payloads byte-for-byte;
-native resources/content and all-page decoding pass. Existing diagnostics
-are unchanged from LOSSY-01. Reference-byte tampering, old mapping publication
-and changed producer/source/output reuse are rejected. Explicit ratios and
-Lossless bypass the reference; tiny inputs and q0/q100 remain valid.
-
-Current measured results and the manifest hash are centralized in
-`INTEGRATED_COMPRESSION.md`; `tests/fixtures/lossy_quality_sizes.json` pins
-their provenance. Real artwork/photo screen views and 300-DPI crops were
-inspected using the actual app renderer. No new dependency, technical knob,
-display filtering or desktop launch. This verifies implementation, not
-designer acceptance or universal perceptual equivalence.
-
-All-section refresh verified 2026-10-19 (§268): **960 full-suite tests passed**,
-with no expected failures. LOSSY-03 completes all 60 additional actual PDFs
-without repeating image encoding; the main 24 and unaffected studies stay
-unchanged. The binary/fixed/focused/residual tables, actual-file accounting,
-labels, minima and measured denominators now share the current standard.
-All controls preserve exact image/native content and all-page pixels;
-36 ordinary-format controls also pass QPDF syntax checks, without claiming
-unsupported-reader certification for the 24 Brotli files. The integrated
-report and current-controls fixture pin their hashes/provenance. No new UI
-review is required for benchmark/report-only changes; the desktop remains
-closed. This is implementation verification, not designer acceptance.
+- **A compression ratio relabelled as quality.** `101 − q` made JPEG2000
+  "q75" about 8 points better than JPEG q75 and larger, so the benchmarks
+  compared quality, not compression. A size target cannot track a
+  quantization-based quality.
+- **Fitting JPEG2000 to the JPEG result per image.** Choosing each image's
+  JPEG2000 ratio from the JPEG file's ratio (the §267 study anchors) made
+  the comparison circular and gave every page a different setting; §271
+  rejected it.
+- **Taking literature ratios as settings.** The 2007 observer ratios came
+  from other encoders and photo scenes. Turned into a fixed q56, they scored
+  21 points below JPEG q75 on our photo page.
+- **PSNR targets.** A whole-image PSNR averages over blank paper; on mostly
+  blank native pages images then degrade far below JPEG (−68 points on the
+  worst page). PSNR also favours JPEG2000's blur over JPEG's blocking.
+- **True 4:2:0 JPEG2000.** Subsampled sYCC components break in Poppler.
+  Reduce colour detail within full-size components instead.
+- **Pillow's JPEG2000 defaults.** Without options Pillow writes the
+  reversible 5/3 wavelet without colour decorrelation (`mct=0`); lossy output
+  needs `irreversible=True, mct=1`. Pillow ignores `quality=` for JPEG2000:
+  `quality_layers=[75]` means 75:1 in rates mode and 75 dB in dB mode.
+- **Expecting the codec to win with a non-perceptual encoder.** At equal
+  median quality stock OpenJPEG is about JPEG's size, while the same format
+  with Qfactor quantization is a third smaller. A size comparison measures
+  the encoder's rate control as much as the format.
+- **A weaker encoder as the codec's representative.** FFmpeg's JPEG2000
+  encoder has no colour decorrelation and small code blocks; at equal
+  quality it is 3.5 times larger than OpenJPEG.

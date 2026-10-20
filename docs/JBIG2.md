@@ -4,7 +4,7 @@ Designer §§233/234; [TODO §240](TODO.md#240--open-designer-234-explore-jbig2-
 Capability review: 2026-10-16. **The current encoder path is implemented;
 additional optimizations below are research, not implemented choices.**
 
-Primary final-size results: [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+Primary final-size results: [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 Preparation/native-artwork policy: [COMPRESSION.md](COMPRESSION.md).
 Colored masks: [LAYERED_COLOR_JBIG2.md](LAYERED_COLOR_JBIG2.md).
 Reader/combination policy: [COMPRESSION_COMBINATIONS.md](COMPRESSION_COMBINATIONS.md).

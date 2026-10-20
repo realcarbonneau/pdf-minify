@@ -113,31 +113,26 @@ def test_published_ffpr_effects_match_the_measured_sizes_fixture():
     # Frozen measured Brotli baselines are populated only after the real study.
     import json
     from decimal import Decimal
+    from tools import benchmark_tables as tables
+    from tools import bench_best_overview as best
+    from tools import publish_best_overview as publisher
+    from tools import publish_lossy_controls as lossy
 
     fixture = json.loads(Path("tests/fixtures/ffpr_compressor_sizes.json").read_text())
     assert fixture["publication_sha256"] == "9279a171feff32151a44e7d2f41d3042abdc611bdd2ecf72c3b4bb724eeed22d"
     assert fixture["brotli_declaration"] is False
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    section = report.split(ffpr.SECTION, 1)[1].split("\n## ", 1)[0]
     # §268 refreshes the 12 lossy pairs; the 18 unaffected FFPR pairs retain
-    # their original provenance. Audit by identity, not incidental position.
-    from tools import bench_best_overview as best
-    from tools import publish_lossy_controls as lossy
+    # their original provenance. Audit by row ID, not incidental position.
     current = json.loads(lossy.FIXTURE.read_text())
-    first_table = section.split("### FFPR/J* subset", 1)[0]
-    parsed = {cells[0]: cells for line in first_table.splitlines() if line.startswith("| ")
-              if (cells := [cell.strip() for cell in line.split("|")[1:-1]])}
-    labels = {lossy.current_label(r.label).removesuffix(" + packed samples") for r in best.RECIPES}
-    assert labels <= set(parsed)
-    assert len([label for label in parsed if label in labels]) == 19
+    binary = tables.read_table(tables.PAGE.read_text(), "zopfli-vs-brotli")
+    assert set(binary.rows) == {r.key for r in best.RECIPES} | set(publisher.GROUP_IDS.values())
     for expected, fixed in zip(fixture["rows"], ffpr.ROWS, strict=True):
-        recipe = next(r for r in best.RECIPES if r.family == fixed.family and r.variant == fixed.variant)
-        row = parsed[lossy.current_label(recipe.label)]
         assert expected["label"] == ffpr.LABELS[ffpr.ROWS.index(fixed)]
+        row = binary.rows[publisher.recipe_key(fixed.family, fixed.variant, fixed.native)]
         if fixed.family in lossy.FAMILIES:
             mode = "color" if fixed.family.startswith("jpeg-") else "jpx"
             expected = {p: lossy.row_for(current, mode, True, p)["sizes"] for p in ("brotli", "zopfli")}
-        for cell, baseline, candidate in zip(row[1:], expected["brotli"], expected["zopfli"], strict=True):
+        for cell, baseline, candidate in zip(row, expected["brotli"], expected["zopfli"], strict=True):
             change = (100 * Decimal(candidate-baseline)/Decimal(baseline)).quantize(Decimal("0.01"))
             if change == 0:
                 change = Decimal(0)
@@ -145,18 +140,19 @@ def test_published_ffpr_effects_match_the_measured_sizes_fixture():
             assert cell == (f"**{percent}**" if change < 0 else percent)
 
 
-def test_brotli_comparison_immediately_follows_png_with_all_zero_percentages_unbolded():
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    headings = [line for line in report.splitlines() if line.startswith("## ")]
-    png = headings.index(overview.PNG_SECTION)
-    assert headings[png + 1] == ffpr.SECTION
-    assert headings[png + 2] == "## Focused scenarios"
-    assert not re.search(r"\*\*[+-]0\.00%\*\*", report)
-    for line in report.splitlines():
-        if line.startswith("|"):
-            for percent in re.findall(r"[+-]\d+\.\d+%", line):
-                assert re.fullmatch(r"[+-]\d+\.\d{2}%", percent), percent
-                assert percent != "-0.00%"
+def test_published_percentages_use_two_decimals_and_never_bold_rounded_zero():
+    from tools import benchmark_tables as tables
+    page = tables.PAGE.read_text()
+    checked = 0
+    for table_id in tables.table_ids(page):
+        for cells in tables.read_table(page, table_id).rows.values():
+            for cell in cells:
+                assert not re.search(r"\*\*[+-]0\.00%\*\*", cell), (table_id, cell)
+                for percent in re.findall(r"[+-]\d+\.\d+%", cell):
+                    assert re.fullmatch(r"[+-]\d+\.\d{2}%", percent), (table_id, percent)
+                    assert percent != "-0.00%"
+                    checked += 1
+    assert checked >= 96 + 114 + 42  # PNG, binary and residual effects at least
 
 
 def test_development_document_tables_use_short_zopfli_labels():

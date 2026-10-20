@@ -1,8 +1,154 @@
-# DESIGN — preset filter-strip + comparison views
+# DESIGN — PDF Minify product design
 
-Documentation scope (§218): keep substantive design, defect reports and dated
-acceptance. One-off execution, status and publication commands are not design
-requirements. Lasting development/test rules belong in `DEVELOPER_GUIDELINES.md`.
+The first section collects the designer's most important top-level rulings,
+copied exactly from `DESIGNER_VERBATIM.md` (§279). Topic pages open with their
+own detailed rulings. Text outside the fenced quotes is not the designer's.
+
+## Top-level design principles (verbatim)
+
+### Purpose: a simple, opinionated PDF size reducer
+
+**§3** (original brief)
+
+```text
+I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
+```
+
+Later rulings narrow two details of the brief: JPEG XL is not used (§5), and
+encoding time is not a constraint (§213).
+
+**§275** (2026-10-19)
+
+```text
+I already ruled the use case, this is for making pdfs smaller, thuse lossless or super high quality images are not a concern, we want something simple for most users.
+```
+
+**§6**
+
+```text
+what if I am really picky about smooth clean custom UI highly tailored for a specific job, like pan, zoom in/out mouse scroll, next page, prev page, DnD, etc.
+```
+
+### Compression: the best available algorithms; reader support is the only limit
+
+**§81** (2026-10-10)
+
+```text
+Everything in this project must be maximum compression, BW lossles, reduced palette, probably lossless, jpeg full color usually lossy
+```
+
+**§213** (2026-10-15)
+
+```text
+so all pdf readers can decode flate encoded with zopfli?  Encoding is not a constrain, the objective of this project is to be an opinionated pdf compression suite with the best available algorithms for encoding, we drop superceded algorithms, the only concern that affects decisions would be pdf reader support, where for some usage, a more generally supported decoder would be proferred, in others, the user may expect readers to have the most modern and best pdf reader.
+```
+
+**§278** (2026-10-20)
+
+```text
+Don't change standard packages, if you can't change JPEG2000, adjust the JPG settings to match.
+```
+
+### Workbench: the original beside each filter's real result
+
+**§9** (2026-10-09)
+
+```text
+Put all my comments verbatim in a design md doc, make a docs dir.  make a dev md doc with guidance, including to keep all my comments verbatim.  I want to see a list of preset optimization options, like photo filters on a camera with a smaller version of previews, and when I click on one, the main doc has original and preview (optmized side by side, vertically or horizontally, same for the filter thumbnails, all would be choosable as menu view options.
+```
+
+**§23** (2026-10-09)
+
+```text
+left side is baseline, so no preview of basline, right side is per filter.
+```
+
+**§22** (2026-10-09)
+
+```text
+page zoom, pan, etc is always synced on both panes
+```
+
+**§48** (2026-10-10)
+
+```text
+Still wrong! Thumbnails should be a mini version of exactly the current view of the larger window.  Why is this not clear?  If the original and preview windows (always synced view) show three pages wide and 4 pages high with the last page have cut, each preview shows exactly that from it's own filter view (internal, no shown, file preprocessed in bg at the start or from the latest change).  This seems simple and exacly derived from my previous rulings.
+```
+
+**§173** (2026-10-14)
+
+```text
+Previews of original and filters must be exact! No additional filtering, smoothing, etc.    AA can be used on text and vector images of course, but never on anything converted to bitmaps.
+```
+
+**§175** (2026-10-14)
+
+```text
+In otherwises, if it's simpler to drop all AA and smoothing for display, that is ok, I rather precise exat rendering regardless.  So this might be the best solutions overall and addresses the root cuase of the problem.
+```
+
+### One processing path; every size is an actual saved file
+
+**§122** (2026-10-13)
+
+```text
+The preview need to show the saved file, DO NOT have multiple paths, this is the root cause of alot of your failures!! One single path, process the file, save temp, display temp file in preview, minis come from save temp files once they are processed. This is an important design ruling, please put this in the design under architecture and flow. Do you follow this flow? Do you understand why this is robust and safe?
+```
+
+**§149** (2026-10-13)
+
+```text
+Ok, this renumbering issue seems resolved, you can document my explicit confirmation.  Next issue, this also seems like a design implementation issue, please find the root cause.  Canon design is that all filters be run for real and the previews come from the filtered files, and these files have the true final size, not an approximation, please make sure this is clear canon design ruling in the proper dev docs.  When I zoom in/out, the preview and minis update live, this is good.  However, when I click on a mini that has not been clicked yet, I see it doing a "Rendering preview..." processing.  This is obviously wrong flow because this is already fully processed to have the mini previews that work.  So something is fundamentally wrong.  There should be no reprocessing EXCEPT for changes to the filter.  And there are two types of changes to the filter, the first is live changes which should update the processing live with a debounce and mark the filter as changed with a star * (per standard GUI conventions, right?).  However, if the chosen filter is changed without saving, there should be a popup for discard/save/save-as (aka save copy, choose best modern term).  If discard, then the previous file is kept (and the temp new live changes file is deleted), inverse if save, save-as keeps both of course.  These are multiple design runlings, please document in the correct places, also document the issues and work on them.
+```
+
+### Image model: optimize the images, or flatten the whole page
+
+**§127** (2026-10-13)
+
+```text
+No, FFPR is not a mixed path. The basic decision is to optimize existing images, or the full page into a single image. This is the basic functionality. I don't know what your mixed path was, but you were saying something about colors in a BW and I could see the letters being rasterized even when the FFPR was OFF, this was your fail.
+```
+
+**§171** (2026-10-14)
+
+```text
+Why is this complicated?  The PDF always must have a clear and explicit flattening sequence to display the document.   Why can't we just keep everything bitmaps as a big image and overlay the text.  If this doesn't look nice, then the user can choose FFPR options, or we can add further filter profile options.  Choose a simple strategy that will help reduce the size of the file.  Ideally keeping text and images clearly separate.
+```
+
+**§129** (2026-10-13)
+
+```text
+OMG, why are you not respecting the DPI? How is that not clear??? DPI apply to ALL image transformations on the page, even if smaller res, they get upsized DPI on their original color pallette, I think Laconz something like that is considered the best, please review notes, if we don't have notes on this, we need to do some research. The design flow is all images are forced to the setting DPI in their original image space, then the transformations are applied (eg BW, algo, jpg compression, etc). Same recipe for FFPR. Do you follow? Please document that and create an compression algorithm page for these rules, flows and benchmarks, also note failures, issues and TODOs on this document and cross reference
+```
+
+**§225** (2026-10-15)
+
+```text
+I think we should also convert all the filters to 300dpi default for now.  We know that lower dpi will be smaller in general, it's not useful to have variations of this, it doesn't provide information and causes comparison problems.
+```
+
+**§203** (2026-10-15)
+
+```text
+I think we need to add an option that is the algorithm, JBIG2 BW, JBIG2 Color, Flate BW, Flate Color JPEG2000, JPEG.  Because we have no way of choosing between the options at the moment, filters seem to be locked into their algo.  Also, why do we have both JPEG and JPEG2000, and Flate BW and Flate Color?  For backward compatibility?  Aso, the terms strategy should be qualified, is that Threshold automatic strategy?
+```
+
+### Lossy quality: one familiar control that means the same for both codecs
+
+**§262** (2026-10-18)
+
+```text
+We have to use the parameter that users are most used to, that is the most common.
+```
+
+**§272** (2026-10-19)
+
+```text
+I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
+```
+
+The current quality mapping and its measurements are in
+`LOSSY_IMAGE_QUALITY.md`.
 
 ## Project identity (§230)
 
@@ -29,26 +175,6 @@ or write the designer's real settings. Details: `PERSISTENCE_AND_TEMP.md`.
 Original designer quotations, license/provenance notices, historical artifact
 paths and benchmark source hashes remain exact. Historical names in these
 records and the explicit legacy-settings identifier are not active branding.
-
-## Designer rulings (verbatim)
-Quoted exactly from `DESIGNER_VERBATIM.md`. Do not edit the quotes.
-
-Ruling §3 — original brief:
-> I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
-
-Ruling §6 — picky UI:
-> what if I am really picky about smooth clean custom UI highly tailored for a specific job, like pan, zoom in/out mouse scroll, next page, prev page, DnD, etc.
-
-Ruling §9 — preset filter-strip + view options:
-> I want to see a list of preset optimization options, like photo filters on a camera with a smaller version of previews, and when I click on one, the main doc has original and preview (optmized side by side, vertically or horizontally, same for the filter thumbnails, all would be choosable as menu view options.
-
-Ruling §10 — raster defaults on main screen:
-> Generally forcing alll images on the page and page rasterizing to 300dpi, and 8.5x11, but that also would be options on the main screen.
-
-Refined by §74: page size defaults to Original (saving never reshapes pages
-unless asked — forcing Letter would break normal pages). Letter/A4 stay as
-advanced Save options for absurd scan sizes, which the File box flags with a
-warning line (never auto-applied).
 
 ## Concept (camera-filter UX for PDFs)
 - Left/bottom **filter strip**: every preset renders a small live thumbnail of the
@@ -89,156 +215,17 @@ View=Main:V + Filters:V (square / portrait screens) → panes stacked, rail on r
 | 9 | Color · Poster 16 | indexed | 300dpi, 16 colors | flat graphics, tiny |
 | 10 | Color · Indexed 64 | indexed | 300dpi, 64 colors | diagrams and logos |
 
-### Familiar lossy quality and q75 baseline (§§262–264)
+### Lossy quality (§§262–278)
 
-Designer §262:
-> We have to use the parameter that users are most used to, that is the most common.
-
-Designer §263:
-> is this the default  "4:4:4"?   Also, use q90 for both jpg and jpeg2000 for now please as a start.  Should they be somewhat similar if the assumed range is 0-100?
-
-Designer §264 supersedes the q90 starting point:
-> change the quality for both to 75, but also do research on what the best comparable setting would be for the sampling and if there are other settings that we should adjust to make more comparable between the two.
-
-JPEG and lossy JPEG2000 start at **Quality 75**. Use one native
-slider/editable-number control on a 0–100 scale; higher means better quality.
-It is active for JPEG and lossy JPEG2000, visible but disabled otherwise.
-JPEG2000 retains its separate Lossless checkbox. Every edit uses the existing
-300ms debounce and saved/draft/artifact lifecycle, including Save As and Revert.
-
-Apply this starting point once to existing JPEG/JPEG2000 app filters as well
-as new defaults, preserving UUIDs, names/order, DPI, FFPR, native streams,
-metadata and the Lossless choice. Later deliberate quality edits persist;
-the migration is not a permanent clamp. Keep both legacy-named JPEG seeds
-rather than deleting identities or silently renaming the designer's filters.
-
-The library JPEG default is **4:2:0**, but §§265/266 now approve the researched
-fixed full-resolution comparison profiles: JPEG **4:4:4** and lossy JPEG2000
-**9/7 + RGB colour decorrelation**. These are internal encoder policy, not
-new UI controls. Keep one quality slider; preserve the existing edge-case
-Lossless capability without expanding it into the core benchmark.
-
-Designer §265:
-> I don't care so much about lossless, it's not core to the app, it might be never used or only for extreme edge cases, highly doubtfull.  What is important is that the lossy compression works and better than jpeg.   So please review modern best practices for setting and fixing all these jpeg2000 options for the objectives I had previously stated (300dpi, screen view, etc.).  User expect these to be set correctly and only have a quality slider AND most importantly that the benchmark be of comparable visual quality betwee the two JP*.
-
-Designer §266:
-> If you don't have something better, backed by solid sources, the working assumption is that "equal slider values count as comparable visual quality.".   When you state " equal slider values won’t count as comparable visual quality." without any benchmarking options, that statement has no value nor usefulness, it only leads to ***NO BENCHMARKS*** and thus no information, which worse than a good enough comparison baseline.
-
-Use **q75/q75 as the working comparable-quality baseline**, with actual
-complete PDFs at 300 DPI, native-preserving and FFPR separately. Do not make
-an unimplemented perceptual calibration a blocker. Record the exact quality
-mapping and encoder profiles; inspect actual output and report observed
-differences without declaring equivalence experimentally proven or hiding
-losses. Any stronger future quality-matching method must add measured,
-source-backed information. The JPEG2000 implementation mapping and
-historical-measurement boundary are in
-[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md), including the adopted
-full-chroma comparison setup and primary-source research.
-
-Designer §267:
-> ok, use that please
-
-Use the study-based conditional comparison as the new working baseline:
-encode the identical prepared raster with JPEG at the selected Quality,
-measure its actual raw-sample/JPEG-byte ratio, then choose JPEG2000's ratio
-using the approximate anchors **40→45** and **60→73**. Interpolate linearly
-between these anchors; outside that interval hold the nearest anchor's
-relative gain, never extrapolate the slope or claim a measured match there.
-Clamp the target ratio to at least 1. This bounded extrapolation is an
-implementation assumption, not an additional result from the study.
-The q75 default and one slider remain; do not substitute a fixed q56 or q28
-for every image. The JPEG reference is an internal measurement only, never
-the source pixels for JPEG2000. Compose/resize once, then encode each codec
-from the same RGB pixels. Explicit legacy ratios and Lossless are unchanged.
-Version the new mapping in effective keys, including its reference JPEG
-profile, so completed old q75 files cannot be reused as current output.
-Remeasure the four lossy overview rows; retain frozen controls and the
-previous fixed-ratio q75 study as historical evidence. See
-[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md) and TODO §262.
-
-Designer §268:
-> ok, update all benchmarks and docs, and run the updated benchmarks that have not been done yet.
-
-Apply the current q75/full-chroma/study-reference standard throughout active
-lossy benchmark tables, not only the main matrix. Reuse the 24 verified
-LOSSY-02 whole PDFs as immutable image preparations; run the missing 48
-fixed Zopfli/Brotli native/FFPR controls and 12 Flate FFPR references.
-Hold encoded image bytes and decoded native/metadata/geometry constant per
-stream-policy comparison. Those same complete files supply the binary,
-focused-photo and native/residual tables; do not encode the images or repeat
-already completed comparisons for each displayed table. Remeasure actual
-complete files, never infer a new size from old bytes or percentages.
-
-Retain unaffected BW/indexed/lossless/control evidence with its producing
-identity. Old q50/r192 and fixed-ratio q75 artifacts remain immutable history,
-not active lossy comparison rows. Update current recipe labels, table
-denominators, bold minima, two-decimal effects, causal byte accounting,
-conclusions, reproduction instructions and regression fixtures together.
-Historical component studies retain their explicit historical scope and link
-to the current integrated result; no timing ranks, CSV delivery, new GUI
-option or application codec change. See TODO §263 and LOSSY-03 in
-`COMPRESSION_EXPERIMENTS.md`.
-
-Designer §269 clarifies the quality-scale and matching requirement:
-> I ruled that both JPG and JPEG2000 will have the same 0-100 quality scale that matches common user expectations.  So the benchmark and documentation q must be on the same scale.  You are saying that JPEG2000 is set at q56 will everything else held approximatey equal?  This is my request, to try to find the best possible equivalance between the two to make the size benchmarks comparable, or else benchmarking is useless.  Do you understand this??
-
-Both codecs retain stable, familiar 0–100 quality controls. GUI settings,
-benchmark recipes, table labels and documentation must use those same scales;
-do not redefine JPEG2000 q75 as a hidden JPEG-q75-equivalent setting. Different
-actual q values are permitted when they give the closest practical visual
-match: the comparison is JPEG q75 versus JPEG2000 at its matching actual q,
-with identical prepared pixels, DPI, colour sampling and other controlled
-settings. Hold native/FFPR modes separate and final-save policy fixed.
-
-§267's implemented per-image reference-ratio normalization is not a
-conventional JPEG2000 q setting. The arithmetic `101 − 45 = 56` under the
-previous mapping does not establish that fixed JPEG2000 q56 visually matches
-JPEG q75 across the corpus. Use published matching results as starting
-evidence, then determine and report actual matching settings; do not create
-an apparent codec advantage by choosing a smaller target and relabeling it
-q75. A working approximation is useful; undocumented normalization or an
-unrun quality match is not evidence. Preserve the real measured artifacts,
-but qualify their quality labels until this correction is implemented.
-See TODO §264, `LOSSY_IMAGE_QUALITY.md` and LOSSY-04 in
-`COMPRESSION_EXPERIMENTS.md`.
-
-Designer §270 requests the consolidated research and actual derivation:
-> You previously did the research, make a document with all your research on prior work and public studies comparing JPG and JPEG2000.  You said you had found some that had matched image quality visually and numerically, I thought you had derived the equivalent quality settings from both?  If not, do that work and review the past conversation histories in this harness and sequence before compaction.
-
-`JPEG_JPEG2000_RESEARCH.md` owns the recovered public-study evidence,
-conditions, numeric derivations and codec-quality matching results. Keep
-image-only research numbers separate from final-PDF size measurements in
-`INTEGRATED_COMPRESSION.md`. Recover prior source references rather than
-discarding them at compaction. Distinguish equal-bit-rate PSNR, equal-PSNR
-and equal-perceived-quality results. Translate literature candidates onto
-the actual stable q scale, then test actual decoder output against the same
-uncompressed prepared pixels. Keep JPEG q75 fixed, measure perceptual and
-numeric differences, inspect matched/worst crops, and record actual q,
-profile, source/output hashes and any unmatched cases. Do not select a
-smaller byte budget and claim it demonstrated matched visual quality.
-No encoding-time ranking, desktop launch or raw-transcript publication.
-
-§271 supersedes §267's runtime JPEG-reference normalization and the
-per-image matching recommendation from LOSSY-04:
-> NO! That is NOT good, there has to be ONE single q setting for all experiments!  You really don't know how to design proper experiments?  With variations of q for JPEG2000, nothing is comparable consistently, it has no value.
-
-The approved working baseline is JPEG q75 versus JPEG2000 q75, at 300 DPI,
-in every input and native/FFPR experiment. JPEG2000 uses one image-independent
-`rate = 101 − q` mapping: q75 always targets 26:1, never PSNR 75 or a budget
-derived from a reference JPEG. Keep full-resolution chroma, the existing
-lossy profiles, native retention, FFPR and Best stream policy unchanged.
-Preserve explicit legacy rate/Lossless semantics and saved q values. Version
-effective identity so normalized artifacts cannot masquerade as fixed-q files;
-JPEG's encoder profile no longer participates in JPX quality identity.
-
-LOSSY-05 refreshes the affected complete-PDF measurements and every active
-table/denominator/conclusion. Reuse hash-verified unchanged JPEG outputs and
-their fixed-stream controls, proving actual JPEG payloads against the same
-fresh JPX-input pixels. Re-encode the changed JPX files once and repack those
-verified outputs for native/residual controls without more image processing.
-Preserve LOSSY-01–04 and unrelated evidence. Per-image fits remain research
-diagnostics only, not experimental settings or an approved product scale.
-See `LOSSY_IMAGE_QUALITY.md`, `COMPRESSION_EXPERIMENTS.md` and TODO §264.
+One **Quality** control, 0–100 and default 75, drives JPEG and lossy
+JPEG2000; the same number must mean comparable visual quality for both
+codecs, through one fixed rule for every page (§§271/272). Encoders come from
+standard packages only, and JPEG keeps 4:4:4 to match JPEG2000's full-resolution
+colour (§§276/278). JPEG2000 maps Quality to one PSNR target per 512-pixel
+tile, calibrated so its median quality equals JPEG's at the same number on
+the benchmark pages (§284). The app never chooses between JPEG and JPEG2000;
+there is no Best option for them (§287). Rulings, settings and measurements:
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md).
 
 Historical automatic choice (§57), superseded for explicit selections by
 §203: few-color images (≤256 distinct colors — logos,
@@ -308,7 +295,7 @@ comparison, not a claim of universal reader support or different fidelity.
 Designer §222:
 > where is the matrix comparing all algo combos file sizes on complete files, your analysis seems scattered.  We only care about the final file size, this is integrated compression analysis.
 
-Use [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) as the primary
+Use [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) as the primary
 algorithm-combination comparison. Each reported cell is an actual complete
 saved PDF, including native/image/resource/extension/container overhead.
 Cross image encoding and prediction with native compression; never add
@@ -358,7 +345,7 @@ codec strengths guide interpretation, not changes to measurements, automatic
 codec selection or claims of a universal winner. This is a presentation-only
 refinement of §223; §§236/237 subsequently remove redundant bitmap-reference
 rows throughout the analysis without deleting historical benchmark artifacts.
-See [the overview](INTEGRATED_COMPRESSION.md#overview--final-complete-file-bytes)
+See [the overview](COMPRESSION_BENCHMARKS.md#overview--final-complete-file-bytes)
 and TODO §§232/233.
 
 ### Integrated benchmark labels (§232)
@@ -373,7 +360,7 @@ Keep FFPR explicit and retain compressor suffixes such as `Zopfli-Flate
 native`, which identify native-stream compression rather than image encoding.
 This changes presentation only, not processing, measured bytes, minima or
 the explicitly labeled Simple thresholds in the focused sensitivity table.
-See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+See [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 
 ### JBIG2 flow regression versus codec-comparison input (§233)
 
@@ -404,7 +391,7 @@ codec-comparison tables. Replace, independently save and verify every retained
 scan cell; never reuse the old scan's sizes under the new filename. Source/output
 hashes, original reader limitations and common 300-DPI transformations remain
 required. This does not declare B114 fixed or authorize pixel changes to a
-same-DPI no-op. See `INTEGRATED_COMPRESSION.md` and `TEST_PLAN.md`.
+same-DPI no-op. See `COMPRESSION_BENCHMARKS.md` and `TEST_PLAN.md`.
 
 ### Same-density composition repair (§235)
 
@@ -460,7 +447,7 @@ Compatible previously measured cells may retain their actual files with strict
 source/implementation/output verification and explicit provenance. Preserve
 300-DPI transforms, same-fidelity minima, reader-support limits and the single
 continuous table. Failures remain explicit, never blanks or guessed sizes.
-See [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) and TODO §234.
+See [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) and TODO §234.
 
 ### Remove redundant Classic-Flate benchmark rows (§§236/237)
 
@@ -547,7 +534,7 @@ Treat the Brotli observation as scoped to the measured corpus. Count wins,
 ties and regressions, retain counterexamples, and do not change product defaults
 from an empirical size table. The next experiment needs its own named A/B
 factor and plan before encoding. Method and scope are centralized in
-`COMPRESSION_EXPERIMENTS.md`; results stay in `INTEGRATED_COMPRESSION.md`.
+`COMPRESSION_EXPERIMENTS.md`; results stay in `COMPRESSION_BENCHMARKS.md`.
 The next planned A/B factor is native/residual-stream encoder selection:
 standard Flate reference versus the named optimized encoder, with image
 payloads held byte-identical. Five specialized-codec FFPR rows and two native
@@ -877,7 +864,7 @@ resolution, with the same unresampled controls, native/FFPR distinction and
 reader limitations. Keep
 all previous actual files/values; verify pinned implementation changes and
 their hashes instead of relabeling old measurements as freshly encoded.
-See `INTEGRATED_COMPRESSION.md`, `TEST_PLAN.md` and TODO §236.
+See `COMPRESSION_BENCHMARKS.md`, `TEST_PLAN.md` and TODO §236.
 
 ### Uniform resolution and color FFPR (§§224/225)
 

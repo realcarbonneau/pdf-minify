@@ -25,29 +25,28 @@ def test_additional_palette_cases_do_not_repeat_five_color_overview(kind):
 
 
 def test_redundant_classic_flate_bitmap_rows_are_removed_from_every_focused_table():
+    from tools import benchmark_tables as tables
     for scenario in scenarios.SCENARIOS:
         rows = scenarios.rows_for(scenario)
         if scenario.family != "preserve-images":
             assert len(rows) == 6 and not any(r.native == "flate" for r in rows)
         else:
             assert any(r.native == "flate" for r in rows), scenario.key
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    for title, next_title in (("### Logos/artwork", "### Mixed text/images"),
-                               ("### Mixed text/images", "### Scanned BW text"),
-                               ("### Scanned BW text", "### Threshold sensitivity"),
-                               ("### Threshold sensitivity", "### Native-heavy files")):
-        section = report.split(title, 1)[1].split(next_title, 1)[0]
-        assert "Classic Flate (reference)" not in section
-        assert "Zopfli + PNG prediction" in section
-        assert "Brotli + PNG prediction" in section
+    page = tables.PAGE.read_text()
+    for table_id, base in (("focused-artwork", "indexed"), ("focused-mixed", "indexed"),
+                           ("focused-scan", "bw"), ("focused-thresholds", "bw")):
+        assert set(tables.read_table(page, table_id).rows) == {
+            f"{base}.zopfli", f"{base}.zopfli.png", f"{base}.brotli", f"{base}.brotli.png",
+            f"{base}-jbig2.zopfli", f"{base}-jbig2.brotli"}, table_id
 
 
 def test_unresampled_classic_control_stays_in_applicable_focused_sections():
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    for title, next_title in (("### Color photography", "### Logos/artwork"),
-                               ("### Native-heavy files", "## What the measurements establish")):
-        section = report.split(title, 1)[1].split(next_title, 1)[0]
-        assert "| Preserve images + Classic Flate (reference) native |" in section
+    from tools import benchmark_tables as tables
+    page = tables.PAGE.read_text()
+    assert set(tables.read_table(page, "focused-native").rows) == {
+        "reference.classic", "reference.zopfli", "reference.brotli"}
+    photos = tables.read_table(page, "focused-photos").rows
+    assert {"reference.classic", "reference.zopfli", "reference.brotli"} <= set(photos)
 
 
 @pytest.mark.parametrize("key", ["art-16", "mixed-16", "naca", "art-t180"])

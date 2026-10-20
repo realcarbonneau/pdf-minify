@@ -117,7 +117,7 @@ pinned, not a new runtime dependency or cross-implementation certification.
 All **186 integrated Markdown table lines remain unchanged**, as do the
 LOSSY-01/02/03 manifest hashes. Sources, derivations, actual q/score tables,
 exceptions and reproducible proof are in
-[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md) and
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md) and
 `tests/fixtures/jpeg_jpeg2000_quality_match.json`.
 No production mapping/default, saved-filter migration, GUI change or desktop
 launch. At that stage TODO §264 remained OPEN for the product correction and
@@ -155,7 +155,7 @@ return to active tables.
 The original LOSSY-01, LOSSY-02 and fixed-publication manifest hashes remain
 unchanged. All 77 local documentation file links checked pass;
 `git diff --check` passes. Current sizes, complete-file hashes and measurement
-provenance are centralized in `INTEGRATED_COMPRESSION.md`; the new proof is
+provenance are centralized in `COMPRESSION_BENCHMARKS.md`; the new proof is
 `tests/fixtures/lossy_controls_sizes.json`. No repeated image encoding,
 unaffected experiment rerun, app/GUI change or desktop launch.
 **Implementation verified 2026-10-19; not designer acceptance or independent
@@ -811,7 +811,7 @@ below. Full suite after the coverage and B113 changes:
 adds four scope/provenance cases for nine focused scenarios / 62 additional
 complete PDFs, all transformed cases at 300 DPI. No desktop launch performed.
 Current published evidence and its exact counts
-are in [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+are in [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 
 §§238–240 change only the PNG presentation: 26 baseline rows / 156 sizes and
 a separate eight-row × six-document effect table / 48 measured sizes, with
@@ -900,7 +900,7 @@ then-published matrix cell and tied bold minimum was independently checked.
 The first rejected font-variant output is excluded, not counted as a success.
 §223 replaces that publication layout with realistic combination rows over
 five representative PDFs and focused scenario tables in
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). The original 549
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md). The original 549
 artifacts remain archived diagnostic evidence, not a recommended menu.
 Fresh complete suite: **474 passed**, exit 0 / FULL SUITE GREEN. No desktop
 launch or product codec/default change; no designer issue acceptance implied.

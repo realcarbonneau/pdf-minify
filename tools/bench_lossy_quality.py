@@ -1,8 +1,9 @@
-"""LOSSY-05: one fixed q75/q75 baseline across all complete PDFs (§271).
+"""LOSSY-06: JPEG q75 versus the JPEG2000 setting that looks like it (§§272/284).
 
-Equal slider values are the approved working visual-quality baseline.
-No timing/CSV, synthetic size estimates or prerequisite quality calibration.
-The observer records production inputs/results; it never changes encoding.
+One fixed Quality, 75, for both codecs. JPEG2000's mapping is calibrated so
+its median SSIMULACRA2 equals JPEG q75 on the benchmark pages
+(docs/LOSSY_IMAGE_QUALITY.md). No timing/CSV or size estimates. The observer
+records production inputs/results; it never changes encoding.
 """
 
 import argparse
@@ -48,8 +49,8 @@ def recipe(mode, force):
 
 
 def identity(documents, jpeg_reuse=None):
-    return dict(study="LOSSY-05-fixed-q75-v1", dpi=DPI, quality=QUALITY,
-                visual_quality_basis="designer-fixed-q75-working-baseline",
+    return dict(study="LOSSY-06-jpeg-matched-q75-v1", dpi=DPI, quality=QUALITY,
+                visual_quality_basis="jpx-calibrated-to-jpeg-median-ssimulacra2",
                 jpeg_reuse=jpeg_reuse,
                 documents=[dict(asdict(d), source_sha256=file_digest(d.source)) for d in documents],
                 environment=overview.study.environment(),
@@ -104,7 +105,7 @@ def verify_record(record, *, rerender=True):
         if (reference["quality"] != QUALITY or reference["raw_sample_bytes"] != raw
                 or type(reference["jpeg_bytes"]) is not int or reference["jpeg_bytes"] <= 0
                 or reference["jpeg_ratio"] != raw / reference["jpeg_bytes"]
-                or reference["jpx_target_rate"] != quality.jpx_quality_rate(QUALITY)
+                or reference["jpx_target_psnr_db"] != quality.jpx_quality_psnr(QUALITY)
                 or len(reference["jpeg_sha256"]) != 64):
             raise ValueError("Changed or invalid measured quality reference")
         if record["mode"] == "color" and reference["jpeg_sha256"] != canvas["payload_sha256"]:
@@ -160,7 +161,7 @@ def measure(document, force, mode, folder, current_identity, *, resume=False):
         raw = img.width * img.height * 3
         reference = dict(quality=QUALITY, raw_sample_bytes=raw, jpeg_bytes=len(data),
                          jpeg_sha256=digest(data), jpeg_ratio=raw / len(data),
-                         jpx_target_rate=quality.jpx_quality_rate(QUALITY))
+                         jpx_target_psnr_db=quality.jpx_quality_psnr(QUALITY))
         observed.append(dict(samples, filter=payload["filter"],
                              payload_sha256=digest(payload["stream"]),
                              quality_reference=reference))
@@ -248,7 +249,7 @@ def load_jpeg_reuse(path, expected_hash, documents):
         for canvas in row['canvases']:
             # This field describes the NEW comparison's fixed JPX target, not
             # the unchanged JPEG encoding. Original metadata remains frozen.
-            canvas['quality_reference']['jpx_target_rate'] = quality.jpx_quality_rate(QUALITY)
+            canvas['quality_reference']['jpx_target_psnr_db'] = quality.jpx_quality_psnr(QUALITY)
         verify_record(row)
         result[key] = row
     if set(result) != {(d.key, force) for d in documents for force in (False, True)}:
@@ -283,7 +284,7 @@ def run(folder, documents=DOCUMENTS, *, resume=False, reuse_jpeg=None, reuse_jpe
     (folder / "table.md").write_text(markdown)
     checkpoint.write_text(json.dumps(dict(identity=current, records=records, complete=True), indent=2) + "\n")
     print(markdown, flush=True)
-    print(f"LOSSY-05 COMPLETE: {len(records)} verified complete PDFs; {len(reused)} JPEG measurements reused", flush=True)
+    print(f"LOSSY-06 COMPLETE: {len(records)} verified complete PDFs; {len(reused)} JPEG measurements reused", flush=True)
     return records
 
 

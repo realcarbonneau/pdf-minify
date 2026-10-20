@@ -1,7 +1,7 @@
 # Controlled compression experiments
 
 Designer §§238–271. The primary measured-size tables are in
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md); this document owns
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md); this document owns
 the experiment plans, not a second scattered results analysis.
 
 ## LOSSY-05 — fixed q75 baseline throughout (§271; COMPLETE)
@@ -55,7 +55,7 @@ this experiment's actual observations without promoting its fitted values
 to active size comparisons or app controls.
 
 §270's consolidated sources and actual candidate derivation are in
-[JPEG_JPEG2000_RESEARCH.md](JPEG_JPEG2000_RESEARCH.md). Execute the matching
+[LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md). Execute the matching
 experiment, not another ratio-only size study. Preserve JPEG q75 as the
 reference and the familiar fixed q scale; independent quality observations
 choose the JPEG2000 setting, not a desired percentage saving.
@@ -285,7 +285,7 @@ partial outputs are never imported or ranked.
 PNG-02 retains its original fixed Zopfli/Brotli baseline recipes and measured
 bytes; they are not new Best controls. See the protocol below.
 
-§259 puts the [measured results and decision tree](INTEGRATED_COMPRESSION.md#results-and-decision-tree)
+§259 puts the [measured results and decision tree](COMPRESSION_BENCHMARKS.md#results-and-decision-tree)
 first in the PNG section. Branch on prepared output representation, then
 encoder and actual BW/indexed content; keep corpus observations distinct from
 universal rules. These versioned measurements preserve the chosen predictor.
@@ -501,9 +501,9 @@ if the representative results need explanation.
 
 PNG-02, NATIVE-01 and NATIVE-02 are implemented and worker-verified. The
 JBIG2-01 study remains a proposal. Results remain centralized:
-[PNG paired effects](INTEGRATED_COMPRESSION.md#png-prediction--measured-effect-versus-baseline)
-[native/residual paired effects](INTEGRATED_COMPRESSION.md#nativeresidual-streams--measured-effect-versus-flate-reference)
-and [FFPR Zopfli versus Brotli](INTEGRATED_COMPRESSION.md#ffpr-residual-compression--zopfli-versus-brotli-baseline).
+[PNG paired effects](COMPRESSION_BENCHMARKS.md#png-prediction--measured-effect-versus-baseline)
+[native/residual paired effects](COMPRESSION_BENCHMARKS.md#nativeresidual-streams--measured-effect-versus-flate-reference)
+and [FFPR Zopfli versus Brotli](COMPRESSION_BENCHMARKS.md#ffpr-residual-compression--zopfli-versus-brotli-baseline).
 Reproduction evidence, full-suite results and independent publication checks
 are recorded in [TEST_PLAN.md](TEST_PLAN.md#current-regression-verification--2026-10-17).
 This does not imply designer acceptance, new product defaults or additional

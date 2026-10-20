@@ -25,7 +25,7 @@ What you see is what saving writes.
   for native text/vector/font streams AND packed BW/indexed images, preserving
   exact samples and leaving JPEG/JPEG2000/JBIG2 payloads untouched. It may
   require a Brotli-capable PDF reader. Existing explicit Flate, Zopfli and
-  Brotli choices retain their native-only semantics. [Integrated final-file size matrix](docs/INTEGRATED_COMPRESSION.md)
+  Brotli choices retain their native-only semantics. [Integrated final-file size matrix](docs/COMPRESSION_BENCHMARKS.md)
   and [reader limits](docs/NATIVE_STREAM_COMPRESSION.md#correctness-and-compatibility).
 - **Honest UI**: original and preview panes stay synced (zoom, pan, scroll);
   view changes never reprocess filters; ESC cancels an active operation/dialog;
@@ -116,7 +116,7 @@ platforms and installers are not yet certified or built.
 - [docs/TODO.md](docs/TODO.md) — numbered project requirements and pending engineering work.
 - `docs/DESIGN.md` — behavior and preset catalog.
 - `docs/FILTER_LIFECYCLE.md` — single real-file flow, saved/live edits, and canon audit.
-- [Integrated compression matrix](docs/INTEGRATED_COMPRESSION.md) — Best-only main comparison over six complete PDFs; fixed Zopfli/Brotli and PNG effects stay in specialized binary experiments. Actual complete-file bytes only.
+- [Integrated compression matrix](docs/COMPRESSION_BENCHMARKS.md) — Best-only main comparison over six complete PDFs; fixed Zopfli/Brotli and PNG effects stay in specialized binary experiments. Actual complete-file bytes only.
 - [Controlled compression experiments](docs/COMPRESSION_EXPERIMENTS.md) — single-factor plans, fixed recipes, provenance and validation protocol.
 - [Compression combinations and control-design review](docs/COMPRESSION_COMBINATIONS.md) — table first; current versus proposed capabilities, FFPR scope and separate-control recommendation.
 - [Bitmap component controls](docs/IMAGE_STREAM_COMPRESSION.md#results) — supporting equal-pixel indexed/BW study with native compression fixed.

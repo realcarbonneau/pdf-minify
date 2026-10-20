@@ -1,4 +1,4 @@
-"""Publish fixed-q LOSSY-05 across every active table; no estimated sizes."""
+"""Publish LOSSY-06 stream controls into the tagged tables; no estimated sizes."""
 
 import argparse
 from copy import deepcopy
@@ -12,9 +12,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools import bench_lossy_controls as controls
 from tools import bench_best_overview as best
 from tools import bench_ffpr_compressors as ffpr
+from tools import benchmark_tables as tables
 
 FIXTURE = Path("tests/fixtures/lossy_controls_sizes.json")
-REPORT = Path("docs/INTEGRATED_COMPRESSION.md")
+REPORT = tables.PAGE
+# Page row-ID stem of each current lossy control, by (mode, FFPR).
+ROW_KEYS = {("color", False): "jpeg", ("jpx", False): "jpx-lossy",
+            ("color", True): "jpeg-ffpr", ("jpx", True): "jpx-lossy-ffpr"}
+AFFECTED_ROWS = 22
 FAMILIES = {"jpeg-q50": "jpeg-q75", "jpx-r192": "jpx-q75",
             "jpeg-q50-ffpr": "jpeg-q75-ffpr", "jpx-r192-ffpr": "jpx-q75-ffpr"}
 
@@ -112,7 +117,7 @@ def make_fixture(path):
                         candidate=records[document.key, mode, True, "zopfli"])
             partition = ffpr.account_pair(pair)
             accounting.append(dict(document=document.key, mode=mode, accounting=partition))
-    return dict(designer_ruling=271, quality=75, dpi=300, jpx_quality_mapping=identity["jpx_quality_mapping"],
+    return dict(designer_ruling=284, quality=75, dpi=300, jpx_quality_mapping=identity["jpx_quality_mapping"],
                 measured_manifest=str(path), measured_manifest_sha256=controls.lossy.file_digest(path),
                 baseline_sha256=identity["baseline_sha256"],
                 unchanged_publication_sha256=best.PUBLICATION_SHA256,
@@ -120,7 +125,7 @@ def make_fixture(path):
 
 
 def validate_proof(proof):
-    if (proof.get("designer_ruling") != 271 or proof.get("quality") != 75 or proof.get("dpi") != 300
+    if (proof.get("designer_ruling") != 284 or proof.get("quality") != 75 or proof.get("dpi") != 300
             or proof.get("jpx_quality_mapping") != controls.lossy.quality.JPX_QUALITY_MAPPING
             or proof.get("documents") != [asdict(d) for d in controls.lossy.DOCUMENTS]
             or len(proof.get("rows", [])) != 10):
@@ -131,50 +136,43 @@ def validate_proof(proof):
                 row_for(proof, mode, force, policy)
 
 
-def rewrite_tables(text, proof):
+def table_values(proof):
+    """Measured cells of every affected row: ``{table_id: {row_id: cells}}``.
+
+    Binary percentages compare Brotli (baseline) with Zopfli; fixed controls
+    bold the smaller or tied policy; the photo column reuses those controls;
+    the residual tables compare each FFPR Zopfli control with its Flate
+    reference. No label, header or other row is produced.
+    """
     validate_proof(proof)
-    section, subsection, updated, lines = "", "", 0, []
-    bases = {(mode, force): ("Color FFPR + " if force else "") + ("JPEG q75" if mode == "color" else "JPEG2000 q75")
-             for mode in controls.lossy.MODES for force in (False, True)}
-    labels = {r["label"]: r for r in proof["rows"]}
-    for line in text.splitlines(keepends=True):
-        if line.startswith("## "):
-            section, subsection = line.strip(), ""
-        elif line.startswith("### "):
-            subsection = line.strip()
-        if not line.startswith("| "):
-            lines.append(line)
-            continue
-        cells = [c.strip() for c in line.split("|")[1:-1]]
-        label = current_label(cells[0])
-        matching = next(((mode, force) for (mode, force), base in bases.items() if label == base), None)
-        replacement = None
-        if section == ffpr.SECTION and subsection.startswith("### Replace Brotli") and matching:
-            mode, force = matching
-            a, b = (row_for(proof, mode, force, p)["sizes"] for p in ("brotli", "zopfli"))
-            replacement = [controls.overview.measured_effect_cell(x, y, show_size=False) for x, y in zip(a, b, strict=True)]
-        elif label in labels and ((section == ffpr.SECTION and subsection.startswith("### Fixed-encoder controls"))
-                                  or (section == "## Focused scenarios" and subsection.startswith("### Color photography"))):
-            row = labels[label]
-            peer = row_for(proof, row["mode"], row["force_raster"], "brotli" if row["policy"] == "zopfli" else "zopfli")
-            indices = [2] if section == "## Focused scenarios" else range(6)
-            replacement = [f"**{row['sizes'][i]:,}**" if row["sizes"][i] <= peer["sizes"][i]
-                           else f"{row['sizes'][i]:,}" for i in indices]
-        elif section == "## Native/residual streams — measured effect versus Flate reference" and label in labels:
-            row = labels[label]
-            if row["force_raster"] and row["policy"] == "zopfli":
-                reference = row_for(proof, row["mode"], True, "flate")["sizes"]
-                replacement = ([f"{n:,}" for n in reference] if subsection.startswith("### Measured reference") else
-                               [controls.overview.measured_effect_cell(a, b) for a, b in zip(reference, row["sizes"], strict=True)])
-        if replacement is not None:
-            if len(replacement) != len(cells)-1:
-                raise ValueError("Changed benchmark table column scope")
-            line = "| " + label + " | " + " | ".join(replacement) + " |\n"
-            updated += 1
-        lines.append(line)
-    if updated != 22:
-        raise ValueError(f"Expected all 22 affected table rows, found {updated}")
-    return "".join(lines)
+    photos = [d.key for d in controls.lossy.DOCUMENTS].index("photos")
+    values = {name: {} for name in ("zopfli-vs-brotli", "fixed-controls", "focused-photos",
+                                    "residual-reference", "residual-effect")}
+    for (mode, force), key in ROW_KEYS.items():
+        sizes = {p: row_for(proof, mode, force, p)["sizes"] for p in ("zopfli", "brotli")}
+        values["zopfli-vs-brotli"][key] = [controls.overview.measured_effect_cell(a, b, show_size=False)
+                                           for a, b in zip(sizes["brotli"], sizes["zopfli"], strict=True)]
+        for policy, peer in (("zopfli", "brotli"), ("brotli", "zopfli")):
+            cells = [f"**{n:,}**" if n <= p else f"{n:,}"
+                     for n, p in zip(sizes[policy], sizes[peer], strict=True)]
+            values["fixed-controls"][f"{key}.{policy}"] = cells
+            if not force or policy == "zopfli":
+                values["focused-photos"][f"{key}.{policy}"] = [cells[photos]]
+        if force:
+            reference = row_for(proof, mode, True, "flate")["sizes"]
+            values["residual-reference"][f"{key}.zopfli"] = [f"{n:,}" for n in reference]
+            values["residual-effect"][f"{key}.zopfli"] = [controls.overview.measured_effect_cell(a, b)
+                                                          for a, b in zip(reference, sizes["zopfli"], strict=True)]
+    if sum(len(rows) for rows in values.values()) != AFFECTED_ROWS:
+        raise ValueError(f"Expected all {AFFECTED_ROWS} affected table rows")
+    return values
+
+
+def rewrite_tables(text, proof):
+    """Fill the 22 affected rows' value cells by table and row ID only."""
+    for table_id, rows in table_values(proof).items():
+        text = tables.fill(text, table_id, rows)
+    return text
 
 
 def apply_current(text):

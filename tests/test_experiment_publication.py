@@ -64,22 +64,20 @@ def test_direct_stream_signature_distinguishes_native_changes_from_fixed_images(
 def test_published_native_pair_percentages_use_the_visible_reference():
     from decimal import Decimal
     import re
-    from tools.publish_lossy_controls import current_label
+    from tools import benchmark_tables as tables
+    from tools.publish_best_overview import fixed_row_id
 
-    text = Path("docs/INTEGRATED_COMPRESSION.md").read_text().split(publication.residual.SECTION, 1)[1]
-    references, candidates = text.split("### Measured candidate bytes and change from that reference", 1)
-    parse = publication.cells
-    reference = {parse(line)[0]: parse(line)[1:] for line in references.splitlines() if line.startswith("| ")}
-    candidates = candidates.split("## What the measurements establish", 1)[0]
-    candidates = candidates.split("## FFPR residual compression", 1)[0]
-    rows = [parse(line) for line in candidates.splitlines() if line.startswith("| ")][1:]
-    assert len(rows) == 7 and {r[0] for r in rows} == {current_label(publication.overview.display_label(r.label)) for r in publication.residual.ROWS}
+    page = tables.PAGE.read_text()
+    reference = tables.read_table(page, "residual-reference").rows
+    candidates = tables.read_table(page, "residual-effect").rows
+    expected = {fixed_row_id(r.family, r.variant, r.native) for r in publication.residual.ROWS}
+    assert len(expected) == 7 and set(reference) == set(candidates) == expected
     audited = 0
-    for row in rows:
-        assert len(row) == 7
-        for baseline, cell in zip(reference[row[0]], row[1:]):
+    for row_id, cells in candidates.items():
+        assert len(cells) == len(reference[row_id]) == 6
+        for baseline, cell in zip(reference[row_id], cells, strict=True):
             match = re.fullmatch(r"(\*\*)?([\d,]+)(\*\*)? \(([+-]\d+\.\d{2})%\)", cell)
-            assert match
+            assert match, cell
             a, b = int(baseline.replace(",", "")), int(match[2].replace(",", ""))
             change = (Decimal(b - a) * 100 / Decimal(a)).quantize(Decimal("0.01"))
             if change == 0:
@@ -88,3 +86,13 @@ def test_published_native_pair_percentages_use_the_visible_reference():
             assert bool(match[1]) == bool(match[3]) == (b <= a)
             audited += 1
     assert audited == 42
+
+
+def test_publication_fills_measured_cells_by_page_row_id():
+    from tools import benchmark_tables as tables
+    from tools.publish_best_overview import fixed_row_id
+
+    page = tables.PAGE.read_text()
+    rows = publication.shared.publication_rows()
+    png = {fixed_row_id(a.family, a.variant, a.native) for a, _ in publication.overview.png_pairs(rows)}
+    assert len(png) == 16 and set(tables.read_table(page, "png-effect").rows) == png

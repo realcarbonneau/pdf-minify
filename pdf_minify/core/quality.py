@@ -1,12 +1,27 @@
-"""Stable user-facing quality controls (§271), not quality guarantees."""
+"""Stable user-facing quality controls (§§262/271/272/284).
+
+One Quality index, 0–100, drives JPEG and lossy JPEG2000. JPEG passes it to
+libjpeg. JPEG2000 maps it to one fixed OpenJPEG target, calibrated so the
+same number looks like JPEG at that number on the benchmark pages (§284),
+using standard packages only (§278). See docs/LOSSY_IMAGE_QUALITY.md.
+"""
 
 import math
 from numbers import Integral
 
 DEFAULT_LOSSY_QUALITY = 75
-JPX_QUALITY_MAPPING = "darktable-rate-v2"
+JPX_QUALITY_MAPPING = "jpeg-matched-tile-psnr-v1"
 JPEG_ENCODING_PROFILE = "jpeg444-huffman-v1"
-JPX_ENCODING_PROFILE = "jpx97-ict-v1"
+JPX_ENCODING_PROFILE = "jpx97-ict-tile512-v1"   # lossy JPEG2000 at a Quality
+JPX_RATE_PROFILE = "jpx97-ict-v1"               # explicit legacy ratios, unchanged
+JPX_TILE = 512
+
+# (Quality, JPEG2000 PSNR target per 512-pixel tile in dB). At each anchor the
+# median SSIMULACRA2 of JPEG2000 equals JPEG at the same Quality over the 67
+# benchmark page images (measured 2026-10-20). Straight lines join the anchors
+# and continue beyond q50 and q90, within JPX_PSNR_LIMITS.
+JPX_PSNR_ANCHORS = ((50, 39.5), (60, 40.5), (75, 44.0), (90, 50.5))
+JPX_PSNR_LIMITS = (20.0, 70.0)
 
 
 def checked_quality(value):
@@ -16,13 +31,23 @@ def checked_quality(value):
     return int(value)
 
 
-def jpx_quality_rate(quality):
-    """Fixed conventional scale: q75 always targets 26:1 on every input.
+def jpx_quality_psnr(quality):
+    """Per-tile PSNR target (dB) for a JPEG2000 Quality; same for every image.
 
-    Never derive this value from JPEG bytes, source complexity or PSNR.
+    Never derived from a reference JPEG, the image content or its size.
     Explicit historical ratios and Lossless bypass this quality control.
     """
-    return 101 - checked_quality(quality)
+    q = checked_quality(quality)
+    points = JPX_PSNR_ANCHORS
+    if q <= points[1][0]:
+        (q0, d0), (q1, d1) = points[0], points[1]
+    elif q >= points[-2][0]:
+        (q0, d0), (q1, d1) = points[-2], points[-1]
+    else:
+        (q0, d0), (q1, d1) = next((a, b) for a, b in zip(points, points[1:]) if a[0] <= q <= b[0])
+    target = d0 + (q - q0) * (d1 - d0) / (q1 - q0)
+    low, high = JPX_PSNR_LIMITS
+    return round(min(max(target, low), high), 2)
 
 
 def jpx_lossy_setting(params):

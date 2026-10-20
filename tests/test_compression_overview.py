@@ -30,6 +30,9 @@ def test_no_mixed_general_codecs_or_specialized_ffpr_policy_explosion():
 
 
 def test_legacy_control_selection_and_current_best_only_publication():
+    from tools import benchmark_tables as tables
+    from tools import bench_best_overview as best
+    from tools.publish_best_overview import GROUP_IDS
     removed = set(overview.ALL_ROWS) - set(overview.ROWS)
     assert len(removed) == 8
     assert {(r.family, r.variant, r.native) for r in removed} == {
@@ -37,53 +40,35 @@ def test_legacy_control_selection_and_current_best_only_publication():
         for family in ("bw-images", "bw-ffpr", "indexed", "indexed-ffpr")
         for predictor in ("plain", "png")}
     assert {r.family for r in overview.ROWS if r.native == "flate"} == {"preserve-images"}
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    main = report.split("## Overview — final complete-file bytes", 1)[1].split(overview.PNG_SECTION, 1)[0]
-    published = [line.split("|")[1].strip() for line in main.splitlines() if line.startswith("| ")]
-    assert not ({overview.display_label(r.label) for r in removed} & set(published))
-    from tools import bench_best_overview as best
-    from tools.publish_lossy_quality import LABELS
-    current_lossy_labels = {old: label for _, _, label, old in LABELS}
-    expected = {current_lossy_labels.get(label, label) for recipe in best.RECIPES
-                for label in (recipe.label.removesuffix(" + packed samples"),)}
-    assert expected <= set(published)
-    assert not any("PNG prediction" in label for label in published)
-    assert len(published) == 24  # one header, four dividers, 19 Best combinations
-    assert not any(any(policy in label for policy in ("Best", "Zopfli", "Brotli", "Flate", "residual"))
-                   for label in published)
-    native_palettes = [published.index(r.label) for r in best.RECIPES
+    # One policy-free Best row per recipe plus four dividers: no fixed-encoder,
+    # Classic Flate or PNG-prediction rows in the main matrix.
+    published = list(tables.read_table(tables.PAGE.read_text(), "overview").rows)
+    assert len(published) == 23
+    assert set(published) == {r.key for r in best.RECIPES} | set(GROUP_IDS.values())
+    native_palettes = [published.index(r.key) for r in best.RECIPES
                        if r.family.startswith("indexed") and "ffpr" not in r.family]
-    ffpr_palettes = [published.index(r.label) for r in best.RECIPES
+    ffpr_palettes = [published.index(r.key) for r in best.RECIPES
                      if r.family.startswith("indexed") and "ffpr" in r.family]
     assert max(native_palettes) < min(ffpr_palettes)
 
 
-def test_published_labels_make_ffpr_explicit_without_redundant_keep_native():
-    from tools.publish_lossy_controls import current_label
-
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    assert "| **Black and white (BW + Otsu)** |" in report
-    assert "; keep native" not in report
+def test_catalog_labels_make_ffpr_explicit_without_redundant_keep_native():
     for row in overview.ROWS:
         assert "; keep native" not in row.label
         assert ("FFPR" in row.label) == row.family.endswith("-ffpr")
-        if not row.variant.endswith("-png"):
-            assert f"| {current_label(overview.display_label(row.label))} |" in report
 
 
 def test_published_representatives_match_selected_whole_sources():
     import pymupdf as fitz
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    scope = report.split("## Scope and six representative cases", 1)[1].split("These cases", 1)[0]
-    source_rows = [line for line in scope.splitlines() if line.startswith("| ") and ".pdf]" in line]
-    assert len(source_rows) == len(overview.DOCUMENTS) == 6
+    from tools import benchmark_tables as tables
+    published = tables.read_table(tables.PAGE.read_text(), "representatives").rows
+    assert set(published) == {d.key for d in overview.DOCUMENTS} and len(published) == 6
     for document in overview.DOCUMENTS:
         source = Path(document.source)
         with fitz.open(source) as pdf:
             pages = len(pdf)
-        expected = (f"| {document.label} | [{source.name}](../{source.as_posix()}) | "
-                    f"{pages} | {source.stat().st_size:,} |")
-        assert expected in source_rows, f"Published representative is stale: {document.key}"
+        expected = [f"[{source.name}](../{source.as_posix()})", str(pages), f"{source.stat().st_size:,}"]
+        assert published[document.key] == expected, f"Published representative is stale: {document.key}"
 
 
 def test_six_case_matrix_requires_all_204_whole_file_cells_even_if_redundant():

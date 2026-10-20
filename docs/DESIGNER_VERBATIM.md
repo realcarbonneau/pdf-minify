@@ -10,6 +10,10 @@ development rules. One-off execution/status chatter is not a design record.
 Explicit removals are not re-archived or replaced by stubs; remaining IDs
 stay unchanged and removed IDs are never reused (§218).
 
+From §272 on, each entry holds exactly one designer message in a fenced
+`text` block, so spacing renders exactly as typed; a `Source:` line names
+where it came from. Earlier entries keep their original blockquote form.
+
 ## 3 — app vision (original brief)
 > I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
 
@@ -1182,3 +1186,133 @@ not a claim of measured equal visual quality. The subsequent implementation
 request authorizes correcting the app mapping and refreshing all affected
 benchmark sections; unchanged JPEG/BW/indexed evidence is reusable after
 verification. The app remains closed.
+
+## 272 — JPEG2000 quality equivalence to JPEG q75 (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+
+```text
+I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
+```
+
+## 273 — developer guidelines and verbatim record quality (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+
+```text
+the developper guidelines were not well done neither.  My verbatim words should be exact, but the corpus is a mess and the verbatim recordings might not be well organized.
+```
+
+## 274 — equivalence estimate and 4:2:0 question (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+
+```text
+So you have equivalence or can you estimate it?  And do you think we should use "4:2:0" also by default and for benchmarks?
+```
+
+## 275 — use case: smaller PDFs for most users (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+
+```text
+I already ruled the use case, this is for making pdfs smaller, thuse lossless or super high quality images are not a concern, we want something simple for most users.
+```
+
+## 276 — colour sampling must match between the codecs (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+
+```text
+Well if if "4:2:0" matches a lower Q for JPEG2000, then that is not good, we should keep it was it was before, matching JPEG200, or reducing JPEG2000 color setting to match jpg  4:2:0, no?
+```
+
+## 277 — option 2 approval (verbatim, 2026-10-19)
+
+Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Replies to (worker text, not designer words): "**Both reduced colour (4:2:0):** JPEG at its normal 4:2:0 default, and JPEG 2000 reduced the same way, using the guideline's own 4:2:0 weights (Table 3)." Superseded by §278.
+
+```text
+Yes, option 2 please and document properly.
+```
+
+## 278 — standard packages only; JPEG settings follow JPEG2000 (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+Don't change standard packages, if you can't change JPEG2000, adjust the JPG settings to match.
+```
+
+## 279 — documentation structure: rulings first, present tense, recurring traps only (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+collect the most important top level design rulings and design intents, varbatim, to the top section of the design document.  Each dev doc should have a first sections with contains the relevant rulings, etc.  Each page should also have a section with historical change logs ONLY for mistakes/changes that have a chance of recurring, eg design traps, of failed attempts and the reason, we onle keep current present tense documentation, UNLESS it's a past mistake that can inform current and future work to avoid past mistakes.  If the mistake was trivial and because the worker did NOT follow canon or rulings, or drifted, we do not document, the git historical keeps a record naturally.
+```
+
+## 280 — documentation rework: reviewed by hand, iterative, principles then compression docs (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+I would rather you don't use a tool, you should be reviewing and think of each one, but you can use a tool for copying precisely, once you have read and analyzed and made decisions.  I don't want a full refactor now, we will work iteratively and opportunistically, start with the most important current design principles please.  Also, after the top level precinciples, work on the compression docs, since we are working on that now.  These are also a mess.
+```
+
+## 281 — compression docs: one design page, one benchmark page (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+I think the compression docs should be organized as the first one being for the compression design, high level, and another with the compression benchmarks.  Compression benchmarks should be mostly focused on the integrated final size, and then binary experiment benchmarks, those that I have guided closely follow better my design intent and follow proper experimental treatment design, the others that predate are somewhat a mess.  do you see any need for any other compression related documents?  Or should we have other splits/docs for this?
+```
+
+## 282 — publisher scripts update only measured numbers; tables and text curated by hand (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Replies to (worker text, not designer words): "My recommendation is to rename the file, delete the sentence checks, and keep the checks that tie each table to its measurements."
+
+```text
+ok, as you suggest, but the scripts should only be updating the benchmarks, not various texts in the file, right?  Maybe the benchmark results on the matching line specifically?  Thus you curate the tables manually?
+```
+
+## 283 — ID tags on benchmark table rows for exact matching (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+can you put id tags on the lines to ensure full match, even if the row description is short and not necessarily unique across the page, or md doesn't provide this?
+```
+
+## 284 — benchmark JPEG2000 at the single setting that looks like JPEG q75 (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+Ok, so a single setting is the correct direction, however, for the purpose of out benchmarking, we have to choose a single quality setting that provides the same visual results as jpg.  The reasoning is simple, if jpg q75 provides a certain compression and quality, then the newer J2K is expected to provide a smaller (or in the absolute worst case, the same size) file for the same visual quality level.  This is very simple and basic, I should not have to explain this.  Or else, benchmarks and a newer compression algorithm has no value.
+```
+
+## 285 — expectation that JPEG2000 improves on JPEG (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+what is the big picture?  Is J2K generally better then JPG?  All things equal?   This is the assumption since it is newer, there would be no point in having a newer algorithm that does not provide improvements.
+```
+
+## 286 — question: JPEG2000 on letters (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+should J2K have better results on letters?
+```
+
+## 287 — no automatic Best between JPEG and JPEG2000; keep them comparable in benchmarks (verbatim, 2026-10-20)
+
+Source: designer message in the Claude Code session of 2026-10-20; exact text.
+
+```text
+Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
+```

@@ -5,6 +5,7 @@ from .algorithms import BW_MODES, COLOR_MODES, PALETTE_MODES
 from .stream_compression import permits_brotli
 from .predictors import effective_prediction
 from .quality import (DEFAULT_LOSSY_QUALITY, JPEG_ENCODING_PROFILE, JPX_ENCODING_PROFILE,
+                      JPX_RATE_PROFILE,
                       JPX_QUALITY_MAPPING, checked_quality, jpx_lossy_setting)
 
 
@@ -69,7 +70,8 @@ def _image_spec_key(spec):
         setting, value = jpx_lossy_setting(spec)
         quality_key = ((setting, value, JPX_QUALITY_MAPPING)
                        if setting == "quality" else (setting, value))
-        profile = "jpx-rgb53-lossless-v1" if setting == "lossless" else JPX_ENCODING_PROFILE
+        profile = {"lossless": "jpx-rgb53-lossless-v1", "rate": JPX_RATE_PROFILE}.get(
+            setting, JPX_ENCODING_PROFILE)
         return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)), quality_key, profile, *raster)
     if mode in PALETTE_MODES:
         return (mode, int(spec.get("dpi_cap", DEFAULT_DPI)),

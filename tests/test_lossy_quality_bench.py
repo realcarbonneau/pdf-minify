@@ -60,7 +60,7 @@ def test_real_outputs_are_independent_and_match_production_canvases(real_study):
             for canvas in record["canvases"]:
                 reference = canvas["quality_reference"]
                 assert reference["quality"] == 75 and reference["jpeg_bytes"] > 0
-                assert reference["jpx_target_rate"] == 26
+                assert reference["jpx_target_psnr_db"] == 44.0
     markdown = (folder / "study" / "table.md").read_text()
     assert markdown.count(" q75 |") == 4 and "lossless" not in markdown.lower()
     assert "**" in markdown
@@ -132,12 +132,12 @@ def test_pair_rejects_confounded_inputs_or_changed_native_content(real_study, ch
 def test_invalid_reference_or_old_mapping_is_not_current_measurement(real_study):
     _, document, records = real_study
     row = deepcopy(records[0])
-    row["canvases"][0]["quality_reference"]["jpx_target_rate"] = 45
+    row["canvases"][0]["quality_reference"]["jpx_target_psnr_db"] = 39.5
     with pytest.raises(ValueError, match="quality reference"):
         bench.verify_record(row, rerender=False)
     current = bench.identity((document,))
-    assert current["jpx_quality_mapping"] == "darktable-rate-v2"
-    assert current["study"] == "LOSSY-05-fixed-q75-v1"
+    assert current["jpx_quality_mapping"] == "jpeg-matched-tile-psnr-v1"
+    assert current["study"] == "LOSSY-06-jpeg-matched-q75-v1"
 
 
 def test_table_rejects_missing_duplicate_and_estimated_sizes(real_study):

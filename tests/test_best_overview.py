@@ -10,6 +10,7 @@ from PIL import Image
 import pytest
 
 from tools import bench_best_overview as bench
+from tools import benchmark_tables as tables
 
 
 def record(document, recipe, size):
@@ -192,71 +193,61 @@ def test_published_primary_and_binary_tables_match_all_measured_cells():
     assert frozen["fixed_publication_sha256"] == bench.PUBLICATION_SHA256
     assert frozen["documents"] == [vars(d) for d in bench.overview.DOCUMENTS]
     assert len(frozen["rows"]) == 19
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    primary = report.split("## Overview — final complete-file bytes", 1)[1].split(bench.overview.PNG_SECTION, 1)[0]
-    assert "Every row uses **Best (Zopfli/Brotli)**" in primary
-    assert "#stream-compression--zopfli-versus-brotli-baseline" in primary
-    binary = report.split("## Stream compression — Zopfli versus Brotli baseline", 1)[1]
-    binary = binary.split("### FFPR/J* subset", 1)[0]
+    page = tables.PAGE.read_text()
+    recipe_ids = {r.key for r in bench.RECIPES}
+    overview = tables.read_table(page, "overview")
+    binary = tables.read_table(page, "zopfli-vs-brotli")
+    for table in (overview, binary):
+        assert set(table.rows) == recipe_ids | set(publisher.GROUP_IDS.values())
+        assert all(cells == [""] * 6 for key, cells in table.rows.items() if key.startswith("group."))
     records = [record(d, recipe, row["best"][i])
                for recipe, row in zip(bench.RECIPES, frozen["rows"], strict=True)
                for i, d in enumerate(bench.overview.DOCUMENTS)]
-    expected = publisher.current_primary(publisher.display_table(
-        bench.table(bench.overview.DOCUMENTS, bench.RECIPES, records)))
-    assert expected.strip() in primary
-    for section in (primary, binary):
-        assert "| BW |" in section and "| BW FFPR |" in section
-        assert "| BW + packed samples |" not in section
-        assert "| BW FFPR + packed samples |" not in section
-    parsed = {cells[0]: cells[1:] for line in binary.splitlines() if line.startswith("| ")
-              if (cells := [c.strip() for c in line.split("|")[1:-1]])}
+    # Measured Best bytes with bold minima, plus the current q75 overlay.
+    expected = publisher.overview_values(dict(records=records))
+    assert set(expected) == recipe_ids
+    for key, cells in expected.items():
+        assert overview.rows[key] == cells, key
     audited = 0
     for recipe, row in zip(bench.RECIPES, frozen["rows"], strict=True):
         assert row["key"] == recipe.key and row["label"] == recipe.label
         assert len(row["pdf_sha256"]) == 6 and all(len(h) == 64 for h in row["pdf_sha256"])
         measured = lossy.updated_fixed_row(row, current)
-        label = lossy.current_label(recipe.label).removesuffix(" + packed samples")
-        assert parsed[label] == [bench.overview.measured_effect_cell(a, b, show_size=False)
-                                 for a, b in zip(measured["brotli"], measured["zopfli"], strict=True)]
+        assert binary.rows[recipe.key] == [bench.overview.measured_effect_cell(a, b, show_size=False)
+                                           for a, b in zip(measured["brotli"], measured["zopfli"], strict=True)]
         audited += len(row["best"])
     assert audited == 114
-    controls = report.split("### Fixed-encoder controls — measured final PDF bytes", 1)[1].split("## Focused scenarios", 1)[0]
-    control_rows = {cells[0]: cells[1:] for line in controls.splitlines() if line.startswith("| ")
-                    if (cells := [c.strip() for c in line.split("|")[1:-1]])}
-    decode = lambda value: int(value.replace("*", "").replace(",", ""))
+    controls = tables.read_table(page, "fixed-controls")
+    assert set(controls.rows) == {f"{key}.{policy}" for key in recipe_ids
+                                  for policy in ("zopfli", "brotli")} | {"reference.classic"}
+    # Bold marks the minimum within each recipe family (fidelity group).
+    groups = {"preserve-images": [("reference.classic", frozen["classic_reference"])]}
     for row in frozen["rows"]:
         row = lossy.updated_fixed_row(row, current)
         for policy in ("brotli", "zopfli"):
-            assert [decode(c) for c in control_rows[row["fixed_labels"][policy]]] == row[policy]
-    assert [decode(c) for c in control_rows["Preserve images + Classic Flate (reference) native"]] == frozen["classic_reference"]
+            groups.setdefault(row["family"], []).append((f"{row['key']}.{policy}", row[policy]))
+    for members in groups.values():
+        for column in range(6):
+            low = min(sizes[column] for _, sizes in members)
+            for row_id, sizes in members:
+                size = sizes[column]
+                assert controls.rows[row_id][column] == (f"**{size:,}**" if size == low else f"{size:,}"), row_id
 
 
-def test_fixed_controls_are_relocated_not_removed_and_png_denominators_stay_fixed():
-    report = Path("docs/INTEGRATED_COMPRESSION.md").read_text()
-    primary = report.split("## Overview — final complete-file bytes", 1)[1].split(bench.overview.PNG_SECTION, 1)[0]
-    binary = report.split("## Stream compression — Zopfli versus Brotli baseline", 1)[1].split("## Focused scenarios", 1)[0]
-    assert "Classic Flate (reference) native |" not in primary
-    assert "Preserve images + Classic Flate (reference) native |" in binary
-    assert "<details" not in binary and "<summary" not in binary and "</details>" not in binary
-    assert "### Replace Brotli with Zopfli — final PDF size change (%)\n\n|" in binary
-    assert "### FFPR/J* subset — current NATIVE-02 findings" in binary
-    png = report.split(bench.overview.PNG_SECTION, 1)[1].split("## Stream compression", 1)[0]
-    assert "fixed-encoder plain baseline" in png and "No denominator or PNG measurement changes" in png
+def test_classic_flate_reference_is_a_fixed_control_not_an_overview_row():
+    page = tables.PAGE.read_text()
+    assert "reference.classic" not in tables.read_table(page, "overview").rows
+    assert "reference.classic" in tables.read_table(page, "fixed-controls").rows
 
 
-def test_publisher_fixed_controls_remain_visible_without_a_drawer(monkeypatch):
+def test_fixed_row_ids_name_the_recipe_and_encoder_only_for_measured_combinations():
     from tools import publish_best_overview as publisher
-    sentinel = object()
-    table = "| Fixed-policy combination | Input |\n|---|---:|\n| Control | 123 |\n"
-    seen = []
-
-    def fixed_controls(publication):
-        seen.append(publication)
-        return table
-
-    monkeypatch.setattr(publisher, "fixed_controls", fixed_controls)
-    section = publisher.fixed_controls_section(sentinel)
-    assert seen == [sentinel]
-    assert "<details" not in section and "<summary" not in section
-    assert section.endswith("\n\n" + table + "\n")
-    assert section.startswith("### Fixed-encoder controls — measured final PDF bytes\n\n")
+    assert publisher.fixed_row_id("bw-images", "brotli-plain", "brotli") == "bw-packed.brotli"
+    assert publisher.fixed_row_id("bw-images", "jbig2", "zopfli") == "bw-jbig2.zopfli"
+    assert publisher.fixed_row_id("indexed-ffpr-16", "zopfli-plain", "zopfli") == "indexed-ffpr-16.zopfli"
+    assert publisher.fixed_row_id("jpx-r192-ffpr", "jpx-r192-ffpr", "zopfli") == "jpx-lossy-ffpr.zopfli"
+    assert publisher.fixed_row_id("preserve-images", "preserve-images", "flate") == "reference.classic"
+    for bad in (("bw-images", "flate-plain", "flate"), ("bw-images", "zopfli-png", "zopfli"),
+                ("unknown", "jbig2", "zopfli"), ("bw-images", "jbig2", "lzw")):
+        with pytest.raises(ValueError):
+            publisher.fixed_row_id(*bad)

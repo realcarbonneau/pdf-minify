@@ -16,7 +16,7 @@ workbench. Open a scan, a paper, a manual or a photo-heavy report, click
 through Threshold / Otsu / Sauvola black-and-white, JPEG, JPEG2000 and
 palette-indexed filters, and watch every filter's real output size update
 under its thumbnail. What you see is what saving writes: JBIG2 for BW,
-best-per-image JPEG/JPEG2000/lossless-Flate for color, garbage-collection
+your choice of JPEG, JPEG2000 or palette Flate for color, garbage-collection
 for the rest. Panes stay synced, scrolling never recomputes, ESC cancels
 anything, and every size shown is measured encoder output — never a guess.
 ```

@@ -13,7 +13,7 @@ Production must reuse promoted core primitives, not import this benchmark tool.
 The original measurements below also predate uniform 300 DPI and the shared
 assembly/placement repairs (§§224–226, B108–B112). Current complete-file codec
 comparisons, including color FFPR, are in
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md). Retain this prototype's
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md). Retain this prototype's
 explicit recipes as historical evidence, not current default-filter sizes.
 
 Related canon: [COMPRESSION.md](COMPRESSION.md) (compose/resize/quantize),

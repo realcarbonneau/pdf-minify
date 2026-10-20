@@ -3,7 +3,7 @@
 Supporting component study: image bytes are fixed in this document.
 The primary final-file comparison uses realistic combination rows over six
 representative PDFs, followed by focused scenarios (§223):
-[INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md).
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md).
 
 The current NATIVE-01 controlled experiment separates native/residual encoder
 effects from image compression, including the five specialized-codec FFPR
@@ -119,7 +119,7 @@ default-OFF declaration option is visible for both Brotli-capable policies;
 add its metadata only when the chosen candidate uses Brotli. It participates
 in normal effective recipe identity and the shared 300ms edit lifecycle.
 
-The completed [binary Zopfli-versus-Brotli experiment](INTEGRATED_COMPRESSION.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)
+The completed [binary Zopfli-versus-Brotli experiment](COMPRESSION_BENCHMARKS.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)
 remains a fixed-encoder comparison of 30 measured FFPR pairs, not a claim
 that Best has already been benchmarked across that corpus. No old size or
 producing identity is overwritten by this feature.
@@ -230,7 +230,7 @@ earlier all-page pixel proof, without repeating image processing or timing.
 
 Original study command from the repository root (collects historical-style
 timing too; it was not rerun for §254). The current size-only refresh uses
-the commands in [integrated provenance](INTEGRATED_COMPRESSION.md#measurement-and-provenance):
+the commands in [integrated provenance](COMPRESSION_BENCHMARKS.md#measurement-and-provenance):
 
 ```sh
 ./.venv/bin/python tools/bench_native_streams.py --repeat 2 --label <new-component-label>
@@ -351,7 +351,7 @@ broad Flate compatibility versus allowing a supporting modern reader, not
 "fast versus slow". A modern-reader requirement alone does not mean every
 stream/file should be forced to Brotli: the current FFPR study still has
 29 small-stream regressions without a declaration, with one layered-color
-exception ([measured effect](INTEGRATED_COMPRESSION.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)). Explicit codec labels still
+exception ([measured effect](COMPRESSION_BENCHMARKS.md#ffpr-residual-compression--zopfli-versus-brotli-baseline)). Explicit codec labels still
 mean those codecs; §§255/256 now authorize the separately named Best policy,
 not silent substitutions in explicit recipes. LZW/RunLength remain losing
 benchmark controls, not product options.

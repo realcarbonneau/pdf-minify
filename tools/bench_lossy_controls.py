@@ -1,7 +1,7 @@
-"""LOSSY-05: fixed-stream controls of verified fixed-q75 PDFs.
+"""LOSSY-06: fixed-stream controls of the verified q75 lossy PDFs.
 
 No image preparation/encoding, size estimates, timing rankings or CSV.
-The completed fixed-q75 study is the sole image-preparation input (§271).
+The completed LOSSY-06 study is the sole image-preparation input (§284).
 """
 
 import argparse
@@ -17,7 +17,7 @@ from tools import bench_lossy_quality as lossy
 from tools import publish_lossy_quality as publication
 
 overview, study = lossy.overview, lossy.overview.study
-BASELINE = Path(".tmp/lossy-quality/q75-fixed-20261019/metrics.json")
+BASELINE = Path(".tmp/lossy-quality/q75-matched-20261020/metrics.json")
 
 
 def family(mode, force):
@@ -60,7 +60,7 @@ def prepared_case(document, row, baseline_sha256, source_sha256):
     return dict(id=f"{document.key}.{variant}.300dpi", family="production",
                 source=document.source, input_sha256=source_sha256,
                 mode=row["mode"], dpi=300, recipe=spec,
-                prepared=dict(study="LOSSY-05", baseline_sha256=baseline_sha256,
+                prepared=dict(study="LOSSY-06", baseline_sha256=baseline_sha256,
                               prepared_pdf_sha256=row["pdf_sha256"],
                               jpx_quality_mapping=lossy.quality.JPX_QUALITY_MAPPING),
                 bases={variant: dict(pdf=row["pdf"], sha256=row["pdf_sha256"])})
@@ -174,7 +174,7 @@ def run(folder, baseline=BASELINE, *, documents=lossy.DOCUMENTS, workers=2, resu
     if (reuse_jpeg is None)!=(reuse_jpeg_sha256 is None):
         raise ValueError('JPEG control reuse needs its pinned manifest hash')
     previous=load_control_reuse(reuse_jpeg,reuse_jpeg_sha256,source,documents) if reuse_jpeg else []
-    identity = dict(study="LOSSY-05-fixed-stream-controls-v1", baseline=str(baseline),
+    identity = dict(study="LOSSY-06-stream-controls-v1", baseline=str(baseline),
                     baseline_sha256=lossy.file_digest(baseline),
                     producing_baseline_identity=source["identity"], environment=study.environment(),
                     implementation_sha256=lossy.file_digest(__file__),
@@ -211,7 +211,7 @@ def run(folder, baseline=BASELINE, *, documents=lossy.DOCUMENTS, workers=2, resu
     validate_inventory(documents, records)
     records.sort(key=lambda r: (r["document"], r["family"], r["result"]["native_policy"]))
     checkpoint.write_text(json.dumps(dict(identity=identity, complete=True, records=records), indent=2) + "\n")
-    print(f"LOSSY-05 CONTROLS COMPLETE: {len(records)} verified complete PDFs; {len(previous)} JPEG controls reused; no image re-encoding", flush=True)
+    print(f"LOSSY-06 CONTROLS COMPLETE: {len(records)} verified complete PDFs; {len(previous)} JPEG controls reused; no image re-encoding", flush=True)
     return records
 
 

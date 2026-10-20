@@ -102,71 +102,21 @@ live in this dir (`TODO.md`, `DESIGN.md`, `DROPPED.md`, `DESIGNER_VERBATIM.md`, 
   native foreground retains text/diagrams and compound strokes once. Preserve
   Form/tag ownership and inline samples. Do not invent coverage masks or
   silently substitute FFPR. See `backdrops.py` and `COMPRESSION.md`.
-- Color: 300 DPI + q75 for JPEG and lossy JPEG2000 (§264 supersedes §263), with a familiar
-  Quality control (§262). JPEG2000 remains an explicit codec choice; its
-  Lossless choice is unchanged. Never relabel a compression ratio as quality
-  or treat equal numeric quality values as measured visual equivalence.
-  Keep explicit historical rate recipes and frozen measurements intact.
-  See `LOSSY_IMAGE_QUALITY.md` for the versioned mapping and migration.
-  §§265/266 now authorize fixing those internal lossy profiles: full-resolution
-  JPEG 4:4:4 and JPEG2000 9/7 with RGB colour decorrelation. The quality slider
-  remains the user-facing control; do not add technical encoder knobs.
-  Equal q75 values are the approved working visual-quality baseline. Run real
-  300-DPI whole-file comparisons now; a more rigorous calibration is a possible
-  refinement, never a precondition for useful benchmarks. Prioritize lossy
-  JPEG2000, not a lossless study or claims of universal codec superiority.
-- Historical §267 (superseded by §271) replaced the fixed `101-q` mapping with a study-based
-  JPEG-reference mapping. At the selected Quality encode the identical
-  prepared pixels with the fixed JPEG profile, measure the actual raster
-  ratio, and use 40→45 / 60→73 JPEG→JPX anchors. Interpolate inside that
-  interval and hold endpoint relative gains outside it (explicit heuristic,
-  not proven quality equivalence); target ratio is at least 1. One Quality
-  slider and q75 defaults stay. Never feed JPEG-decoded pixels to JPX,
-  substitute JPEG output, recompose/resize, or rerun filters for selection.
-  Keep explicit legacy ratios/Lossless unchanged; version the mapping AND
-  reference JPEG profile in effective identity. Remeasure current lossy
-  complete-file rows without relabeling prior fixed-ratio measurements.
-- §268 extends the current lossy standard to ALL active benchmark sections
-  and reproduction commands. Reuse verified LOSSY-02 payloads; save only the
-  48 missing Zopfli/Brotli controls and 12 Flate FFPR references, verifying
-  exact images/native/geometry and actual complete-file bytes. Reuse those
-  files across binary, focused and residual tables. Preserve unaffected
-  evidence and frozen historical artifacts, but replace obsolete q50/r192
-  active rows/denominators and update labels/minima/effects/conclusions/tests
-  together. Historical component evidence is explicitly historical, not a
-  competing current standard. No new app codec/default or quality change.
-- §269 clarifies that GUI, recipes, benchmark labels and docs use the same
-  stable, conventional 0–100 quality scales. Find the JPEG2000 q that best
-  approximates JPEG q75 visually with the other comparison factors fixed;
-  do not redefine its q75 as a hidden JPEG-reference normalization. The
-  implemented §267 mapping needs correction under this clarification.
-  Study ratio anchors are starting evidence, not a universal q conversion;
-  `101 − 45 = 56` alone does not validate JPEG2000 q56 against JPEG q75.
-  Report the actual tested q values and matching basis, preserve measured
-  artifacts, and qualify the existing normalized-q labels until corrected.
-  See TODO §264 and `LOSSY_IMAGE_QUALITY.md`.
-- §270 requires one consolidated `JPEG_JPEG2000_RESEARCH.md`, recovering the
-  earlier study references and actual scope from conversation history.
-  Explain and derive equal-quality candidates rather than only saying
-  codec scales differ. Validate actual candidates against JPEG q75 using
-  identical prepared pixels, a perceptual metric plus numeric diagnostics
-  and visual review. Keep the stable q values visible; report practical
-  equivalence and exceptions honestly. Final-PDF sizes stay in the central
-  integrated analysis; no raw transcripts or historical size relabeling.
-- §271 supersedes §267's runtime reference-normalized quality mapping. One
-  fixed JPEG q75/JPEG2000 q75 baseline applies to every input and native/FFPR
-  experiment, at 300 DPI. JPX quality maps only to `101 − q` (q75 → 26:1),
-  independent of input/JPEG bytes or PSNR; no JPEG reference encoding in
-  production JPX. Keep explicit rates/Lossless, saved q values and profiles
-  unchanged. Invalidate normalized quality artifacts through versioned keys,
-  removing the unrelated JPEG profile from JPX identity. LOSSY-05 refreshes
-  every affected table from verified actual complete PDFs. Reuse unchanged
-  JPEG outputs/controls with explicit provenance and exact paired-pixel/
-  payload verification; encode changed JPX once, repack its stream controls
-  without image processing. Preserve historical proofs and unaffected data.
-  Per-image fits are research diagnostics, not benchmark settings. This is
-  a working visual-quality baseline, not a measured equivalence claim. Keep
-  the desktop app closed; offscreen verification is permitted.
+- Lossy colour quality (§§262–278): one **Quality** control, 0–100, default
+  75 at 300 DPI, for JPEG and lossy JPEG2000. The same number must mean
+  comparable visual quality for both codecs (§272), through one fixed rule
+  for every page and experiment (§271): never a setting fitted per image or
+  derived from the JPEG result, and never a compression ratio called quality.
+  Encoders come from standard packages only (§278): Pillow with libjpeg-turbo
+  and OpenJPEG. JPEG uses 4:4:4 to match JPEG2000's full-resolution colour
+  (§§276/278). JPEG2000 maps Quality to one PSNR target per 512-pixel tile,
+  calibrated against JPEG on the benchmark pages (§284); recalibrate and
+  version the mapping if encoders or the benchmark set change. No technical
+  encoder controls in the GUI; JPEG2000 Lossless stays a separate checkbox.
+  Settings, measured evidence and traps: `LOSSY_IMAGE_QUALITY.md`.
+- When a lossy setting changes, re-measure every affected benchmark table
+  from actual complete PDFs (§268) and fill the tagged rows only (§§282/283);
+  see `COMPRESSION_BENCHMARKS.md`.
 - §§224/225 supersede mixed-resolution defaults: all built-in raster filters
   and missing-DPI fallbacks use 300 DPI. §226 also requires a one-time migration
   of ALL existing saved raster recipes, including explicit custom DPI values,

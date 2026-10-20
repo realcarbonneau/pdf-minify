@@ -1,4 +1,4 @@
-"""Publish only completed fixed-q LOSSY-05 measurements; never estimate."""
+"""Publish only completed LOSSY-06 lossy measurements; never estimate."""
 
 import argparse
 from dataclasses import asdict
@@ -8,12 +8,14 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from tools import bench_lossy_quality as bench
+from tools import benchmark_tables as tables
 
 FIXTURE = Path("tests/fixtures/lossy_quality_sizes.json")
-LABELS = ((False, "color", "JPEG q75", "JPEG q50"),
-          (False, "jpx", "JPEG2000 q75", "JPEG2000 lossy r192"),
-          (True, "color", "Color FFPR + JPEG q75", "Color FFPR + JPEG q50"),
-          (True, "jpx", "Color FFPR + JPEG2000 q75", "Color FFPR + JPEG2000 lossy r192"))
+# (FFPR, mode, fixture label, row ID in the page's `overview` table)
+LABELS = ((False, "color", "JPEG q75", "jpeg"),
+          (False, "jpx", "JPEG2000 q75", "jpx-lossy"),
+          (True, "color", "Color FFPR + JPEG q75", "jpeg-ffpr"),
+          (True, "jpx", "Color FFPR + JPEG2000 q75", "jpx-lossy-ffpr"))
 
 
 def native_resource_images(row, source):
@@ -104,7 +106,7 @@ def fixture(manifest):
                          native_resource_image_count=[len(r["native_resource_images"]) for r in cells],
                          native_resource_proof_sha256=[bench.digest(json.dumps(r["native_resource_images"], sort_keys=True).encode())
                                                       for r in cells]))
-    return dict(designer_rulings=[265, 266, 271], quality=bench.QUALITY, dpi=bench.DPI,
+    return dict(designer_rulings=[272, 278, 284], quality=bench.QUALITY, dpi=bench.DPI,
                 visual_quality_basis=data["identity"]["visual_quality_basis"],
                 jpeg_profile=data["identity"]["jpeg_profile"], jpx_profile=data["identity"]["jpx_profile"],
                 jpx_quality_mapping=data["identity"]["jpx_quality_mapping"],
@@ -114,11 +116,16 @@ def fixture(manifest):
                 source_sha256=[d["source_sha256"] for d in data["identity"]["documents"]], rows=rows)
 
 
-def row_lines(proof):
+def overview_values(proof):
+    """Value cells of the four lossy `overview` rows, keyed by row ID.
+
+    Bold marks the smaller (or tied) codec of each JPEG/JPEG2000 pair at the
+    same native/FFPR fidelity; the lossless reference is a separate group.
+    """
     if (proof["quality"] != 75 or proof["dpi"] != 300 or len(proof["rows"]) != 4
             or proof["documents"] != [asdict(d) for d in bench.DOCUMENTS]
             or proof.get("jpx_quality_mapping") != bench.quality.JPX_QUALITY_MAPPING
-            or proof.get("visual_quality_basis") != "designer-fixed-q75-working-baseline"):
+            or proof.get("visual_quality_basis") != "jpx-calibrated-to-jpeg-median-ssimulacra2"):
         raise ValueError("Wrong lossy baseline fixture scope")
     rows = {}
     for (force, mode, label, _), row in zip(LABELS, proof["rows"], strict=True):
@@ -127,52 +134,22 @@ def row_lines(proof):
         if len(row["sizes"]) != 6 or any(type(n) is not int or n <= 0 for n in row["sizes"]):
             raise ValueError("Lossy publication requires six measured integer sizes")
         rows[label] = row
-    lines = {}
-    for force, mode, label, old_label in LABELS:
+    values = {}
+    for force, mode, label, row_id in LABELS:
         peer = next(row for row in rows.values() if row["force_raster"] == force and row["mode"] != mode)
-        cells = [f"**{n:,}**" if n <= p else f"{n:,}"
-                 for n, p in zip(rows[label]["sizes"], peer["sizes"], strict=True)]
-        lines[label] = lines[old_label] = "| " + label + " | " + " | ".join(cells) + " |"
-    return lines
+        values[row_id] = [f"**{n:,}**" if n <= p else f"{n:,}"
+                          for n, p in zip(rows[label]["sizes"], peer["sizes"], strict=True)]
+    return values
 
 
-def overlay(table, proof):
-    """Replace the four lossy rows only; keep the continuous table and controls."""
-    replacements, seen, lines = row_lines(proof), set(), []
-    for line in table.splitlines():
-        cells = line.split("|")
-        label = cells[1].strip() if len(cells) > 2 else ""
-        if label in replacements:
-            line = replacements[label]
-            current = line.split("|")[1].strip()
-            if current in seen:
-                raise ValueError("Duplicate lossy overview row")
-            seen.add(current)
-        lines.append(line)
-    if len(seen) != 4:
-        raise ValueError("Missing lossy overview row")
-    return "\n".join(lines) + "\n"
+def fill_overview(markdown, proof):
+    """Write only the four lossy rows' measured cells into the `overview` table."""
+    return tables.fill(markdown, "overview", overview_values(proof))
 
 
-def current_primary(table):
-    return overlay(table, json.loads(FIXTURE.read_text())) if FIXTURE.exists() else table
-
-
-def current_summary(proof=None):
-    proof=json.loads(FIXTURE.read_text()) if proof is None else proof
-    row_lines(proof)  # scope, mapping, actual integer bytes and labels
-    values={(r['mode'],r['force_raster']):r['sizes'] for r in proof['rows']}
-    pairs=[(a,b) for force in (False,True) for a,b in
-           zip(values['color',force],values['jpx',force],strict=True)]
-    smaller=sum(b<a for a,b in pairs);larger=sum(b>a for a,b in pairs)
-    tied=len(pairs)-smaller-larger
-    effects=[100*(b-a)/a for a,b in pairs]
-    return (f'**LOSSY-05 result:** at one fixed q75/q75 setting, JPEG2000 is\n'
-            f'**smaller in {smaller}, larger in {larger}, and tied in {tied} of 12** complete-PDF pairs.\n'
-            f'Its signed size change versus JPEG ranges from **{min(effects):+.2f}% to {max(effects):+.2f}%**.\n'
-            'These are actual complete-file sizes, with native/FFPR compared\n'
-            'separately. Fixed q is the approved working baseline, not proof\n'
-            'of equal visual quality or universal codec superiority.\n')
+def current_overview_values():
+    """The pinned current lossy rows, or nothing before that fixture exists."""
+    return overview_values(json.loads(FIXTURE.read_text())) if FIXTURE.exists() else {}
 
 
 def main():

@@ -46,7 +46,7 @@ and removes inline explanatory layout space.
 [IMAGE_STREAM_COMPRESSION.md](IMAGE_STREAM_COMPRESSION.md). Native-only
 Brotli gains cannot substitute for indexed-color or BW/JBIG2 measurements.
 
-§§222/223 make [INTEGRATED_COMPRESSION.md](INTEGRATED_COMPRESSION.md) the primary
+§§222/223 make [COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md) the primary
 size analysis: realistic combination rows over six representative complete
 PDFs, then focused scenario tables, with all overhead included and no timing
 comparisons. Mixed general-codec pairs are excluded; the two component

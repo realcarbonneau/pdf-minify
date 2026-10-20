@@ -114,3 +114,29 @@ def test_png_winner_audit_compares_whole_files_and_preserves_reader_tier_counter
     assert publication.prediction_winners([values]) == dict(unique_wins=0, tied_minima=0, larger=2)
     assert publication.prediction_winners([values], exclude_brotli=True) == dict(
         unique_wins=1, tied_minima=0, larger=0)
+
+
+def test_focused_and_ffpr_cells_are_filled_by_curated_page_row_ids():
+    from tools import benchmark_tables as tables
+    page = tables.PAGE.read_text()
+    specs = publication.focused_specs()
+    assert len(specs) == 6
+    for table_id, columns, rows in specs:
+        table = tables.read_table(page, table_id)
+        ids = [publication.focused_row_id(r) for r in rows]
+        assert len(set(ids)) == len(ids) and set(ids) == set(table.rows), table_id
+        assert len(table.header) == len(columns) + 1, table_id
+    binary = tables.read_table(page, "zopfli-vs-brotli").rows
+    keys = {publication.recipe_key(r.family, r.variant, r.native) for r in publication.ffpr.ROWS}
+    assert keys == {"bw-ffpr-jbig2", "indexed-ffpr-jbig2", "jpeg-ffpr", "jpx-lossy-ffpr", "jpx-lossless-ffpr"}
+    assert keys <= set(binary)
+
+
+def test_focused_row_ids_drop_the_column_varied_palette_or_threshold():
+    row = publication.overview.Combination
+    assert publication.focused_row_id(row("indexed", "brotli-png", "brotli", "x")) == "indexed.brotli.png"
+    assert publication.focused_row_id(row("bw-images", "zopfli-plain", "zopfli", "x")) == "bw.zopfli"
+    assert publication.focused_row_id(row("indexed", "jbig2", "brotli", "x")) == "indexed-jbig2.brotli"
+    assert publication.focused_row_id(row("preserve-images", "preserve-images", "flate", "x")) == "reference.classic"
+    with pytest.raises(ValueError):
+        publication.focused_row_id(row("indexed", "zopfli-other", "zopfli", "x"))
