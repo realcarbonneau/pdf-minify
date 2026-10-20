@@ -1,10 +1,19 @@
 # Icon Lab — stock alternatives with permanent choice codes
 
-Designer ruling §200, 2026-10-14 (America/New_York); TODO §203, issue B104.
-The designer rejects the current appearance and asks to compare real library
-icons, then communicate their choices. §197's provider implementation is not
-acceptance of those particular glyphs. Do not select a replacement on the
-designer's behalf.
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§200** (2026-10-14)
+
+```text
+I don't like those icons, make an icon lab menu item with a window with various options and codes for each so I can tell you my choices.  use icons from nuvola, oxygen and other similar libraries.
+```
+
+The lab compares real library icons so the designer can send back choices;
+never select a replacement on the designer's behalf. Work: TODO §203, issue
+B104.
 
 ## Interaction and ownership
 
@@ -42,7 +51,7 @@ Closing the lab is not an unsaved-filter operation.
 Bundle a curated, immutable subset, not entire themes. Nuvola comes from the
 official Debian archived `nuvola-icon-theme` 15.08.3-2 package (David Vignoni),
 Oxygen and GNOME Classic from the installed Debian snapshots, and Breeze
-reuses the previously bundled SVG sources. Keep original size variants when
+reuses the bundled fallback SVGs. Keep original size variants when
 available; do not upscale files on disk or draw replacement glyphs.
 
 The lab loads each requested family directly from bundled resources. It must
@@ -62,8 +71,7 @@ checksums, available PNG dimensions, nonblank normal/disabled/HiDPI rendering,
 radio exclusivity per action, copyable summary, no implicit initial choices,
 window reuse and no application-action/settings/filter/job mutations. Use
 `tools/shot.py` to capture/view the actual lab at normal/2×, light/dark,
-selected/disabled states and narrow-window scrolling, including 1:1 crops.
-Run the full regression suite and follow the shared developer verification
-rules in `DEVELOPER_GUIDELINES.md`. Selection codes are not permission to
+selected/disabled states and narrow-window scrolling, including 1:1 crops,
+following the shared verification rules in `DEVELOPER_GUIDELINES.md`. Selection codes are not permission to
 infer unmentioned production changes. Paint-fixture choices are not designer
 choices and are never applied to the app.
