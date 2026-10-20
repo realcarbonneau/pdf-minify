@@ -61,7 +61,7 @@ def test_background_job_fills_minis_and_preview(tmp_path):
     assert w.before.page_count == 3
     _wait_job(w)
     assert w.after.page_count == 3  # preview applied without freezing
-    assert w.filters.count() == 10  # passthrough/Original has no mini (§30)
+    assert w.filters.count() == 10  # passthrough/Original has no mini (§140)
     for i in range(10):
         assert not w.filters.item(i).icon().isNull(), i
     assert len(w._mini_amount) == 10

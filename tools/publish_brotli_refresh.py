@@ -184,25 +184,6 @@ def refreshed_publication(data):
     return result
 
 
-def replace_tables(scope, tables):
-    """Replace entire tables in order, never number-substitute unrelated cells."""
-    output, index, active = [], 0, False
-    for line in scope.splitlines(keepends=True):
-        if line.startswith("|"):
-            if not active:
-                if index >= len(tables):
-                    raise ValueError("Unexpected existing table")
-                output.append(tables[index])
-                index += 1
-                active = True
-        else:
-            active = False
-            output.append(line)
-    if index != len(tables):
-        raise ValueError("Missing existing table")
-    return "".join(output)
-
-
 def focused_table(publication, specs, rows):
     """Columns select actual overview or focused records, sharing fidelity groups."""
     documents, records = [], []
@@ -272,47 +253,6 @@ def integrated_tables(text, publication):
     # The later LOSSY-05 controls supersede this study's q50/r192 cells.
     from tools.publish_lossy_controls import apply_current
     return apply_current(text)
-
-
-def component_tables(text, original, measurements, native=False):
-    if native:
-        policies = ("none", "flate-fast", "flate", "zopfli", "brotli-9", "brotli", "lzw", "runlength")
-        scope = text.split("### Complete final PDF sizes (bytes)", 1)[1].split("### Median native", 1)[0]
-        lines = [line for line in scope.splitlines() if line.startswith("| ")]
-        if len(lines) != 9:
-            raise ValueError("Changed native component table")
-        table = [lines[0], "|---|---:|---:|---:|---:|"]
-        for line, policy in zip(lines[1:], policies):
-            values = []
-            for row in original:
-                item = next(r for r in row["results"] if r["policy"] == policy)
-                path = str(refresh.NATIVE.parent / f"{Path(row['source']).stem}.{policy}.pdf")
-                values.append(measurements[path]["result"]["complete_pdf_bytes"] if policy.startswith("brotli")
-                              else item["complete_pdf_bytes"])
-            table.append("| " + old_publication.cells(line)[0] + " | " + " | ".join(f"{v:,}" for v in values) + " |")
-        before, after = text.split(scope, 1)
-        return before + replace_tables(scope, ["\n".join(table) + "\n"]) + after
-    sections = [("### Indexed color versus colored JBIG2", "indexed"),
-                ("### BW image layer and full-page rasterization", "bw")]
-    for heading, kind in sections:
-        start = text.index(heading)
-        stop = text.find("\n### ", start + len(heading))
-        scope = text[start:stop] if stop >= 0 else text[start:]
-        lines = [line for line in scope.splitlines() if line.startswith("| ")]
-        selected = [row for row in original if row["mode"].startswith(kind)]
-        if len(lines) != len(selected) + 1:
-            raise ValueError("Changed bitmap component table")
-        table = [lines[0], "|---|" + "---:|" * 7]
-        for line, row in zip(lines[1:], selected):
-            values = []
-            for variant in refresh.study.images.VARIANTS[1:]:
-                item = next(r for r in row["results"] if r["variant"] == variant)
-                values.append(measurements[item["pdf"]]["result"]["complete_pdf_bytes"] if variant.startswith("brotli")
-                              else item["complete_pdf_bytes"])
-            cells = [f"**{v:,}**" if v == min(values) else f"{v:,}" for v in values]
-            table.append("| " + old_publication.cells(line)[0] + " | " + " | ".join(cells) + " |")
-        text = text[:start] + replace_tables(scope, ["\n".join(table) + "\n"]) + (text[stop:] if stop >= 0 else "")
-    return text
 
 
 def fixtures(publication, manifest_hash):
@@ -410,10 +350,6 @@ def run(path, folder):
         raise ValueError("Changed frozen refreshed publication")
     target.write_text(content)
     outputs = {tables.PAGE.as_posix(): integrated_tables(tables.PAGE.read_text(), publication)}
-    for name, source, native in (("IMAGE_STREAM_COMPRESSION", refresh.IMAGE, False),
-                                 ("NATIVE_STREAM_COMPRESSION", refresh.NATIVE, True)):
-        doc = f"docs/{name}.md"
-        outputs[doc] = component_tables(Path(doc).read_text(), json.loads(source.read_text()), data["results"], native)
     outputs.update({p: json.dumps(f, indent=2) + "\n" for p, f in fixtures(publication, refresh.file_hash(target)).items()})
     (folder / "tables.patch").write_text(patch(outputs))
     print(json.dumps(dict(publication=str(target), sha256=refresh.file_hash(target),

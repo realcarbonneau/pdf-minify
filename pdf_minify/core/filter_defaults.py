@@ -1,4 +1,4 @@
-"""Versioned saved-recipe migrations (designer §§226/257/263/264), without Qt."""
+"""Versioned saved-recipe migrations (designer §§226/257/272), without Qt."""
 
 from .algorithms import BW_MODES, COLOR_MODES
 from .defaults import DEFAULT_DPI

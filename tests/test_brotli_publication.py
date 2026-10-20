@@ -42,15 +42,6 @@ def test_non_brotli_controls_keep_their_actual_measurement_and_provenance():
     assert "previous_measurement" not in result
 
 
-def test_table_replacement_is_structural_and_rejects_missing_or_added_tables():
-    before = "Heading\n\n| title |\n|---|\n| 1 |\n\nKeep 1 in prose.\n"
-    table = "| title |\n|---|\n| 2 |\n"
-    assert publication.replace_tables(before, [table]) == before.replace("| 1 |", "| 2 |")
-    for tables in ([], [table, table]):
-        with pytest.raises(ValueError, match="table"):
-            publication.replace_tables(before, tables)
-
-
 @pytest.mark.parametrize("version", [None, "/2.0"])
 def test_final_metadata_save_has_no_artificial_version_or_new_brotli_encoding(tmp_path, monkeypatch, version):
     r = publication.refresh
@@ -91,20 +82,6 @@ def test_focused_palette_columns_use_their_own_measured_scenario_family():
     result = publication.focused_table(dict(records=[overview_record], extras=[focused]),
         [("a5", "5 colors", "art"), ("a16", "16 colors", "art-16")], [row])
     assert "| Indexed + Brotli | **800** | **1,200** |" in result
-
-
-def test_native_component_changes_both_brotli_levels_but_never_historical_timings():
-    policies = ["none", "flate-fast", "flate", "zopfli", "brotli-9", "brotli", "lzw", "runlength"]
-    original = [dict(source="examples.pdf", results=[dict(policy=p, complete_pdf_bytes=1000 + i)
-                                                   for i, p in enumerate(policies)])]
-    measurements = {str(publication.refresh.NATIVE.parent / f"examples.{p}.pdf"):
-                    dict(result=dict(complete_pdf_bytes=n)) for p, n in (("brotli-9", 800), ("brotli", 700))}
-    text = "### Complete final PDF sizes (bytes)\n\n| Policy | Source |\n|---|---:|\n" + "".join(
-        f"| {p} | {1000+i:,} |\n" for i, p in enumerate(policies)) + "\n### Median native\n\n| Brotli | 0.123 |\n"
-    result = publication.component_tables(text, original, measurements, native=True)
-    assert "| brotli-9 | 800 |" in result and "| brotli | 700 |" in result
-    assert "| zopfli | 1,003 |" in result
-    assert result.split("### Median native", 1)[1] == text.split("### Median native", 1)[1]
 
 
 def test_png_winner_audit_compares_whole_files_and_preserves_reader_tier_counterexamples():

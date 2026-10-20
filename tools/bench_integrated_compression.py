@@ -199,7 +199,7 @@ def bitmap_cases(manifest):
 
 def production_cases(sources, folder, resume=False, *, native_sources=None,
                      dpi=pipeline.DEFAULT_DPI, include_ffpr=False):
-    # Frozen experiment recipes, not current app defaults (§264). Never
+    # Frozen experiment recipes, not current app defaults. Never
     # relabel q50/r192 bytes as q75; a q75 experiment needs fresh saves.
     recipes = (
         ("jpeg-q50", dict(mode="color", dpi_cap=dpi, jpeg_q=50)),

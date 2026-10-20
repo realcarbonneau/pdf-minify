@@ -1,4 +1,4 @@
-"""Paired colored-JBIG2 benchmark (§§192–194), reusing shared core (§203).
+"""Paired colored-JBIG2 benchmark (§192), reusing shared core (§203).
 
 Run ./.venv/bin/python tools/layered_color_jbig2.py --help.
 Both encoders receive the same once-prepared palette/index map. The production

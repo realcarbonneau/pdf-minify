@@ -1,4 +1,4 @@
-"""Stable user-facing quality controls (§§262/271/272/284).
+"""Stable user-facing quality controls (§§272/284).
 
 One Quality index, 0–100, drives JPEG and lossy JPEG2000. JPEG passes it to
 libjpeg. JPEG2000 maps it to one fixed OpenJPEG target, calibrated so the

@@ -202,7 +202,7 @@ def _fit_rect(src_w: float, src_h: float, dst_w: float, dst_h: float) -> fitz.Re
 
 
 def jpeg_encode(img: Image.Image, quality: int = DEFAULT_LOSSY_QUALITY) -> bytes:
-    """Fixed full-chroma JPEG profile; only quality is user-facing (§265)."""
+    """Fixed full-chroma JPEG profile; only quality is user-facing (§§272/278)."""
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=checked_quality(quality), optimize=True, subsampling=0)
     return buf.getvalue()
@@ -214,7 +214,7 @@ def jpx_encode(arr: np.ndarray, dpi_cap: int | None, rate: float | None = None,
     """RGB array -> JPEG2000 bytes at the cap rule (designer §56).
 
     Used by the real saver; previews read its resulting PDF. Lossless
-    (`§100`, reversible 5/3) when asked; otherwise the §265 lossy 9/7 + RGB
+    (`§100`, reversible 5/3) when asked; otherwise the lossy 9/7 + RGB
     colour-transform profile at user-facing quality or an explicit legacy
     rate. Never reinterpret an old ratio. Technical options stay internal.
     presized=True skips the legacy downscale (designer §129: the caller
