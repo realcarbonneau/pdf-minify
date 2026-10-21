@@ -1051,3 +1051,36 @@ Source: designer message in the session of 2026-10-20; exact text.
 ```text
 Also, I am renaming the github project to match the project name now.
 ```
+
+## 301 — Debian packages: follow Task Coach for what Debian lacks (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text of its
+packaging part (the message's first sentence is about another conversation).
+
+```text
+For the packages, so we need to package everything?  but doesn't debian oblige everything be installed in a venv, if not system?  Follow taskcoach examples please.
+```
+
+## 302 — Debian 13 only for now; question on one package per architecture (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+debian 13 only for now, that is fine. but why do you need a separate version per arch? just get pip to download the correct one??
+```
+
+## 303 — x86-64 packages only; follow Task Coach for Windows, macOS and Ubuntu (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+ok, proceed for arch specific, but only do x86 for now, arm is not common for desktops I think and it just adds to user confusion, they are already confused with multiple plateforms.  Also, follow the taskcoach windows and macos because those are very common and ubuntu also.
+```
+
+## 304 — macOS packages for both Intel and Apple Silicon; push (verbatim, 2026-10-21)
+
+Source: designer message in the session of 2026-10-21; exact text.
+
+```text
+Both options for mac please, and yes, push to github please.
+```

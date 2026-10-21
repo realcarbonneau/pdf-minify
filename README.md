@@ -9,15 +9,42 @@ would save.
 
 ## Install
 
-Installer packages are not available yet. PDF Minify runs from source on its
-certified platform; packages for other systems are planned.
+Download the package for your system from the
+[latest release](https://github.com/realcarbonneau/pdf-minify/releases).
+The first release, 0.1.0, is being prepared; until it is published,
+[run from source](#from-source).
 
-| Platform | Status |
-|----------|--------|
-| [Debian 13 (Trixie), x86-64](#debian-13) | Run from source |
-| Other Linux, Windows, macOS | Planned |
+| Platform | Package |
+|----------|---------|
+| [Windows 10 and 11](#windows) | `pdf-minify_0.1.0_windows-x64-setup.exe` |
+| [Windows (portable)](#windows) | `pdf-minify_0.1.0_windows-x64-portable.zip` |
+| [Debian 13 (Trixie)](#linux) | `pdf-minify_0.1.0_debian-13-trixie_amd64.deb` |
+| [Ubuntu 24.04 (Noble), Linux Mint 22](#linux) | `pdf-minify_0.1.0_ubuntu-24.04-noble_amd64.deb` |
+| [Ubuntu 26.04 (Resolute)](#linux) | `pdf-minify_0.1.0_ubuntu-26.04-resolute_amd64.deb` |
+| macOS | Planned |
 
-### Debian 13
+The packages are for 64-bit PCs (x86-64).
+
+### Windows
+
+Run the installer. Windows warns that the app is not signed with a Microsoft
+certificate: click **More info**, then **Run anyway**.
+
+For the portable version, extract the `.zip` and run `PDF Minify.cmd`.
+
+### Linux
+
+Install the downloaded package:
+
+```bash
+sudo apt install ./pdf-minify_0.1.0_debian-13-trixie_amd64.deb
+```
+
+Uninstall with `sudo apt remove pdf-minify`; your settings are kept.
+
+### From source
+
+On Debian 13:
 
 ```bash
 sudo apt install git python3-venv jbig2 zopfli
@@ -51,5 +78,5 @@ them in `pdf_minify/ui_qt/assets/`.
 
 ## Developers
 
-Running from source, tests, the design and the measured benchmarks:
-[developer documentation](docs/README.md).
+Running from source, tests, building the packages, the design and the measured
+benchmarks: [developer documentation](docs/README.md).

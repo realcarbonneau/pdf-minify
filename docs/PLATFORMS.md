@@ -51,11 +51,29 @@ The OS's separate Qt packages are not the Qt runtime used by these pip wheels.
   differs from MuPDF's; see `JBIG2.md`.
 - Qt's available Windows style is not OS certification.
 
+## Packages tested
+
+Each `.deb` was built in a clean container of its release from the pinned
+inputs in `debian/bundled/`, then installed in a fresh container of the same
+release by `scripts/test-deb.sh`: install checks, the app started on a file
+whose name has a space, and the full test suite run against the installed
+copy. Offscreen only: no desktop session, drag-and-drop or HiDPI check yet,
+so these are test results, not certificates (see the checklist in
+[PACKAGING.md](PACKAGING.md)).
+
+<!-- table: package-tests -->
+| Package (x86-64) | Libraries in use | Size | Result (2026-10-20) |
+|---|---|---|---|
+| Debian 13 `.deb` | Debian's PySide6 6.8.2, NumPy 2.2.4, Pillow 11.1.0; bundled PyMuPDF 1.28.2 | 19 MB (57 MB installed) | all 1,036 tests pass; built before the encoder-path fix, rerun by `build-deb.yml` |
+| Ubuntu 24.04 `.deb` | Ubuntu's NumPy 1.26.4, Pillow 10.2.0; bundled PySide6 6.12.0, PyMuPDF 1.28.2 | 70 MB (245 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
+| Ubuntu 26.04 `.deb` | Ubuntu's PySide6 6.10.2, NumPy 2.3.5, Pillow 12.1.1; bundled PyMuPDF 1.28.2 | 21 MB (54 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
+| Windows x64 installer | everything bundled | | first run by `build-windows.yml` |
+
 ## Other targets
 
-Windows, macOS (Intel/Apple Silicon), other Linux distributions/architectures,
-Wayland, and all packaged formats are **NOT CERTIFIED**. Cross-platform Qt,
-Python or Task Coach support is not evidence that this app has passed there.
-Promote a target only after its actual installed artifact passes the packaging
-release gates on a clean native machine/VM, with dated versions, results,
-screenshots, startup/exit evidence and an artifact checksum.
+Windows, macOS, other Linux distributions and architectures, and Wayland
+are **NOT CERTIFIED**. Cross-platform Qt, Python or Task Coach support is not
+evidence that this app has passed there. Promote a target only after its
+installed artifact passes the release checklist on a clean native machine or
+VM, with dated versions, results, screenshots, startup and exit evidence and
+an artifact checksum.

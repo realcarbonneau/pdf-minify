@@ -11,146 +11,218 @@ quotes is not the designer's.
 Also, document the current platform as the certerfied and create a document for packaging, meaning if any packages are required to make this work on multiple platforms, you can follow the taskcoach project which is also on github and in a sister dir here.
 ```
 
-[PLATFORMS.md](PLATFORMS.md) is the authority for what is certified; this
-document is a **packaging plan**. No installers exist yet. Multi-platform
-support is part of the original brief (§3, quoted in `DESIGN.md`).
+**§298** (2026-10-20)
 
-## Reference: Task Coach, adapted to this app
+```text
+can you make a build for the two debian version that are stable?  Follow taskcoach
+```
 
-Reviewed the sibling `/home/user/Downloads/taskcoach`, origin
-`git@github.com:taskcoach/taskcoach.git`, local HEAD
-`aeb88910cc42d1a25e47413cccc8707db58c13e3`, especially
-`docs/PACKAGING.md`, `scripts/build-deb.sh`, `scripts/build-appimage.sh` and the
-Windows/macOS build workflows. Its [upstream packaging guide](https://github.com/taskcoach/taskcoach/blob/master/docs/PACKAGING.md)
-provides the useful pattern: target-specific dependency tables, native build
-jobs, Linux distro packages/AppImage, Windows embedded Python + Inno Setup,
-and separate Intel/ARM macOS application bundles/DMGs. These are references,
-not a promise to support Task Coach's entire platform matrix.
+**§299** (2026-10-20)
 
-Do **not** copy wxPython/GTK dependencies, tree-widget patches, Python/version
-pins, macOS minima or signing exceptions: PDF Minify uses Qt/PyMuPDF and
-must validate its own native libraries and minimum OS. Qt's
-[pyside6-deploy](https://doc.qt.io/qtforpython-6/deployment/deployment-pyside6-deploy.html)
-is an additional Qt-specific candidate, wrapping Nuitka. Choose and test one
-bundling route per target; do not combine several freezers by default.
+```text
+can it work with the packages in debian 13, please test carefully before proposing options!
+```
 
-## Dependencies: runtime versus build versus validation
+**§301** (2026-10-20)
 
-| Component | Running the app | Packaging / validation notes |
-|---|---|---|
-| CPython | Required; bundle a private interpreter or declare a supported OS Python | Match OS/architecture and binary wheels; only 3.13.5 is currently certified |
-| PySide6-Essentials + Shiboken6 | Qt Widgets/Core/Gui/Svg, native Qt libraries and platform plugins | Match binding/runtime versions; include xcb, Windows or Cocoa plugin for the target, plus required image/font support and the SVG icon engine |
-| Bundled KDE Breeze action SVGs | Portable action-icon fallback when a desktop theme/name is absent | Include all `ui_qt/assets/breeze/` data (16/22px light/dark SVGs, manifest, notices and LGPL/GPL texts); no KDE package is required at runtime |
-| Icon Lab stock PNG resources | Coded Nuvola/Oxygen/GNOME Classic comparison; not a production theme change | Include `ui_qt/assets/icon_lab/` JSON data, provenance, all copyright/license notices and Nuvola's original artwork addendum, plus the reused Breeze assets; decode original PNG bytes in memory, no runtime theme install/download |
-| PyMuPDF >=1.28.2 | Required, including its matching native MuPDF binding/library | The native PDF filtering/display APIs are used directly; an older distro binding is not a substitute |
-| NumPy, Pillow | Required, including their native extensions/codecs | Use target-specific tested wheels and record exact resolved dependencies |
-| `jbig2` / `jbig2.exe` | Required when selecting JBIG2 BW or JBIG2 Color | Native executable and dependencies, not supplied by pip. Explicit choices fail clearly when unavailable; the user can choose Packed BW or Indexed color instead, never a hidden fallback |
-| `zopfli` | Required for the default Best policy (§257) and explicit Zopfli | Best runs the complete encoder, with no missing-encoder fallback. §213 targets one best-encoded Flate format; remaining legacy fixed-path choices require alignment (TODO §217) |
-| Bundled MuPDF Brotli support | Required for the default Best policy and explicit Brotli; output may need a supporting PDF reader | Verified in the existing 1.28.2 binding, no extra Python package. Verify native/packed-image encoding/decoding, exact predictors/masks, empty-stream guard and optional declaration on each target. Legacy headless Flate remains available |
-| `mutool`, `pdfimages`, `jbig2dec` | Not core GUI runtime dependencies | Inspection/independent validation tools; `pdfimages` is used by the saved-image benchmark |
-| pytest, Xvfb, xdotool | Not app runtime dependencies | Automated/offscreen and real X11 drag validation tools, respectively |
-| Package builders, compiler/SDK, installer tooling | Build only | Keep out of runtime requirements and the certified development environment unless a build is explicitly requested |
+```text
+For the packages, so we need to package everything?  but doesn't debian oblige everything be installed in a venv, if not system?  Follow taskcoach examples please.
+```
 
-Linux source development keeps Python dependencies in `.venv` and native
-tools in the OS, per `DEPENDENCIES.md`. A distributable must **declare or
-bundle** its dependencies; it cannot assume this workstation's apt packages,
-PATH, `.venv`, fonts or developer tools exist on another machine. Do not run
-pip or apt, or fetch runtime binaries, on an end user's first launch.
+**§302** (2026-10-20)
 
-Use a separate build environment and target-specific, hash-locked dependency
-resolution. Keep `requirements.txt` as source requirements, not a claim of a
-reproducible release lock. Inventory transitive native libraries/plugins and
-licenses/notices before distribution; check the actual selected components,
-not only their top-level Python package names.
+```text
+debian 13 only for now, that is fine. but why do you need a separate version per arch? just get pip to download the correct one??
+```
 
-## Target matrix and additional build tools
+**§303** (2026-10-20)
 
-All formats below are **proposed / unbuilt / uncertified**.
+```text
+ok, proceed for arch specific, but only do x86 for now, arm is not common for desktops I think and it just adds to user confusion, they are already confused with multiple plateforms.  Also, follow the taskcoach windows and macos because those are very common and ubuntu also.
+```
 
-| Target | Initial packaging route | Additional build-time tools / checks |
-|---|---|---|
-| Debian 13 x86-64 | `.deb`; declared compatible distro dependencies or private app runtime when distro versions are insufficient | `debhelper`, `dh-python`, Python build tooling, `dpkg-buildpackage`, `lintian`; desktop entry/icon/MIME metadata; never install pip into OS-managed Python |
-| Broader Linux x86-64 | AppImage with private Python/Qt/native libraries, following Task Coach's AppDir pattern | `python-appimage`/AppImage tooling; audit shared objects and Qt plugin dependencies; build against an intentionally selected oldest compatible glibc baseline, then test each claimed distribution |
-| Windows x64 | Private embeddable Python + matching wheels/native encoder; portable directory ZIP, then Inno Setup installer | Build on Windows; controlled `._pth`/import layout, native runtime DLL audit, installer/uninstaller, executable launch without a console or developer Python |
-| macOS arm64 / x86_64 | Separate `.app` bundles then `.dmg`; evaluate Qt deployment or Task Coach's py2app pattern against this app | Native per-architecture runner, Xcode command-line tools, bundle/library inspection, `hdiutil`, signing/notarization release tooling; determine minimum macOS from actual wheels/SDK and test it |
+**§304** (2026-10-21)
 
-For a Qt/Nuitka route, [Qt documents](https://doc.qt.io/qtforpython-6/deployment/deployment-pyside6-deploy.html)
-build-only Nuitka/ordered-set/zstandard, Linux patchelf, and platform binary
-inspection tools (Windows dumpbin, Linux readelf, macOS dyld_info). This is
-an alternative toolchain, not an additional universal runtime dependency.
-Flatpak/RPM/Arch packages and other architectures can be added when requested
-and verified; Task Coach having them does not certify or require them here.
+```text
+Both options for mac please, and yes, push to github please.
+```
 
-## App-specific integration gates before any packaged build
+[PLATFORMS.md](PLATFORMS.md) records what each package has passed. The
+packages follow Task Coach (`/home/user/Downloads/taskcoach`, its
+`docs/PACKAGING.md`, `debian/`, `scripts/build-deb.sh` and build workflows),
+adapted where PDF Minify differs: compiled dependencies and two external
+encoders.
 
-1. Add package metadata, versioned entry point, desktop metadata using the
-   bundled application icon (`ui_qt/assets/app_icon/`, see `ICONS.md`) and a
-   release dependency lock. None of the proposed build scripts/specs or
-   installers exists here yet. Preserve `python -m pdf_minify` for source.
+## Targets
+
+All packages are x86-64 (§303).
+
+| Target | Format | Dependencies | Build | Test |
+|---|---|---|---|---|
+| Debian 13 (trixie) | `.deb` | Debian's PySide6, NumPy, Pillow, `jbig2`, `zopfli`; bundled PyMuPDF | `scripts/build-deb.sh`, `build-deb.yml` | `scripts/test-deb.sh` |
+| Ubuntu 26.04 (resolute) | `.deb` | as Debian 13 | same | same |
+| Ubuntu 24.04 (noble) | `.deb` | Ubuntu's NumPy, Pillow, `jbig2`, `zopfli`; bundled PySide6 and PyMuPDF | same | same |
+| Windows 10/11 | Inno Setup installer and portable ZIP | everything bundled: Python 3.13 embeddable, pinned wheels, `jbig2.exe`, `zopfli.exe` | `build-windows.yml` | same workflow |
+| macOS, Intel and Apple Silicon (§304) | DMG, one per processor | in progress | | |
+
+Not packaged:
+
+- **Debian 12 and Ubuntu 22.04.** They have no PySide6 and no `jbig2`, and
+  their PyMuPDF, NumPy and Pillow are too old: a package would carry nearly
+  everything, about 110 MB, and compile `jbig2` (§302: Debian 13 only).
+- **ARM Linux and Windows** (§303). macOS gets both processors (§304).
+- **Debian's own PyMuPDF**, on every release so far. Debian 13 has 1.25,
+  Ubuntu 24.04 1.23 and Ubuntu 26.04 1.26; the app needs 1.28.2. On
+  Debian 13, measured (§299): the app cannot open a file (no
+  `fz_tune_image_rendering`), MuPDF has no Brotli encoder or decoder (Best,
+  the default, cannot save), inline images crash MuPDF 1.25, and line art
+  renders visibly heavier. Debian 14 (forky) ships MuPDF 1.28.2 with
+  Brotli; its package can depend on `python3-pymupdf` and bundle nothing.
+
+## Linux packages: Task Coach's rule
+
+Each release's own packages first. A library the release lacks, or ships
+too old, is pip-installed **at build time** into the package, never on the
+user's machine, as Task Coach's Arch and Fedora packages do for squaremap.
+
+- The app and the bundled libraries are private modules in
+  `/usr/lib/pdf-minify` (Debian Python Policy §5.3: `/usr/lib/<package>`
+  for architecture-dependent modules). `/usr/bin/pdf-minify` puts that
+  folder first on the module path; nothing goes into the system's
+  `dist-packages`, so Debian's own `python3-pymupdf` can coexist.
+- PEP 668 ("externally managed") stops `pip install` into the system Python.
+  It does not apply to files a `.deb` installs: `dpkg` tracks and removes
+  them. No venv is involved.
+- Debian Policy §4.13 asks archive packages to use the library Debian ships;
+  carrying PyMuPDF means these packages could not enter the Debian archive as
+  they are. They are published on GitHub, like Task Coach's.
+- The bundled wheels contain compiled code, so the package is
+  `Architecture: amd64` (Task Coach's is `all`: its bundled code is pure
+  Python). One `.deb` per release and processor, built at build time; no
+  install-time download (§302).
+
+Per-release files in `debian/bundled/`, named by the release's codename:
+
+| File | Purpose |
+|---|---|
+| `<codename>.txt` | pip lock, pinned by SHA-256, installed with `--require-hashes --only-binary` |
+| `<codename>.depends` | that release's own packages the app uses (`${release:Depends}`) |
+| `<codename>.build-depends` | optional: libraries a bundled wheel links against, installed by `build-deb.sh deps` so `dh_shlibdeps` can declare them |
+| `<codename>.lintian-overrides` | optional: overrides for files only that release's package carries |
+
+`debian/rules` trims what the app never loads: PyMuPDF's build files and,
+where PySide6 is bundled, Qt's tools, QML, and the database, printing,
+Designer, embedded-display and virtual-keyboard plugins (some need libraries
+no release has). Lintian is clean; each override in
+`debian/pdf-minify.lintian-overrides` says why.
+
+To add a release: write its `debian/bundled/` files, build and test it
+locally (below), then add it to both matrices in `build-deb.yml`.
+
+### Building and testing locally
+
+```bash
+scripts/build-deb.sh deps      # build dependencies (sudo)
+scripts/build-deb.sh build     # packages land in build-deb/
+scripts/build-deb.sh lintian
+scripts/test-deb.sh debian:trixie          # podman or docker
+scripts/test-deb.sh ubuntu:24.04 --quick   # install checks only
+```
+
+`build-deb.sh` builds from a clean copy of the checkout in `build-deb/src`.
+`test-deb.sh` installs the package in a fresh container of its release,
+checks the installed files, starts the app on a file whose name has a space,
+then runs the full test suite against `/usr/lib/pdf-minify` (`python3 -P`,
+so every import comes from the package). Build another release's package in
+its own container, as `build-deb.yml` does.
+
+## Windows
+
+`build-windows.yml` follows Task Coach's Windows build:
+
+- Python's embeddable package (3.13.16, SHA-256 checked) in `python\`, its
+  `python313._pth` adding the app folder and `Lib\site-packages`.
+- `packaging/windows/requirements.txt`: the wheels, pinned by SHA-256,
+  installed by the build machine's pip with `--target`; no pip in the app.
+- `jbig2.exe` from conda-forge (jbig2enc 0.32 with Leptonica and its image
+  libraries) and `zopfli.exe` built from zopfli 1.0.3's source with the
+  static C runtime, in `bin\`, with every licence in `bin\licenses\`.
+- `pdf-minify.pyw` runs under `pythonw.exe` (no console); it writes the log
+  to `%TEMP%\pdf-minify\pdf-minify.log`, the folder `run.sh` uses.
+- The code is compiled at build time (`compileall`, unchecked hashes), so
+  the app never writes into its install folder.
+- Inno Setup (`packaging/windows/pdf-minify.iss`): per-user install by
+  default, Start-menu entry, optional desktop icon, "Open with" for PDFs
+  without taking over the default viewer. Uninstalling keeps settings and
+  temporary files, which are never in the install folder.
+- The portable ZIP starts from `PDF Minify.cmd`. Task Coach also ships a
+  VBScript launcher; Windows is removing VBScript.
+
+The workflow smoke-tests the built app (`packaging/smoke_test.py`), runs the
+full test suite against it, then installs the installer silently,
+smoke-tests the installed copy and uninstalls it.
+
+## Bundled encoders
+
+`pdf_minify/core/external_tools.find_tool` returns the app's own copy (a
+`bin` folder next to `pdf_minify`) first, else the one on PATH. Callers run
+the returned path, so detection and execution use the same program. Linux
+packages carry no `bin` and use the release's `jbig2` and `zopfli`.
+
+## Signing
+
+As Task Coach's, the Windows installer is not code-signed and the macOS app
+would not be notarized: both cost a yearly fee. Windows SmartScreen and macOS
+Gatekeeper warn on first start; Task Coach's install guides show users how
+to proceed. Linux packages need neither.
+
+## App-specific gates
+
+1. Package metadata: version (`pdf_minify.__version__`), desktop entry,
+   icon and AppStream ID (`pdf_minify.DESKTOP_ID`,
+   `packaging/linux/`), per-target locks. Keep `python -m pdf_minify` for
+   source.
 2. Preserve multiprocessing **spawn**, process-pool limits, cancellation and
-   one GUI per launch. A frozen launcher must dispatch worker/resource-tracker
-   startup before importing/creating the GUI or parsing normal app arguments.
-   Current `__main__.py` imports the GUI before `cli()` and does not call
-   `freeze_support()`; a frozen executable is therefore not ready merely
-   because a freezer command completes. Follow the selected tool's spawn
-   integration; [PyInstaller explicitly requires early freeze_support](https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html#multi-processing).
-3. Resolve bundled external tools at controlled application-relative paths,
-   and use the resolved path for both detection and subprocess execution.
-   `pipeline.py` detects `jbig2` with `shutil.which` and invokes that
-   resolved path; a bundle still needs an intentional launcher/PATH or resolver. Verify
-   the actual `jbig2 -p` output with the installed native MuPDF decoder.
-4. Keep helper DLL/shared-library lookup compatible with the helper's origin.
-   [PyInstaller's subprocess guidance](https://pyinstaller.org/en/stable/common-issues-and-pitfalls.html#launching-external-programs-from-the-frozen-application)
-   distinguishes bundled from host-system programs. Do not strip or replace
-   the main GUI's library environment globally to fix an external command.
-5. Keep settings in Qt's native settings location and all generated PDF/encoder
-   files in `QStandardPaths.TempLocation/pdf-minify/saves/<GUI-PID>/…`.
-   Never write into an install directory, app bundle or freezer extraction
-   root. Preserve UUID ownership, two simultaneous apps, locks, draft cleanup
-   and mmap/document-handle closure before deletion (especially on Windows).
-6. Installed launchers must work without `run.sh`, a shell, repository cwd or
-   developer environment. No `/usr/bin/jbig2` assumption on Windows/macOS.
-   Test native file opening/DnD, spaces/Unicode, long paths, file association,
-   fonts and ordinary UI startup. A packaged app must not depend on the
-   repository's `examples/images.pdf` for a usable first launch.
+   one GUI per launch. The packages run an ordinary Python interpreter, not
+   a frozen executable; a freezer (py2app, PyInstaller) must call
+   `multiprocessing.freeze_support()` before importing the GUI.
+3. Run bundled tools by the path `find_tool` returns, never by name.
+4. Keep a helper's DLL/shared-library lookup with the helper: Windows loads
+   `jbig2.exe`'s DLLs from its own `bin` folder. Do not change the GUI's
+   library environment to fix an external command.
+5. Settings stay in Qt's native location and generated files in
+   `QStandardPaths.TempLocation/pdf-minify/saves/<GUI-PID>/…`; never in an
+   install directory or app bundle.
+6. Installed launchers work without `run.sh`, a shell, the repository's
+   folder or `examples/images.pdf`.
 7. Keep the exact-display policy: both panes render actual files with all
-   PDF-content AA/interpolation/decoder averaging disabled, native geometry
-   at device scale, and no filter jobs on zoom. Do not replace it with the
-   packager's default smoothed widget/image path.
-8. Keep the stock icon assets at their application-relative paths, with
-   provenance/notices/licenses, and retain QtSvg plus Qt's SVG icon-engine
-   plugin (`iconengines/libqsvgicon.so` on this Linux build; target-specific
-   DLL/dylib names elsewhere). An import-only freezer scan may miss this
-   plugin and non-Python package data. Test native-theme precedence, no
-   theme, an individually missing name, light/dark palettes, disabled states
-   and 1×/2× SVG rendering from the installed artifact without `/usr/share/icons`.
-   See [ICONS.md](ICONS.md); do not install theme packages on first launch.
-   The separate [Icon Lab](ICON_LAB.md) must render its named families directly,
-   without inherited theme substitution. Retain both resource directories,
-   original PNG-byte hashes and all LGPL/GPL texts in installed artifacts.
-   Test choice codes/copy, real/disabled/HiDPI previews and native scrolling.
+   PDF-content AA/interpolation/decoder averaging disabled.
+8. Keep the stock icon assets with their notices and licences, and Qt's SVG
+   icon-engine plugin (`qt6-svg-plugins` where Qt comes from the release).
 
 ## Release and certification checklist
 
-- Build on each target OS/architecture in a clean, isolated environment;
-  pin inputs, retain source revision, dependency/native-tool versions and
-  artifact SHA-256. A Linux build is not a Windows/macOS build.
-- Run the full suite, real-file compression benchmark/independent decoder,
-  then **test the installed artifact**, not just imports or the source tree.
-- On a clean target without development Python/PATH, exercise real native
-  GUI launch/exit, filter processing, saved/live/Cancel/Revert flow, export,
-  exact display at normal/fractional/HiDPI scales and native DnD. Offscreen
-  screenshots alone cannot certify native desktop integration.
-- Check multi-page FFPR ownership, native text/vectors, fallback behavior
-  without optional tools, two live instances, canceled jobs, normal exit and
-  crashed-process cleanup. View whole windows and 1:1 pane/strip captures.
-- Test install, upgrade and uninstall without deleting settings, input PDFs
-  or another process's temporary files. Verify signing/notarization policy;
-  do not tell users to bypass OS security as the standard release workflow.
-- Only after the gates pass, add a dated platform/artifact certificate to
-  `PLATFORMS.md`. Creating/pushing releases requires explicit authorization.
+- Build each target in a clean, isolated environment from pinned inputs.
+- Run the full suite against the **installed** artifact, not the source tree.
+- On a real desktop, exercise GUI launch and exit, filter processing,
+  save/Cancel/Revert, exact display at normal and HiDPI scales, and native
+  drag-and-drop. Offscreen runs cannot certify desktop integration.
+- Test install, upgrade and uninstall without losing settings, input PDFs or
+  another process's temporary files.
+- Only then add a dated certificate to `PLATFORMS.md`. Creating or pushing
+  releases requires explicit authorization.
 
-Primary references checked 2026-10-14: Task Coach's linked guide/workflows,
-[Python embeddable distribution](https://docs.python.org/3/using/windows.html#windows-embeddable),
-and the Qt/PyInstaller documentation linked above. Revalidate tool versions
-when implementing a package; do not copy another project's old pins blindly.
+## Design traps
+
+- **Running a found tool by name.** `deflate_best` once checked for zopfli,
+  then ran `"zopfli"`; with a bundled copy off PATH it fell back to zlib
+  without a word. Always run the returned path (`test_external_tools.py`).
+- **dh_python3 renames extensions** to the build's Python version
+  (`_mupdf.cpython-313-…so`), tying the package to one Python; PyMuPDF and
+  PySide6 are built for every Python from 3.10 on, so `debian/rules` passes
+  `--no-ext-rename`.
+- **Minimal Ubuntu container images skip man pages** (`path-exclude`), so
+  `test-deb.sh` checks the man page inside the `.deb`.
+- **Debian's PySide6 6.8 is stricter than 6.12**: drag events take a
+  `QPoint` there and a `QPointF` (the `QPoint` form deprecated) on newer Qt;
+  tests build them with the `drag_event` fixture.

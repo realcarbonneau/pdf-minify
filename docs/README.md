@@ -44,6 +44,15 @@ encoder scratch live under `${TMPDIR:-/tmp}/pdf-minify/saves/<GUI-PID>/…`,
 locked per process and removed on normal exit
 ([PERSISTENCE_AND_TEMP.md](PERSISTENCE_AND_TEMP.md)).
 
+Building and testing the packages ([PACKAGING.md](PACKAGING.md)):
+
+```bash
+scripts/build-deb.sh deps && scripts/build-deb.sh build   # .deb for this Debian or Ubuntu release
+scripts/test-deb.sh debian:trixie                          # install it in a clean container, run the suite
+```
+
+The Windows installer is built and tested by `.github/workflows/build-windows.yml`.
+
 ## Repository layout
 
 ```
@@ -56,6 +65,10 @@ locked per process and removed on normal exit
   examples/           # committed PDF test corpus (examples/README.md)
   docs/               # this documentation
   icons/              # icon artwork sources
+  debian/             # Debian and Ubuntu packaging; debian/bundled/ per release
+  packaging/          # launchers, desktop entry, icons and installer scripts
+  scripts/            # package build and test scripts
+  .github/workflows/  # package builds (Task Coach's pattern)
   requirements*.txt   # pip requirements (installed into .venv)
 ```
 

@@ -11,11 +11,13 @@ quotes is not the designer's.
 ok, start with that, I already stated alot of my objectives.  Can you put everything local in this directory?  Tell me what is local and what needs to be system packages?
 ```
 
-The certified runtime and its exact versions are in [PLATFORMS.md](PLATFORMS.md).
-The app uses the Qt bundled with the pip PySide6 wheels (6.12.0), not the
-separately installed apt Qt. [PACKAGING.md](PACKAGING.md) separates runtime,
-build and validation dependencies and plans cross-platform distribution; no
-installers exist yet.
+This page covers running from source. The certified runtime and its exact
+versions are in [PLATFORMS.md](PLATFORMS.md). From source, the app uses the Qt
+bundled with the pip PySide6 wheels (6.12.0), not the separately installed apt
+Qt. The packages take their dependencies differently: the Debian and Ubuntu
+packages use the release's own PySide6, NumPy, Pillow, `jbig2` and `zopfli`
+where it has them and carry the rest, and the Windows build carries
+everything ([PACKAGING.md](PACKAGING.md)).
 
 ## SYSTEM — installed via apt, shared by the OS, NOT in this repo
 | Package | Status here | Why system |

@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 269. Routine execution requests are not TODOs (§218).
+new TODO ID is 270. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -1508,3 +1508,18 @@ non-lossy native-mode rows, which predate the B116 composition repair, and the
 non-lossy overview cells, measured before Best began trying PNG prediction on
 and off (§260).
 See: `docs/COMPRESSION_BENCHMARKS.md`, issue B116.
+
+## 269 — OPEN (designer §§298/301–304: packages for Debian, Ubuntu, Windows and macOS)
+
+x86-64 packages following Task Coach ([PACKAGING.md](PACKAGING.md)). Built and
+tested on a clean system of each release: the `.deb` for Debian 13, Ubuntu
+24.04 and Ubuntu 26.04 (`scripts/build-deb.sh`, `scripts/test-deb.sh`).
+Remaining:
+
+- Windows: first run of `build-windows.yml` (build, full suite, install and
+  uninstall), then a check on a real Windows desktop.
+- macOS: Intel and Apple Silicon, one DMG each (§304), following Task
+  Coach's build (py2app, DMG) with `jbig2` and `zopfli` bundled.
+- Real-desktop checks of the Linux packages (X11 and Wayland, drag-and-drop,
+  HiDPI) before the first release.
+- The first release, `v0.1.0`, needs the designer's authorization.
