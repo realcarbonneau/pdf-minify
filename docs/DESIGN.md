@@ -23,6 +23,12 @@ encoding time is not a constraint (§213).
 I already ruled the use case, this is for making pdfs smaller, thuse lossless or super high quality images are not a concern, we want something simple for most users.
 ```
 
+**§293** (2026-10-20)
+
+```text
+start with PDF Minify: Make pdf smaller ... avoid technical references, the techniques are for an objective.  make pdfs smaller using a variety of filters and compression algorithms and techniques with extensive previews giving you a quick overvew of the visual effects of the compression and the size... etc.  This is the idea, it should have already been clear from my rulings, make a good description and update the rulings, because the two are closely linked.
+```
+
 **§6**
 
 ```text

@@ -1,10 +1,8 @@
-# PDF Minify — shrink PDFs with a camera-filter workbench
+# PDF Minify — make PDFs smaller
 
-PDF optimizer and compressor: open a scan, research paper, manual, or
-photo-heavy report, click through black-and-white threshold (Otsu, Simple,
-Sauvola, adaptive), JPEG, JPEG2000, and palette-indexed filters, and watch
-every filter's **real measured output size** update under its thumbnail.
-What you see is what saving writes.
+Make PDFs smaller with a variety of filters, compression algorithms and
+techniques, and extensive previews that give a quick overview of each one's
+visual effect and file size. What you see is what saving writes.
 
 - **BW pipeline**: threshold → selected lossless JBIG2 or packed 1-bit samples,
   300dpi default, original page size kept unless you pick Letter/A4.

@@ -1,11 +1,29 @@
-# GitHub project text for PDF Minify (designer §110)
+# GitHub project text for PDF Minify
 
-Copy-paste ready. Keep it factual — every claim below is true of the tree.
+## Rulings (verbatim)
 
-## Short description (Settings → General → Description, ~140 chars)
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§110** (2026-10-10)
+
+```text
+Also, when you are done, give me some text, descriptions and tags to put in github project.  Also, make sure the readme makes the project findable and well explained.
+```
+
+**§293** (2026-10-20)
+
+```text
+start with PDF Minify: Make pdf smaller ... avoid technical references, the techniques are for an objective.  make pdfs smaller using a variety of filters and compression algorithms and techniques with extensive previews giving you a quick overvew of the visual effects of the compression and the size... etc.  This is the idea, it should have already been clear from my rulings, make a good description and update the rulings, because the two are closely linked.
+```
+
+Copy-paste ready. Lead with what the reader gets, not how it is built; every
+claim must be true of the tree.
+
+## Description (repository page → About ⚙ → Description, up to 350 characters)
 
 ```
-PDF optimizer with a camera-filter UI: compare BW/color presets side-by-side and save much smaller PDFs.
+PDF Minify: make PDFs smaller with a variety of filters, compression algorithms and techniques, and extensive previews that give a quick overview of each one's visual effect and file size.
 ```
 
 ## Long description
