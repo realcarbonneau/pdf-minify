@@ -54,8 +54,12 @@ def window(tmp_path, monkeypatch):
     w = ui.MainWindow(str(source))
     w.resize(1100, 650)
     w.show()
-    wait_until(lambda: not w._artifacts.pending and
-               len(w._mini_amount) == len(w._strip_ids))
+    try:
+        wait_until(lambda: not w._artifacts.pending and
+                   len(w._mini_amount) == len(w._strip_ids))
+    except AssertionError:
+        # Name the filters that failed in the background, with their errors.
+        raise AssertionError(f"filters did not finish: {w._artifacts.errors}") from None
     yield w
     monkeypatch.setattr(w, "_ask_unsaved_filter", lambda pid: "discard")
     w.close()

@@ -160,8 +160,9 @@ jobs:
             $log = "test-logs\$($test.BaseName).log"
             Write-Host "=== $($test.BaseName)"
             # Live, one line per test; a test stuck for 4 minutes dumps its
-            # stack, and is stopped at 5.
-            python -P -m pytest $test.FullName -v -p no:cacheprovider -rfE --timeout=300 `
+            # stack, and is stopped at 5. A file stops at its third failure,
+            # so its tracebacks print without waiting for every test.
+            python -P -m pytest $test.FullName -v -p no:cacheprovider -rfE --maxfail=3 --timeout=300 `
               -o faulthandler_timeout=240 2>&1 | Tee-Object -FilePath $log
             if ($LASTEXITCODE) { $failed += $test.BaseName }
           }
