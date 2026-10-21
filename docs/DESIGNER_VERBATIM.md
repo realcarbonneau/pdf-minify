@@ -1010,3 +1010,20 @@ Source: designer message in the session of 2026-10-20; exact text.
 ```text
 Can you put this in the readme?
 ```
+
+## 296 — README for users, like Task Coach; docs index in docs/README.md (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+And the readme has irrelevant technical details, like debounce, local run, etc.  I want something like taskcoach, we will have the install packages/platforms, and a ref to the docs index, which should be a readme in the docs dir, right?
+```
+
+## 297 — license: AGPL-3.0-or-later (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text. It approves
+the recommendation it quotes.
+
+```text
+ok, as you reccommend "I recommend AGPL-3.0-or-later."
+```

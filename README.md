@@ -107,6 +107,16 @@ See the [certificate and its limits](docs/PLATFORMS.md) and the
 [multi-platform packaging guide](docs/PACKAGING.md). Windows/macOS/other
 platforms and installers are not yet certified or built.
 
+## License
+
+PDF Minify is free software, licensed under the
+[GNU Affero General Public License v3.0 or later](LICENSE).
+
+Copyright (C) 2026 Real Carbonneau
+
+Bundled third-party icons keep their own licenses; their notices are with
+them in `pdf_minify/ui_qt/assets/`.
+
 ## Docs
 
 [docs/00_OVERVIEW.md](docs/00_OVERVIEW.md) maps every page. The main ones:

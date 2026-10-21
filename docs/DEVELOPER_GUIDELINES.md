@@ -145,6 +145,14 @@ Why forced push, I want to keep some history, when I say squash and push, that m
 Also, put an important memory, like in taskcoach, that we never put the workers as co-authors, or is that in the dev guidelines?  Look in sister taskcoach repo.
 ```
 
+### License
+
+**§297** (2026-10-20)
+
+```text
+ok, as you reccommend "I recommend AGPL-3.0-or-later."
+```
+
 Read this before touching code. The designer's rulings are in
 `DESIGNER_VERBATIM.md`, [00_OVERVIEW.md](00_OVERVIEW.md) maps every page, and
 requirements are in [TODO.md](TODO.md).
@@ -212,6 +220,9 @@ requirements are in [TODO.md](TODO.md).
   migration. Tests/review runs isolate both namespaces before migration.
   Preserve exact quotes, licensed resources and frozen benchmark provenance;
   keep the actual GitHub remote unchanged until the designer renames it.
+- License (§297): PDF Minify is AGPL-3.0-or-later (`LICENSE`), which matches
+  PyMuPDF's AGPL-3.0. New dependencies and bundled assets must be compatible
+  with it, and bundled assets keep their own notices.
 - Python + PySide6 (Qt6) GUI + PyMuPDF pipeline. `core/` = headless, NO Qt imports.
   `ui_qt/` = widgets only. Pure-numpy thresholds.
 - REPOSITORY-OWNED: `pdf_minify/`, `tests/`, `tools/`, `docs/`,
