@@ -141,11 +141,15 @@ jobs:
           if ($LASTEXITCODE) { throw "smoke test failed" }
 
       - name: Run the full test suite against the built app
+        timeout-minutes: 60
         run: |
           python -m pip install pytest pytest-timeout
           # The built app's code and packages first; the checkout for tests and tools.
           $env:PYTHONPATH = "$PWD\$env:APP;$PWD\$env:APP\python\Lib\site-packages;$PWD"
           $env:QT_QPA_PLATFORM = "offscreen"
+          # The tests and tools read the repository's UTF-8 files without
+          # naming the encoding; Python 3.15 makes UTF-8 the default anyway.
+          $env:PYTHONUTF8 = "1"
           # Tests that look for jbig2 on PATH find the bundled one, rather than skipping.
           $env:PATH = "$PWD\$env:APP\bin;$env:PATH"
           New-Item -ItemType Directory -Force test-logs | Out-Null
@@ -154,14 +158,12 @@ jobs:
           $failed = @()
           foreach ($test in Get-ChildItem tests\test_*.py) {
             $log = "test-logs\$($test.BaseName).log"
-            python -P -m pytest $test.FullName -q -p no:cacheprovider -rfE --timeout=900 *> $log
-            if ($LASTEXITCODE) {
-              $failed += $test.BaseName
-              Write-Host "FAIL  $($test.BaseName)"
-              Get-Content $log | Select-String -Pattern '^(FAILED|ERROR) ' | Select-Object -First 20
-            } else {
-              Write-Host "ok    $($test.BaseName): $(Get-Content $log -Tail 1)"
-            }
+            Write-Host "=== $($test.BaseName)"
+            # Live, one line per test; a test stuck for 4 minutes dumps its
+            # stack, and is stopped at 5.
+            python -P -m pytest $test.FullName -v -p no:cacheprovider -rfE --timeout=300 `
+              -o faulthandler_timeout=240 2>&1 | Tee-Object -FilePath $log
+            if ($LASTEXITCODE) { $failed += $test.BaseName }
           }
           if ($failed) { throw "Failing test files: $($failed -join ', ')" }
 

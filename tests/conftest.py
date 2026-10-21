@@ -41,6 +41,24 @@ def grayscale_text():
     yield
 
 
+@pytest.fixture(autouse=True)
+def warnings_fail_instead_of_waiting(monkeypatch):
+    """An app warning dialog ("Open failed") fails the test with its message.
+
+    Without a screen, a modal warning waits forever for a click, so a test
+    that hits an error path would hang (seen on Windows) instead of failing.
+    No test expects one; tests drive the unsaved-changes dialog explicitly.
+    """
+    if "PySide6.QtWidgets" in sys.modules:
+        from PySide6.QtWidgets import QMessageBox
+
+        def fail(_parent, title, text, *rest):
+            raise AssertionError(f"warning dialog: {title}: {text}")
+        monkeypatch.setattr(QMessageBox, "warning", fail)
+        monkeypatch.setattr(QMessageBox, "critical", fail)
+    yield
+
+
 @pytest.fixture
 def drag_event():
     """Make a drag enter or move event on Debian 13's PySide6 6.8 and on newer Qt.

@@ -145,6 +145,7 @@ jobs:
             packaging/smoke_test.py "$RES/lib/python3.13" "$APP/Contents/MacOS/PDF Minify"
 
       - name: Run the full test suite against the built app
+        timeout-minutes: 60
         run: |
           LIB="$PWD/$APP/Contents/Resources/lib/python3.13"
           # The built app's code and packages first; the checkout for tests and tools.
@@ -154,12 +155,13 @@ jobs:
           failed=""
           for f in tests/test_*.py; do
             n=$(basename "$f" .py)
-            if python -P -m pytest "$f" -q -p no:cacheprovider -rfE --timeout=900 > "test-logs/$n.log" 2>&1; then
-              echo "ok    $n: $(tail -n 1 "test-logs/$n.log")"
-            else
+            echo "=== $n"
+            # Live, one line per test; a test stuck for 4 minutes dumps its
+            # stack, and is stopped at 5.
+            # Inside "if": GitHub's bash stops at a failing pipeline otherwise.
+            if ! python -P -m pytest "$f" -v -p no:cacheprovider -rfE --timeout=300 \
+                -o faulthandler_timeout=240 2>&1 | tee "test-logs/$n.log"; then
               failed="$failed $n"
-              echo "FAIL  $n: $(tail -n 1 "test-logs/$n.log")"
-              grep -E "^(FAILED|ERROR) " "test-logs/$n.log" | head -20
             fi
           done
           [ -z "$failed" ] || { echo "Failing test files:$failed"; exit 1; }

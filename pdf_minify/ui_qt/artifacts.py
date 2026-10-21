@@ -192,7 +192,7 @@ class ArtifactWorker(QThread):
                     return
                 except TimeoutError:
                     try:
-                        value = float(Path(self.directory, "progress").read_text())
+                        value = float(Path(self.directory, "progress").read_text(encoding="ascii"))
                         self.progressed.emit(min(1.0, max(0.0, value)))
                     except (OSError, ValueError):
                         pass

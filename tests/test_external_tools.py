@@ -21,8 +21,10 @@ def test_bundled_copy_wins_over_the_system(tmp_path, monkeypatch):
     monkeypatch.setattr(external_tools.shutil, "which",
                         lambda name, path=None, _which=external_tools.shutil.which:
                         _which(name, path=path) if path else "/usr/bin/" + name)
-    assert external_tools.find_tool("jbig2") == str(bundled)
-    assert pipeline.jbig2_binary() == str(bundled)
+    # Windows reports the extension as PATHEXT spells it (jbig2.EXE).
+    same = lambda found: os.path.normcase(found) == os.path.normcase(str(bundled))
+    assert same(external_tools.find_tool("jbig2"))
+    assert same(pipeline.jbig2_binary())
     # Not bundled: the system's.
     assert external_tools.find_tool("zopfli") == "/usr/bin/zopfli"
     assert pipeline.zopfli_binary() == "/usr/bin/zopfli"
