@@ -33,3 +33,15 @@ def tool_path(path) -> str:
     if os.name == "nt" and len(path) >= 240 and not path.startswith("\\\\?\\"):
         return "\\\\?\\" + path
     return path
+
+
+def short_scratch_dir(directory):
+    r"""`directory`, or None (the system temp folder) where its files' paths reach 260 characters.
+
+    For a tool that cannot open the \\?\ form either: jbig2 opens its input
+    through Leptonica, which turns every \ into / on Windows. A file named
+    with up to 40 characters in the folder returned stays under the limit.
+    """
+    if os.name == "nt" and directory and len(os.path.abspath(directory)) + 41 >= 260:
+        return None
+    return directory

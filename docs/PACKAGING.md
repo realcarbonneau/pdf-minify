@@ -289,8 +289,12 @@ to proceed. Linux packages need neither.
   tests build them with the `drag_event` fixture.
 - **Windows encoders and long paths.** The app's scratch files can pass
   Windows' 260-character limit (a user's long Temp path plus the hashed
-  filter folders), which `jbig2.exe` and `zopfli.exe` cannot open; Python
-  can. `tool_path` gives them the `\\?\` form from 240 characters on.
+  filter folders; the tests' deeper folders often do), which `jbig2.exe` and
+  `zopfli.exe` cannot open; Python can. `tool_path` gives zopfli the
+  `\\?\` form from 240 characters on. jbig2 opens files through Leptonica,
+  which turns every `\` into `/` and so breaks that form: its input goes to
+  the system temp folder instead when the filter's folder is too deep
+  (`short_scratch_dir`).
 - **On macOS, Escape clicks a dialog's Cancel button 100 ms later**, and
   every new press restarts the wait. A test that pressed Escape every 50 ms
   until the dialog closed waited forever there; tests press it once per

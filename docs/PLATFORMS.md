@@ -62,13 +62,13 @@ so these are test results, not certificates (see the checklist in
 [PACKAGING.md](PACKAGING.md)).
 
 <!-- table: package-tests -->
-| Package (x86-64) | Libraries in use | Size | Result (2026-10-20) |
+| Package (x86-64) | Libraries in use | Size | Result (2026-10-21) |
 |---|---|---|---|
-| Debian 13 `.deb` | Debian's PySide6 6.8.2, NumPy 2.2.4, Pillow 11.1.0; bundled PyMuPDF 1.28.2 | 19 MB (57 MB installed) | all 1,036 tests pass; built before the encoder-path fix, rerun by `build-deb.yml` |
-| Ubuntu 24.04 `.deb` | Ubuntu's NumPy 1.26.4, Pillow 10.2.0; bundled PySide6 6.12.0, PyMuPDF 1.28.2 | 70 MB (245 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
-| Ubuntu 26.04 `.deb` | Ubuntu's PySide6 6.10.2, NumPy 2.3.5, Pillow 12.1.1; bundled PyMuPDF 1.28.2 | 21 MB (54 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
-| Windows x64 installer | everything bundled | | first run by `build-windows.yml` |
-| macOS DMGs, Intel and Apple Silicon | everything bundled | | first run by `build-macos.yml` |
+| Debian 13 `.deb` | Debian's PySide6 6.8.2, NumPy 2.2.4, Pillow 11.1.0; bundled PyMuPDF 1.28.2 | 19 MB (57 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
+| Ubuntu 24.04 `.deb` | Ubuntu's NumPy 1.26.4, Pillow 10.2.0; bundled PySide6 6.12.0, PyMuPDF 1.28.2 | 70 MB (245 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
+| Ubuntu 26.04 `.deb` | Ubuntu's PySide6 6.10.2, NumPy 2.3.5, Pillow 12.1.1; bundled PyMuPDF 1.28.2 | 21 MB (54 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
+| Windows x64 installer | everything bundled | | smoke test passes; full suite: long-path fixes under test |
+| macOS DMGs, Intel and Apple Silicon | everything bundled | 184 MB each | smoke test and full suite pass on GitHub (`build-macos.yml`) |
 
 ## Other targets
 

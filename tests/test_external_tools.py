@@ -63,3 +63,34 @@ def test_tools_get_long_windows_paths_in_the_long_path_form(monkeypatch):
     assert external_tools.tool_path("\\\\?\\" + deep) == "\\\\?\\" + deep  # once only
     short = "C:\\Temp\\stream"
     assert external_tools.tool_path(short) == short
+
+
+def test_jbig2_input_stays_short_on_windows(monkeypatch):
+    r"""jbig2 reads through Leptonica, which turns \\?\ into //?/ on Windows."""
+    import ntpath
+    monkeypatch.setattr(external_tools.os, "name", "nt")
+    monkeypatch.setattr(external_tools.os, "path", ntpath)
+    base = "C:\\Users\\someone\\AppData\\Local\\Temp\\pdf-minify\\saves\\"
+    fits = base + "x" * (218 - len(base))  # + "\" + a 40-character name = 259
+    assert external_tools.short_scratch_dir(fits) == fits
+    assert external_tools.short_scratch_dir(fits + "x") is None  # the system temp folder
+    assert external_tools.short_scratch_dir(None) is None
+
+
+@pytest.mark.skipif(pipeline.jbig2_binary() is None, reason="no jbig2")
+def test_jbig2_encodes_from_a_deep_scratch_folder(tmp_path):
+    """The Windows filter tests failed here: a ~270-character scratch path."""
+    import numpy as np
+    deep = tmp_path
+    while len(str(deep)) < 300:
+        deep = deep / ("d" * 40)
+    deep.mkdir(parents=True)
+    bw = np.full((64, 96), 255, np.uint8)
+    bw[16:48, 20:76] = 0
+    token = pipeline._ENCODE_WORKDIR.set(str(deep))
+    try:
+        payload = pipeline.encode_binary_jbig2(bw)
+    finally:
+        pipeline._ENCODE_WORKDIR.reset(token)
+    assert payload and pipeline.jbig2_renders(payload, 96, 64, bw)
+    assert not list(deep.iterdir())  # its input is deleted

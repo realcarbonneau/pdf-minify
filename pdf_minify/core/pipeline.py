@@ -16,7 +16,7 @@ from functools import wraps
 from contextvars import ContextVar
 
 from .cancel import CancelToken
-from .external_tools import find_tool, tool_path
+from .external_tools import find_tool, short_scratch_dir, tool_path
 from .pdf_io import CancelledError, render_gray, FITZ_LOCK
 from . import threshold as T
 from .image_layers import compose_page_images, compose_color_page
@@ -122,7 +122,7 @@ def encode_binary_jbig2(bw: np.ndarray, timeout: int = 120) -> bytes | None:
     if binary is None:
         return None
     fd, png = tempfile.mkstemp(prefix="encode-jbig2-", suffix=".png",
-                              dir=_ENCODE_WORKDIR.get())
+                              dir=short_scratch_dir(_ENCODE_WORKDIR.get()))
     try:
         with os.fdopen(fd, "wb") as f:
             Image.fromarray(bw).convert("1", dither=Image.Dither.NONE).save(f, "PNG")
