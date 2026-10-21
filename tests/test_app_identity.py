@@ -198,6 +198,17 @@ def test_application_icon_is_the_bundled_product_icon():
     assert {s.width() for s in app.windowIcon().availableSizes()} == set(APP_ICON_SIZES)
 
 
+def test_application_identity_matches_the_installed_desktop_entry():
+    """Packages install the desktop entry under DESKTOP_ID; the version is the package version."""
+    from pathlib import Path
+    from pdf_minify import DESKTOP_ID, __version__
+    settings.configure_application(app)
+    assert app.desktopFileName() == DESKTOP_ID
+    entry = Path(__file__).parents[1] / "packaging" / "linux" / f"{DESKTOP_ID}.desktop"
+    assert f"Icon={DESKTOP_ID}\n" in entry.read_text()
+    assert app.applicationVersion() == __version__
+
+
 def test_startup_last_file_uses_the_same_migrating_store(stores, monkeypatch, tmp_path):
     _, legacy = stores
     source = tmp_path / "remembered.pdf"

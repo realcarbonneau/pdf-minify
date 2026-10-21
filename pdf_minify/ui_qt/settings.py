@@ -2,7 +2,7 @@
 
 from PySide6.QtCore import QSettings
 
-from .. import APP_ID, APP_NAME
+from .. import APP_ID, APP_NAME, DESKTOP_ID, __version__
 
 LEGACY_APP_ID = "pdf-minimalist"
 IDENTITY_MIGRATION_KEY = "identityMigrationRevision"
@@ -15,6 +15,9 @@ def configure_application(app):
     app.setOrganizationName(APP_ID)
     app.setApplicationName(APP_ID)
     app.setApplicationDisplayName(APP_NAME)
+    app.setApplicationVersion(__version__)
+    # Matches the installed desktop entry, so desktops show its icon and name.
+    app.setDesktopFileName(DESKTOP_ID)
     app.setWindowIcon(app_icon())
 
 

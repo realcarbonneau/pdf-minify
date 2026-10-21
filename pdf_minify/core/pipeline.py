@@ -3,13 +3,12 @@
 GUI defaults preserve text and original page size (§§74/103/127), with one
 explicit full-page BW example. All processing goes through save_with_spec.
 """
-import fitz
+import pymupdf as fitz
 import numpy as np
 from PIL import Image
 import io
 import logging
 import os
-import shutil
 import subprocess
 import tempfile
 import zlib
@@ -17,6 +16,7 @@ from functools import wraps
 from contextvars import ContextVar
 
 from .cancel import CancelToken
+from .external_tools import find_tool
 from .pdf_io import CancelledError, render_gray, FITZ_LOCK
 from . import threshold as T
 from .image_layers import compose_page_images, compose_color_page
@@ -98,7 +98,7 @@ def bw_page_png(gray: np.ndarray, strategy: str = "otsu", t: int = 180) -> bytes
 
 def jbig2_binary() -> str | None:
     """Path to the JBIG2 encoder (designer §3), or None if not installed."""
-    return shutil.which("jbig2")
+    return find_tool("jbig2")
 
 
 def bw_page_jbig2(gray: np.ndarray, strategy: str = "otsu", t: int = 180,
@@ -290,7 +290,7 @@ def pack_indices(idx: np.ndarray, bpc: int) -> bytes:
 
 
 def zopfli_binary() -> str | None:
-    return shutil.which("zopfli")
+    return find_tool("zopfli")
 
 
 def deflate_best(data: bytes) -> bytes:
@@ -306,13 +306,14 @@ def deflate_best(data: bytes) -> bytes:
         # full encoder(s) once per distinct sample/predictor input; do not run
         # the old opportunistic Zopfli path first and then repeat that work.
         return zlib.compress(data, 9)
-    if len(data) <= 100_000 and zopfli_binary() is not None:
+    binary = zopfli_binary() if len(data) <= 100_000 else None
+    if binary is not None:
         fd, tmp = tempfile.mkstemp(prefix="encode-zopfli-", dir=_ENCODE_WORKDIR.get())
         try:
             with os.fdopen(fd, "wb") as f:
                 f.write(data)
             try:
-                r = subprocess.run(["zopfli", "--zlib", "-c", tmp], capture_output=True,
+                r = subprocess.run([binary, "--zlib", "-c", tmp], capture_output=True,
                                    timeout=120)
             except (OSError, subprocess.TimeoutExpired):
                 return zlib.compress(data, 9)

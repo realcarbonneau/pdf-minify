@@ -1,0 +1,2 @@
+# Ubuntu 24.04 (noble): Qt comes with the bundled PySide6; the system
+# libraries it links against are found by dh_shlibdeps (${shlibs:Depends}).

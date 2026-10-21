@@ -1,0 +1,7 @@
+# Libraries the pdf-minify package for Debian 13 (trixie) carries itself,
+# because Debian's version is too old (python3-pymupdf 1.25: no Brotli, and
+# the app needs 1.28.2). Installed at build time with
+# pip --require-hashes --only-binary into /usr/lib/pdf-minify.
+# Everything else is a Depends in debian/control.
+pymupdf==1.28.2 \
+    --hash=sha256:397d6715c1f0df7548a92d0afd8ce370fc48fa47aeefac16be2bc04a16a8227f

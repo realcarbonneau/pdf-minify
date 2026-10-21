@@ -1,0 +1,10 @@
+# Libraries the pdf-minify package for Ubuntu 24.04 (noble) carries itself:
+# Ubuntu 24.04 has no PySide6, and its python3-pymupdf (1.23) is too old.
+# Installed at build time with pip --require-hashes --only-binary into
+# /usr/lib/pdf-minify. Everything else is a Depends in debian/control.
+pymupdf==1.28.2 \
+    --hash=sha256:397d6715c1f0df7548a92d0afd8ce370fc48fa47aeefac16be2bc04a16a8227f
+pyside6-essentials==6.12.0 \
+    --hash=sha256:16f4b5e41daf49235ae048458243da9efe5f3d8040f9cc5aa454ce69893d3bd9
+shiboken6==6.12.0 \
+    --hash=sha256:3bde565bb0890044b5c7f63808adddede5abc241e9395a2bfed61919884d6240

@@ -1,0 +1,10 @@
+# MuPDF, inside the PyMuPDF wheel the package carries, is built with its own
+# copies of these libraries. Debian's python3-pymupdf is too old for the app
+# (see debian/bundled/), so the wheel's MuPDF is used as published.
+pdf-minify: embedded-library freetype [usr/lib/pdf-minify/pymupdf/libmupdf.so.28.2]
+pdf-minify: embedded-library lcms2 [usr/lib/pdf-minify/pymupdf/libmupdf.so.28.2]
+pdf-minify: embedded-library libjpeg [usr/lib/pdf-minify/pymupdf/libmupdf.so.28.2]
+pdf-minify: embedded-library openjpeg [usr/lib/pdf-minify/pymupdf/libmupdf.so.28.2]
+pdf-minify: embedded-library zlib [usr/lib/pdf-minify/pymupdf/libmupdf.so.28.2]
+# Published on GitHub, not uploaded to the Debian archive: no ITP bug to close.
+pdf-minify: initial-upload-closes-no-bugs [usr/share/doc/pdf-minify/changelog.Debian.gz:1]

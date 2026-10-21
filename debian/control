@@ -1,0 +1,30 @@
+Source: pdf-minify
+Section: graphics
+Priority: optional
+Maintainer: Real Carbonneau <contact@realcarbonneau.com>
+Build-Depends: debhelper-compat (= 13),
+               dh-python,
+               python3,
+               python3-pip
+Standards-Version: 4.7.2
+Homepage: https://github.com/realcarbonneau/pdf-minify
+Rules-Requires-Root: no
+
+Package: pdf-minify
+Architecture: amd64
+Depends: ${python3:Depends},
+         ${shlibs:Depends},
+         ${misc:Depends},
+         ${release:Depends},
+         python3-numpy,
+         python3-pil,
+         jbig2,
+         zopfli
+Description: make PDFs smaller
+ PDF Minify makes PDFs smaller with a variety of filters, compression
+ algorithms and techniques, and extensive previews that give a quick
+ overview of each one's visual effect and file size. Every preview and
+ size is the actual file you would save.
+ .
+ The package carries its own copy of the libraries the release lacks or
+ ships too old, such as PyMuPDF, in /usr/lib/pdf-minify.

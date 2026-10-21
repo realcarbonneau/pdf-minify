@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=PDF Minify
+GenericName=PDF Size Reducer
+Comment=Make PDFs smaller, with previews of each filter's visual effect and file size
+Exec=pdf-minify %f
+Icon=io.github.realcarbonneau.PdfMinify
+Terminal=false
+Categories=Office;
+MimeType=application/pdf;
+Keywords=PDF;compress;reduce;shrink;optimize;smaller;size;scan;

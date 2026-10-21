@@ -318,7 +318,7 @@ def test_saver_owns_declaration_context_and_restores_it_on_success_or_failure(tm
 @pytest.mark.parametrize("policy", ["zopfli", "brotli"])
 def test_native_selected_encoder_failure_does_not_fallback(tmp_path, monkeypatch, policy):
     if policy == "zopfli":
-        monkeypatch.setattr(streams.shutil, "which", lambda *a: None)
+        monkeypatch.setattr(streams, "find_tool", lambda *a: None)
     else:
         monkeypatch.setattr(streams, "brotli_available", lambda: False)
     with pytest.raises(RuntimeError):
@@ -358,7 +358,7 @@ def test_zopfli_has_no_elapsed_cutoff_but_reaps_on_cancellation(tmp_path, monkey
             self.terminated = True
 
     encoder = Encoder()
-    monkeypatch.setattr(streams.shutil, "which", lambda *a: "/usr/bin/zopfli")
+    monkeypatch.setattr(streams, "find_tool", lambda *a: "/usr/bin/zopfli")
     monkeypatch.setattr(streams.subprocess, "Popen", lambda *a, **kw: encoder)
     monkeypatch.setattr(streams.time, "monotonic", lambda: elapsed[0])
     if cancel:

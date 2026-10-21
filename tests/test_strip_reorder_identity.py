@@ -130,7 +130,7 @@ def test_repeated_high_index_moves_and_all_clicks_preserve_every_identity(window
         assert {uid: item.icon().cacheKey() for uid, item in original.items()} == icons
 
 
-def test_drag_payload_has_only_uuid_and_foreign_model_data_cannot_insert(window):
+def test_drag_payload_has_only_uuid_and_foreign_model_data_cannot_insert(window, drag_event):
     v = window.filters
     ids = window._strip_ids
     v._begin_drag(0, v.visualRect(v.model().index(0, 0)).center())
@@ -141,8 +141,7 @@ def test_drag_payload_has_only_uuid_and_foreign_model_data_cannot_insert(window)
             # Even a UUID copied from our active drag is not a second source.
             if not payload.formats():
                 payload.setData(FILTER_DRAG_MIME, v._drag_mime.data(FILTER_DRAG_MIME))
-            enter = QDragEnterEvent(QPointF(600, 50), Qt.MoveAction, payload,
-                                   Qt.LeftButton, Qt.NoModifier)
+            enter = drag_event(QDragEnterEvent, QPoint(600, 50), payload)
             v.dragEnterEvent(enter)
             assert not enter.isAccepted()
             drop = QDropEvent(QPointF(600, 50), Qt.MoveAction, payload,

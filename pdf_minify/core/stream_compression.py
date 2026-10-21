@@ -1,7 +1,6 @@
 """Lossless native PDF stream codecs, independent of bitmap encoding (§205)."""
 
 from pathlib import Path
-import shutil
 import subprocess
 import tempfile
 import time
@@ -10,6 +9,7 @@ import zlib
 import pymupdf as fitz
 
 from .cancel import CancelToken
+from .external_tools import find_tool
 from .pdf_io import CancelledError, FITZ_LOCK
 
 STREAM_POLICIES = (
@@ -53,7 +53,7 @@ def _brotli(data, level):
 
 
 def _zopfli(data, directory, token):
-    binary = shutil.which("zopfli")
+    binary = find_tool("zopfli")
     if binary is None:
         raise RuntimeError("Zopfli is not installed; choose Flate or install zopfli.")
     with tempfile.TemporaryDirectory(prefix="native-zopfli-", dir=directory) as scratch:

@@ -1,0 +1,154 @@
+name: Build Debian Package
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      # Release tags only: vMajor.Minor.Patch, matching pdf_minify.__version__.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    # Defaults are opened/synchronize/reopened; ready_for_review is added
+    # so leaving draft rebuilds rather than relying on the draft's runs.
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+  workflow_dispatch:
+
+# Cancel superseded runs on a branch or PR; never cancel tag (release) builds.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: write
+
+jobs:
+  build-deb:
+    name: Build .deb on ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # x86-64 only (designer §303). Each release needs debian/bundled/<codename>.txt.
+        include:
+          - image: debian:trixie
+            name: Debian 13 (Trixie)
+            codename: trixie
+            os: debian
+            osver: "13"
+          - image: ubuntu:24.04
+            name: Ubuntu 24.04 LTS (Noble)
+            codename: noble
+            os: ubuntu
+            osver: "24.04"
+          - image: ubuntu:26.04
+            name: Ubuntu 26.04 LTS (Resolute)
+            codename: resolute
+            os: ubuntu
+            osver: "26.04"
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y git ca-certificates
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install build dependencies
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          scripts/build-deb.sh deps
+
+      - name: Set the release in debian/changelog
+        id: version
+        run: |
+          VERSION=$(python3 -c "from pdf_minify import __version__; print(__version__)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          sed -i "1s/^pdf-minify ([^)]*) [a-z]*;/pdf-minify (${VERSION}-1) ${{ matrix.codename }};/" debian/changelog
+          head -1 debian/changelog
+
+      - name: Build binary package
+        run: scripts/build-deb.sh build
+
+      - name: Run lintian
+        run: |
+          lintian --info --display-info --fail-on error,warning build-deb/*.deb
+
+      - name: Collect build artifacts
+        run: |
+          mkdir -p artifacts
+          NAME="pdf-minify_${{ steps.version.outputs.version }}_${{ matrix.os }}-${{ matrix.osver }}-${{ matrix.codename }}_amd64.deb"
+          cp build-deb/*.deb "artifacts/$NAME"
+          ls -la artifacts/
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdf-minify-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.osver }}-${{ matrix.codename }}
+          path: artifacts/
+          retention-days: 30
+
+  # Install each package on a clean system of its release and run the full
+  # test suite against the installed copy.
+  test-install:
+    name: Test install on ${{ matrix.name }}
+    needs: build-deb
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:trixie
+            name: Debian 13 (Trixie)
+            codename: trixie
+            os: debian
+            osver: "13"
+          - image: ubuntu:24.04
+            name: Ubuntu 24.04 LTS (Noble)
+            codename: noble
+            os: ubuntu
+            osver: "24.04"
+          - image: ubuntu:26.04
+            name: Ubuntu 26.04 LTS (Resolute)
+            codename: resolute
+            os: ubuntu
+            osver: "26.04"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Download package
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pdf-minify-*-${{ matrix.os }}-${{ matrix.osver }}-${{ matrix.codename }}
+          merge-multiple: true
+          path: build-deb
+
+      - name: Install and test on a clean system
+        run: scripts/test-deb.sh ${{ matrix.image }}
+
+  release:
+    name: Attach packages to the release
+    needs: [build-deb, test-install]
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pdf-minify-*
+          merge-multiple: true
+          path: packages
+
+      - name: Create or update the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packages/*.deb

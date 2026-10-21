@@ -1,0 +1,7 @@
+# Ubuntu 24.04 has no PySide6, so the package carries the PySide6 wheel: Qt's
+# image plugins are built with their own JPEG and TIFF code, and ICU's data
+# library has no code to link.
+pdf-minify: embedded-library libjpeg [usr/lib/pdf-minify/PySide6/Qt/plugins/imageformats/libqjpeg.so]
+pdf-minify: embedded-library libjpeg [usr/lib/pdf-minify/PySide6/Qt/plugins/imageformats/libqtiff.so]
+pdf-minify: embedded-library tiff [usr/lib/pdf-minify/PySide6/Qt/plugins/imageformats/libqtiff.so]
+pdf-minify: shared-library-lacks-prerequisites [usr/lib/pdf-minify/PySide6/Qt/lib/libicudata.so.73]

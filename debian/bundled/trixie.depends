@@ -1,0 +1,5 @@
+# Debian 13 (trixie) packages the app uses directly, beyond debian/control.
+python3-pyside6.qtcore
+python3-pyside6.qtgui
+python3-pyside6.qtwidgets
+qt6-svg-plugins

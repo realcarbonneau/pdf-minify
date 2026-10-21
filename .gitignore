@@ -7,3 +7,4 @@ output/
 tmp/
 *.reduced.pdf
 .pytest_cache/
+build-deb/

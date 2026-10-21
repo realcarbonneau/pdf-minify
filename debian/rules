@@ -1,0 +1,84 @@
+#!/usr/bin/make -f
+# PDF Minify: the app and the libraries the release lacks or ships too old
+# (debian/bundled/<codename>.txt, pinned by hash) are private modules in
+# /usr/lib/pdf-minify (Debian Python Policy 5.3). Everything else is a
+# Depends on the release's own packages: debian/control for all releases,
+# debian/bundled/<codename>.depends for one release.
+
+PKG := debian/pdf-minify
+LIB := $(PKG)/usr/lib/pdf-minify
+DESKTOP_ID := io.github.realcarbonneau.PdfMinify
+CODENAME := $(shell . /etc/os-release && echo $$VERSION_CODENAME)
+BUNDLE := debian/bundled/$(CODENAME).txt
+RELEASE_DEPENDS := $(shell grep -v '^\s*\(#\|$$\)' debian/bundled/$(CODENAME).depends 2>/dev/null | paste -sd, | sed 's/,/, /g')
+
+%:
+	dh $@ --with python3
+
+override_dh_auto_build:
+
+# The test suite runs on the installed package: scripts/test-deb.sh.
+override_dh_auto_test:
+
+override_dh_auto_install:
+	@test -f $(BUNDLE) || { echo "No bundle list for release '$(CODENAME)': add $(BUNDLE)"; exit 1; }
+	install -d $(LIB)
+	cp -r pdf_minify $(LIB)/
+	find $(LIB) -name __pycache__ -prune -exec rm -rf {} +
+	python3 -m pip install --no-deps --no-compile --only-binary=:all: \
+		--require-hashes --no-cache-dir --disable-pip-version-check \
+		--target $(LIB) -r $(BUNDLE)
+	# Developer tools, headers and plugins the app never loads: PyMuPDF's
+	# build files, and (where PySide6 is bundled) Qt's tools, QML, and the
+	# database, printing, Designer, embedded-display and virtual-keyboard
+	# plugins, some of which need libraries no release has. The app uses
+	# QtCore, QtGui and QtWidgets on X11 or Wayland.
+	rm -rf $(LIB)/bin $(LIB)/pymupdf/mupdf-devel
+	cd $(LIB)/PySide6 2>/dev/null && rm -rf assistant designer linguist lrelease lupdate \
+		qmlformat qmllint qmlls svgtoqml include typesystems doc glue scripts \
+		Qt/qml Qt/metatypes Qt/libexec \
+		Qt/plugins/sqldrivers Qt/plugins/printsupport Qt/plugins/designer \
+		Qt/plugins/qmltooling Qt/plugins/egldeviceintegrations \
+		Qt/plugins/imageformats/libqpdf.so \
+		Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.so \
+		Qt/plugins/platforms/libqeglfs.so Qt/plugins/platforms/libqlinuxfb.so \
+		Qt/plugins/platforms/libqminimalegl.so Qt/plugins/platforms/libqvkkhrdisplay.so \
+		Qt/plugins/platforms/libqvnc.so && find . -name '*.pyi' -delete || true
+	install -D -m 755 packaging/linux/pdf-minify $(PKG)/usr/bin/pdf-minify
+	install -D -m 644 packaging/linux/$(DESKTOP_ID).desktop \
+		$(PKG)/usr/share/applications/$(DESKTOP_ID).desktop
+	install -D -m 644 packaging/linux/$(DESKTOP_ID).metainfo.xml \
+		$(PKG)/usr/share/metainfo/$(DESKTOP_ID).metainfo.xml
+	for size in 16 24 32 48 64 128 256; do \
+		install -D -m 644 pdf_minify/ui_qt/assets/app_icon/pdf-minify-$$size.png \
+			$(PKG)/usr/share/icons/hicolor/$${size}x$${size}/apps/$(DESKTOP_ID).png; \
+	done
+
+# PyMuPDF is built once for every Python from 3.10 on (abi3): keep its file names.
+override_dh_python3:
+	dh_python3 --no-ext-rename /usr/lib/pdf-minify
+
+# The bundled wheels' libraries are stripped like any other; no debug package.
+override_dh_strip:
+	dh_strip --no-automatic-dbgsym
+
+override_dh_dwz:
+	dh_dwz -X/usr/lib/pdf-minify/
+
+# Private libraries: no ldconfig trigger or shlibs file.
+override_dh_makeshlibs:
+	dh_makeshlibs -X/usr/lib/pdf-minify/
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l$(CURDIR)/$(LIB)/pymupdf:$(CURDIR)/$(LIB)/PySide6/Qt/lib:$(CURDIR)/$(LIB)/PySide6:$(CURDIR)/$(LIB)/shiboken6
+
+# Release-specific overrides, for files only that release's package carries.
+override_dh_lintian:
+	dh_lintian
+	if [ -f debian/bundled/$(CODENAME).lintian-overrides ]; then \
+		cat debian/bundled/$(CODENAME).lintian-overrides >> $(PKG)/usr/share/lintian/overrides/pdf-minify; \
+	fi
+
+override_dh_gencontrol:
+	@test -f debian/bundled/$(CODENAME).depends || { echo "No debian/bundled/$(CODENAME).depends"; exit 1; }
+	dh_gencontrol -- -Vrelease:Depends="$(RELEASE_DEPENDS)"

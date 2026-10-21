@@ -140,7 +140,7 @@ def test_explicit_benchmark_codecs_fail_instead_of_silently_falling_back(tmp_pat
         page = doc.new_page(width=19, height=13)
         with pytest.raises(RuntimeError, match="JBIG2 failed"):
             study.place_bitmap(doc, page, bitmap, "jbig2", tmp_path)
-    monkeypatch.setattr(study.streams.shutil, "which", lambda *a: None)
+    monkeypatch.setattr(study.streams, "find_tool", lambda *a: None)
     with pytest.raises(RuntimeError, match="Zopfli is not installed"):
         study.encoded_samples(bitmap, "zopfli-plain", tmp_path)
 

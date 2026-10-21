@@ -1,0 +1,66 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: PDF Minify
+Upstream-Contact: Real Carbonneau <contact@realcarbonneau.com>
+Source: https://github.com/realcarbonneau/pdf-minify
+Comment:
+ The binary package also carries PyMuPDF 1.28.2 from PyPI, with the MuPDF
+ library it is built on, in /usr/lib/pdf-minify (debian/bundled/). PyMuPDF
+ and MuPDF are Copyright Artifex Software, Inc., licensed under the GNU AGPL
+ version 3 (text in /usr/lib/pdf-minify/pymupdf-1.28.2.dist-info/COPYING).
+ MuPDF includes third-party libraries under their own free licences; see
+ https://mupdf.com/licensing.
+
+Files: *
+Copyright: 2026 Real Carbonneau <contact@realcarbonneau.com>
+License: AGPL-3+
+
+Files: pdf_minify/ui_qt/assets/breeze/*
+Copyright: 2014 Uri Herrera <uri_herrera@nitrux.in>
+License: LGPL-3+
+Comment: Stock KDE Breeze icons from Debian breeze-icon-theme 4:5.116.0-1.
+ See README.md and COPYRIGHT in that folder.
+
+Files: pdf_minify/ui_qt/assets/icon_lab/*
+Copyright: 2003-2004 David Vignoni
+           2007 David Miller, David Vignoni, Johann Ollivier Lapeyre,
+                Kenneth Wimer, Nuno Pinheiro, Riccardo Iaconelli
+           2002-2008 the GNOME artists listed in COPYRIGHT.GNOME
+License: LGPL-2.1+ and LGPL-3+ and GPL-2+
+Comment: Unmodified Nuvola (LGPL-2.1+), Oxygen (LGPL-3+) and GNOME Classic
+ (GPL-2+) icons. See NOTICE.md and the COPYRIGHT files in that folder.
+
+License: AGPL-3+
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or (at your
+ option) any later version.
+ .
+ On Debian systems, the full text of the GNU Affero General Public License
+ version 3 is in /usr/share/common-licenses/AGPL-3.0.
+
+License: LGPL-3+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or (at your
+ option) any later version.
+ .
+ On Debian systems, the full text of the GNU Lesser General Public License
+ version 3 is in /usr/share/common-licenses/LGPL-3.
+
+License: LGPL-2.1+
+ This library is free software; you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by
+ the Free Software Foundation; either version 2.1 of the License, or (at
+ your option) any later version.
+ .
+ On Debian systems, the full text of the GNU Lesser General Public License
+ version 2.1 is in /usr/share/common-licenses/LGPL-2.1.
+
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the Free
+ Software Foundation; either version 2 of the License, or (at your option)
+ any later version.
+ .
+ On Debian systems, the full text of the GNU General Public License version
+ 2 is in /usr/share/common-licenses/GPL-2.

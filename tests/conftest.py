@@ -19,6 +19,24 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp(prefix="pdfmin-test-xdg-")
 
 
+@pytest.fixture
+def drag_event():
+    """Make a drag enter or move event on Debian 13's PySide6 6.8 and on newer Qt.
+
+    Qt 6.8 takes the position as a QPoint; newer Qt takes a QPointF and
+    deprecates the QPoint form.
+    """
+    from PySide6.QtCore import QPointF, Qt
+
+    def make(event_type, pos, mime):
+        try:
+            return event_type(QPointF(pos), Qt.MoveAction, mime, Qt.LeftButton, Qt.NoModifier)
+        except TypeError:
+            return event_type(QPointF(pos).toPoint(), Qt.MoveAction, mime,
+                              Qt.LeftButton, Qt.NoModifier)
+    return make
+
+
 @pytest.fixture(autouse=True)
 def isolate_gui_artifact_roots(request, tmp_path, monkeypatch):
     """Test windows may share a PID; production applications do not (§153).

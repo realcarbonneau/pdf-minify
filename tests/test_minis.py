@@ -5,7 +5,7 @@ import pytest
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-import fitz  # noqa: E402
+import pymupdf as fitz  # noqa: E402
 from PySide6.QtWidgets import QApplication  # noqa: E402
 
 from pdf_minify.ui_qt.app import (  # noqa: E402
@@ -221,7 +221,10 @@ def test_icon_lab_menu_reuses_window_without_filter_or_settings_changes(tmp_path
     started = []
     monkeypatch.setattr(w._artifacts, "start", lambda *a, **kw: started.append(a))
     assert w._icon_lab is None
-    view = next(action.menu() for action in w.menuBar().actions() if action.text() == "&View")
+    # Hold the action, then ask for its menu: PySide6 6.8 deletes a menu fetched
+    # inside a generator expression.
+    view_action = next(action for action in w.menuBar().actions() if action.text() == "&View")
+    view = view_action.menu()
     assert w.icon_lab_act in view.actions()  # direct, not hidden in Widget lab
     w.icon_lab_act.trigger()
     lab = w._icon_lab
@@ -997,7 +1000,7 @@ def test_strip_uses_standard_dnd(tmp_path):
     assert v.viewport().acceptDrops()
 
 
-def test_strip_gap_bar_and_drop(tmp_path):
+def test_strip_gap_bar_and_drop(tmp_path, drag_event):
     """Designer §§128/139: hovering anywhere snaps to the nearest divider,
     a solid theme bar marks it, and the drop lands there with sync."""
     from PySide6.QtCore import Qt as _Qt, QPointF as _QP, QMimeData as _MD
@@ -1016,12 +1019,10 @@ def test_strip_gap_bar_and_drop(tmp_path):
     assert v._gap_at(-50) == 0 and v._gap_at(100000) == n  # both ends
     v._begin_drag(0, v.visualRect(m.index(0, 0)).center())
     mime = v._drag_mime
-    en = _DEE(_QP(r2.right() + 2, 50), _Qt.MoveAction, mime,
-              _Qt.LeftButton, _Qt.NoModifier)
+    en = drag_event(_DEE, _QP(r2.right() + 2, 50), mime)
     _QA.sendEvent(v.viewport(), en)
     assert en.isAccepted()
-    mv = _DME(_QP(r2.right() + 2, 50), _Qt.MoveAction, mime,
-              _Qt.LeftButton, _Qt.NoModifier)
+    mv = drag_event(_DME, _QP(r2.right() + 2, 50), mime)
     _QA.sendEvent(v.viewport(), mv)
     assert mv.isAccepted()
     assert v._drop_gap == 3
@@ -1500,7 +1501,7 @@ def test_strip_background_tracks_theme_without_changing_other_panes(ground, base
     assert w.filters.GHOST_OPACITY == 0.75
 
 
-def test_filter_drop_from_any_window_height(tmp_path):
+def test_filter_drop_from_any_window_height(tmp_path, drag_event):
     """§144: real Qt events above, in, and below strip share the same gap."""
     from PySide6.QtCore import QPoint, QPointF, Qt
     from PySide6.QtGui import QDragEnterEvent, QDragMoveEvent, QDropEvent
@@ -1519,12 +1520,10 @@ def test_filter_drop_from_any_window_height(tmp_path):
     try:
         for y in (-200, 50, v.viewport().height() + 25):
             pos = v.viewport().mapTo(w, QPoint(x, y))
-            entered = QDragEnterEvent(QPointF(pos), Qt.MoveAction, mime,
-                                      Qt.LeftButton, Qt.NoModifier)
+            entered = drag_event(QDragEnterEvent, pos, mime)
             QApplication.sendEvent(w, entered)
             assert entered.isAccepted()
-            moved = QDragMoveEvent(QPointF(pos), Qt.MoveAction, mime,
-                                  Qt.LeftButton, Qt.NoModifier)
+            moved = drag_event(QDragMoveEvent, pos, mime)
             QApplication.sendEvent(w, moved)
             assert moved.isAccepted()
             assert v._drop_gap == 4

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.realcarbonneau.PdfMinify</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>PDF Minify</name>
+  <summary>Make PDFs smaller</summary>
+  <developer id="io.github.realcarbonneau">
+    <name>Real Carbonneau</name>
+  </developer>
+  <description>
+    <p>
+      Make PDFs smaller with a variety of filters, compression algorithms and
+      techniques, and extensive previews that give a quick overview of each
+      one's visual effect and file size. Every preview and size is the actual
+      file you would save.
+    </p>
+  </description>
+  <launchable type="desktop-id">io.github.realcarbonneau.PdfMinify.desktop</launchable>
+  <url type="homepage">https://github.com/realcarbonneau/pdf-minify</url>
+  <url type="bugtracker">https://github.com/realcarbonneau/pdf-minify/issues</url>
+  <provides>
+    <binary>pdf-minify</binary>
+    <mediatype>application/pdf</mediatype>
+  </provides>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.1.0" date="2026-10-20"/>
+  </releases>
+</component>

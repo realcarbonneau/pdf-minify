@@ -1,0 +1,15 @@
+#!/usr/bin/python3
+"""PDF Minify launcher for Linux packages.
+
+The app and the libraries bundled with it (those the distribution lacks or
+ships too old) live in /usr/lib/pdf-minify; everything else comes from the
+system's own packages.
+"""
+import sys
+
+sys.path.insert(0, "/usr/lib/pdf-minify")
+
+from pdf_minify.__main__ import cli  # noqa: E402
+
+if __name__ == "__main__":
+    cli()
