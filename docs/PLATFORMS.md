@@ -67,7 +67,7 @@ so these are test results, not certificates (see the checklist in
 | Debian 13 `.deb` | Debian's PySide6 6.8.2, NumPy 2.2.4, Pillow 11.1.0; bundled PyMuPDF 1.28.2 | 19 MB (57 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
 | Ubuntu 24.04 `.deb` | Ubuntu's NumPy 1.26.4, Pillow 10.2.0; bundled PySide6 6.12.0, PyMuPDF 1.28.2 | 70 MB (245 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
 | Ubuntu 26.04 `.deb` | Ubuntu's PySide6 6.10.2, NumPy 2.3.5, Pillow 12.1.1; bundled PyMuPDF 1.28.2 | 21 MB (54 MB installed) | full suite passes on GitHub (`build-deb.yml`) |
-| Windows x64 installer | everything bundled | | smoke test passes; full suite: long-path fixes under test |
+| Windows x64 installer and portable ZIP | everything bundled | | smoke test and full suite pass on GitHub (`build-windows.yml`); the installer installs, starts and uninstalls |
 | macOS DMGs, Intel and Apple Silicon | everything bundled | 184 MB each | smoke test and full suite pass on GitHub (`build-macos.yml`) |
 
 ## Other targets
