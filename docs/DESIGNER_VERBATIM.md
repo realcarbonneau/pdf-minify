@@ -1092,3 +1092,11 @@ Source: designer message in the session of 2026-10-21; exact text.
 ```text
 following taskcoach style approximately, give this a version number, but only #.#.#, and start at 0.0.1.  I will tell you when to increment.
 ```
+
+## 306 — release notes come with the release, as in Task Coach (verbatim, 2026-10-21)
+
+Source: designer message in the session of 2026-10-21; exact text.
+
+```text
+Notes seem to come automatically if you made proper release notes, that happens on taskcoach now.
+```

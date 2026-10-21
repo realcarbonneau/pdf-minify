@@ -1,0 +1,30 @@
+name: Release Notes
+
+# A release tag's section of CHANGELOG.md becomes the text of its release
+# page, as in Task Coach. This runs in seconds, so it creates the release;
+# the build workflows add their packages to it when they finish
+# (docs/PACKAGING.md#release-notes).
+on:
+  push:
+    tags:
+      # The build workflows' release tags: vMajor.Minor.Patch
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release-notes:
+    name: Release Notes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: The tag's section of CHANGELOG.md
+        run: python3 tools/release_notes.py "$GITHUB_REF_NAME" > release_notes.md
+
+      - name: Release page text
+        uses: softprops/action-gh-release@v3
+        with:
+          body_path: release_notes.md

@@ -62,14 +62,15 @@ The Windows installer and the macOS apps are built and tested by
     core/             # headless pipeline (no Qt imports)
     ui_qt/            # Qt GUI only
   tests/              # pytest suite (./test.sh)
-  tools/              # environment check, screenshots, benchmarks, corpus fetcher
+  tools/              # environment check, screenshots, benchmarks, corpus fetcher, release notes
   examples/           # committed PDF test corpus (examples/README.md)
   docs/               # this documentation
   icons/              # icon artwork sources
   debian/             # Debian and Ubuntu packaging; debian/bundled/ per release
   packaging/          # launchers, desktop entry, icons and installer scripts
   scripts/            # package build and test scripts
-  .github/workflows/  # package builds (Task Coach's pattern)
+  .github/workflows/  # package builds and release notes (Task Coach's pattern)
+  CHANGELOG.md        # release notes, one section per version
   requirements*.txt   # pip requirements (installed into .venv)
 ```
 
@@ -121,6 +122,7 @@ The top-level design principles, word for word, open [DESIGN.md](DESIGN.md).
 | Icons and tooltips | [ICONS.md](ICONS.md), [ICON_LAB.md](ICON_LAB.md), [TOOLTIPS.md](TOOLTIPS.md) |
 | Settings and temporary files | [PERSISTENCE_AND_TEMP.md](PERSISTENCE_AND_TEMP.md) |
 | Certified platform, packaging, dependencies | [PLATFORMS.md](PLATFORMS.md), [PACKAGING.md](PACKAGING.md), [DEPENDENCIES.md](DEPENDENCIES.md) |
+| What changed in each release | [CHANGELOG.md](../CHANGELOG.md) |
 | Developer rules and tests | [DEVELOPER_GUIDELINES.md](DEVELOPER_GUIDELINES.md), [TEST_PLAN.md](TEST_PLAN.md) |
 | Designer rulings, word for word | [DESIGNER_VERBATIM.md](DESIGNER_VERBATIM.md) |
 | Requirements, defects, dropped ideas | [TODO.md](TODO.md), [issues.md](../issues.md), [DROPPED.md](DROPPED.md) |

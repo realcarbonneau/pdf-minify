@@ -53,6 +53,12 @@ Both options for mac please, and yes, push to github please.
 following taskcoach style approximately, give this a version number, but only #.#.#, and start at 0.0.1.  I will tell you when to increment.
 ```
 
+**§306** (2026-10-21)
+
+```text
+Notes seem to come automatically if you made proper release notes, that happens on taskcoach now.
+```
+
 [PLATFORMS.md](PLATFORMS.md) records what each package has passed. The
 packages follow Task Coach (`/home/user/Downloads/taskcoach`, its
 `docs/PACKAGING.md`, `debian/`, `scripts/build-deb.sh` and build workflows),
@@ -68,7 +74,7 @@ The Linux and Windows packages are x86-64 (§303); macOS has both (§304).
 | Debian 13 (trixie) | `.deb` | Debian's PySide6, NumPy, Pillow, `jbig2`, `zopfli`; bundled PyMuPDF | `scripts/build-deb.sh`, `build-deb.yml` | `scripts/test-deb.sh` |
 | Ubuntu 26.04 (resolute) | `.deb` | as Debian 13 | same | same |
 | Ubuntu 24.04 (noble) | `.deb` | Ubuntu's NumPy, Pillow, `jbig2`, `zopfli`; bundled PySide6 and PyMuPDF | same | same |
-| Windows 10/11 | Inno Setup installer and portable ZIP | everything bundled: Python 3.13 embeddable, pinned wheels, `jbig2.exe`, `zopfli.exe` | `build-windows.yml` | same workflow |
+| Windows 10/11 | Inno Setup installer and portable ZIP | everything bundled: Python 3.13 embeddable, pinned wheels, `jbig2.exe` and `zopfli.exe` from conda-forge | `build-windows.yml` | same workflow |
 | macOS 14+, Intel and Apple Silicon (§304) | DMG, one per processor | everything bundled: py2app with Python 3.13 and pinned wheels, `jbig2` and `zopfli` built from source | `build-macos.yml` | same workflow |
 
 Not packaged:
@@ -93,13 +99,12 @@ changed only when the designer says so, like Task Coach's single
 workflow writes it into `debian/changelog` for each release.
 `tests/test_app_identity.py` checks the copies that cannot read it: the
 changelog, the AppStream metadata and the man page. A release is a pushed
-tag `v<version>`, which builds the packages and attaches them to the
-GitHub release; creating one needs the designer's authorization. Each
-workflow stops if the tag does not name `__version__`. Create the release
-on GitHub first (Releases → Draft a new release → new tag `v<version>` on
-`main` → Publish): the three workflows then add their packages to it about
-25 minutes later. A tag pushed without a release would have all three
-create one at once.
+tag `v<version>` (pushed with git, or created on GitHub's Releases
+page); creating one needs the designer's authorization. Every workflow
+stops if the tag does not name `__version__`. Within seconds,
+`release-notes.yml` creates the release with the version's section of
+`CHANGELOG.md` as its text ([Release notes](#release-notes)); the three
+build workflows add their packages to it about 25 minutes later.
 
 ## Linux packages: Task Coach's rule
 
@@ -258,6 +263,17 @@ to proceed. Linux packages need neither.
    PDF-content AA/interpolation/decoder averaging disabled.
 8. Keep the stock icon assets with their notices and licences, and Qt's SVG
    icon-engine plugin (`qt6-svg-plugins` where Qt comes from the release).
+
+## Release notes
+
+As in Task Coach, the release notes are kept in `CHANGELOG.md` at the top
+of the repository: a `## <version>` section per release, newest first,
+saying what changes for users (§306). On a release tag,
+`release-notes.yml` puts the tag's section on the release page
+(`tools/release_notes.py` prints it). Without a section, or with an empty
+one, that workflow fails and the page has no text; the packages still
+upload. `tests/test_app_identity.py` checks that the current version has
+its section, so a new version without notes fails before it is tagged.
 
 ## Release and certification checklist
 

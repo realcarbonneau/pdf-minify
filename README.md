@@ -10,9 +10,8 @@ would save.
 ## Install
 
 Download the package for your system from the
-[latest release](https://github.com/realcarbonneau/pdf-minify/releases).
-The first release, 0.0.1, is being prepared; until it is published,
-[run from source](#from-source).
+[latest release](https://github.com/realcarbonneau/pdf-minify/releases);
+its page lists what changed ([CHANGELOG.md](CHANGELOG.md)).
 
 | Platform | Package |
 |----------|---------|

@@ -257,3 +257,17 @@ def test_version_is_major_minor_patch_and_the_same_everywhere():
     assert f'<release version="{__version__}"' in metainfo
     manual = (root / "packaging" / "linux" / "pdf-minify.1").read_text(encoding="utf-8")
     assert f'"PDF Minify {__version__}"' in manual
+
+
+def test_the_version_has_release_notes():
+    """CHANGELOG.md's section for the version is its release page's text."""
+    from pdf_minify import __version__
+    result = subprocess.run([sys.executable, "tools/release_notes.py", f"v{__version__}"],
+                            capture_output=True, text=True, encoding="utf-8",
+                            cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() and not result.stdout.startswith("## ")
+    missing = subprocess.run([sys.executable, "tools/release_notes.py", "v99.99.99"],
+                             capture_output=True, text=True, encoding="utf-8",
+                             cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    assert missing.returncode != 0 and "no section for 99.99.99" in missing.stderr
