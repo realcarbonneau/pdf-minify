@@ -1108,3 +1108,11 @@ Source: designer message in the session of 2026-10-21; exact text.
 ```text
 Can you make the background of the icon on the readme transparent?  same for the one the app uses?
 ```
+
+## 308 — a pushed tag creates the release (verbatim, 2026-10-21)
+
+Source: designer message in the session of 2026-10-21; exact text.
+
+```text
+So when you push the tag, it automatically creates a release, this is good.
+```

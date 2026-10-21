@@ -59,6 +59,12 @@ following taskcoach style approximately, give this a version number, but only #.
 Notes seem to come automatically if you made proper release notes, that happens on taskcoach now.
 ```
 
+**§308** (2026-10-21)
+
+```text
+So when you push the tag, it automatically creates a release, this is good.
+```
+
 [PLATFORMS.md](PLATFORMS.md) records what each package has passed. The
 packages follow Task Coach (`/home/user/Downloads/taskcoach`, its
 `docs/PACKAGING.md`, `debian/`, `scripts/build-deb.sh` and build workflows),
@@ -99,8 +105,8 @@ changed only when the designer says so, like Task Coach's single
 workflow writes it into `debian/changelog` for each release.
 `tests/test_app_identity.py` checks the copies that cannot read it: the
 changelog, the AppStream metadata and the man page. A release is a pushed
-tag `v<version>` (pushed with git, or created on GitHub's Releases
-page); creating one needs the designer's authorization. Every workflow
+tag `v<version>`, pushed with git (§308); creating one needs the
+designer's authorization. Every workflow
 stops if the tag does not name `__version__`. Within seconds,
 `release-notes.yml` creates the release with the version's section of
 `CHANGELOG.md` as its text ([Release notes](#release-notes)); the three
