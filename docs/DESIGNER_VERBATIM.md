@@ -1100,3 +1100,11 @@ Source: designer message in the session of 2026-10-21; exact text.
 ```text
 Notes seem to come automatically if you made proper release notes, that happens on taskcoach now.
 ```
+
+## 307 — application icon on a transparent background (verbatim, 2026-10-21)
+
+Source: designer message in the session of 2026-10-21; exact text.
+
+```text
+Can you make the background of the icon on the readme transparent?  same for the one the app uses?
+```

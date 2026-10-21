@@ -62,7 +62,7 @@ The Windows installer and the macOS apps are built and tested by
     core/             # headless pipeline (no Qt imports)
     ui_qt/            # Qt GUI only
   tests/              # pytest suite (./test.sh)
-  tools/              # environment check, screenshots, benchmarks, corpus fetcher, release notes
+  tools/              # environment check, screenshots, benchmarks, corpus fetcher, release notes, app icon
   examples/           # committed PDF test corpus (examples/README.md)
   docs/               # this documentation
   icons/              # icon artwork sources

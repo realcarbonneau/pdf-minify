@@ -52,14 +52,17 @@ Can you put this in the readme?
 The current icons stay in place until the designer chooses replacements in the
 [Icon Lab](ICON_LAB.md) (§200). Work: TODO §201, issue B102.
 
-## Application icon (§§294/295)
+## Application icon (§§294/295/307)
 
 The application icon is the designer's choice from `icons/test2.png`: column 5,
-row 4, a PDF page pinched into an hourglass by two green arrows. It keeps its
-light rounded tile, with transparent corners, padded to a square.
-`ui_qt/assets/app_icon/pdf-minify-<size>.png` holds 16, 24, 32, 48, 64, 128 and
-256 px versions. `configure_application` sets it as the application's window
-and taskbar icon, and the README shows the 128 px version. The action-icon
+row 4, a PDF page pinched into an hourglass by two green arrows, on a
+transparent background (§307). The sheet's light tile is removed, a soft
+shadow stays under the page, and the design is centred in a square.
+`tools/app_icon.py` makes it from the sheet:
+`ui_qt/assets/app_icon/pdf-minify-<size>.png` (16, 24, 32, 48, 64, 128 and
+256 px) and the Windows `packaging/windows/pdf-minify.ico`; the Linux and macOS
+packages are made from the PNGs. `configure_application` sets it as the
+application's window and taskbar icon, and the README shows the 128 px version. The action-icon
 rules above do not apply to it; it is the product's own artwork.
 
 ## Ownership and mappings

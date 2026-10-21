@@ -188,12 +188,15 @@ def test_application_icon_is_the_bundled_product_icon():
     icon = app_icon()
     assert not icon.isNull()
     assert {s.width() for s in icon.availableSizes()} == set(APP_ICON_SIZES)
-    for size, corner_alpha in ((16, 255), (256, 1)):
+    for size, centre_alpha in ((16, 200), (256, 255)):
         image = icon.pixmap(QSize(size, size)).toImage()
         assert image.width() == size and image.hasAlphaChannel()
-        # Rounded corners are see-through (only partly at 16 px, where the radius is ~1 px).
-        assert image.pixelColor(0, 0).alpha() < corner_alpha
-        assert image.pixelColor(size // 2, size // 2).alpha() == 255
+        # No tile behind the design: the corners and much of the square are see-through,
+        # the page in the middle is not.
+        assert image.pixelColor(0, 0).alpha() == 0
+        assert image.pixelColor(size // 2, size // 2).alpha() >= centre_alpha
+        clear = sum(image.pixelColor(x, y).alpha() == 0 for x in range(size) for y in range(size))
+        assert clear >= 0.2 * size * size
     settings.configure_application(app)
     assert {s.width() for s in app.windowIcon().availableSizes()} == set(APP_ICON_SIZES)
 
