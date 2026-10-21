@@ -16,7 +16,7 @@ from functools import wraps
 from contextvars import ContextVar
 
 from .cancel import CancelToken
-from .external_tools import find_tool
+from .external_tools import find_tool, tool_path
 from .pdf_io import CancelledError, render_gray, FITZ_LOCK
 from . import threshold as T
 from .image_layers import compose_page_images, compose_color_page
@@ -127,7 +127,7 @@ def encode_binary_jbig2(bw: np.ndarray, timeout: int = 120) -> bytes | None:
         with os.fdopen(fd, "wb") as f:
             Image.fromarray(bw).convert("1", dither=Image.Dither.NONE).save(f, "PNG")
         try:
-            r = subprocess.run([binary, "-p", png], capture_output=True,
+            r = subprocess.run([binary, "-p", tool_path(png)], capture_output=True,
                                timeout=timeout)
         except (OSError, subprocess.TimeoutExpired):
             return None
@@ -313,7 +313,7 @@ def deflate_best(data: bytes) -> bytes:
             with os.fdopen(fd, "wb") as f:
                 f.write(data)
             try:
-                r = subprocess.run([binary, "--zlib", "-c", tmp], capture_output=True,
+                r = subprocess.run([binary, "--zlib", "-c", tool_path(tmp)], capture_output=True,
                                    timeout=120)
             except (OSError, subprocess.TimeoutExpired):
                 return zlib.compress(data, 9)

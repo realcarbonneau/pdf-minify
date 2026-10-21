@@ -9,7 +9,7 @@ import zlib
 import pymupdf as fitz
 
 from .cancel import CancelToken
-from .external_tools import find_tool
+from .external_tools import find_tool, tool_path
 from .pdf_io import CancelledError, FITZ_LOCK
 
 STREAM_POLICIES = (
@@ -59,7 +59,7 @@ def _zopfli(data, directory, token):
     with tempfile.TemporaryDirectory(prefix="native-zopfli-", dir=directory) as scratch:
         source = Path(scratch) / "stream"
         source.write_bytes(data)
-        process = subprocess.Popen([binary, "--zlib", "-c", str(source)],
+        process = subprocess.Popen([binary, "--zlib", "-c", tool_path(source)],
                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
             while True:

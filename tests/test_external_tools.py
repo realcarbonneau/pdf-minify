@@ -51,3 +51,15 @@ def test_deflate_best_runs_the_zopfli_it_found(tmp_path, monkeypatch):
     monkeypatch.setenv("PATH", str(tmp_path / "empty"))
     data = bytes(range(256)) * 64
     assert pipeline.deflate_best(data) == zlib.compress(data, 1) != zlib.compress(data, 9)
+
+
+def test_tools_get_long_windows_paths_in_the_long_path_form(monkeypatch):
+    """zopfli.exe could not open its 290-character scratch path (MAX_PATH 260)."""
+    import ntpath
+    monkeypatch.setattr(external_tools.os, "name", "nt")
+    monkeypatch.setattr(external_tools.os, "path", ntpath)
+    deep = "C:\\Users\\someone\\AppData\\Local\\Temp\\pdf-minify\\saves\\" + "x" * 250 + "\\stream"
+    assert external_tools.tool_path(deep) == "\\\\?\\" + deep
+    assert external_tools.tool_path("\\\\?\\" + deep) == "\\\\?\\" + deep  # once only
+    short = "C:\\Temp\\stream"
+    assert external_tools.tool_path(short) == short
