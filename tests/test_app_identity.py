@@ -242,3 +242,18 @@ def test_startup_last_file_uses_the_same_migrating_store(stores, monkeypatch, tm
         ui.main()
     assert result.value.code == 0 and observed == [str(source)]
     assert settings.app_settings().value("lastFile") == str(source)
+
+
+def test_version_is_major_minor_patch_and_the_same_everywhere():
+    """§305: #.#.#, one source; the packaging copies must follow it."""
+    import re
+    from pathlib import Path
+    from pdf_minify import DESKTOP_ID, __version__
+    assert re.fullmatch(r"\d+\.\d+\.\d+", __version__)
+    root = Path(__file__).parents[1]
+    changelog = (root / "debian" / "changelog").read_text(encoding="utf-8").splitlines()[0]
+    assert changelog.startswith(f"pdf-minify ({__version__}-"), changelog
+    metainfo = (root / "packaging" / "linux" / f"{DESKTOP_ID}.metainfo.xml").read_text(encoding="utf-8")
+    assert f'<release version="{__version__}"' in metainfo
+    manual = (root / "packaging" / "linux" / "pdf-minify.1").read_text(encoding="utf-8")
+    assert f'"PDF Minify {__version__}"' in manual

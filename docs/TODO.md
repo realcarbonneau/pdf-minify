@@ -1522,4 +1522,4 @@ Remaining:
   then a check on a real Mac.
 - Real-desktop checks of the Linux packages (X11 and Wayland, drag-and-drop,
   HiDPI) before the first release.
-- The first release, `v0.1.0`, needs the designer's authorization.
+- The first release, `v0.0.1`, needs the designer's authorization.

@@ -11,18 +11,18 @@ would save.
 
 Download the package for your system from the
 [latest release](https://github.com/realcarbonneau/pdf-minify/releases).
-The first release, 0.1.0, is being prepared; until it is published,
+The first release, 0.0.1, is being prepared; until it is published,
 [run from source](#from-source).
 
 | Platform | Package |
 |----------|---------|
-| [Windows 10 and 11](#windows) | `pdf-minify_0.1.0_windows-x64-setup.exe` |
-| [Windows (portable)](#windows) | `pdf-minify_0.1.0_windows-x64-portable.zip` |
-| [Debian 13 (Trixie)](#linux) | `pdf-minify_0.1.0_debian-13-trixie_amd64.deb` |
-| [Ubuntu 24.04 (Noble), Linux Mint 22](#linux) | `pdf-minify_0.1.0_ubuntu-24.04-noble_amd64.deb` |
-| [Ubuntu 26.04 (Resolute)](#linux) | `pdf-minify_0.1.0_ubuntu-26.04-resolute_amd64.deb` |
-| [macOS (Apple Silicon)](#macos) | `pdf-minify_0.1.0_macos-arm64.dmg` |
-| [macOS (Intel)](#macos) | `pdf-minify_0.1.0_macos-intel.dmg` |
+| [Windows 10 and 11](#windows) | `pdf-minify_0.0.1_windows-x64-setup.exe` |
+| [Windows (portable)](#windows) | `pdf-minify_0.0.1_windows-x64-portable.zip` |
+| [Debian 13 (Trixie)](#linux) | `pdf-minify_0.0.1_debian-13-trixie_amd64.deb` |
+| [Ubuntu 24.04 (Noble), Linux Mint 22](#linux) | `pdf-minify_0.0.1_ubuntu-24.04-noble_amd64.deb` |
+| [Ubuntu 26.04 (Resolute)](#linux) | `pdf-minify_0.0.1_ubuntu-26.04-resolute_amd64.deb` |
+| [macOS (Apple Silicon)](#macos) | `pdf-minify_0.0.1_macos-arm64.dmg` |
+| [macOS (Intel)](#macos) | `pdf-minify_0.0.1_macos-intel.dmg` |
 
 The Windows and Linux packages are for 64-bit PCs (x86-64).
 
@@ -46,7 +46,7 @@ later.
 Install the downloaded package:
 
 ```bash
-sudo apt install ./pdf-minify_0.1.0_debian-13-trixie_amd64.deb
+sudo apt install ./pdf-minify_0.0.1_debian-13-trixie_amd64.deb
 ```
 
 Uninstall with `sudo apt remove pdf-minify`; your settings are kept.

@@ -47,6 +47,12 @@ ok, proceed for arch specific, but only do x86 for now, arm is not common for de
 Both options for mac please, and yes, push to github please.
 ```
 
+**§305** (2026-10-21)
+
+```text
+following taskcoach style approximately, give this a version number, but only #.#.#, and start at 0.0.1.  I will tell you when to increment.
+```
+
 [PLATFORMS.md](PLATFORMS.md) records what each package has passed. The
 packages follow Task Coach (`/home/user/Downloads/taskcoach`, its
 `docs/PACKAGING.md`, `debian/`, `scripts/build-deb.sh` and build workflows),
@@ -78,6 +84,17 @@ Not packaged:
   the default, cannot save), inline images crash MuPDF 1.25, and line art
   renders visibly heavier. Debian 14 (forky) ships MuPDF 1.28.2 with
   Brotli; its package can depend on `python3-pymupdf` and bundle nothing.
+
+## Version
+
+`pdf_minify.__version__`, Major.Minor.Patch, started at 0.0.1 (§305) and
+changed only when the designer says so, like Task Coach's single
+`meta/data.py`. The Windows and macOS builds read it, and the Debian
+workflow writes it into `debian/changelog` for each release.
+`tests/test_app_identity.py` checks the copies that cannot read it: the
+changelog, the AppStream metadata and the man page. A release is a pushed
+tag `v<version>`, which builds the packages and attaches them to the
+GitHub release; creating one needs the designer's authorization.
 
 ## Linux packages: Task Coach's rule
 
