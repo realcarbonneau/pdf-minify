@@ -295,6 +295,10 @@ to proceed. Linux packages need neither.
   which turns every `\` into `/` and so breaks that form: its input goes to
   the system temp folder instead when the filter's folder is too deep
   (`short_scratch_dir`).
+- **Windows checkouts convert line endings to CRLF** (GitHub's Windows
+  runners set `core.autocrlf`), so the Windows build shipped icons whose
+  SHA-256 no longer matched their manifest. `.gitattributes` keeps LF on
+  every platform.
 - **On macOS, Escape clicks a dialog's Cancel button 100 ms later**, and
   every new press restarts the wait. A test that pressed Escape every 50 ms
   until the dialog closed waited forever there; tests press it once per

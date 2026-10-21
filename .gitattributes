@@ -1,0 +1,4 @@
+# The same bytes on every platform: Windows checkouts would otherwise get
+# CRLF line endings, and the Windows build copies the checkout. Tests compare
+# shipped files with their recorded SHA-256 (icons, licences).
+* text=auto eol=lf
