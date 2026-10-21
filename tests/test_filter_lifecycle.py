@@ -385,10 +385,20 @@ def test_real_mini_click_cancel_keeps_current_and_selected_draft(window, dismiss
     v.scrollToItem(target)
     _app.processEvents()
 
+    dismissed = {}  # dialog -> when it was dismissed
+
     def dismiss():
         box = _app.activeModalWidget()
         if box is None:
             return
+        if box in dismissed:
+            # Once per dialog: on macOS, Escape clicks Cancel 100 ms later, and
+            # each new press restarts that wait.
+            if time.monotonic() - dismissed[box] > 5:
+                errors.append(f"{dismissal} did not close the dialog")
+                box.reject()
+            return
+        dismissed[box] = time.monotonic()
         try:
             assert isinstance(box, QMessageBox), "mini click did not show the real decision dialog"
             prompts.append(box.windowTitle())

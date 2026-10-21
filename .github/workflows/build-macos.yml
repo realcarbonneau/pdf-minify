@@ -161,11 +161,13 @@ jobs:
             n=$(basename "$f" .py)
             echo "=== $n"
             # Live, one line per test; a test stuck for 4 minutes dumps its
-            # stack, and is stopped at 5. A file stops at its third failure,
-            # so its tracebacks print without waiting for every test.
+            # stack, and its file is stopped at 5 ("thread": Qt swallows the
+            # default method's exception while a dialog waits). A file stops
+            # at its third failure, so its tracebacks print without waiting
+            # for every test.
             # Inside "if": GitHub's bash stops at a failing pipeline otherwise.
             if ! python -P -m pytest "$f" -v -p no:cacheprovider -rfE --maxfail=3 --timeout=300 \
-                -o faulthandler_timeout=240 2>&1 | tee "test-logs/$n.log"; then
+                --timeout-method=thread -o faulthandler_timeout=240 2>&1 | tee "test-logs/$n.log"; then
               failed="$failed $n"
             fi
           done

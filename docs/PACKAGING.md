@@ -287,3 +287,12 @@ to proceed. Linux packages need neither.
 - **Debian's PySide6 6.8 is stricter than 6.12**: drag events take a
   `QPoint` there and a `QPointF` (the `QPoint` form deprecated) on newer Qt;
   tests build them with the `drag_event` fixture.
+- **Windows encoders and long paths.** The app's scratch files can pass
+  Windows' 260-character limit (a user's long Temp path plus the hashed
+  filter folders), which `jbig2.exe` and `zopfli.exe` cannot open; Python
+  can. `tool_path` gives them the `\\?\` form from 240 characters on.
+- **On macOS, Escape clicks a dialog's Cancel button 100 ms later**, and
+  every new press restarts the wait. A test that pressed Escape every 50 ms
+  until the dialog closed waited forever there; tests press it once per
+  dialog. Qt also swallows pytest-timeout's default (signal) exception while
+  a dialog waits, so the macOS build runs it with `--timeout-method=thread`.
