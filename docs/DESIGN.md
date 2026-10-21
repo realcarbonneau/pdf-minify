@@ -161,8 +161,7 @@ The current quality mapping and its measurements are in
 The product name is **PDF Minify**. The importable Python package is
 `pdf_minify`; the machine/settings/temp identifier is `pdf-minify`. The
 application title uses the product name, including Qt's unsaved `[*]` marker.
-The designer will rename the GitHub repository separately; do not change its
-remote or pretend that a new repository URL already exists.
+The GitHub repository is `realcarbonneau/pdf-minify` (§300).
 
 Retain the existing flat Python layout: `pdf_minify/` is the import package,
 not another repository. A `src/` layout would contain `src/pdf_minify/` and

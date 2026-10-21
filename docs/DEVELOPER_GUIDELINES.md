@@ -218,8 +218,8 @@ requirements are in [TODO.md](TODO.md).
   layout. All settings
   access uses `ui_qt/settings.py` and its one-time non-overwriting legacy
   migration. Tests/review runs isolate both namespaces before migration.
-  Preserve exact quotes, licensed resources and frozen benchmark provenance;
-  keep the actual GitHub remote unchanged until the designer renames it.
+  Preserve exact quotes, licensed resources and frozen benchmark provenance.
+  The GitHub repository is `realcarbonneau/pdf-minify` (§300).
 - License (§297): PDF Minify is AGPL-3.0-or-later (`LICENSE`), which matches
   PyMuPDF's AGPL-3.0. New dependencies and bundled assets must be compatible
   with it, and bundled assets keep their own notices.

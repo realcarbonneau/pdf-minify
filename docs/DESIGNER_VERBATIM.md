@@ -1027,3 +1027,27 @@ the recommendation it quotes.
 ```text
 ok, as you reccommend "I recommend AGPL-3.0-or-later."
 ```
+
+## 298 — build packages for the two stable Debian versions, following Task Coach (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+can you make a build for the two debian version that are stable?  Follow taskcoach
+```
+
+## 299 — test the Debian 13 system packages carefully before proposing options (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+can it work with the packages in debian 13, please test carefully before proposing options!
+```
+
+## 300 — rename the GitHub repository to match the project name (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+Also, I am renaming the github project to match the project name now.
+```

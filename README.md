@@ -21,8 +21,8 @@ certified platform; packages for other systems are planned.
 
 ```bash
 sudo apt install git python3-venv jbig2 zopfli
-git clone https://github.com/realcarbonneau/pdf-minimalist.git
-cd pdf-minimalist
+git clone https://github.com/realcarbonneau/pdf-minify.git
+cd pdf-minify
 ./setup_local.sh
 ./run.sh
 ```
@@ -37,7 +37,7 @@ choose a Flate option under **PDF streams** before saving.
 ## Support
 
 Report bugs or request features at GitHub Issues:
-https://github.com/realcarbonneau/pdf-minimalist/issues
+https://github.com/realcarbonneau/pdf-minify/issues
 
 ## License
 
