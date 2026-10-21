@@ -1,5 +1,5 @@
 """PDF open/render/save helpers (PyMuPDF). Cancellable via CancelToken."""
-import fitz  # PyMuPDF
+import pymupdf as fitz
 import numpy as np
 import threading
 

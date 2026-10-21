@@ -1,5 +1,5 @@
 """Build a local demo PDF in ./.tmp/ (never /tmp)."""
-import fitz
+import pymupdf as fitz
 
 PAGES = [
     ("Scan test page 1 — hello world", False),

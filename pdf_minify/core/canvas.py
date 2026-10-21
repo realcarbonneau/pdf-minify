@@ -9,7 +9,7 @@ import math
 import mmap
 import tempfile
 
-import fitz
+import pymupdf as fitz
 import numpy as np
 from PIL import Image
 

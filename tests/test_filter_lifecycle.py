@@ -8,7 +8,7 @@ import time
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-import fitz
+import pymupdf as fitz
 import numpy as np
 import pytest
 from PySide6.QtCore import QModelIndex, QSettings, QTimer, Qt, QEvent

@@ -72,7 +72,7 @@ class _FileCancelToken(CancelToken):
 
 def build_artifact(input_path: str, spec: dict, directory: str) -> FilterArtifact:
     """Spawn-process task: save the PDF, measure it, render THAT PDF once."""
-    import fitz
+    import pymupdf as fitz
     from ..core.pipeline import save_with_spec
     from ..core.display import render_display_page
 

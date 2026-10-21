@@ -6,7 +6,7 @@ thresholds may never silently blank a page or flood it to black.
 import glob
 import os
 
-import fitz  # noqa: E402
+import pymupdf as fitz  # noqa: E402
 import numpy as np  # noqa: E402
 
 from pdf_minify.core import threshold as T  # noqa: E402

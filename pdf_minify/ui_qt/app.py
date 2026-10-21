@@ -41,7 +41,7 @@ from .icon_lab import IconLab
 from .settings import app_settings, configure_application, sync_settings
 from .tooltips import set_control_help
 
-import fitz
+import pymupdf as fitz
 
 log = logging.getLogger("pdf_minify")
 

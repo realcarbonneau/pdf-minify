@@ -68,7 +68,7 @@ def codecs_of(path):
 
 def page_count(path):
     try:
-        import fitz
+        import pymupdf as fitz
         d = fitz.open(path)
         n = d.page_count
         d.close()

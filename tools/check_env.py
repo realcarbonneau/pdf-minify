@@ -6,7 +6,7 @@ import sys
 print(f"python: {sys.version.split()[0]}  exe={sys.executable}")
 print(f"prefix: {sys.prefix}  (project environment: <checkout>/.venv)")
 print()
-for mod, pkg in [("fitz", "pymupdf"), ("PySide6", "PySide6-Essentials"),
+for mod, pkg in [("pymupdf", "pymupdf"), ("PySide6", "PySide6-Essentials"),
                  ("PIL", "Pillow"), ("numpy", "numpy")]:
     print(f"{pkg:22} {'LOCAL-OK' if importlib.util.find_spec(mod) else 'MISSING here'}")
 print()

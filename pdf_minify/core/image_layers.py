@@ -5,7 +5,7 @@ glyphs, invented text masks, per-image mask-heavy fallback or Qt dependency.
 """
 import logging
 
-import fitz
+import pymupdf as fitz
 import numpy as np
 
 from .pdf_io import CancelledError

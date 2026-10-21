@@ -13,7 +13,7 @@ import time
 for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
     os.environ.setdefault(name, "1")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import fitz
+import pymupdf as fitz
 import numpy as np
 from PIL import Image
 from pdf_minify.core.pipeline import save_with_spec, jbig2_binary, _threshold

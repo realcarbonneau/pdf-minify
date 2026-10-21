@@ -2,7 +2,7 @@
 import glob
 import os
 
-import fitz
+import pymupdf as fitz
 from PIL import Image
 
 files = sorted(glob.glob("examples/*.pdf"))

@@ -1,4 +1,4 @@
-import fitz
+import pymupdf as fitz
 import numpy as np
 from PIL import Image
 import io
@@ -205,7 +205,7 @@ def test_jbig2_save_roundtrip(tmp_path):
         assert 0 in np.unique(got)  # ink survived, not a blank page
     # real payload beats the PNG fallback
     from pdf_minify.core.pdf_io import render_gray
-    import fitz as _fz
+    import pymupdf as _fz
     with _fz.open(src) as _d:
         g = render_gray(_d, 0, dpi=100, token=CancelToken())
     jb2, codec = bw_page_payload(g, "otsu")
@@ -224,7 +224,7 @@ def test_jbig2_fallback_stays_valid(tmp_path, monkeypatch):
     from pdf_minify.core import pipeline
     monkeypatch.setattr(pipeline, "bw_page_jbig2", lambda *a, **k: b"invalid JBIG2")
     from pdf_minify.core.pdf_io import render_gray
-    import fitz as _fz
+    import pymupdf as _fz
     from pdf_minify.core.pipeline import bw_page_payload
     src = str(tmp_path / "in.pdf")
     out = str(tmp_path / "out.pdf")
@@ -377,7 +377,7 @@ def test_flate_stream_decodes_exact():
 def test_true_indexed_bpc_and_render(tmp_path):
     """Designer §80: bit depth follows actual entries; render is exact."""
     from pdf_minify.core.pipeline import indexed_parts, _place_indexed
-    import fitz as _fz
+    import pymupdf as _fz
     import numpy as _np
     img2 = Image.new("RGB", (32, 32))
     img2.putdata([(255, 0, 0)] * 512 + [(0, 0, 255)] * 512)

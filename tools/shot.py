@@ -17,7 +17,7 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import fitz  # noqa: E402
+import pymupdf as fitz  # noqa: E402
 from PySide6.QtCore import QPoint, QRect, QSettings, QEvent, Qt  # noqa: E402
 from PySide6.QtGui import QColor, QIcon, QPalette, QHelpEvent  # noqa: E402
 from PySide6.QtTest import QTest  # noqa: E402
