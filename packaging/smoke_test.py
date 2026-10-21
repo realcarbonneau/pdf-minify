@@ -65,7 +65,8 @@ document = pymupdf.open()
 document.new_page().insert_text((72, 72), "PDF Minify")
 document.save(pdf)
 if len(sys.argv) > 2:
-    command = sys.argv[2:]
+    # The app runs in a scratch folder: make relative paths absolute.
+    command = [str(Path(arg).absolute()) if Path(arg).exists() else arg for arg in sys.argv[2:]]
 else:
     launcher = APP_DIR / "pdf-minify.pyw"
     check(launcher.exists(), f"launcher: {launcher}")

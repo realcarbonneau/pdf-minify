@@ -95,6 +95,10 @@ jobs:
           # What the app never loads: Qt's developer tools, QML, stubs, some
           # plugins, and deployment templates compileall cannot read.
           python packaging/trim_pyside6.py "$LIB/PySide6"
+          # py2app's PySide6 recipe adds a qt.conf sending Qt to an empty
+          # Resources/qt_plugins; without it, PySide6 finds its own plugins
+          # (PySide6/Qt/plugins), as it does when installed by pip.
+          rm -f "$APP/Contents/Resources/qt.conf"
           cp -R build/tools/bin "$LIB/bin"
           # Licences of the bundled packages and Python (py2app copies packages, not their metadata).
           python - "$APP/Contents/Resources/licenses" <<'PY'
