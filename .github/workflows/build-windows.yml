@@ -25,9 +25,8 @@ env:
   # The app's own Python (embeddable package) and the encoders, all pinned.
   PYTHON_VERSION: "3.13.16"
   PYTHON_EMBED_SHA256: "97dae5274cc54867065e8d5a3226e48c35017ed332a0fdb0e27d5b5821961297"
-  ZOPFLI_VERSION: "1.0.3"
-  ZOPFLI_SHA256: "e955a7739f71af37ef3349c4fa141c648e8775bceb2195be07e86f8e638814bd"
-  JBIG2ENC_SPEC: "jbig2enc=0.32=h477610d_0"
+  # conda-forge builds: jbig2enc and libzopfli (the zopfli program 1.0.3).
+  ENCODERS: "jbig2enc=0.32=h477610d_0 libzopfli=1.0.3=h0e60522_0"
   APP: build\PDFMinify
 
 jobs:
@@ -75,39 +74,26 @@ jobs:
           python packaging\trim_pyside6.py "$env:APP\python\Lib\site-packages\PySide6"
           if ($LASTEXITCODE) { throw "trim failed" }
 
-      - name: Get the jbig2 encoder (conda-forge)
-        uses: mamba-org/setup-micromamba@v2
+      - name: Get the encoders (conda-forge)
+        uses: mamba-org/setup-micromamba@v3
         with:
           environment-name: tools
-          create-args: ${{ env.JBIG2ENC_SPEC }}
+          create-args: ${{ env.ENCODERS }}
           condarc: |
             channels:
               - conda-forge
           init-shell: none
-
-      - name: Set up the Microsoft C compiler
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Build zopfli from source
-        run: |
-          Invoke-WebRequest "https://github.com/google/zopfli/archive/refs/tags/zopfli-$env:ZOPFLI_VERSION.tar.gz" -OutFile zopfli.tar.gz
-          if ((Get-FileHash zopfli.tar.gz -Algorithm SHA256).Hash -ne $env:ZOPFLI_SHA256) { throw "zopfli.tar.gz: wrong SHA-256" }
-          tar -xzf zopfli.tar.gz
-          New-Item -ItemType Directory -Force build\zopfli | Out-Null
-          # Static C runtime: zopfli.exe needs no DLL.
-          cl /nologo /O2 /MT /Fo:build\zopfli\ /Fe:build\zopfli\zopfli.exe "zopfli-zopfli-$env:ZOPFLI_VERSION\src\zopfli\*.c"
-          if ($LASTEXITCODE) { throw "zopfli build failed" }
 
       - name: Collect the encoders and their licences
         run: |
           $bin = "$env:APP\bin"
           New-Item -ItemType Directory -Force "$bin\licenses" | Out-Null
           $tools = Join-Path $env:MAMBA_ROOT_PREFIX "envs\tools"
-          # jbig2.exe and every library of its environment (Leptonica and the
-          # image libraries it reads), plus the Microsoft C++ runtime.
-          Copy-Item "$tools\Library\bin\jbig2.exe", "$tools\Library\bin\*.dll" $bin
+          # jbig2.exe, zopfli.exe and every library of their environment
+          # (Leptonica and the image libraries jbig2 reads, zopfli's own DLL),
+          # plus the Microsoft C++ runtime.
+          Copy-Item "$tools\Library\bin\jbig2.exe", "$tools\Library\bin\zopfli.exe", "$tools\Library\bin\*.dll" $bin
           Get-ChildItem $tools -Filter *.dll | Where-Object Name -Match '^(vcruntime|msvcp|concrt|vcomp)' | Copy-Item -Destination $bin
-          Copy-Item build\zopfli\zopfli.exe $bin
           foreach ($meta in Get-ChildItem "$tools\conda-meta\*.json") {
             $package = Get-Content $meta.FullName -Raw | ConvertFrom-Json
             $unpacked = $package.extracted_package_dir
@@ -116,8 +102,7 @@ jobs:
             if (Test-Path $licenses) { Copy-Item $licenses "$bin\licenses\$($package.name)" -Recurse }
             Write-Host "$($package.name) $($package.version) $($package.build)"
           }
-          Copy-Item "zopfli-zopfli-$env:ZOPFLI_VERSION\COPYING" "$bin\licenses\zopfli-COPYING.txt"
-          foreach ($name in "jbig2enc", "leptonica") {
+          foreach ($name in "jbig2enc", "leptonica", "libzopfli") {
             if (-not (Test-Path "$bin\licenses\$name")) { throw "no licence found for $name" }
           }
           Get-ChildItem $bin
@@ -229,7 +214,7 @@ jobs:
           path: packages
 
       - name: Create or update the release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             packages/*.exe

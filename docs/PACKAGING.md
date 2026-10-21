@@ -164,9 +164,11 @@ its own container, as `build-deb.yml` does.
 - `packaging/windows/requirements.txt`: the wheels, pinned by SHA-256,
   installed by the build machine's pip with `--target`; no pip in the app.
   `packaging/trim_pyside6.py` then removes what the app never loads.
-- `jbig2.exe` from conda-forge (jbig2enc 0.32 with Leptonica and its image
-  libraries) and `zopfli.exe` built from zopfli 1.0.3's source with the
-  static C runtime, in `bin\`, with every licence in `bin\licenses\`.
+- `jbig2.exe` and `zopfli.exe` from conda-forge, pinned to exact builds
+  (jbig2enc 0.32 with Leptonica and its image libraries; libzopfli 1.0.3),
+  in `bin\`, with every licence in `bin\licenses\`. No compiler runs, so
+  the build leaves no MSVC telemetry helper (`vctip`) behind, and every
+  action it uses runs on Node.js 24.
 - `pdf-minify.pyw` runs under `pythonw.exe` (no console); it writes the log
   to `%TEMP%\pdf-minify\pdf-minify.log`, the folder `run.sh` uses.
 - The code is compiled at build time (`compileall`, unchecked hashes), so
