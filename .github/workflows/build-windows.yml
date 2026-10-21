@@ -54,6 +54,10 @@ jobs:
           $version = python -c "from pdf_minify import __version__; print(__version__)"
           "version=$version" >> $env:GITHUB_OUTPUT
           Write-Host "Version: $version"
+          # A release tag must name this version: v{__version__}.
+          if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne "v$version") {
+            throw "The tag ${{ github.ref_name }} is not v$version (pdf_minify.__version__)"
+          }
 
       - name: Python embeddable package
         run: |

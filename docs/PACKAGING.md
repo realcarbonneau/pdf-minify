@@ -94,7 +94,12 @@ workflow writes it into `debian/changelog` for each release.
 `tests/test_app_identity.py` checks the copies that cannot read it: the
 changelog, the AppStream metadata and the man page. A release is a pushed
 tag `v<version>`, which builds the packages and attaches them to the
-GitHub release; creating one needs the designer's authorization.
+GitHub release; creating one needs the designer's authorization. Each
+workflow stops if the tag does not name `__version__`. Create the release
+on GitHub first (Releases → Draft a new release → new tag `v<version>` on
+`main` → Publish): the three workflows then add their packages to it about
+25 minutes later. A tag pushed without a release would have all three
+create one at once.
 
 ## Linux packages: Task Coach's rule
 

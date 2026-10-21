@@ -70,6 +70,10 @@ jobs:
         run: |
           VERSION=$(python3 -c "from pdf_minify import __version__; print(__version__)")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # A release tag must name this version: v{__version__}.
+          if [ "${{ github.ref_type }}" = tag ] && [ "${{ github.ref_name }}" != "v$VERSION" ]; then
+            echo "The tag ${{ github.ref_name }} is not v$VERSION (pdf_minify.__version__)"; exit 1
+          fi
           sed -i "1s/^pdf-minify ([^)]*) [a-z]*;/pdf-minify (${VERSION}-1) ${{ matrix.codename }};/" debian/changelog
           head -1 debian/changelog
 
