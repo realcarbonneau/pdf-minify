@@ -92,6 +92,9 @@ jobs:
           set -e
           LIB="$APP/Contents/Resources/lib/python3.13"
           test -d "$LIB/pdf_minify"
+          # What the app never loads: Qt's developer tools, QML, stubs, some
+          # plugins, and deployment templates compileall cannot read.
+          python packaging/trim_pyside6.py "$LIB/PySide6"
           cp -R build/tools/bin "$LIB/bin"
           # Licences of the bundled packages and Python (py2app copies packages, not their metadata).
           python - "$APP/Contents/Resources/licenses" <<'PY'

@@ -28,22 +28,11 @@ override_dh_auto_install:
 	python3 -m pip install --no-deps --no-compile --only-binary=:all: \
 		--require-hashes --no-cache-dir --disable-pip-version-check \
 		--target $(LIB) -r $(BUNDLE)
-	# Developer tools, headers and plugins the app never loads: PyMuPDF's
-	# build files, and (where PySide6 is bundled) Qt's tools, QML, and the
-	# database, printing, Designer, embedded-display and virtual-keyboard
-	# plugins, some of which need libraries no release has. The app uses
-	# QtCore, QtGui and QtWidgets on X11 or Wayland.
+	# PyMuPDF's files for building other extensions, never used at run time;
+	# and, where PySide6 is bundled, what the app never loads (the list is
+	# shared with the Windows and macOS builds).
 	rm -rf $(LIB)/bin $(LIB)/pymupdf/mupdf-devel
-	cd $(LIB)/PySide6 2>/dev/null && rm -rf assistant designer linguist lrelease lupdate \
-		qmlformat qmllint qmlls svgtoqml include typesystems doc glue scripts \
-		Qt/qml Qt/metatypes Qt/libexec \
-		Qt/plugins/sqldrivers Qt/plugins/printsupport Qt/plugins/designer \
-		Qt/plugins/qmltooling Qt/plugins/egldeviceintegrations \
-		Qt/plugins/imageformats/libqpdf.so \
-		Qt/plugins/platforminputcontexts/libqtvirtualkeyboardplugin.so \
-		Qt/plugins/platforms/libqeglfs.so Qt/plugins/platforms/libqlinuxfb.so \
-		Qt/plugins/platforms/libqminimalegl.so Qt/plugins/platforms/libqvkkhrdisplay.so \
-		Qt/plugins/platforms/libqvnc.so && find . -name '*.pyi' -delete || true
+	python3 packaging/trim_pyside6.py $(LIB)/PySide6
 	install -D -m 755 packaging/linux/pdf-minify $(PKG)/usr/bin/pdf-minify
 	install -D -m 644 packaging/linux/$(DESKTOP_ID).desktop \
 		$(PKG)/usr/share/applications/$(DESKTOP_ID).desktop

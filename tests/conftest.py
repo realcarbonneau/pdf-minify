@@ -5,6 +5,7 @@ environments (designer §37). Same guards live in pdf_minify/__main__.py
 (app entry) and tools/shot.py.
 """
 import os
+import sys
 import tempfile
 import itertools
 import pytest
@@ -17,6 +18,27 @@ for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
 # NOTE: unconditional override (not setdefault) — this shell pre-exports
 # XDG_CONFIG_HOME, which once silently defeated the isolation (issues.md B23).
 os.environ["XDG_CONFIG_HOME"] = tempfile.mkdtemp(prefix="pdfmin-test-xdg-")
+
+
+@pytest.fixture(autouse=True)
+def grayscale_text():
+    """Draw test text without sub-pixel (LCD) anti-aliasing, on every platform.
+
+    Pixel-exact GUI tests compare text painted by different paths, and Qt
+    applies sub-pixel text to some of them only (a widget's own paint, not a
+    delegate painting into a test's image). Ubuntu's fontconfig turns it on,
+    Debian's does not; Windows has ClearType. Grey anti-aliasing keeps the
+    comparisons about the app, not the platform's font settings.
+    """
+    if "PySide6.QtWidgets" in sys.modules:
+        from PySide6.QtGui import QFont
+        from PySide6.QtWidgets import QApplication
+        app = QApplication.instance()
+        if app is not None and not app.font().styleStrategy() & QFont.NoSubpixelAntialias:
+            font = app.font()
+            font.setStyleStrategy(QFont.StyleStrategy(font.styleStrategy() | QFont.NoSubpixelAntialias))
+            app.setFont(font)
+    yield
 
 
 @pytest.fixture

@@ -71,6 +71,9 @@ jobs:
             --platform win_amd64 --python-version 3.13 --implementation cp `
             --target "$env:APP\python\Lib\site-packages" -r packaging\windows\requirements.txt
           if ($LASTEXITCODE) { throw "pip install failed" }
+          # What the app never loads: Qt's developer tools, QML, stubs, some plugins.
+          python packaging\trim_pyside6.py "$env:APP\python\Lib\site-packages\PySide6"
+          if ($LASTEXITCODE) { throw "trim failed" }
 
       - name: Get the jbig2 encoder (conda-forge)
         uses: mamba-org/setup-micromamba@v2

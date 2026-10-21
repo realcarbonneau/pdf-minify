@@ -110,11 +110,13 @@ Per-release files in `debian/bundled/`, named by the release's codename:
 | `<codename>.build-depends` | optional: libraries a bundled wheel links against, installed by `build-deb.sh deps` so `dh_shlibdeps` can declare them |
 | `<codename>.lintian-overrides` | optional: overrides for files only that release's package carries |
 
-`debian/rules` trims what the app never loads: PyMuPDF's build files and,
-where PySide6 is bundled, Qt's tools, QML, and the database, printing,
-Designer, embedded-display and virtual-keyboard plugins (some need libraries
-no release has). Lintian is clean; each override in
-`debian/pdf-minify.lintian-overrides` says why.
+`debian/rules` drops PyMuPDF's build files and, where PySide6 is bundled,
+runs `packaging/trim_pyside6.py`: one list, shared with the Windows and
+macOS builds, of what the app never loads (Qt's developer tools, QML, type
+stubs, and the database, printing, Designer, embedded-display and
+virtual-keyboard plugins, some of which need libraries no target has).
+Lintian is clean; each override in `debian/pdf-minify.lintian-overrides`
+says why.
 
 To add a release: write its `debian/bundled/` files, build and test it
 locally (below), then add it to both matrices in `build-deb.yml`.
@@ -144,6 +146,7 @@ its own container, as `build-deb.yml` does.
   `python313._pth` adding the app folder and `Lib\site-packages`.
 - `packaging/windows/requirements.txt`: the wheels, pinned by SHA-256,
   installed by the build machine's pip with `--target`; no pip in the app.
+  `packaging/trim_pyside6.py` then removes what the app never loads.
 - `jbig2.exe` from conda-forge (jbig2enc 0.32 with Leptonica and its image
   libraries) and `zopfli.exe` built from zopfli 1.0.3's source with the
   static C runtime, in `bin\`, with every licence in `bin\licenses\`.
@@ -171,6 +174,7 @@ setuptools below 71.0.2 as Task Coach pins it) on GitHub's Intel
 - `packaging/macos/setup_app.py` lists whole packages, which py2app copies
   as folders into `Contents/Resources/lib/python3.13/`; the app's icons and
   notices stay readable, and `bin/` beside `pdf_minify` holds the encoders.
+  `packaging/trim_pyside6.py` then removes what the app never loads.
 - `scripts/build-macos-tools.sh` builds `zopfli` 1.0.3 and `jbig2`
   (jbig2enc 0.32, as on Windows) from sources pinned by SHA-256, with a
   static Leptonica 1.87.0 reading PNG only (the one format the app gives
@@ -254,6 +258,15 @@ to proceed. Linux packages need neither.
   `--no-ext-rename`.
 - **Minimal Ubuntu container images skip man pages** (`path-exclude`), so
   `test-deb.sh` checks the man page inside the `.deb`.
+- **Ubuntu turns on sub-pixel (LCD) text** in fontconfig; Debian does not,
+  Windows has ClearType. Qt applies it to a widget's own paint but not to a
+  delegate painting into a test's image, so pixel-exact GUI tests differed
+  on Ubuntu only. `tests/conftest.py` (`grayscale_text`) draws test text
+  with grey anti-aliasing on every platform. The running app is not
+  affected: the strip and the native bar both paint as widgets.
+- **PySide6's deployment scripts include `.tmpl.py` templates** that are not
+  Python, so `compileall` fails on a whole PySide6; `trim_pyside6.py`
+  removes them with the other developer files first.
 - **Debian's PySide6 6.8 is stricter than 6.12**: drag events take a
   `QPoint` there and a `QPointF` (the `QPoint` form deprecated) on newer Qt;
   tests build them with the `drag_event` fixture.
