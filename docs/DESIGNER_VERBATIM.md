@@ -992,3 +992,21 @@ Source: designer message in the session of 2026-10-20; exact text.
 ```text
 start with PDF Minify: Make pdf smaller ... avoid technical references, the techniques are for an objective.  make pdfs smaller using a variety of filters and compression algorithms and techniques with extensive previews giving you a quick overvew of the visual effects of the compression and the size... etc.  This is the idea, it should have already been clear from my rulings, make a good description and update the rulings, because the two are closely linked.
 ```
+
+## 294 — application icon: column 5, row 4 of icons/test2.png (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+Also, I want to use the Icon col 5, row 4 from     pdf-minimalist/icons
+
+/test2.png.
+```
+
+## 295 — show the application icon in the README (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+Can you put this in the readme?
+```

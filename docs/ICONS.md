@@ -35,8 +35,32 @@ ok, as you suggest.
 I don't like those icons, make an icon lab menu item with a window with various options and codes for each so I can tell you my choices.  use icons from nuvola, oxygen and other similar libraries.
 ```
 
+**§294** (2026-10-20)
+
+```text
+Also, I want to use the Icon col 5, row 4 from     pdf-minimalist/icons
+
+/test2.png.
+```
+
+**§295** (2026-10-20)
+
+```text
+Can you put this in the readme?
+```
+
 The current icons stay in place until the designer chooses replacements in the
 [Icon Lab](ICON_LAB.md) (§200). Work: TODO §201, issue B102.
+
+## Application icon (§§294/295)
+
+The application icon is the designer's choice from `icons/test2.png`: column 5,
+row 4, a PDF page pinched into an hourglass by two green arrows. It keeps its
+light rounded tile, with transparent corners, padded to a square.
+`ui_qt/assets/app_icon/pdf-minify-<size>.png` holds 16, 24, 32, 48, 64, 128 and
+256 px versions. `configure_application` sets it as the application's window
+and taskbar icon, and the README shows the 128 px version. The action-icon
+rules above do not apply to it; it is the product's own artwork.
 
 ## Ownership and mappings
 

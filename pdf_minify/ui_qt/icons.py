@@ -15,6 +15,20 @@ ICON_NAMES = frozenset({
     "process-stop", "zoom-in", "zoom-out",
 })
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "breeze"
+APP_ICON_ROOT = Path(__file__).resolve().parent / "assets" / "app_icon"
+APP_ICON_SIZES = (16, 24, 32, 48, 64, 128, 256)
+
+
+def app_icon() -> QIcon:
+    """The product's own application icon (§294), every bundled size."""
+    icon = QIcon()
+    for size in APP_ICON_SIZES:
+        source = APP_ICON_ROOT / f"pdf-minify-{size}.png"
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"Missing application icon: {source}. Include ui_qt/assets in the package.")
+        icon.addFile(str(source))
+    return icon
 
 
 def standard_icon(name: str, palette: QPalette | None = None, *, size: int = 16) -> QIcon:

@@ -83,7 +83,8 @@ and verified; Task Coach having them does not certify or require them here.
 
 ## App-specific integration gates before any packaged build
 
-1. Add package metadata, versioned entry point, icons/desktop metadata and a
+1. Add package metadata, versioned entry point, desktop metadata using the
+   bundled application icon (`ui_qt/assets/app_icon/`, see `ICONS.md`) and a
    release dependency lock. None of the proposed build scripts/specs or
    installers exists here yet. Preserve `python -m pdf_minify` for source.
 2. Preserve multiprocessing **spawn**, process-pool limits, cancellation and

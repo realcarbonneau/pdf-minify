@@ -181,6 +181,23 @@ def test_application_identity_and_cli_are_renamed():
     assert "pdf_minimalist" not in result.stdout
 
 
+def test_application_icon_is_the_bundled_product_icon():
+    """§294: the window/taskbar icon comes from the bundled sizes, never a theme."""
+    from PySide6.QtCore import QSize
+    from pdf_minify.ui_qt.icons import APP_ICON_SIZES, app_icon
+    icon = app_icon()
+    assert not icon.isNull()
+    assert {s.width() for s in icon.availableSizes()} == set(APP_ICON_SIZES)
+    for size, corner_alpha in ((16, 255), (256, 1)):
+        image = icon.pixmap(QSize(size, size)).toImage()
+        assert image.width() == size and image.hasAlphaChannel()
+        # Rounded corners are see-through (only partly at 16 px, where the radius is ~1 px).
+        assert image.pixelColor(0, 0).alpha() < corner_alpha
+        assert image.pixelColor(size // 2, size // 2).alpha() == 255
+    settings.configure_application(app)
+    assert {s.width() for s in app.windowIcon().availableSizes()} == set(APP_ICON_SIZES)
+
+
 def test_startup_last_file_uses_the_same_migrating_store(stores, monkeypatch, tmp_path):
     _, legacy = stores
     source = tmp_path / "remembered.pdf"

@@ -1,5 +1,7 @@
 # PDF Minify — make PDFs smaller
 
+<p align="center"><img src="pdf_minify/ui_qt/assets/app_icon/pdf-minify-128.png" alt="PDF Minify icon" width="128"></p>
+
 Make PDFs smaller with a variety of filters, compression algorithms and
 techniques, and extensive previews that give a quick overview of each one's
 visual effect and file size. What you see is what saving writes.

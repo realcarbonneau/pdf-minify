@@ -11,9 +11,11 @@ IDENTITY_MIGRATION_REVISION = 1
 
 def configure_application(app):
     """Use a stable machine identity separately from the human-facing name."""
+    from .icons import app_icon
     app.setOrganizationName(APP_ID)
     app.setApplicationName(APP_ID)
     app.setApplicationDisplayName(APP_NAME)
+    app.setWindowIcon(app_icon())
 
 
 def _user_settings(app_id):
