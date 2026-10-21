@@ -131,12 +131,18 @@ The app should log everything important to the stdout so that you can run and re
 'PySide6.QtGui.QPalette' object has no attribute 'Mid', BUT you should see this in the log automatically, no?  This was in a popup.
 ```
 
-### Commits
+### Commits and attribution
 
 **§291** (2026-10-20)
 
 ```text
 Why forced push, I want to keep some history, when I say squash and push, that means to squash the commits since the last commit that was pushed to origin, to avoid noisy commit history.  The commits should be squashed and pushed by theme/fix/batch.
+```
+
+**§292** (2026-10-20)
+
+```text
+Also, put an important memory, like in taskcoach, that we never put the workers as co-authors, or is that in the dev guidelines?  Look in sister taskcoach repo.
 ```
 
 Read this before touching code. The designer's rulings are in
@@ -314,6 +320,10 @@ each line.
 - Commits (§291): "squash and push" squashes only the local commits made since
   the last commit pushed to origin, one commit per theme, fix or batch, then
   pushes normally. Never amend, rebase or force-push commits already on origin.
+- No AI attribution (§292): never name AI tools or agents, or credit them, in
+  commit messages (no `Co-Authored-By` or session trailers), code comments,
+  docstrings, documentation, issues, pull requests or any other project-facing
+  text. The git author is the designer; let the work speak for itself.
 - `python3 tools/check_env.py` then `./.venv/bin/python tools/check_env.py`.
 - Qt smoke: `QT_QPA_PLATFORM=offscreen ./.venv/bin/python -c "...MainWindow..."`.
 

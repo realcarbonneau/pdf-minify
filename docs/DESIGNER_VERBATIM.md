@@ -412,7 +412,7 @@ the old entry is deleted; the others stay until new rulings replace them
 
 ## 139 — highlight approved + auto suite + drop bar missing (verbatim, 2026-10-13)
 
-Source: designer message in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20.
+Source: designer message in the session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20.
 
 ```text
 Ok, this highlight is good.  you can document and harden the test cases for this.  Also make a full suite of test cases that run automatically, so you don't have to run each one at a time.  Also, next issue, the DnD does NOT show the drop indicator vertical bar, this is wrong, I already defined this many times.
@@ -423,7 +423,7 @@ Ok, this highlight is good.  you can document and harden the test cases for this
 
 ## 141 — drag ghost needs true uniform transparency (verbatim, 2026-10-13)
 
-Source: three designer messages in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20. The first two came before §140, the third after it.
+Source: three designer messages in the session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13); copied exactly from its export on 2026-10-20. The first two came before §140, the third after it.
 
 ```text
 Also, typical DnD should have some transparency, what is modern GUI best ptractices?
@@ -819,7 +819,7 @@ tell me what you did for transparency, because it just doesn't work
 
 ## 272 — JPEG2000 quality equivalence to JPEG q75 (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 I had a less skiled worker program this app and documentation, but I am not sastisfied.  The first problem I have is that it was not able to derive a proper quality setting equivalence for JPEG2000 that matched JPG q75 (I think that is what I choose).  This is important for the benchmarks, because we need to set all settings as similar as possible and also follow what users expect and understand (eg q=75 quality setting, not multiple different complex settings), so that the benchmarks mean something and so that users can know what they are setting?  There is already some research done in the repo, please review and do me research if you feel that is required.
@@ -827,7 +827,7 @@ I had a less skiled worker program this app and documentation, but I am not sast
 
 ## 273 — developer guidelines and verbatim record quality (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 the developper guidelines were not well done neither.  My verbatim words should be exact, but the corpus is a mess and the verbatim recordings might not be well organized.
@@ -835,7 +835,7 @@ the developper guidelines were not well done neither.  My verbatim words should 
 
 ## 274 — equivalence estimate and 4:2:0 question (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 So you have equivalence or can you estimate it?  And do you think we should use "4:2:0" also by default and for benchmarks?
@@ -843,7 +843,7 @@ So you have equivalence or can you estimate it?  And do you think we should use 
 
 ## 275 — use case: smaller PDFs for most users (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 I already ruled the use case, this is for making pdfs smaller, thuse lossless or super high quality images are not a concern, we want something simple for most users.
@@ -851,7 +851,7 @@ I already ruled the use case, this is for making pdfs smaller, thuse lossless or
 
 ## 276 — colour sampling must match between the codecs (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 Well if if "4:2:0" matches a lower Q for JPEG2000, then that is not good, we should keep it was it was before, matching JPEG200, or reducing JPEG2000 color setting to match jpg  4:2:0, no?
@@ -859,7 +859,7 @@ Well if if "4:2:0" matches a lower Q for JPEG2000, then that is not good, we sho
 
 ## 277 — option 2 approval (verbatim, 2026-10-19)
 
-Source: designer message in the Claude Code session of 2026-10-19; exact text.
+Source: designer message in the session of 2026-10-19; exact text.
 
 ```text
 Yes, option 2 please and document properly.
@@ -867,7 +867,7 @@ Yes, option 2 please and document properly.
 
 ## 278 — standard packages only; JPEG settings follow JPEG2000 (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 Don't change standard packages, if you can't change JPEG2000, adjust the JPG settings to match.
@@ -875,7 +875,7 @@ Don't change standard packages, if you can't change JPEG2000, adjust the JPG set
 
 ## 279 — documentation structure: rulings first, present tense, recurring traps only (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 collect the most important top level design rulings and design intents, varbatim, to the top section of the design document.  Each dev doc should have a first sections with contains the relevant rulings, etc.  Each page should also have a section with historical change logs ONLY for mistakes/changes that have a chance of recurring, eg design traps, of failed attempts and the reason, we onle keep current present tense documentation, UNLESS it's a past mistake that can inform current and future work to avoid past mistakes.  If the mistake was trivial and because the worker did NOT follow canon or rulings, or drifted, we do not document, the git historical keeps a record naturally.
@@ -883,7 +883,7 @@ collect the most important top level design rulings and design intents, varbatim
 
 ## 280 — documentation rework: reviewed by hand, iterative, principles then compression docs (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 I would rather you don't use a tool, you should be reviewing and think of each one, but you can use a tool for copying precisely, once you have read and analyzed and made decisions.  I don't want a full refactor now, we will work iteratively and opportunistically, start with the most important current design principles please.  Also, after the top level precinciples, work on the compression docs, since we are working on that now.  These are also a mess.
@@ -891,7 +891,7 @@ I would rather you don't use a tool, you should be reviewing and think of each o
 
 ## 281 — compression docs: one design page, one benchmark page (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 I think the compression docs should be organized as the first one being for the compression design, high level, and another with the compression benchmarks.  Compression benchmarks should be mostly focused on the integrated final size, and then binary experiment benchmarks, those that I have guided closely follow better my design intent and follow proper experimental treatment design, the others that predate are somewhat a mess.  do you see any need for any other compression related documents?  Or should we have other splits/docs for this?
@@ -899,7 +899,7 @@ I think the compression docs should be organized as the first one being for the 
 
 ## 282 — publisher scripts update only measured numbers; tables and text curated by hand (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 ok, as you suggest, but the scripts should only be updating the benchmarks, not various texts in the file, right?  Maybe the benchmark results on the matching line specifically?  Thus you curate the tables manually?
@@ -907,7 +907,7 @@ ok, as you suggest, but the scripts should only be updating the benchmarks, not 
 
 ## 283 — ID tags on benchmark table rows for exact matching (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 can you put id tags on the lines to ensure full match, even if the row description is short and not necessarily unique across the page, or md doesn't provide this?
@@ -915,7 +915,7 @@ can you put id tags on the lines to ensure full match, even if the row descripti
 
 ## 284 — benchmark JPEG2000 at the single setting that looks like JPEG q75 (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 Ok, so a single setting is the correct direction, however, for the purpose of out benchmarking, we have to choose a single quality setting that provides the same visual results as jpg.  The reasoning is simple, if jpg q75 provides a certain compression and quality, then the newer J2K is expected to provide a smaller (or in the absolute worst case, the same size) file for the same visual quality level.  This is very simple and basic, I should not have to explain this.  Or else, benchmarks and a newer compression algorithm has no value.
@@ -923,7 +923,7 @@ Ok, so a single setting is the correct direction, however, for the purpose of ou
 
 ## 285 — expectation that JPEG2000 improves on JPEG (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 what is the big picture?  Is J2K generally better then JPG?  All things equal?   This is the assumption since it is newer, there would be no point in having a newer algorithm that does not provide improvements.
@@ -931,7 +931,7 @@ what is the big picture?  Is J2K generally better then JPG?  All things equal?  
 
 ## 286 — question: JPEG2000 on letters (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 should J2K have better results on letters?
@@ -939,7 +939,7 @@ should J2K have better results on letters?
 
 ## 287 — no automatic Best between JPEG and JPEG2000; keep them comparable in benchmarks (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
@@ -947,7 +947,7 @@ Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep 
 
 ## 288 — mini caption's last line cut off; look at the GUI results (verbatim, 2026-10-13)
 
-Source: designer message in the opencode session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13), sent just before §139 and not logged at the time; copied exactly from its export on 2026-10-20. Subject (worker text, not designer words): the last caption line under each strip mini, the size, was cut off at the bottom.
+Source: designer message in the session `ses_ed9c28122ffe8V7aTCnj1ue5w6` (2026-10-10 to 2026-10-13), sent just before §139 and not logged at the time; copied exactly from its export on 2026-10-20. Subject (worker text, not designer words): the last caption line under each strip mini, the size, was cut off at the bottom.
 
 ```text
 Now, the last row of the text is trucated by the view, don't you see this?  This is terribly bad!  Are you even looking at the GUI results?  
@@ -955,7 +955,7 @@ Now, the last row of the text is trucated by the view, don't you see this?  This
 
 ## 289 — scrub means remove completely, with no reference or cleanup log (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 squash, commit and push.  Then review the docs for additional useless chatter that the previous worker kept, list me the top 10 useless chatter that we can scrub from the docs.  Also, when I use the word scrub, that means completely remove, and remove reference, and not log that is was cleaned.  The only history that would remain is in the git history.
@@ -963,7 +963,7 @@ squash, commit and push.  Then review the docs for additional useless chatter th
 
 ## 290 — unclear-source entries: delete when superseded or reconfirmed by clear rulings (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 ok, for Item 9, Item 10.  For option 1, clean up if you have superceding rulings that override old ones that are not clear about the source, same for one that have been reconfirmed by clear more recent rulings, you can delete the old duplicate unclear source ones.  The rest, you can leave as unclear source and clear when new rulings come in.  Ok for option 2 JBIG2 as you suggest.  Then do the analysis of the next document carefully, one at a time.  You can also squash, commit and push
@@ -971,8 +971,16 @@ ok, for Item 9, Item 10.  For option 1, clean up if you have superceding rulings
 
 ## 291 — squash only unpushed commits, by theme; keep pushed history (verbatim, 2026-10-20)
 
-Source: designer message in the Claude Code session of 2026-10-20; exact text.
+Source: designer message in the session of 2026-10-20; exact text.
 
 ```text
 Why forced push, I want to keep some history, when I say squash and push, that means to squash the commits since the last commit that was pushed to origin, to avoid noisy commit history.  The commits should be squashed and pushed by theme/fix/batch.
+```
+
+## 292 — never credit AI workers as co-authors or in project text (verbatim, 2026-10-20)
+
+Source: designer message in the session of 2026-10-20; exact text.
+
+```text
+Also, put an important memory, like in taskcoach, that we never put the workers as co-authors, or is that in the dev guidelines?  Look in sister taskcoach repo.
 ```
