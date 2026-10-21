@@ -1,4 +1,68 @@
-# PDF Minify — overview
+# Developer documentation
+
+For working on PDF Minify: running it from source, testing, and what each
+document here covers. To install PDF Minify, see the [README](../README.md).
+
+## Rulings (verbatim)
+
+Exact designer text from `DESIGNER_VERBATIM.md`. Text outside the fenced
+quotes is not the designer's.
+
+**§296** (2026-10-20)
+
+```text
+And the readme has irrelevant technical details, like debounce, local run, etc.  I want something like taskcoach, we will have the install packages/platforms, and a ref to the docs index, which should be a readme in the docs dir, right?
+```
+
+## Running from source
+
+On Debian 13, the certified platform ([PLATFORMS.md](PLATFORMS.md)):
+
+```bash
+sudo apt install python3-venv jbig2 zopfli mupdf-tools poppler-utils
+./setup_local.sh                  # creates .venv and installs requirements.txt
+./run.sh [file.pdf] [--debug]     # starts the app; without a file it reopens the last one
+./test.sh                         # the full suite, after code changes (§241)
+```
+
+`python -m pdf_minify [input.pdf] [--debug]` also works inside the activated
+`.venv`. Python packages stay in `.venv`; the local-versus-system split is in
+[DEPENDENCIES.md](DEPENDENCIES.md).
+
+Checks and review tools (outputs go to the gitignored `.tmp/`):
+
+```bash
+xvfb-run -a ./.venv/bin/python tools/drag_smoke.py                   # native drag-and-drop (needs xdotool)
+QT_QPA_PLATFORM=offscreen ./.venv/bin/python tools/filter_smoke.py   # filter edit and save flow
+./.venv/bin/python tools/shot.py [file.pdf]                          # offscreen screenshots
+./.venv/bin/python tools/make_demo.py                                # demo PDF
+./.venv/bin/python tools/bench_filters.py                            # every filter across the corpus
+```
+
+The app log is `${TMPDIR:-/tmp}/pdf-minify/pdf-minify.log`. Filtered PDFs and
+encoder scratch live under `${TMPDIR:-/tmp}/pdf-minify/saves/<GUI-PID>/…`,
+locked per process and removed on normal exit
+([PERSISTENCE_AND_TEMP.md](PERSISTENCE_AND_TEMP.md)).
+
+## Repository layout
+
+```
+<checkout>/
+  pdf_minify/         # importable Python package; all app source
+    core/             # headless pipeline (no Qt imports)
+    ui_qt/            # Qt GUI only
+  tests/              # pytest suite (./test.sh)
+  tools/              # environment check, screenshots, benchmarks, corpus fetcher
+  examples/           # committed PDF test corpus (examples/README.md)
+  docs/               # this documentation
+  icons/              # icon artwork sources
+  requirements*.txt   # pip requirements (installed into .venv)
+```
+
+The layout is flat: `pdf_minify/` is the import package, not another checkout
+([ARCHITECTURE.md](ARCHITECTURE.md)).
+
+## How the app works
 
 PDF Minify makes PDFs smaller. Open a PDF, compare filters side by side and
 save the one you want. Every filter produces a real saved PDF in the
@@ -9,7 +73,7 @@ Save As…, Discard or Cancel when you leave the filter (§149).
 
 The top-level design principles, word for word, open [DESIGN.md](DESIGN.md).
 
-## Key facts
+### Key facts
 
 - **Image compression** is chosen per filter: JBIG2 BW, colored JBIG2, Packed
   BW, Indexed color, JPEG2000 or JPEG. The selected codec is never replaced
@@ -27,7 +91,7 @@ The top-level design principles, word for word, open [DESIGN.md](DESIGN.md).
 - **Icons** follow the desktop theme with a bundled Breeze fallback (§197);
   View → Icon Lab… compares icon sets (§200).
 
-## Where things are
+## Documents
 
 | Topic | Page |
 |---|---|

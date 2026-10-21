@@ -56,7 +56,7 @@ lxde
 python
 ```
 
-## Keywords for findability (also present in README.md below)
+## Keywords for findability
 
 PDF optimizer, PDF compressor, reduce PDF size, black and white threshold,
 Otsu Sauvola adaptive binarization, JBIG2 encoder, JPEG2000 PDF, downsample

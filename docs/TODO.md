@@ -20,7 +20,7 @@ instructions. Explicitly removed unrelated entries leave numbering gaps (§218).
 ## 3 — DONE
 ~~Full app-vision brief (scans → BW threshold + image recompression, max compression default, ESC cancel, md docs with notes/ideas/tests).~~
 Stub: the app vision is captured in the overview and architecture pages.
-See: `docs/00_OVERVIEW.md`, `docs/ARCHITECTURE.md`.
+See: `docs/README.md`, `docs/ARCHITECTURE.md`.
 
 ## 4 — DONE
 ~~Yes, JBIG2, summarize your suggestions to me.~~

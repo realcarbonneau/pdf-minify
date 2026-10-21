@@ -154,7 +154,7 @@ ok, as you reccommend "I recommend AGPL-3.0-or-later."
 ```
 
 Read this before touching code. The designer's rulings are in
-`DESIGNER_VERBATIM.md`, [00_OVERVIEW.md](00_OVERVIEW.md) maps every page, and
+`DESIGNER_VERBATIM.md`, the [docs index](README.md) maps every page, and
 requirements are in [TODO.md](TODO.md).
 
 ## 0. General guidelines (designer rulings — always in force)
