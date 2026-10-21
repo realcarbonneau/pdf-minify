@@ -1564,3 +1564,25 @@ def test_zz_save_filter_persists_without_invalidating(tmp_path):
     assert w._saved_specs["bw-t180"]["t"] == 210
     assert w._result_key("bw-t180") in (
         w._artifacts.results.keys() | w._artifacts.pending.keys())
+
+
+def test_file_open_event_opens_the_file(tmp_path):
+    """macOS sends Finder's "Open With" as a QFileOpenEvent, not an argument."""
+    from PySide6.QtGui import QFileOpenEvent
+    from pdf_minify.ui_qt.app import FileOpenHandler
+    first = _three_pages(str(tmp_path))
+    second = tmp_path / "opened from Finder.pdf"
+    d = fitz.open()
+    d.new_page().insert_text((72, 72), "Second")
+    d.save(second)
+    d.close()
+    w = MainWindow(first)
+    handler = FileOpenHandler(w)
+    _app.installEventFilter(handler)
+    try:
+        event = QFileOpenEvent(str(second))
+        assert _app.sendEvent(_app, event)
+        assert w.path == str(second)
+        assert w.doc.page_count == 1
+    finally:
+        _app.removeEventFilter(handler)

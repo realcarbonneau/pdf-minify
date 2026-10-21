@@ -68,6 +68,7 @@ so these are test results, not certificates (see the checklist in
 | Ubuntu 24.04 `.deb` | Ubuntu's NumPy 1.26.4, Pillow 10.2.0; bundled PySide6 6.12.0, PyMuPDF 1.28.2 | 70 MB (245 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
 | Ubuntu 26.04 `.deb` | Ubuntu's PySide6 6.10.2, NumPy 2.3.5, Pillow 12.1.1; bundled PyMuPDF 1.28.2 | 21 MB (54 MB installed) | installs and starts; full suite: first run by `build-deb.yml` |
 | Windows x64 installer | everything bundled | | first run by `build-windows.yml` |
+| macOS DMGs, Intel and Apple Silicon | everything bundled | | first run by `build-macos.yml` |
 
 ## Other targets
 

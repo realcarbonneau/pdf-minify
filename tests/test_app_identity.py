@@ -224,6 +224,9 @@ def test_startup_last_file_uses_the_same_migrating_store(stores, monkeypatch, tm
         def exec(self):
             return 0
 
+        def installEventFilter(self, _handler):
+            pass
+
     class FakeWindow:
         def __init__(self, pdf):
             observed.append(pdf)
@@ -233,6 +236,7 @@ def test_startup_last_file_uses_the_same_migrating_store(stores, monkeypatch, tm
 
     monkeypatch.setattr(ui, "QApplication", FakeApplication)
     monkeypatch.setattr(ui, "MainWindow", FakeWindow)
+    monkeypatch.setattr(ui, "FileOpenHandler", lambda window: None)
     monkeypatch.setattr(ui, "configure_application", lambda app: None)
     with pytest.raises(SystemExit) as result:
         ui.main()

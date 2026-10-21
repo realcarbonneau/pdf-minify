@@ -1,8 +1,10 @@
 """Check a built Windows or macOS app before it is packaged or after install.
 
-Usage: <bundled python> smoke_test.py APP_DIR
+Usage: <bundled python> smoke_test.py APP_DIR [APP_COMMAND...]
 
-APP_DIR is the folder holding `pdf_minify` and `bin`. Checks that every
+APP_DIR is the folder holding `pdf_minify` and `bin`. APP_COMMAND starts the
+app (the macOS app's executable); by default, this Python runs the
+pdf-minify.pyw launcher in APP_DIR (Windows). Checks that every
 import comes from the bundle, that MuPDF has Brotli, that the bundled jbig2
 and zopfli run and encode, then starts the app (no window) on a PDF whose
 name has a space and waits for it to open it.
@@ -62,13 +64,18 @@ pdf = work / "a file.pdf"
 document = pymupdf.open()
 document.new_page().insert_text((72, 72), "PDF Minify")
 document.save(pdf)
-launcher = next((APP_DIR / name for name in ("pdf-minify.pyw", "pdf-minify.py")
-                 if (APP_DIR / name).exists()), None)
-check(launcher is not None, f"launcher: {launcher}")
+if len(sys.argv) > 2:
+    command = sys.argv[2:]
+else:
+    launcher = APP_DIR / "pdf-minify.pyw"
+    check(launcher.exists(), f"launcher: {launcher}")
+    command = [sys.executable, str(launcher)]
 log = work / "app.log"
-env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+# The app sets up its own Python; only the display is chosen here.
+env = {k: v for k, v in os.environ.items() if k not in ("PYTHONHOME", "PYTHONPATH")}
+env["QT_QPA_PLATFORM"] = "offscreen"
 with open(log, "w") as out:
-    app = subprocess.Popen([sys.executable, str(launcher), "--debug", str(pdf)],
+    app = subprocess.Popen(command + ["--debug", str(pdf)],
                            stdout=out, stderr=subprocess.STDOUT, cwd=work, env=env)
     deadline = time.time() + 120
     while time.time() < deadline and app.poll() is None:

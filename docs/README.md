@@ -51,7 +51,8 @@ scripts/build-deb.sh deps && scripts/build-deb.sh build   # .deb for this Debian
 scripts/test-deb.sh debian:trixie                          # install it in a clean container, run the suite
 ```
 
-The Windows installer is built and tested by `.github/workflows/build-windows.yml`.
+The Windows installer and the macOS apps are built and tested by
+`.github/workflows/build-windows.yml` and `build-macos.yml`.
 
 ## Repository layout
 

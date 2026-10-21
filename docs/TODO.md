@@ -1518,8 +1518,8 @@ Remaining:
 
 - Windows: first run of `build-windows.yml` (build, full suite, install and
   uninstall), then a check on a real Windows desktop.
-- macOS: Intel and Apple Silicon, one DMG each (§304), following Task
-  Coach's build (py2app, DMG) with `jbig2` and `zopfli` bundled.
+- macOS: first run of `build-macos.yml` (Intel and Apple Silicon, §304),
+  then a check on a real Mac.
 - Real-desktop checks of the Linux packages (X11 and Wayland, drag-and-drop,
   HiDPI) before the first release.
 - The first release, `v0.1.0`, needs the designer's authorization.

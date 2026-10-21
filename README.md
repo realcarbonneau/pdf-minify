@@ -21,9 +21,10 @@ The first release, 0.1.0, is being prepared; until it is published,
 | [Debian 13 (Trixie)](#linux) | `pdf-minify_0.1.0_debian-13-trixie_amd64.deb` |
 | [Ubuntu 24.04 (Noble), Linux Mint 22](#linux) | `pdf-minify_0.1.0_ubuntu-24.04-noble_amd64.deb` |
 | [Ubuntu 26.04 (Resolute)](#linux) | `pdf-minify_0.1.0_ubuntu-26.04-resolute_amd64.deb` |
-| macOS | Planned |
+| [macOS (Apple Silicon)](#macos) | `pdf-minify_0.1.0_macos-arm64.dmg` |
+| [macOS (Intel)](#macos) | `pdf-minify_0.1.0_macos-intel.dmg` |
 
-The packages are for 64-bit PCs (x86-64).
+The Windows and Linux packages are for 64-bit PCs (x86-64).
 
 ### Windows
 
@@ -31,6 +32,14 @@ Run the installer. Windows warns that the app is not signed with a Microsoft
 certificate: click **More info**, then **Run anyway**.
 
 For the portable version, extract the `.zip` and run `PDF Minify.cmd`.
+
+### macOS
+
+Open the `.dmg` (Apple Silicon for M1 and later, Intel for older Macs) and
+drag PDF Minify to Applications. On first launch macOS blocks it because it is
+not notarized: open **System Settings → Privacy & Security** and click
+**Open Anyway** next to the PDF Minify message. It needs macOS 14 (Sonoma) or
+later.
 
 ### Linux
 

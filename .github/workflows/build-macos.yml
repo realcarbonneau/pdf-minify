@@ -1,0 +1,207 @@
+name: Build macOS Package
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      # Release tags only: vMajor.Minor.Patch, matching pdf_minify.__version__.
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+  workflow_dispatch:
+
+# Cancel superseded runs on a branch or PR; never cancel tag (release) builds.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: write
+
+env:
+  # PySide6 6.12's wheels need macOS 14; the encoders are built for it too.
+  MACOSX_DEPLOYMENT_TARGET: "14.0"
+  APP: dist/PDF Minify.app
+
+jobs:
+  build-macos:
+    # Intel and Apple Silicon, one DMG each (designer §304), on Task Coach's runners.
+    name: Build macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86_64
+            runner: macos-15-intel
+            suffix: intel
+          - arch: arm64
+            runner: macos-latest
+            suffix: arm64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(python -c "from pdf_minify import __version__; print(__version__)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+          test "$(uname -m)" = "${{ matrix.arch }}"
+
+      - name: Install the pinned packages and the build tools
+        run: |
+          python -m pip install --require-hashes --only-binary=:all: --no-deps -r packaging/macos/requirements.txt
+          # py2app as Task Coach pins it (setuptools < 71.0.2, py2app issue #531).
+          python -m pip install "py2app==0.28.10" "setuptools<71.0.2" pytest pytest-timeout
+
+      - name: Build jbig2 and zopfli
+        run: scripts/build-macos-tools.sh build/tools
+
+      - name: Make the app icon
+        run: |
+          set -e
+          ICONS=pdf_minify/ui_qt/assets/app_icon
+          mkdir -p build/pdf-minify.iconset
+          for size in 16 32 128 256; do
+            cp "$ICONS/pdf-minify-$size.png" "build/pdf-minify.iconset/icon_${size}x${size}.png"
+          done
+          for size in 16 32 128; do
+            cp "$ICONS/pdf-minify-$((size * 2)).png" "build/pdf-minify.iconset/icon_${size}x${size}@2x.png"
+          done
+          iconutil -c icns build/pdf-minify.iconset -o build/pdf-minify.icns
+
+      - name: Build the app with py2app
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: python packaging/macos/setup_app.py py2app
+
+      - name: Add the encoders and licences, compile, sign
+        run: |
+          set -e
+          LIB="$APP/Contents/Resources/lib/python3.13"
+          test -d "$LIB/pdf_minify"
+          cp -R build/tools/bin "$LIB/bin"
+          # Licences of the bundled packages and Python (py2app copies packages, not their metadata).
+          python - "$APP/Contents/Resources/licenses" <<'PY'
+          import importlib.metadata, pathlib, shutil, sys, sysconfig
+          out = pathlib.Path(sys.argv[1])
+          for name in ("pymupdf", "PySide6_Essentials", "shiboken6", "numpy", "pillow"):
+              dist = importlib.metadata.distribution(name)
+              (out / name).mkdir(parents=True, exist_ok=True)
+              (out / name / "METADATA.txt").write_text(dist.read_text("METADATA"))
+              # PySide6 and shiboken6 name their licence (LGPL-3.0) without its text.
+              if name in ("PySide6_Essentials", "shiboken6"):
+                  for text in ("LICENSE.LGPL-3", "LICENSE.GPL-3"):
+                      shutil.copy(pathlib.Path("pdf_minify/ui_qt/assets/breeze") / text, out / name / text)
+              for f in dist.files or []:
+                  if any(k in f.name.upper() for k in ("LICENSE", "COPYING", "NOTICE")) or "license" in str(f).lower():
+                      src = pathlib.Path(dist.locate_file(f))
+                      if src.is_file():
+                          dst = out / name / pathlib.Path(*f.parts[1:])  # path inside the dist-info
+                          dst.parent.mkdir(parents=True, exist_ok=True)
+                          shutil.copy(src, dst)
+          stdlib = pathlib.Path(sysconfig.get_paths()["stdlib"])
+          shutil.copy(stdlib / "LICENSE.txt", out / "Python-LICENSE.txt")
+          print(sorted(p.name for p in out.iterdir()))
+          PY
+          # Compiled once here, so the app never writes into its own bundle.
+          python -m compileall -q --invalidation-mode unchecked-hash "$LIB"
+          # Ad-hoc signatures (not notarized, like Task Coach's): the new
+          # programs first, then the bundle again to seal the added files.
+          codesign --force --sign - "$LIB/bin/jbig2" "$LIB/bin/zopfli"
+          codesign --force --sign - "$APP"
+          codesign --verify --deep --strict --verbose=2 "$APP"
+
+      - name: Check processors and minimum macOS
+        run: |
+          set -e
+          LIB="$APP/Contents/Resources/lib/python3.13"
+          for f in "$APP/Contents/MacOS/PDF Minify" "$APP/Contents/MacOS/python" "$LIB/bin/jbig2" "$LIB/bin/zopfli"; do
+            echo "$f: $(lipo -archs "$f") | $(otool -l "$f" | awk '/minos/ {print "macOS", $2; exit}')"
+            lipo -archs "$f" | grep -q "${{ matrix.arch }}"
+          done
+          otool -L "$LIB/bin/jbig2"
+          /usr/libexec/PlistBuddy -c "Print :LSMinimumSystemVersion" "$APP/Contents/Info.plist"
+
+      - name: Smoke test the built app
+        run: |
+          RES="$APP/Contents/Resources"
+          PYTHONHOME="$RES" PYTHONPATH="$RES/lib/python3.13" "$APP/Contents/MacOS/python" \
+            packaging/smoke_test.py "$RES/lib/python3.13" "$APP/Contents/MacOS/PDF Minify"
+
+      - name: Run the full test suite against the built app
+        run: |
+          LIB="$PWD/$APP/Contents/Resources/lib/python3.13"
+          # The built app's code and packages first; the checkout for tests and tools.
+          export PYTHONPATH="$LIB:$PWD" QT_QPA_PLATFORM=offscreen PATH="$LIB/bin:$PATH"
+          python -P -c "import pdf_minify; print(pdf_minify.__file__); assert '.app/' in pdf_minify.__file__"
+          mkdir -p test-logs
+          failed=""
+          for f in tests/test_*.py; do
+            n=$(basename "$f" .py)
+            if python -P -m pytest "$f" -q -p no:cacheprovider -rfE --timeout=900 > "test-logs/$n.log" 2>&1; then
+              echo "ok    $n: $(tail -n 1 "test-logs/$n.log")"
+            else
+              failed="$failed $n"
+              echo "FAIL  $n: $(tail -n 1 "test-logs/$n.log")"
+              grep -E "^(FAILED|ERROR) " "test-logs/$n.log" | head -20
+            fi
+          done
+          [ -z "$failed" ] || { echo "Failing test files:$failed"; exit 1; }
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-${{ matrix.suffix }}-test-logs
+          path: test-logs/
+          retention-days: 14
+
+      - name: Create the DMG
+        run: |
+          set -e
+          DMG="pdf-minify_${{ steps.version.outputs.version }}_macos-${{ matrix.suffix }}.dmg"
+          mkdir -p dmg_contents
+          cp -R "$APP" dmg_contents/
+          ln -s /Applications dmg_contents/Applications
+          hdiutil create -volname "PDF Minify ${{ steps.version.outputs.version }}" \
+            -srcfolder dmg_contents -ov -format UDZO "$DMG"
+          ls -la "$DMG"
+
+      - name: Upload the DMG
+        uses: actions/upload-artifact@v7
+        with:
+          name: pdf-minify-${{ steps.version.outputs.version }}-macos-${{ matrix.suffix }}
+          path: pdf-minify_*.dmg
+          retention-days: 30
+
+  release:
+    name: Attach packages to the release
+    needs: build-macos
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download the DMGs
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pdf-minify-*-macos-*
+          merge-multiple: true
+          path: packages
+
+      - name: Create or update the release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packages/*.dmg

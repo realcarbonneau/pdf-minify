@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView, QAbstractScrollArea, QStyledItemDelegate, QStyle,
     QStyleOptionViewItem, QStyleOptionProgressBar, QSplitter,
 )
-from PySide6.QtCore import Qt, QThread, Signal, QSize, QTimer, QModelIndex, QEvent, QRect, QSignalBlocker, QMimeData
+from PySide6.QtCore import Qt, QThread, Signal, QSize, QTimer, QModelIndex, QEvent, QRect, QSignalBlocker, QMimeData, QObject
 from PySide6.QtGui import QImage, QIcon, QPixmap, QPainter, QFont, QPen, QAction, QColor, QPalette, QCursor
 
 from .. import APP_ID, APP_NAME
@@ -2382,6 +2382,25 @@ class MainWindow(QMainWindow):
         super().closeEvent(e)
 
 
+class FileOpenHandler(QObject):
+    """Open a file the desktop sends as an event rather than an argument.
+
+    On macOS, Finder's "Open With" and a PDF dropped on the Dock icon arrive
+    as a QFileOpenEvent, at start-up or while the app runs.
+    """
+
+    def __init__(self, window):
+        super().__init__(window)
+        self.window = window
+
+    def eventFilter(self, watched, event):
+        if event.type() == QEvent.FileOpen and event.file():
+            log.info("file open event %s", event.file())
+            self.window.open_file(event.file())
+            return True
+        return super().eventFilter(watched, event)
+
+
 def main(start_pdf: str | None = None, debug: bool = False):
     log.info("starting %s debug=%s pdf=%s", APP_NAME, debug, start_pdf)
     if start_pdf is None:
@@ -2406,6 +2425,7 @@ def main(start_pdf: str | None = None, debug: bool = False):
     app = QApplication(sys.argv)
     configure_application(app)
     w = MainWindow(start_pdf)
+    app.installEventFilter(FileOpenHandler(w))
     w.show()
     log.info("window shown")
     sys.exit(app.exec())

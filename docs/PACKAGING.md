@@ -55,7 +55,7 @@ encoders.
 
 ## Targets
 
-All packages are x86-64 (§303).
+The Linux and Windows packages are x86-64 (§303); macOS has both (§304).
 
 | Target | Format | Dependencies | Build | Test |
 |---|---|---|---|---|
@@ -63,7 +63,7 @@ All packages are x86-64 (§303).
 | Ubuntu 26.04 (resolute) | `.deb` | as Debian 13 | same | same |
 | Ubuntu 24.04 (noble) | `.deb` | Ubuntu's NumPy, Pillow, `jbig2`, `zopfli`; bundled PySide6 and PyMuPDF | same | same |
 | Windows 10/11 | Inno Setup installer and portable ZIP | everything bundled: Python 3.13 embeddable, pinned wheels, `jbig2.exe`, `zopfli.exe` | `build-windows.yml` | same workflow |
-| macOS, Intel and Apple Silicon (§304) | DMG, one per processor | in progress | | |
+| macOS 14+, Intel and Apple Silicon (§304) | DMG, one per processor | everything bundled: py2app with Python 3.13 and pinned wheels, `jbig2` and `zopfli` built from source | `build-macos.yml` | same workflow |
 
 Not packaged:
 
@@ -162,6 +162,36 @@ The workflow smoke-tests the built app (`packaging/smoke_test.py`), runs the
 full test suite against it, then installs the installer silently,
 smoke-tests the installed copy and uninstalls it.
 
+## macOS
+
+`build-macos.yml` follows Task Coach's macOS build: py2app (0.28.10, with
+setuptools below 71.0.2 as Task Coach pins it) on GitHub's Intel
+(`macos-15-intel`) and Apple Silicon (`macos-latest`) runners, then a DMG.
+
+- `packaging/macos/setup_app.py` lists whole packages, which py2app copies
+  as folders into `Contents/Resources/lib/python3.13/`; the app's icons and
+  notices stay readable, and `bin/` beside `pdf_minify` holds the encoders.
+- `scripts/build-macos-tools.sh` builds `zopfli` 1.0.3 and `jbig2`
+  (jbig2enc 0.32, as on Windows) from sources pinned by SHA-256, with a
+  static Leptonica 1.87.0 reading PNG only (the one format the app gives
+  it) and libpng 1.6.59. They need only the system's zlib and C/C++
+  runtime. It runs on Linux too, to test it.
+- macOS 14 or later: PySide6 6.12's wheels need it, and the encoders are
+  built for it (`MACOSX_DEPLOYMENT_TARGET`).
+- py2app's multiprocessing recipe starts the worker processes with the
+  bundled Python, as an ordinary Python would.
+- Finder's "Open With" and a PDF dropped on the Dock icon arrive as a
+  `QFileOpenEvent`; `FileOpenHandler` opens them. The app is registered for
+  PDFs as an alternative, never the default viewer.
+- The code is compiled at build time, so the app never writes into its
+  bundle; the bundle is ad-hoc signed, not notarized (Signing, below).
+- Licences of the bundled packages and Python are in
+  `Contents/Resources/licenses/`; PySide6 names LGPL-3.0 without its text,
+  so the LGPL-3 and GPL-3 texts are copied beside it.
+
+The workflow smoke-tests the built app through its own executable and runs
+the full test suite against it.
+
 ## Bundled encoders
 
 `pdf_minify/core/external_tools.find_tool` returns the app's own copy (a
@@ -183,9 +213,10 @@ to proceed. Linux packages need neither.
    `packaging/linux/`), per-target locks. Keep `python -m pdf_minify` for
    source.
 2. Preserve multiprocessing **spawn**, process-pool limits, cancellation and
-   one GUI per launch. The packages run an ordinary Python interpreter, not
-   a frozen executable; a freezer (py2app, PyInstaller) must call
-   `multiprocessing.freeze_support()` before importing the GUI.
+   one GUI per launch. The Linux and Windows packages run an ordinary
+   Python; on macOS, py2app's multiprocessing recipe starts workers with the
+   bundled Python. Another freezer (PyInstaller) would need
+   `multiprocessing.freeze_support()` before the GUI is imported.
 3. Run bundled tools by the path `find_tool` returns, never by name.
 4. Keep a helper's DLL/shared-library lookup with the helper: Windows loads
    `jbig2.exe`'s DLLs from its own `bin` folder. Do not change the GUI's
