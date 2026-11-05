@@ -1116,3 +1116,59 @@ Source: designer message in the session of 2026-10-21; exact text.
 ```text
 So when you push the tag, it automatically creates a release, this is good.
 ```
+
+## 309 — JPEG XL in the analysis; a converting reader; image-only PDFs as JPEG XL images (verbatim, 2026-11-03)
+
+Source: designer message in the session of 2026-11-03; exact text.
+
+```text
+Even though the PDFs do not permit storing JPEG XL, I want you to add that to the analysis. because I think that JPEG Excel seems to be quite performant and might eventually be included in some PDF readers. Also, we could do something where we make a reader that reads the PDF Excel version images and converts them to regular JPEG when we're viewing it, or converts them to bitmap as we're reading it, so that we can have compressed images stored, but also view them temporarily with a special reader until most readers support the JPEG Excel. Also, on this Linux, my Gwen view supports JPEG Excel, and I think we could also read the images directly for cases where the whole PDF is just a set of images. I don't know if you follow, but read the whole repository and see if you can add these tests and discuss, or at least discuss before you start doing heavy tests.
+```
+
+## 310 — JPEG XL analysis first, as a binary experiment against the best current baseline (verbatim, 2026-11-03)
+
+Source: designer message in the session of 2026-11-03; exact text.
+
+```text
+We'll start with just the analysis, and I want you to review how the analysis is done. I think that in this case, it's again a binary test, which means that we're testing against some baseline. Suggest the baseline and the test treatment. There's a lot of the binary tests that do not apply, or that we don't that we can separate. So this is really in the perspective of experimental testing. Choose a baseline that we're testing the JPEG Excel against. I'm assuming it's going to be something like all the automatic compressions put, so like the Broadly, etc. No, actually, so what it means, I'm thinking about it again, is that you choose a baseline, we'll compress the images, and then we're going to just assume that we replace the space that was taken by the by the existing images, replace it with the images that are JPEG Excel. So for example, it would mostly apply to comparing the best alternative that has the best quality if possible. I know that's not very scientific, that's not very clear. So what do we mean? What we mean is that in cases where it's black and white, we know that JPEG 2 is always the best, so that would be the baseline for using black and white. But if we decide not to do black and white, then probably the baseline would be whichever is best, I guess, some kind of multi-JPEG encoding or the Broadly compression. I think the Broadly compression over the bitmap is the best for structured data. And then the comparison will be against the JPEG when it's an image. Does this make sense? Are you able to design a binary experiment with a proper hypothesis, testing only one change while holding everything else constant and using the best baseline that we have so far, or following the pattern of the existing benchmarks?
+```
+
+## 311 — reuse the measured files; JPEG XL against JPEG from the same original, by quality (verbatim, 2026-11-03)
+
+Source: designer message in the session of 2026-11-03; exact text.
+
+```text
+The assumption is that with the best wrapper in the PDF, with the best compression, there won't be any gains in compressing the JPEG internal saved binary data, nor the benchmark one. So you don't have to redo the benchmark tests, right? You're just going from the results that we already have, I think. Also for JPEG, I don't think you should be comparing identical pixels, because JPEG is already a compression of the original file, so that's not a proper comparison. So you would take the original file, compress to JPEG, take the original file, compress to Excel, and then you compare the two with quality measurements. Same thing for, so I don't see the difference between full color test A, full color test B. It's not proper to try to get the compression of a secondary compression to match another secondary compression that is a flawed comparison. Do you follow this?
+```
+
+## 312 — a binary table must show its experiment (verbatim, 2026-11-03)
+
+Source: designer message in the session of 2026-11-03; exact text.
+
+```text
+Also, your table is clearly wrong because you don't have clarity on the binary experiment. Look at the other tables that are doing binary experiments. Your table, your final table, is just a mess. As someone looks at it, they don't see what the experiment is. This is not correct. This is flawed.
+```
+
+## 313 — keep the grouped baseline → JPEG XL table; §312 withdrawn (verbatim, 2026-11-03)
+
+Source: designer message in the session of 2026-11-03; exact text.
+
+```text
+No, you were right. You can do it on your previous table. I hadn't realized that that's how the other binary comparisons experiments are done. So yeah, you can continue with that, and that means that we end up having a lot more comparisons. against various benchmarks. So that's fine. So the tables that already are there, the binary experiment tables, with the delta use that pattern that is good. You can continue.
+```
+
+## 314 — match JPEG XL to JPEG q75 on photos; a second table of quality deltas (verbatim, 2026-11-04)
+
+Source: designer message in the session of 2026-11-04; exact text.
+
+```text
+match the quality for the images, for text, the baseline will not be jpeg anyways.  Add a second table that is the quality delta between the cell baseline and JPEGXL for the target quality that matches Photos.  The best baseliness for mostly text or BW/index text might might even be lossless, so this is generally over for actual quality to be higher
+```
+
+## 315 — encode JPEG XL in whole-image mode; compute and memory are acceptable (verbatim, 2026-11-04)
+
+Source: designer message in the session of 2026-11-04; exact text except one name, withheld per §292.
+
+```text
+Ok, proceed as you suggest, more compute/memory is fine and fits the objectives of the project.  Also squash and push and make sure to not quote [name withheld, §292] anywhere, per canon.
+```

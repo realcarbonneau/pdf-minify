@@ -165,6 +165,50 @@ Ok, so a single setting is the correct direction, however, for the purpose of ou
 Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
 ```
 
+### JPEG XL analysis
+
+**§309** (2026-11-03)
+
+```text
+Even though the PDFs do not permit storing JPEG XL, I want you to add that to the analysis. because I think that JPEG Excel seems to be quite performant and might eventually be included in some PDF readers. Also, we could do something where we make a reader that reads the PDF Excel version images and converts them to regular JPEG when we're viewing it, or converts them to bitmap as we're reading it, so that we can have compressed images stored, but also view them temporarily with a special reader until most readers support the JPEG Excel. Also, on this Linux, my Gwen view supports JPEG Excel, and I think we could also read the images directly for cases where the whole PDF is just a set of images. I don't know if you follow, but read the whole repository and see if you can add these tests and discuss, or at least discuss before you start doing heavy tests.
+```
+
+**§310** (2026-11-03)
+
+```text
+We'll start with just the analysis, and I want you to review how the analysis is done. I think that in this case, it's again a binary test, which means that we're testing against some baseline. Suggest the baseline and the test treatment. There's a lot of the binary tests that do not apply, or that we don't that we can separate. So this is really in the perspective of experimental testing. Choose a baseline that we're testing the JPEG Excel against. I'm assuming it's going to be something like all the automatic compressions put, so like the Broadly, etc. No, actually, so what it means, I'm thinking about it again, is that you choose a baseline, we'll compress the images, and then we're going to just assume that we replace the space that was taken by the by the existing images, replace it with the images that are JPEG Excel. So for example, it would mostly apply to comparing the best alternative that has the best quality if possible. I know that's not very scientific, that's not very clear. So what do we mean? What we mean is that in cases where it's black and white, we know that JPEG 2 is always the best, so that would be the baseline for using black and white. But if we decide not to do black and white, then probably the baseline would be whichever is best, I guess, some kind of multi-JPEG encoding or the Broadly compression. I think the Broadly compression over the bitmap is the best for structured data. And then the comparison will be against the JPEG when it's an image. Does this make sense? Are you able to design a binary experiment with a proper hypothesis, testing only one change while holding everything else constant and using the best baseline that we have so far, or following the pattern of the existing benchmarks?
+```
+
+**§311** (2026-11-03)
+
+```text
+The assumption is that with the best wrapper in the PDF, with the best compression, there won't be any gains in compressing the JPEG internal saved binary data, nor the benchmark one. So you don't have to redo the benchmark tests, right? You're just going from the results that we already have, I think. Also for JPEG, I don't think you should be comparing identical pixels, because JPEG is already a compression of the original file, so that's not a proper comparison. So you would take the original file, compress to JPEG, take the original file, compress to Excel, and then you compare the two with quality measurements. Same thing for, so I don't see the difference between full color test A, full color test B. It's not proper to try to get the compression of a secondary compression to match another secondary compression that is a flawed comparison. Do you follow this?
+```
+
+**§312** (2026-11-03)
+
+```text
+Also, your table is clearly wrong because you don't have clarity on the binary experiment. Look at the other tables that are doing binary experiments. Your table, your final table, is just a mess. As someone looks at it, they don't see what the experiment is. This is not correct. This is flawed.
+```
+
+**§313** (2026-11-03)
+
+```text
+No, you were right. You can do it on your previous table. I hadn't realized that that's how the other binary comparisons experiments are done. So yeah, you can continue with that, and that means that we end up having a lot more comparisons. against various benchmarks. So that's fine. So the tables that already are there, the binary experiment tables, with the delta use that pattern that is good. You can continue.
+```
+
+**§314** (2026-11-04)
+
+```text
+match the quality for the images, for text, the baseline will not be jpeg anyways.  Add a second table that is the quality delta between the cell baseline and JPEGXL for the target quality that matches Photos.  The best baseliness for mostly text or BW/index text might might even be lossless, so this is generally over for actual quality to be higher
+```
+
+**§315** (2026-11-04)
+
+```text
+Ok, proceed as you suggest, more compute/memory is fine and fits the objectives of the project.  Also squash and push and make sure to not quote [name withheld, §292] anywhere, per canon.
+```
+
 ### Maintaining this page
 
 **§281** (2026-10-20)
@@ -200,6 +244,12 @@ can you put id tags on the lines to ensure full match, even if the row descripti
   kept as prepared (§258); they were measured before Best began trying
   prediction on and off (§260).
 - Brotli outputs carry no compatibility declaration (the default since §251).
+- **JPEG XL rows: JXL-SWAP-01, analysis only.** BW and Indexed rows
+  2026-11-03; JPEG rows 2026-11-04 at the photo-matched distance 2.15,
+  encoded whole (§§314/315). No PDF reader opens these 60 files. Each keeps its baseline's provenance: the BW and
+  Indexed rows swap images in the overview files, the JPEG rows in the
+  LOSSY-06 files. Read the JPEG rows with their
+  [quality change](#image-quality-change-of-the-jpeg-xl-treatment-against-its-baseline).
 
 ## Six representative PDFs
 
@@ -679,6 +729,142 @@ Across the 30 FFPR pairs the change ranges from −34 B to +0 B: 2 smaller,
 28 tied. The 12 native-preserving pairs are all smaller, by at least 145 B,
 because far more native content remains to compress.
 
+### Image codec — JPEG XL versus the current codec
+
+JPEG XL is measured as an analysis only (§§309–315). It is not in the PDF
+specification and no PDF reader opens it, so no app filter uses it
+([DROPPED.md](DROPPED.md) D1). The treatment files carry the placeholder
+filter `/JXLDecode`.
+
+Each baseline is the complete PDF already measured for that row in the
+overview: Best for native streams, 300 DPI, Otsu, the same palettes and
+JPEG q75. The treatment replaces only the images the pipeline prepared; every
+other object stays byte for byte, and a no-op resave of each baseline
+reproduces it exactly. Each change is therefore the image payloads plus a few
+bytes of image dictionary (the filter name; an Indexed image becomes
+`/DeviceRGB`, because its palette moves into the JPEG XL stream). JPEG XL
+streams are stored as encoded, without stream compression, like the JPEG
+and JBIG2 images.
+
+- **BW and Indexed rows:** JPEG XL lossless (effort 10) of the identical
+  decoded pixels, against JBIG2 and against Best's Zopfli/Brotli samples.
+  Every JPEG XL image decodes to exactly the baseline's pixels.
+- **JPEG rows:** JPEG XL encoded from the same original page images,
+  re-composed by the production composer and checked against the recorded
+  sample hashes, never from JPEG's output (§311). One setting for every
+  page, distance 2.15 at effort 7, matched on photographs
+  (§314): it is the measured distance whose mean quality on the brochure's
+  eight photograph pages (Color photos, native) is closest to JPEG q75's. Text pages would
+  not use JPEG, so on them JPEG XL generally looks better than JPEG; the
+  second table gives each cell's quality change
+  ([LOSSY_IMAGE_QUALITY.md](LOSSY_IMAGE_QUALITY.md#jpeg-xl-analysis-only)).
+  Every image is encoded whole (§315). For images over 2048 pixels, as
+  every 300-DPI page here is, `cjxl`'s default at effort 7 below distance
+  3.0 encodes in chunks to save memory, "at the cost of compression
+  density" (libjxl), and skips patches, its coding of repeated shapes such
+  as letters. `cjxl` has no flag for the whole-image path; `--patches=1`
+  turns chunking off and is otherwise identical: at distance 3.0, where
+  whole-image is the default, the output is byte-identical.
+
+#### Replace the image codec with JPEG XL — final PDF size change (%)
+
+Cells are `100 × (JPEG XL − baseline) / baseline` of complete-file bytes.
+Negative favours JPEG XL.
+
+<!-- table: jxl-effect -->
+
+| Baseline → JPEG XL treatment | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| <!-- row: group.bw --> **Black and white (BW + Otsu): identical pixels** | | | | | | |
+| <!-- row: bw-jbig2 --> BW + JBIG2 → JPEG XL lossless | +0.00% | +11.97% | +3.64% | +24.80% | +0.81% | +1.02% |
+| <!-- row: bw-ffpr-jbig2 --> BW FFPR + JBIG2 → JPEG XL lossless | **-58.37%** | +13.97% | **-11.36%** | +74.07% | **-54.35%** | **-20.20%** |
+| <!-- row: group.indexed --> **Indexed color: identical pixels** | | | | | | |
+| <!-- row: indexed-5 --> Indexed 5 colors → JPEG XL lossless | +0.00% | **-26.80%** | **-13.94%** | **-28.86%** | **-3.88%** | **-5.68%** |
+| <!-- row: indexed-16 --> Indexed 16 colors → JPEG XL lossless | +0.00% | **-26.80%** | **-21.75%** | **-32.29%** | **-10.87%** | **-12.16%** |
+| <!-- row: indexed-64 --> Indexed 64 colors → JPEG XL lossless | +0.00% | **-26.80%** | **-16.24%** | **-30.85%** | **-12.45%** | **-14.08%** |
+| <!-- row: indexed-ffpr-5 --> Color FFPR; indexed 5 colors → JPEG XL lossless | **-76.58%** | **-29.55%** | **-39.82%** | **-40.79%** | **-73.94%** | **-56.10%** |
+| <!-- row: indexed-ffpr-16 --> Color FFPR; indexed 16 colors → JPEG XL lossless | **-76.58%** | **-29.55%** | **-31.03%** | **-43.77%** | **-71.59%** | **-49.31%** |
+| <!-- row: indexed-ffpr-64 --> Color FFPR; indexed 64 colors → JPEG XL lossless | **-76.58%** | **-29.55%** | **-24.11%** | **-38.70%** | **-69.56%** | **-44.37%** |
+| <!-- row: group.full-color --> **Full color: quality matched on photos** | | | | | | |
+| <!-- row: jpeg --> JPEG q75 → JPEG XL at JPEG q75's photo quality | +0.00% | **-33.24%** | **-39.89%** | **-62.51%** | **-39.90%** | **-43.52%** |
+| <!-- row: jpeg-ffpr --> Color FFPR + JPEG q75 → JPEG XL at JPEG q75's photo quality | **-93.01%** | **-33.45%** | **-46.85%** | **-61.93%** | **-87.78%** | **-58.33%** |
+
+#### Image quality change of the JPEG XL treatment against its baseline
+
+Mean SSIMULACRA2 of each cell's JPEG XL page images minus that of the
+baseline's JPEG q75 images, both scored against the same original. Positive
+means JPEG XL looks better. The Color photos cell of the JPEG row is the
+match target, so it is close to zero by construction (§314). The BW and
+Indexed rows store identical pixels, so their quality change is zero.
+
+<!-- table: jxl-quality-gap -->
+
+| Baseline → JPEG XL treatment | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| <!-- row: jpeg --> JPEG q75 → JPEG XL at JPEG q75's photo quality | no images | +8.2 | +0.0 | +3.6 | -0.1 | -0.3 |
+| <!-- row: jpeg-ffpr --> Color FFPR + JPEG q75 → JPEG XL at JPEG q75's photo quality | +10.9 | +8.2 | +5.6 | +3.6 | +10.4 | +7.5 |
+
+#### JPEG XL treatment — measured final PDF bytes
+
+The baselines' bytes are the overview cells of the same rows.
+
+<!-- table: jxl-bytes -->
+
+| Baseline → JPEG XL treatment | Native text/vectors | BW scan | Color photos | Flat-color artwork | Mixed text/images | Technical illustrations |
+|---|---:|---:|---:|---:|---:|---:|
+| <!-- row: group.bw --> **Black and white (BW + Otsu): identical pixels** | | | | | | |
+| <!-- row: bw-jbig2 --> BW + JBIG2 → JPEG XL lossless | 182,485 | 299,951 | 1,681,223 | 12,182 | 302,778 | 1,117,804 |
+| <!-- row: bw-ffpr-jbig2 --> BW FFPR + JBIG2 → JPEG XL lossless | 123,994 | 261,575 | 1,062,791 | 6,733 | 144,281 | 239,249 |
+| <!-- row: group.indexed --> **Indexed color: identical pixels** | | | | | | |
+| <!-- row: indexed-5 --> Indexed 5 colors → JPEG XL lossless | 182,485 | 302,591 | 2,820,789 | 15,585 | 318,818 | 1,258,441 |
+| <!-- row: indexed-16 --> Indexed 16 colors → JPEG XL lossless | 182,485 | 302,591 | 4,269,219 | 24,605 | 371,548 | 1,504,057 |
+| <!-- row: indexed-64 --> Indexed 64 colors → JPEG XL lossless | 182,485 | 302,591 | 6,932,313 | 36,220 | 449,648 | 1,930,980 |
+| <!-- row: indexed-ffpr-5 --> Color FFPR; indexed 5 colors → JPEG XL lossless | 124,494 | 264,215 | 2,247,211 | 9,104 | 156,995 | 297,015 |
+| <!-- row: indexed-ffpr-16 --> Color FFPR; indexed 16 colors → JPEG XL lossless | 124,494 | 264,215 | 4,254,894 | 17,537 | 180,274 | 414,505 |
+| <!-- row: indexed-ffpr-64 --> Color FFPR; indexed 64 colors → JPEG XL lossless | 124,494 | 264,215 | 7,345,670 | 28,967 | 201,307 | 551,631 |
+| <!-- row: group.full-color --> **Full color: quality matched on photos** | | | | | | |
+| <!-- row: jpeg --> JPEG q75 → JPEG XL at JPEG q75's photo quality | 182,517 | 4,133,414 | 6,015,660 | 83,601 | 444,417 | 1,758,106 |
+| <!-- row: jpeg-ffpr --> Color FFPR + JPEG q75 → JPEG XL at JPEG q75's photo quality | 532,179 | 4,095,038 | 13,503,849 | 87,489 | 953,007 | 3,820,085 |
+
+Across the 60 pairs JPEG XL is smaller in 48, tied in 5 and larger in 7.
+The ties are the W-9 form's native-preserving files, which have no images.
+In every pair the image dictionaries shrink, by 1 to 3,773 B (the filter
+name, and each Indexed palette moving into its stream), so a larger file is
+larger because of its JPEG XL images.
+
+- **Black and white: JBIG2 stays smaller for every native-preserving image
+  set, the scan and the artwork.** All 7 larger files are here:
+  native-preserving +0.81% to +24.80%, the scan in FFPR +13.97% and the
+  artwork's single FFPR page +74.07% (2,991 B of JBIG2 against 5,858 B).
+  JPEG XL lossless needs 14% to 109% more image bytes there. On FFPR renders
+  of typeset pages it is smaller: the W-9 −58.37%, the newspaper −54.35%,
+  the illustrations −20.20% and the brochure −11.36%. The app's JBIG2 codes
+  each image as one generic region, without shared symbols
+  ([JBIG2.md](JBIG2.md)).
+- **Indexed color: JPEG XL lossless is smaller in all 33 pairs with
+  images**, −3.88% to −32.29% with native preservation and −24.11% to
+  −76.58% with FFPR. It beats Best's Zopfli/Brotli samples on 232 of 234
+  images. The scan's 5-, 16- and 64-color files are identical in both
+  modes, baselines included: its pages hold only black and white, so every
+  palette gives the same 2-color images.
+- **Full color: JPEG XL at distance 2.15 is smaller in all 11 pairs with
+  images**, −33.24% to −62.51% with native preservation and −33.45% to
+  −93.01% with FFPR.
+  - **Images at equal quality:** the photographs (the match target, +0.0),
+    the illustrations' images (−0.3) and the newspaper's images (−0.1) are
+    40% to 44% smaller (−39.89%, −43.52%, −39.90%). PSNR agrees: −0.2 dB on
+    the photographs.
+  - **Everything else comes out better than JPEG**, as §314 expects for
+    text: the FFPR renders of the W-9 (+10.9, −93.01%), the newspaper
+    (+10.4, −87.78%), the illustrations (+7.5, −58.33%) and the brochure
+    (+5.6, −46.85%), the scan (+8.2, −33%) and the artwork (+3.6, −62%).
+    Text would not use JPEG; its baselines are the BW and Indexed rows
+    above.
+  - **Whole-image encoding matters on text pages.** With `cjxl`'s chunked
+    default, the same distance made the W-9 renders only −22.95%, the
+    newspaper −26.48% and the illustrations −30.57% smaller; the
+    photographs moved from −38.70% to −39.89%.
+
 ### Proposed next — JBIG2 repeated-row prediction OFF/ON
 
 Proposed, not run or approved (TODO §240). Change only JBIG2 generic-region
@@ -723,6 +909,10 @@ never a size win.
 | Lossy primary outputs, 24 PDFs (LOSSY-06) | `lossy-quality/q75-matched-20261020/metrics.json` | `69c190040942c681f3b3a466cd4dbdf038264eb1145fcbab7ea83be359b63b74` | `lossy_quality_sizes.json` |
 | Lossy stream controls, 60 PDFs (LOSSY-06) | `lossy-controls/q75-matched-20261020/metrics.json` | `674a9e88d9f5cc7f0ea9a350864fa2155f448589a1d12741723a435991fedb83` | `lossy_controls_sizes.json` |
 | JPEG/JPEG2000 quality calibration, image-only | `jpeg-jpx-research/stock-vs-qfactor-20261020/results.jsonl` | `9294f0f4a2150bc77140f4c1177e13ed561e2578215348606e74f1e72b32f1ef` | — |
+| JPEG XL swaps, BW and Indexed rows, 48 PDFs (§§309–311) | `jxl/lossless-20261103/metrics.json` | `19a2be881723ce7b6f64876367f5a88af0c5666e8403bb20552efa4553f4504a` | `jxl_sizes.json` |
+| JPEG XL swaps, JPEG rows at distance 2.15, whole-image, 12 PDFs (§§314/315) | `jxl/lossy-whole-20261104/metrics.json` | `be23f0be7637e8db8f37163d115f8603ec60d7cba352282b2f68791bc67d3841` | `jxl_sizes.json` |
+| JPEG XL photo match, whole-image, image-only (§§314/315) | `jxl/photo-match-whole-20261104/results.jsonl` | `4805de64d91bd5bd2a44d78e887a7c4b07be290ce11bc9b7f35f10127713046a` | `jxl_sizes.json` (chosen setting) |
+| JPEG XL 67-page calibration, image-only (superseded setting) | `jxl/calibration-20261103/results.jsonl` | `e65c6938bd2dc68319c129f6b8c53eddb5aa29be1f7446f98cd7d70717c57baf` | — |
 | Measured superset after B114, 252 + 62 outputs | `integrated-compression/post-b114-300dpi-20261016/` | see its `identity.json` | — |
 
 Older studies remain under `.tmp/` and in git history; they are not current
@@ -742,6 +932,17 @@ Each publisher audits the completed run and outputs its fixture and the
 tagged table cells. The controls runner only accepts a lossy run whose
 fixture is already published. `--resume` is only for an unchanged
 interrupted run.
+
+To re-measure the JPEG XL analysis (photo match, then 48 lossless and 12
+lossy swaps; each step resumes an interrupted run in the same folder):
+
+```sh
+nice -n 10 ./.venv/bin/python -I tools/bench_jxl.py match --output .tmp/jxl/<match> --distance 1.0 1.25 1.5 1.75 2.0 2.05 2.1 2.15 2.2 2.25 2.5 3.0 --workers 2
+./.venv/bin/python -I tools/bench_jxl.py match-report .tmp/jxl/<match>/results.jsonl
+nice -n 10 ./.venv/bin/python -I tools/bench_jxl.py swap --output .tmp/jxl/<lossless> --rows bw-jbig2 bw-ffpr-jbig2 indexed-5 indexed-16 indexed-64 indexed-ffpr-5 indexed-ffpr-16 indexed-ffpr-64 --workers 2
+nice -n 10 ./.venv/bin/python -I tools/bench_jxl.py swap --output .tmp/jxl/<lossy> --rows jpeg jpeg-ffpr --distance 2.15 --effort 7 --workers 2
+./.venv/bin/python -I tools/publish_jxl.py .tmp/jxl/<lossless>/metrics.json .tmp/jxl/<lossy>/metrics.json .tmp/jxl/<match>/results.jsonl
+```
 
 ## Design traps and failed attempts
 

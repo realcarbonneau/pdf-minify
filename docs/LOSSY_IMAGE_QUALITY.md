@@ -66,6 +66,32 @@ what is the big picture?  Is J2K generally better then JPG?  All things equal?  
 Sounds like we cannot be opinionated on the JPG/J2K for now, so let's just keep them as comparable as possible in the benchmarks and we will not have an automatic Best option for these.
 ```
 
+### JPEG XL: from the original, compared by measured quality
+
+**§309** (2026-11-03)
+
+```text
+Even though the PDFs do not permit storing JPEG XL, I want you to add that to the analysis. because I think that JPEG Excel seems to be quite performant and might eventually be included in some PDF readers. Also, we could do something where we make a reader that reads the PDF Excel version images and converts them to regular JPEG when we're viewing it, or converts them to bitmap as we're reading it, so that we can have compressed images stored, but also view them temporarily with a special reader until most readers support the JPEG Excel. Also, on this Linux, my Gwen view supports JPEG Excel, and I think we could also read the images directly for cases where the whole PDF is just a set of images. I don't know if you follow, but read the whole repository and see if you can add these tests and discuss, or at least discuss before you start doing heavy tests.
+```
+
+**§311** (2026-11-03)
+
+```text
+The assumption is that with the best wrapper in the PDF, with the best compression, there won't be any gains in compressing the JPEG internal saved binary data, nor the benchmark one. So you don't have to redo the benchmark tests, right? You're just going from the results that we already have, I think. Also for JPEG, I don't think you should be comparing identical pixels, because JPEG is already a compression of the original file, so that's not a proper comparison. So you would take the original file, compress to JPEG, take the original file, compress to Excel, and then you compare the two with quality measurements. Same thing for, so I don't see the difference between full color test A, full color test B. It's not proper to try to get the compression of a secondary compression to match another secondary compression that is a flawed comparison. Do you follow this?
+```
+
+**§314** (2026-11-04)
+
+```text
+match the quality for the images, for text, the baseline will not be jpeg anyways.  Add a second table that is the quality delta between the cell baseline and JPEGXL for the target quality that matches Photos.  The best baseliness for mostly text or BW/index text might might even be lossless, so this is generally over for actual quality to be higher
+```
+
+**§315** (2026-11-04)
+
+```text
+Ok, proceed as you suggest, more compute/memory is fine and fits the objectives of the project.  Also squash and push and make sure to not quote [name withheld, §292] anywhere, per canon.
+```
+
 ## Current settings
 
 - **Quality** is one integer 0–100 per filter, default 75, shared by JPEG and
@@ -262,6 +288,152 @@ What this means:
   show. The JPEG committee's Qfactor, with the same codestream format, would
   be 34% smaller at matched quality and track JPEG on 96% of pages, but needs
   a patched encoder (excluded by §278).
+
+## JPEG XL (analysis only)
+
+JPEG XL is not an app setting: no PDF reader opens it ([DROPPED.md](DROPPED.md)
+D1). The benchmarks measure it as an analysis (§309), and for JPEG it is
+encoded from the original page images, never from JPEG's output (§311).
+The benchmarks' JPEG rows use one distance matched to JPEG q75 on
+photographs ([below](#jpeg-xl-matched-on-photographs-314);
+[COMPRESSION_BENCHMARKS.md](COMPRESSION_BENCHMARKS.md#image-codec--jpeg-xl-versus-the-current-codec)).
+The 67-page calibration first matched the median page and shows why that
+does not work for JPEG XL.
+
+- **Encoder**: libjxl 0.11.2 `cjxl`. Its quality control is the *distance*,
+  a target visual error in JND units: lower is better, 1.0 is "visually
+  lossless", and the recommended range is 0.5 to 3.0. *Effort* (1–10, default
+  7) trades encoding time for size. For images over 2048 pixels, effort 7
+  below distance 3.0 encodes in chunks by default, "at the cost of
+  compression density" (libjxl); the benchmarks encode whole images
+  (`--patches=1`, §315). The 67-page calibration below measured only
+  distances of 3.0 and above, which are whole-image by default.
+- **Method**: as for JPEG2000 above. The same 67 page images, prepared
+  before the B116 repair; JPEG q75 re-encoded with the app's encoder and
+  checked byte for byte against the reference results; one fixed setting
+  for every page; SSIMULACRA2 0.5.2 of each decoded image against its
+  original.
+- **Metric caveat**: SSIMULACRA2 comes from Cloudinary, one of JPEG XL's
+  developers, so PSNR is listed as well. JPEG q75's median PSNR on these
+  pages is 40.2 dB, measured on the benchmark files' re-composed images.
+- Data and harness: `.tmp/jxl/calibration-20261103/results.jsonl` (SHA-256
+  `e65c6938bd2dc68319c129f6b8c53eddb5aa29be1f7446f98cd7d70717c57baf`),
+  `tools/bench_jxl.py`. These are image-only results.
+
+### JPEG XL results by setting
+
+Every row is an encoded setting, applied unchanged to all 67 pages.
+
+| JPEG XL setting | Median gap | 10th–90th percentile | Worst page | Pages within ±5 | Total bytes vs JPEG | Median PSNR |
+|---|---:|---:|---:|---:|---:|---:|
+| Distance 3.0, effort 7 | +4.6 | −4.4 to +9.5 | −8.6 | 46% | 0.35 | 47.6 dB |
+| Distance 4.0, effort 7 | +1.5 | −6.9 to +9.0 | −12.6 | 33% | 0.30 | 46.9 dB |
+| **Distance 4.5, effort 7 (median match)** | **+0.5** | **−8.4 to +8.3** | **−16.0** | **25%** | **0.27** | **45.5 dB** |
+| Distance 5.0, effort 7 | −1.5 | −10.6 to +7.5 | −19.7 | 31% | 0.26 | 44.9 dB |
+| Distance 6.0, effort 7 | −4.0 | −13.5 to +6.7 | −27.2 | 31% | 0.23 | 43.4 dB |
+| Distance 3.0, effort 9 | +4.2 | −6.3 to +10.7 | −11.0 | 31% | 0.37 | 46.9 dB |
+| Distance 4.0, effort 9 | +1.2 | −9.5 to +9.6 | −15.3 | 28% | 0.31 | 45.2 dB |
+
+Effort 9 gave larger files and lower scores than effort 7 at both distances
+measured, so it was stopped there. `cjxl`'s own Quality 75 is distance 2.35
+(byte-identical output); it would look better than JPEG q75 on the median
+page, since distance 3.0 already does.
+
+### JPEG XL results by document
+
+Mean gap / total bytes ratio (JPEG XL / JPEG q75) per document and mode, at
+effort 7.
+
+| Pages | n | Distance 3.0 | Distance 4.5 | Distance 6.0 |
+|---|---:|---:|---:|---:|
+| Flat-color artwork, native | 1 | +1.5 / 0.29 | +1.1 / 0.24 | −1.8 / 0.19 |
+| Flat-color artwork, FFPR | 1 | +1.5 / 0.31 | +1.1 / 0.26 | −1.8 / 0.21 |
+| Technical illustrations, native | 9 | −4.5 / 0.26 | −6.5 / 0.19 | −11.4 / 0.15 |
+| Technical illustrations, FFPR | 12 | +4.8 / 0.36 | +1.2 / 0.29 | −2.8 / 0.25 |
+| Mixed text/images, native | 2 | −3.7 / 0.28 | −3.8 / 0.22 | −7.8 / 0.17 |
+| Mixed text/images, FFPR | 9 | +8.7 / 0.11 | +7.4 / 0.09 | +5.3 / 0.08 |
+| Native text/vectors, FFPR | 6 | +9.9 / 0.07 | +8.1 / 0.06 | +7.0 / 0.05 |
+| Color photos, native | 8 | −4.3 / 0.41 | −9.8 / 0.29 | −15.5 / 0.22 |
+| Color photos, FFPR | 8 | +1.5 / 0.44 | −4.9 / 0.34 | −10.8 / 0.29 |
+| BW scan | 11 | +7.2 / 0.58 | +7.2 / 0.49 | +4.8 / 0.44 |
+
+### JPEG XL at equal quality, page by page
+
+Bytes JPEG XL needs to look exactly like JPEG q75 on each page, as a ratio to
+JPEG's bytes, interpolated between the two measured effort-7 distances that
+bracket JPEG's score. Only pages whose scores cross JPEG's between distance
+3.0 and 6.0 can be matched.
+
+| Pages | Pages matched | Median | Range | Unmatched |
+|---|---:|---:|---:|---|
+| Flat-color artwork, native and FFPR | 2 of 2 | 0.24 | 0.22–0.25 | — |
+| Technical illustrations, FFPR | 7 of 12 | 0.26 | 0.23–0.39 | 4 better at 6.0, 1 worse at 3.0 |
+| Color photos, FFPR | 5 of 8 | 0.21 | 0.18–0.55 | 3 worse at 3.0 |
+| Mixed text/images, FFPR | 1 of 9 | 0.16 | — | 8 better at 6.0 |
+| Native text/vectors, FFPR | 0 of 6 | — | — | all better at 6.0 |
+| BW scan | 0 of 11 | — | — | all better at 6.0 |
+| Technical illustrations, native | 0 of 9 | — | — | all worse at 3.0 |
+| Mixed text/images, native | 0 of 2 | — | — | both worse at 3.0 |
+| Color photos, native | 0 of 8 | — | — | all worse at 3.0 |
+
+- **44 of 67 pages need fewer bytes in JPEG XL at equal quality**: the 15
+  matched pages (median 0.25 of JPEG's bytes, 0.16–0.55), and 29 pages that
+  still look better at distance 6.0 with at most 0.46 of JPEG's bytes.
+- **The other 23 still look worse at distance 3.0** (by up to 8.6 points,
+  with 0.11–0.60 of JPEG's bytes): every native-mode photo, illustration and
+  newspaper image, three FFPR photo pages and one FFPR illustration page.
+  Their equal-quality size was not measured.
+
+What this means:
+
+- **One distance tracks JPEG q75 less closely than JPEG2000's mapping**: 25%
+  of pages within ±5 at the matched setting, against 48% for JPEG2000's per-tile
+  PSNR target. Typeset full-page renders and the scan come out better than
+  JPEG, embedded photographs and native-mode illustrations worse.
+- **Matching the median page leaves photographs well below JPEG.** At
+  distance 4.5 the native photo pages score 9.8 lower while text renders
+  score 7–8 higher. Text pages would not use JPEG anyway, so the benchmarks
+  match on photographs instead (§314, below).
+- **Where equal quality could be measured here, JPEG XL needs about a
+  quarter of JPEG's bytes.** Of the 23 pages still worse at distance 3.0,
+  the eight photograph pages were measured at lower distances (below): at
+  equal mean quality they need 0.54 of JPEG's bytes.
+
+### JPEG XL matched on photographs (§314)
+
+The benchmarks' JPEG rows use one distance for every page: the measured
+distance whose mean SSIMULACRA2 on the brochure's eight photograph pages
+(Color photos, native, the JPEG row's own images) is closest to JPEG q75's.
+These are the swap's own originals, re-composed by the current composer
+(after the B116 repair) and checked against the recorded sample hashes,
+scored exactly as the benchmark cell is.
+
+| Distance (effort 7) | Mean gap | Median gap | Range over the 8 pages | Total bytes vs JPEG | Mean PSNR gap |
+|---:|---:|---:|---:|---:|---:|
+| 1.0 | +4.10 | +4.39 | +1.2 to +7.6 | 0.95 | +3.60 dB |
+| 1.25 | +3.40 | +3.49 | +1.5 to +6.2 | 0.82 | +2.50 dB |
+| 1.5 | +2.39 | +2.43 | +0.8 to +4.6 | 0.72 | +1.70 dB |
+| 1.75 | +1.39 | +1.36 | −0.2 to +3.1 | 0.64 | +0.89 dB |
+| 2.0 | +0.66 | +0.51 | −0.6 to +2.2 | 0.57 | +0.12 dB |
+| 2.05 | +0.33 | +0.10 | −0.5 to +1.5 | 0.56 | +0.09 dB |
+| 2.1 | +0.08 | −0.15 | −1.1 to +1.4 | 0.55 | −0.02 dB |
+| **2.15** | **+0.01** | **−0.20** | **−1.0 to +1.2** | **0.54** | **−0.17 dB** |
+| 2.2 | −0.19 | −0.40 | −0.9 to +1.1 | 0.53 | −0.27 dB |
+| 2.25 | −0.42 | −0.56 | −1.2 to +0.8 | 0.52 | −0.41 dB |
+| 2.5 | −1.54 | −1.83 | −2.3 to +0.0 | 0.48 | −1.02 dB |
+| 3.0 | −3.95 | −4.01 | −6.1 to −2.3 | 0.41 | −2.13 dB |
+
+Distance 2.15 is chosen: its mean gap is +0.01, every photograph is within
+±1.2 of JPEG q75, and PSNR agrees (−0.17 dB). At equal quality the
+photographs need 0.54 of JPEG's bytes, almost twice the 0.29 the
+median-matched distance 4.5 gave, because 4.5 left them 9.5 points worse.
+Every encode is whole-image (§315); `cjxl`'s chunked default chose the
+same distance with 0.56. `cjxl`'s own Quality 75 is distance 2.35, between
+the measured 2.25 (−0.42) and 2.5 (−1.54): on these photographs it is
+close to JPEG q75, slightly below.
+
+Data: `.tmp/jxl/photo-match-whole-20261104/results.jsonl` (SHA-256
+`4805de64d91bd5bd2a44d78e887a7c4b07be290ce11bc9b7f35f10127713046a`), `tools/bench_jxl.py match`.
 
 ## Evidence from published studies and tools
 

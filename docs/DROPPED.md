@@ -4,12 +4,18 @@ Rule: an idea lands here only by designer ruling, with reason + date + source
 request number. Check here before re-proposing anything. Revisit only if the
 stated reason expires. Knowledge is referenced, never redone.
 
-## D1 — JPEG XL embedded inside PDFs — DROPPED 2026-10-09 (request §5)
+## D1 — JPEG XL in app filters and saved PDFs — DROPPED 2026-10-09 (request §5); measured in the benchmarks since 2026-11-03 (§§309–314)
 Reason: JXL is not part of ISO 32000, so no PDF viewer renders JXL image
 streams — shipping it would produce unopenable files. The PDF Association
-(Sep 2025) named JXL the future preferred HDR format with no timeline.
+(Sep 2025) named JXL the future preferred HDR format with no timeline. As of
+2026-11 no filter name or embedding rules are published; PDFium's design
+draft uses the placeholder `/JXLDecode`, and MuPDF 1.28.2 has no JPEG XL
+decoder.
+Still in force: no app filter and no saved PDF uses JPEG XL. The benchmark
+analysis measures it anyway (§309), as a binary experiment under the
+placeholder filter (TODO §270, `COMPRESSION_BENCHMARKS.md`).
 Revisit if: ISO 32000 adopts JXL AND Evince/MuPDF/Chromium render it.
-See: `DESIGNER_VERBATIM.md` §5.
+See: `DESIGNER_VERBATIM.md` §§5/309–314.
 
 ## D2 — Tkinter-first GUI staging — SUPERSEDED 2026-10-09 (requests §6–§8)
 Reason: the original plan was Tkinter for v0.1, Qt for v0.2. The designer's

@@ -14,8 +14,9 @@ own detailed rulings. Text outside the fenced quotes is not the designer's.
 I want to make a simple app that works on multiple platforms, but first targetting lxde debian linux.  I want to dnd or open a pdf docs and be able to visualize various optimizations to it.  Highly opinionated, eg conversion to BW with a few strategies and a global or per page threshold, like GIMP threshold option.  Also, another option that compresses images within the pdf to jpg XL or whatever highest compression algorithms exist.  Same for BW, JDIC2 (I think if I remeber correctly.  Always max compression for all by default, but tunable if too slow.  Always fast cancel with esc by user as required.  Start by making some md docs directly in this dir with your notes, ideas and tests.
 ```
 
-Later rulings narrow two details of the brief: JPEG XL is not used (§5), and
-encoding time is not a constraint (§213).
+Later rulings narrow two details of the brief: JPEG XL is not used in saved
+PDFs (§5), though the benchmarks measure it (§309), and encoding time is not
+a constraint (§213).
 
 **§275** (2026-10-19)
 

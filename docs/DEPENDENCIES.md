@@ -29,6 +29,7 @@ everything ([PACKAGING.md](PACKAGING.md)).
 | `jbig2dec` | present | debug/verify JBIG2 output |
 | `mutool` (mupdf-tools), `libmupdf` | present | inspect/clean PDFs, fallback renderer |
 | `pdfimages` (poppler-utils) | present | debug: list/extract embedded images |
+| `cjxl`, `djxl` (libjxl-tools) | present 0.11.2 | benchmark only: JPEG XL encoder/decoder for the analysis (§309); not a runtime dependency |
 | `python3-pil (pillow 11.1)`, `python3-numpy 2.2.4` | present as system dist-packages | usable without venv, but we still pin pip copies in `.venv` for reproducibility |
 | fonts, libgl/egl, PCManFM (for DnD) | OS-provided | can't/shouldn't vendor |
 

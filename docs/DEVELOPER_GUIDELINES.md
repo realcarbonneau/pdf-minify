@@ -255,8 +255,10 @@ each line.
   JBIG2 payloads (§§255/256/260). The opt-in Brotli declaration is added only
   when the chosen output uses Brotli (§251). Empty streams stay plain.
   `COMPRESSION.md`, `NATIVE_STREAM_COMPRESSION.md`.
-- No JPEG XL inside PDFs: it is not in the PDF specification and viewers
-  cannot open it (`DROPPED.md` D1).
+- No JPEG XL in app filters or saved PDFs: it is not in the PDF
+  specification and no PDF reader opens it (`DROPPED.md` D1). The benchmarks
+  measure it as an analysis only, under a placeholder filter (§§309–314,
+  `COMPRESSION_BENCHMARKS.md`).
 
 **Page preparation**
 - FFPR off keeps native text and vector diagrams, with their fonts, geometry,

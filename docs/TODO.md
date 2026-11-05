@@ -10,7 +10,7 @@ duplicate request numbers already exist in checkpoint `8d7f095` (18 repeated
 headings among §§60–79). They are preserved, not silently renumbered; identify
 those entries by title/scope as well as number. New entries continue above
 the highest previously allocated number, including removed entries. The next
-new TODO ID is 270. Routine execution requests are not TODOs (§218).
+new TODO ID is 273. Routine execution requests are not TODOs (§218).
 
 Current location is `docs/TODO.md` (designer §216). Paths in historical
 backtick references are repository-root paths unless stated otherwise;
@@ -1523,3 +1523,22 @@ Remaining:
 - Real-desktop checks of the Linux packages (X11 and Wayland, drag-and-drop,
   HiDPI) before the first release.
 - The first release, `v0.0.1`, needs the designer's authorization.
+
+## 270 — DONE (designer §§309–312: JPEG XL binary experiment)
+~~Measure JPEG XL as an analysis only, replacing only the prepared images of
+each row's best current codec: lossless for BW and Indexed, from the
+original at JPEG q75's measured quality for JPEG.~~
+Stub: 60 measured pairs: JPEG XL is smaller in 48, tied in 5 and larger in 7, all BW, where JBIG2 wins. The JPEG rows first used distance 4.5, matched on the median page only (now 2.15, item 271).
+See: `docs/COMPRESSION_BENCHMARKS.md`, `docs/LOSSY_IMAGE_QUALITY.md`, `tools/bench_jxl.py`, `tools/publish_jxl.py`.
+
+## 271 — DONE (designer §314: JPEG XL matched on photos, with a quality-change table)
+~~Match JPEG XL to JPEG q75 on photographs, use that one setting for every
+JPEG-row cell, and add a table of each cell's quality change.~~
+Stub: distance 2.15 at effort 7 matches the photographs; at equal quality the image cells are 40–44% smaller (whole-image, item 272), and text pages come out better than JPEG.
+See: `docs/COMPRESSION_BENCHMARKS.md`, `docs/LOSSY_IMAGE_QUALITY.md`, `tools/bench_jxl.py`, `tools/publish_jxl.py`.
+
+## 272 — DONE (designer §315: JPEG XL lossy in whole-image mode)
+~~Encode the JPEG rows' JPEG XL whole, not in `cjxl`'s chunked default for
+large images, and repeat the photo match and the JPEG swaps.~~
+Stub: whole-image encoding (`--patches=1`) kept the matched distance at 2.15; text-page renders became 58–93% smaller than JPEG instead of 23–31%, and the photographs 39.89% instead of 38.70%.
+See: `docs/COMPRESSION_BENCHMARKS.md`, `docs/LOSSY_IMAGE_QUALITY.md`, `tools/bench_jxl.py`, `tools/publish_jxl.py`.

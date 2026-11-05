@@ -1,0 +1,421 @@
+{
+  "designer_rulings": [
+    309,
+    310,
+    311,
+    313,
+    314,
+    315
+  ],
+  "filter": "/JXLDecode",
+  "lossless_effort": 10,
+  "lossy_setting": {
+    "distance": 2.15,
+    "effort": 7,
+    "whole_image": [
+      "--patches=1"
+    ]
+  },
+  "photo_match": {
+    "effort": 7,
+    "distance": 2.15,
+    "images": 8,
+    "mean_gap": 0.013078031250001843,
+    "median_gap": -0.19534960499999698,
+    "worst": -0.9654020799999898,
+    "best": 1.235221039999999,
+    "bytes_vs_jpeg": 0.5429058358146482,
+    "psnr_gap": -0.1652352848255214
+  },
+  "manifests": {
+    ".tmp/jxl/lossless-20261103/metrics.json": "19a2be881723ce7b6f64876367f5a88af0c5666e8403bb20552efa4553f4504a",
+    ".tmp/jxl/lossy-whole-20261104/metrics.json": "be23f0be7637e8db8f37163d115f8603ec60d7cba352282b2f68791bc67d3841",
+    ".tmp/jxl/photo-match-whole-20261104/results.jsonl": "4805de64d91bd5bd2a44d78e887a7c4b07be290ce11bc9b7f35f10127713046a"
+  },
+  "documents": [
+    "native",
+    "scan",
+    "photos",
+    "art",
+    "mixed",
+    "kepler"
+  ],
+  "rows": [
+    {
+      "row": "bw-jbig2",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        182485,
+        267896,
+        1622205,
+        9761,
+        300346,
+        1106489
+      ],
+      "jxl_bytes": [
+        182485,
+        299951,
+        1681223,
+        12182,
+        302778,
+        1117804
+      ],
+      "jxl_pdf_sha256": [
+        "47a4f5949c709141861952bc2182f5071b16595b2def7621e4c7b2a54d3d392e",
+        "1dcfe852f026c20a65aea577f07d5d1d3512fb058e824e854e59341e682fe867",
+        "e943ac7195b6b1276c8f6ff7bf3625d1181002dadad9a9e22f6e326114ed5b48",
+        "9caf45f9d6e5a263f8696cbee9f5e28474a6a2ec42eb53fea44afd37e728fd9b",
+        "d094e016f8e05d9b310d39a54f2fd6ef65dae469be74017716a704d1274979f1",
+        "fbbc5fe4a11f4bfa0c9eb797595e5700241be9dbdf01d04f88c080ccd16680f9"
+      ],
+      "images": [
+        0,
+        11,
+        8,
+        1,
+        2,
+        9
+      ]
+    },
+    {
+      "row": "bw-ffpr-jbig2",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        297872,
+        229520,
+        1199049,
+        3868,
+        316049,
+        299818
+      ],
+      "jxl_bytes": [
+        123994,
+        261575,
+        1062791,
+        6733,
+        144281,
+        239249
+      ],
+      "jxl_pdf_sha256": [
+        "9f87a63b6df51e054766aec11c480f9b3607cb0d64d26d76355b3355c621e5b6",
+        "fbdac319f993d49fe02d24eba45eddab76b291663759e92e2c9fa35cb7aa1239",
+        "af84c1e86838ee8923e0512c2172df82e01ffd44124a04698fc912f5acd836cd",
+        "2521cfc72a5f694c6b400c4aab691042fce4f35c663ecf1219220b8a340f2dc5",
+        "6f3e79a6161a6ca903f64a4429362e15a6cc70c540bc432756a521f4281e4b9a",
+        "34f3e2c3821f81830446039249215bb01b4982a1164ba8b36f4f1dfaae18f53e"
+      ],
+      "images": [
+        6,
+        11,
+        8,
+        1,
+        9,
+        12
+      ]
+    },
+    {
+      "row": "indexed-5",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        182485,
+        413401,
+        3277697,
+        21909,
+        331692,
+        1334237
+      ],
+      "jxl_bytes": [
+        182485,
+        302591,
+        2820789,
+        15585,
+        318818,
+        1258441
+      ],
+      "jxl_pdf_sha256": [
+        "486f50632805f41275a224bee148e2c6e1a1dd2ebee2a5a07f43a4420964a776",
+        "6d8fc34611c99e599857d4dccc828c8bf20ad894b1b35e6bf8a659006654b8b7",
+        "be419346db630c271c306ef2dcccda3ed7588c9be6478bb44fc632146eafa811",
+        "368968973cef23e457652d3e3a355fcc6114ca519e9204d3f956a9c01ecc0355",
+        "06979052cea08e84a87eaa578c38a21f434f610a700323172fcb4facbf15b069",
+        "3340d29bc17f89007fea028622e4a034283f0569521e51d0bcac7816926822d1"
+      ],
+      "images": [
+        0,
+        11,
+        8,
+        1,
+        2,
+        9
+      ]
+    },
+    {
+      "row": "indexed-16",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        182485,
+        413401,
+        5456145,
+        36337,
+        416843,
+        1712306
+      ],
+      "jxl_bytes": [
+        182485,
+        302591,
+        4269219,
+        24605,
+        371548,
+        1504057
+      ],
+      "jxl_pdf_sha256": [
+        "e3fec69da76a319695a66c46df2aea859df0bdf33e3816ec5dae1dd3198d409a",
+        "c40de620d97de6a9a5ac2d609545a22bd2325288a76b5fe447a4b06f0a5b300a",
+        "ea9cab751501b55b49fd97130aa49701d6a25aaba587c8bef5f359f711a64630",
+        "cb49690e123341d6ff8d98332857840ff8ae33d6aa36ff70742c19a3eb521e74",
+        "29ffacdd86465023efbb1d8f118fe9502d657906b7033d91c073431598c980b2",
+        "4cb13be938aab65235aefc8bd56c4ae4249d44a01b119c792f1a60005e8bd5a9"
+      ],
+      "images": [
+        0,
+        11,
+        8,
+        1,
+        2,
+        9
+      ]
+    },
+    {
+      "row": "indexed-64",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        182485,
+        413401,
+        8276451,
+        52382,
+        513607,
+        2247500
+      ],
+      "jxl_bytes": [
+        182485,
+        302591,
+        6932313,
+        36220,
+        449648,
+        1930980
+      ],
+      "jxl_pdf_sha256": [
+        "87bc2d2566d81e7f30f80b5169c765a4c518955d43c6635a87d6f178bb2dff3a",
+        "c8e2eb12ee7eafe38c279e3ec5900f937593d3af04d0c3e0258528e17d5b5cce",
+        "54581661c6bdd24079d7872fd7a7d18c1e9b054832d0e40730283b6fb3dfdf33",
+        "364b3b6269aebc200fb8229b1dd531dce5b835712a9681c8b57e3e688ed2de9b",
+        "a0fa7eaa7c3f842c60819bfbdc774d2501739be59bd2459ee1007b25a991bd12",
+        "db4b1212495c08137761d7ec9769cc07bb0d310eb840292618dd306d137620b8"
+      ],
+      "images": [
+        0,
+        11,
+        8,
+        1,
+        2,
+        9
+      ]
+    },
+    {
+      "row": "indexed-ffpr-5",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        531482,
+        375025,
+        3733844,
+        15377,
+        602485,
+        676564
+      ],
+      "jxl_bytes": [
+        124494,
+        264215,
+        2247211,
+        9104,
+        156995,
+        297015
+      ],
+      "jxl_pdf_sha256": [
+        "33404d0a64381e5aedda88869161d6897ad8d52cb8ec70d066169d7f5aec5518",
+        "8324e2fab5425726ca6ab2ad71cf48e1de6aac6d75fef872bdf90e143a8df582",
+        "7d4f0e9758dc7606082623a41625e088cf3981f5807a7585f940f3ced0da109d",
+        "c4266bfeac91b6803078aa14c0f6c7f31190b5a500b40a28ad3fc74ab34f190e",
+        "139376e4671716445de8f0c68ec5f688c56b3f3570980451334fcea1d0ab9d60",
+        "69234196f9de18e87f07d226f2c33072b2cb151b534ae781c08ec56fafff5c4d"
+      ],
+      "images": [
+        6,
+        11,
+        8,
+        1,
+        9,
+        12
+      ]
+    },
+    {
+      "row": "indexed-ffpr-16",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        531482,
+        375025,
+        6169370,
+        31186,
+        634540,
+        817716
+      ],
+      "jxl_bytes": [
+        124494,
+        264215,
+        4254894,
+        17537,
+        180274,
+        414505
+      ],
+      "jxl_pdf_sha256": [
+        "09f11579077968c98df956e2054e1a69b90e5699c9c83141f558928ee8347b4f",
+        "4e3778f80b2573ec8cf6b96eb7360efedcb553e4bb7550aa80d3a4b1fb7e6760",
+        "64fb6bbf2011cd1b4b418c06c44d260ded9af2ccb79b91fc6904059b416aa684",
+        "8ff51ab5f74d2fd252236b3a3cbb631c97eb7e61d232c5120583d7e80698dd8c",
+        "bd487fde9e9f51b3f22504f8142d1f1ab04c5c3e871d44662ed193eb9da8653a",
+        "05876534f0243c9c0f12d5778e17c97d84b0e69e08afeb8161dda64ff0a60406"
+      ],
+      "images": [
+        6,
+        11,
+        8,
+        1,
+        9,
+        12
+      ]
+    },
+    {
+      "row": "indexed-ffpr-64",
+      "treatment": "lossless",
+      "baseline_bytes": [
+        531482,
+        375025,
+        9679530,
+        47253,
+        661319,
+        991691
+      ],
+      "jxl_bytes": [
+        124494,
+        264215,
+        7345670,
+        28967,
+        201307,
+        551631
+      ],
+      "jxl_pdf_sha256": [
+        "4915c9e7d567ae307892c372defc0565c535f99a616b5e4b6a9b2d829add13f1",
+        "6635fc048f0cf44f31e4767a29183f90fb07e91d570587d4813eb7c8c3f6c25a",
+        "93f30c1cdae8ff3da576cf0e6a9b0c91619ba57ea36c7863aa35a249b1396436",
+        "c16d1ca3a848e7eb752bf231d613cc1a98eef4462ced313888fee4e9288afffb",
+        "b1a4ba0e365ef5757c11dedb226b909b673b1ea212c69348ce97caada3e5648d",
+        "44f6fe71928f2af6f0d0fad30daa119927b18ee38cb82d96759d32b1c261bd44"
+      ],
+      "images": [
+        6,
+        11,
+        8,
+        1,
+        9,
+        12
+      ]
+    },
+    {
+      "row": "jpeg",
+      "treatment": "lossy",
+      "baseline_bytes": [
+        182517,
+        6191883,
+        10008205,
+        222989,
+        739504,
+        3112615
+      ],
+      "jxl_bytes": [
+        182517,
+        4133414,
+        6015660,
+        83601,
+        444417,
+        1758106
+      ],
+      "jxl_pdf_sha256": [
+        "0d0bb186de3f88d81f0bb412aa81f9417d668e5b5f53daec23b931020c9bf018",
+        "5459aa8d23e154b1fad0ea57e00bc3f80ce0e87f56e696db3a332a3f3187dcb6",
+        "56da01e3d236822d8ce609fdc33a18609dbf56af46fe21eae70845cb4b18f0d5",
+        "e3916780dc7559448e425ac7b1698bdb5a48fd01760a92d9cd736d1749cc862a",
+        "abd55c8557024ca89c0caf1d7224027c3b6dead1f775983897d96c58396bb11c",
+        "5bf08e5c40eee5ca4de8b87b4ab4eda4f1c66b8611952d6addfd7c0ed84ec25e"
+      ],
+      "images": [
+        0,
+        11,
+        8,
+        1,
+        2,
+        9
+      ],
+      "quality_gap": [
+        null,
+        8.227109114545453,
+        0.013078031250001843,
+        3.6060586400000005,
+        -0.10846284000000139,
+        -0.2626129499999984
+      ]
+    },
+    {
+      "row": "jpeg-ffpr",
+      "treatment": "lossy",
+      "baseline_bytes": [
+        7613891,
+        6153507,
+        25408327,
+        229805,
+        7796434,
+        9166422
+      ],
+      "jxl_bytes": [
+        532179,
+        4095038,
+        13503849,
+        87489,
+        953007,
+        3820085
+      ],
+      "jxl_pdf_sha256": [
+        "605b43a50d71ad9c023af3059ae67b1116196ffeab255f0b92ba81fce387ec17",
+        "964bdee268e191c74bf088aad36b11284f94193597f432db997fda4737680f3f",
+        "67887b8912ca552c4810e728b575ccb81dff0c9dde15a5f462202e4993c6a61e",
+        "b0f02d62f432bab49cb168a16790c9ad0ebfdef1c55aa8b1eea92e835ce69680",
+        "2acfab49000bdbfff79d8daa79334c6afadcfbff83f44427ef626e5d01d3914a",
+        "7df13bf6e9af552469c8d0d1dcfb0b74a2ea92fdd7b2c9cd02e092bbbf525858"
+      ],
+      "images": [
+        6,
+        11,
+        8,
+        1,
+        9,
+        12
+      ],
+      "quality_gap": [
+        10.921836446666667,
+        8.227109114545453,
+        5.575868433749999,
+        3.604117809999991,
+        10.424407384444446,
+        7.466896119166667
+      ]
+    }
+  ]
+}
