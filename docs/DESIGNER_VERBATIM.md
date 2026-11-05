@@ -1167,8 +1167,8 @@ match the quality for the images, for text, the baseline will not be jpeg anyway
 
 ## 315 — encode JPEG XL in whole-image mode; compute and memory are acceptable (verbatim, 2026-11-04)
 
-Source: designer message in the session of 2026-11-04; exact text except one name, withheld per §292.
+Source: designer message in the session of 2026-11-04; exact text.
 
 ```text
-Ok, proceed as you suggest, more compute/memory is fine and fits the objectives of the project.  Also squash and push and make sure to not quote [name withheld, §292] anywhere, per canon.
+Ok, proceed as you suggest, more compute/memory is fine and fits the objectives of the project.
 ```
